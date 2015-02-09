@@ -1,9 +1,11 @@
 
+import alveare
+
 from alveare.common.database import DB
 
-class Debit(DB.model):
-    id = db.Column(db.Integer, primary_key=True)
-    price = db.Column(db.Integer, nullable=False)
+class Debit(DB.Model):
+    id = DB.Column(DB.Integer, primary_key=True)
+    price = DB.Column(DB.Integer, nullable=False)
 
     def __init__(self, price):
         self.price = price
