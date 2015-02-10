@@ -12,7 +12,7 @@ class TestAuctionModel(AlveareModelTestCase):
     def test_create_auction(self):
         current_date = datetime.datetime.today()
         new_auction = self.create_model(self.model, 1000, current_date, 1)
-        
+
         self.assertEqual(new_auction.duration, 1000)
         self.assertEqual(new_auction.finish_work_by, current_date)
         self.assertEqual(new_auction.redundancy, 1)
@@ -25,18 +25,18 @@ class TestAuctionModel(AlveareModelTestCase):
     def test_update_auction(self):
         current_date = datetime.datetime.today()
         new_auction = self.create_model(self.model, 3000, current_date, 1)
-        
+
         self.assertEqual(new_auction.duration, 3000)
         self.assertEqual(new_auction.finish_work_by, current_date)
         self.assertEqual(new_auction.redundancy, 1)
-       
+
         tomorrows_date = current_date + datetime.timedelta(days=1)
         new_auction.duration = 4000
-        new_auction.finish_work_by = tomorrows_date 
+        new_auction.finish_work_by = tomorrows_date
         new_auction.redundancy = 2
-        
+
         self.db.session.commit()
-       
+
         modified_auction = self.model.query.get(new_auction.id)
         self.assertEqual(modified_auction.duration, 4000)
         self.assertEqual(modified_auction.finish_work_by, tomorrows_date)

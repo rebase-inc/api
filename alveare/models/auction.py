@@ -16,21 +16,9 @@ class Auction(DB.Model):
 
     def __repr__(self):
         return '<Auction[id:{}] finish_work_by={}>'.format(self.id, self.finish_work_by)
-    
-    @validates('duration')
+
+    @validates('duration', 'redundancy')
     def validate_duration(self, field, value):
         if not isinstance(value, int):
             raise ValueError('{} field on {} must be {}'.format(field, self.__tablename__, int))
         return value
-    
-    @validates('redundancy')
-    def validate_outcome(self, field, value):
-        if not isinstance(value, int):
-            raise ValueError('{} field on {} must be {}'.format(field, self.__tablename__, int))
-        return value
-
-    #@validates('')
-    #def validate_outcome(self, field, value):
-        #if not isinstance(value, int):
-            #raise ValueError('{} field on {} must be {}'.format(field, self.__tablename__, int))
-        #return value
