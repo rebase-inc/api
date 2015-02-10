@@ -1,6 +1,4 @@
 
-import alveare
-
 from alveare.common.database import DB
 
 class Debit(DB.Model):
