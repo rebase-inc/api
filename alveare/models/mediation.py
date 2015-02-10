@@ -6,7 +6,7 @@ class Mediation(DB.Model):
     dev_answer =    DB.Column(DB.Integer, nullable=False)
     client_answer = DB.Column(DB.Integer, nullable=False)
     outcome =       DB.Column(DB.Integer, nullable=False)
-    timeout =       DB.Column(DB.DateTiem, nullable=False)
+    timeout =       DB.Column(DB.DateTime, nullable=False)
 
     def __init__(self, timeout):
         self.timeout = timeout
