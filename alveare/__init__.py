@@ -1,5 +1,9 @@
+import sys
+
 from flask import Flask
 from flask.ext.sqlalchemy import SQLAlchemy
+
+sys.dont_write_bytecode = True
 
 def create_app(database, config_filename = 'config'):
     """ Create our app using the Flask factory pattern """
