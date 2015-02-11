@@ -4,8 +4,9 @@ import alveare
 from alveare.common.database import DB
 
 class WorkOffer(DB.Model):
-    id = DB.Column(DB.Integer, primary_key=True)
-    price = DB.Column(DB.Integer, nullable=False)
+    id =      DB.Column(DB.Integer, primary_key=True)
+    price =   DB.Column(DB.Integer, nullable=False)
+    work_id = DB.Column(DB.Integer, DB.ForeignKey('work.id'), nullable=True)
 
     def __init__(self, price):
         self.price = price

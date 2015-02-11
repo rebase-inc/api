@@ -15,5 +15,4 @@ class AlveareModelTestCase(AlveareTestCase):
         self.db.session.delete(instance)
         self.db.session.commit()
 
-        all_instances = model.query.all()
-        self.assertEqual(len(all_instances), 0)
+        self.assertEqual(model.query.get(instance.id), None)

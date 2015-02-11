@@ -6,16 +6,22 @@ class TestCreditModel(AlveareModelTestCase):
     model = models.Credit
 
     def test_create_credit(self):
-        new_credit = self.create_model(self.model, 20)
-        self.assertEqual(new_credit.price, 20)
+        work_offer = models.WorkOffer(100)
+        work = self.create_model(models.Work, work_offer)
+        new_credit = self.create_model(self.model, work, 10)
+        self.assertEqual(new_credit.price, 10)
 
     def test_delete_credit(self):
-        new_credit = self.create_model(self.model, 30)
-        self.assertEqual(new_credit.price, 30)
+        work_offer = models.WorkOffer(100)
+        work = self.create_model(models.Work, work_offer)
+        new_credit = self.create_model(self.model, work, 20)
+        self.assertEqual(new_credit.price, 20)
         self.delete_instance(self.model, new_credit)
 
     def test_update_credit(self):
-        new_credit = self.create_model(self.model, 30)
+        work_offer = models.WorkOffer(100)
+        work = self.create_model(models.Work, work_offer)
+        new_credit = self.create_model(self.model, work, 30)
         self.assertEqual(new_credit.price, 30)
 
         new_credit.price = 40
@@ -25,6 +31,8 @@ class TestCreditModel(AlveareModelTestCase):
         self.assertEqual(modified_credit.price, 40)
 
     def test_bad_create(self):
+        work_offer = models.WorkOffer(100)
+        work = self.create_model(models.Work, work_offer)
         with self.assertRaises(ValueError):
-            self.create_model(self.model, 'foo')
+            self.create_model(self.model, work, 'foo')
 
