@@ -7,7 +7,7 @@ class Review(DB.Model):
     rating =  DB.Column(DB.Integer, nullable=False)
     work_id = DB.Column(DB.Integer, DB.ForeignKey('work.id'), nullable=False)
 
-    comments = DB.relationship('Comment', lazy='dynamic', backref='review')
+    comments = DB.relationship('Comment', lazy='dynamic', backref='review', cascade='all, delete-orphan', passive_deletes=True)
 
     def __init__(self, work, rating):
         if work.review:

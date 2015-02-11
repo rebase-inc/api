@@ -12,12 +12,25 @@ class TestCommentModel(AlveareModelTestCase):
         review = models.Review(work, 4)
         new_comment = self.create_model(self.model, review, 'Hello')
         self.assertEqual(new_comment.content, 'Hello')
+        self.db.session.commit()
+
+    def test_delete_parent(self):
+        work = self.create_model(models.Work, models.WorkOffer(100))
+        review = models.Review(work, 4)
+        comment = self.create_model(self.model, review, 'Hello')
+        self.assertEqual(comment.content, 'Hello')
+        self.db.session.commit()
+
+        self.delete_instance(models.Review, review)
+        self.db.session.commit()
+        #self.assertEqual(self.model.query.get(comment.id), None)
 
     def test_delete(self):
         work = self.create_model(models.Work, models.WorkOffer(100))
         review = models.Review(work, 4)
-        new_comment = self.create_model(self.model, review, 'Bye')
-        self.delete_instance(self.model, new_comment)
+        comment = self.create_model(self.model, review, 'Bye')
+        self.delete_instance(self.model, comment)
+        self.assertNotEqual(models.Review.query.get(review.id), None)
 
     def test_update(self):
         work = self.create_model(models.Work, models.WorkOffer(100))
