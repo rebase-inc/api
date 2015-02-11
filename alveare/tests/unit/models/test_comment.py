@@ -1,4 +1,5 @@
 from sqlalchemy.exc import InterfaceError
+from sqlalchemy.orm.exc import ObjectDeletedError
 
 from . import AlveareModelTestCase
 
@@ -22,8 +23,8 @@ class TestCommentModel(AlveareModelTestCase):
         self.db.session.commit()
 
         self.delete_instance(models.Review, review)
-        self.db.session.commit()
-        #self.assertEqual(self.model.query.get(comment.id), None)
+        with self.assertRaises(ObjectDeletedError):
+            self.model.query.get(comment.id)
 
     def test_delete(self):
         work = self.create_model(models.Work, models.WorkOffer(100))
