@@ -9,14 +9,20 @@ class TestCommentModel(AlveareModelTestCase):
     model = models.Comment
 
     def test_create(self):
-        work = self.create_model(models.Work, models.WorkOffer(100))
+        ticket_snap = self.create_model(models.TicketSnapshot, models.Ticket('baz', 'qux'))
+        bid = models.Bid()
+        work_offer = models.WorkOffer(bid, ticket_snap, 100)
+        work = self.create_model(models.Work, work_offer)
         review = models.Review(work, 4)
         new_comment = self.create_model(self.model, review, 'Hello')
         self.assertEqual(new_comment.content, 'Hello')
         self.db.session.commit()
 
     def test_delete_parent(self):
-        work = self.create_model(models.Work, models.WorkOffer(100))
+        ticket_snap = self.create_model(models.TicketSnapshot, models.Ticket('baz', 'qux'))
+        bid = models.Bid()
+        work_offer = models.WorkOffer(bid, ticket_snap, 100)
+        work = self.create_model(models.Work, work_offer)
         review = models.Review(work, 4)
         comment = self.create_model(self.model, review, 'Hello')
         self.assertEqual(comment.content, 'Hello')
@@ -27,14 +33,20 @@ class TestCommentModel(AlveareModelTestCase):
             self.model.query.get(comment.id)
 
     def test_delete(self):
-        work = self.create_model(models.Work, models.WorkOffer(100))
+        ticket_snap = self.create_model(models.TicketSnapshot, models.Ticket('baz', 'qux'))
+        bid = models.Bid()
+        work_offer = models.WorkOffer(bid, ticket_snap, 100)
+        work = self.create_model(models.Work, work_offer)
         review = models.Review(work, 4)
         comment = self.create_model(self.model, review, 'Bye')
         self.delete_instance(self.model, comment)
         self.assertNotEqual(models.Review.query.get(review.id), None)
 
     def test_update(self):
-        work = self.create_model(models.Work, models.WorkOffer(100))
+        ticket_snap = self.create_model(models.TicketSnapshot, models.Ticket('baz', 'qux'))
+        bid = models.Bid()
+        work_offer = models.WorkOffer(bid, ticket_snap, 100)
+        work = self.create_model(models.Work, work_offer)
         review = models.Review(work, 4)
         new_comment = self.create_model(self.model, review, 'Foo')
         self.assertEqual(new_comment.content, 'Foo')
@@ -46,7 +58,10 @@ class TestCommentModel(AlveareModelTestCase):
         self.assertEqual(modified_comment.content, 'Bar')
 
     def test_bad_create(self):
-        work = self.create_model(models.Work, models.WorkOffer(100))
+        ticket_snap = self.create_model(models.TicketSnapshot, models.Ticket('baz', 'qux'))
+        bid = models.Bid()
+        work_offer = models.WorkOffer(bid, ticket_snap, 100)
+        work = self.create_model(models.Work, work_offer)
         review = models.Review(work, 4)
         with self.assertRaises(InterfaceError):
             self.create_model(self.model, review, str)

@@ -7,7 +7,9 @@ class TestWorkModel(AlveareModelTestCase):
     model = models.Work
 
     def test_create(self):
-        work_offer = models.WorkOffer(100)
+        ticket_snap = self.create_model(models.TicketSnapshot, models.Ticket('baz', 'qux'))
+        bid = models.Bid()
+        work_offer = models.WorkOffer(bid, ticket_snap, 100)
         work = self.create_model(self.model, work_offer)
         self.assertEqual(work.offer.price, 100)
         _ = models.Review(work, 4)
@@ -23,7 +25,9 @@ class TestWorkModel(AlveareModelTestCase):
         self.assertEqual(len(found_work.mediation_rounds.all()), 2)
 
     def test_delete(self):
-        work_offer = models.WorkOffer(2000)
+        ticket_snap = self.create_model(models.TicketSnapshot, models.Ticket('baz', 'qux'))
+        bid = models.Bid()
+        work_offer = models.WorkOffer(bid, ticket_snap, 100)
         work = self.create_model(self.model, work_offer)
         review = models.Review(work, 4)
         debit = models.Debit(work, 100)
@@ -49,7 +53,9 @@ class TestWorkModel(AlveareModelTestCase):
             models.Arbitration.query.get(arbitration.id)
 
     def test_update(self):
-        work_offer = models.WorkOffer(100)
+        ticket_snap = self.create_model(models.TicketSnapshot, models.Ticket('baz', 'qux'))
+        bid = models.Bid()
+        work_offer = models.WorkOffer(bid, ticket_snap, 100)
         work = self.create_model(self.model, work_offer)
         self.assertEqual(work.offer.price, 100)
         review = models.Review(work, 4)
@@ -90,7 +96,9 @@ class TestWorkModel(AlveareModelTestCase):
         self.assertEqual(len(found_work.mediation_rounds.all()), 2)
 
     def test_bad_create(self):
-        work_offer = models.WorkOffer(100)
+        ticket_snap = self.create_model(models.TicketSnapshot, models.Ticket('baz', 'qux'))
+        bid = models.Bid()
+        work_offer = models.WorkOffer(bid, ticket_snap, 100)
         with self.assertRaises(ValueError):
             self.create_model(self.model, 'foobar')
         work = self.create_model(self.model, work_offer)

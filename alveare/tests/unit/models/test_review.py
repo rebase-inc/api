@@ -5,7 +5,9 @@ from alveare import models
 class TestReviewModel(AlveareModelTestCase):
 
     def test_create(self):
-        work_offer = models.WorkOffer(100)
+        ticket_snap = self.create_model(models.TicketSnapshot, models.Ticket('baz', 'qux'))
+        bid = models.Bid()
+        work_offer = models.WorkOffer(bid, ticket_snap, 100)
         work = self.create_model(models.Work, work_offer)
         review = self.create_model(models.Review, work, 1)
         _ = models.Comment(review, 'Hello')
@@ -19,7 +21,9 @@ class TestReviewModel(AlveareModelTestCase):
         self.assertEqual(comment.content, 'Hello')
 
     def test_delete(self):
-        work_offer = models.WorkOffer(100)
+        ticket_snap = self.create_model(models.TicketSnapshot, models.Ticket('baz', 'qux'))
+        bid = models.Bid()
+        work_offer = models.WorkOffer(bid, ticket_snap, 100)
         work = self.create_model(models.Work, work_offer)
         review = self.create_model(models.Review, work, 2)
 
@@ -30,14 +34,19 @@ class TestReviewModel(AlveareModelTestCase):
         self.assertEqual(models.Review.query.get(review.id), None)
 
     def test_delete_comment(self):
-        work = self.create_model(models.Work, models.WorkOffer(100))
+        ticket_snap = self.create_model(models.TicketSnapshot, models.Ticket('baz', 'qux'))
+        bid = models.Bid()
+        work_offer = models.WorkOffer(bid, ticket_snap, 100)
+        work = self.create_model(models.Work, work_offer)
         review = models.Review(work, 4)
         comment = self.create_model(models.Comment, review, 'Bye')
         self.delete_instance(models.Comment, comment)
         self.assertNotEqual(models.Review.query.get(review.id), None)
 
     def test_update(self):
-        work_offer = models.WorkOffer(100)
+        ticket_snap = self.create_model(models.TicketSnapshot, models.Ticket('baz', 'qux'))
+        bid = models.Bid()
+        work_offer = models.WorkOffer(bid, ticket_snap, 100)
         work = self.create_model(models.Work, work_offer)
         review = self.create_model(models.Review, work, 3)
         found_review = models.Review.query.get(review.id)
@@ -51,7 +60,9 @@ class TestReviewModel(AlveareModelTestCase):
         self.assertEqual(found_review.rating, 4)
 
     def test_bad_create(self):
-        work_offer = models.WorkOffer(100)
+        ticket_snap = self.create_model(models.TicketSnapshot, models.Ticket('baz', 'qux'))
+        bid = models.Bid()
+        work_offer = models.WorkOffer(bid, ticket_snap, 100)
         work = self.create_model(models.Work, work_offer)
         with self.assertRaises(ValueError):
             self.create_model(models.Review, work, 'foo')

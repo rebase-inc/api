@@ -6,20 +6,26 @@ class TestDebitModel(AlveareModelTestCase):
     model = models.Debit
 
     def test_create(self):
-        work_offer = models.WorkOffer(100)
+        ticket_snap = self.create_model(models.TicketSnapshot, models.Ticket('baz', 'qux'))
+        bid = models.Bid()
+        work_offer = models.WorkOffer(bid, ticket_snap, 100)
         work = self.create_model(models.Work, work_offer)
         new_debit = self.create_model(self.model, work, 10)
         self.assertEqual(new_debit.price, 10)
 
     def test_delete(self):
-        work_offer = models.WorkOffer(100)
+        ticket_snap = self.create_model(models.TicketSnapshot, models.Ticket('baz', 'qux'))
+        bid = models.Bid()
+        work_offer = models.WorkOffer(bid, ticket_snap, 100)
         work = self.create_model(models.Work, work_offer)
         new_debit = self.create_model(self.model, work, 20)
         self.assertEqual(new_debit.price, 20)
         self.delete_instance(self.model, new_debit)
 
     def test_update(self):
-        work_offer = models.WorkOffer(100)
+        ticket_snap = self.create_model(models.TicketSnapshot, models.Ticket('baz', 'qux'))
+        bid = models.Bid()
+        work_offer = models.WorkOffer(bid, ticket_snap, 100)
         work = self.create_model(models.Work, work_offer)
         new_debit = self.create_model(self.model, work, 30)
         self.assertEqual(new_debit.price, 30)
@@ -31,7 +37,9 @@ class TestDebitModel(AlveareModelTestCase):
         self.assertEqual(modified_debit.price, 40)
 
     def test_bad_create(self):
-        work_offer = models.WorkOffer(100)
+        ticket_snap = self.create_model(models.TicketSnapshot, models.Ticket('baz', 'qux'))
+        bid = models.Bid()
+        work_offer = models.WorkOffer(bid, ticket_snap, 100)
         work = self.create_model(models.Work, work_offer)
         with self.assertRaises(ValueError):
             self.create_model(self.model, work, 'foo')

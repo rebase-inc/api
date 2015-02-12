@@ -8,7 +8,9 @@ from alveare import models
 class TestMediationModel(AlveareModelTestCase):
 
     def test_create_mediation(self):
-        work_offer = models.WorkOffer(100)
+        ticket_snap = self.create_model(models.TicketSnapshot, models.Ticket('baz', 'qux'))
+        bid = models.Bid()
+        work_offer = models.WorkOffer(bid, ticket_snap, 100)
         work = self.create_model(models.Work, work_offer)
         mediation = self.create_model(models.Mediation, work)
 
@@ -16,7 +18,9 @@ class TestMediationModel(AlveareModelTestCase):
         self.assertEqual(found_mediation.work.offer.price, 100)
 
     def test_delete_mediation(self):
-        work_offer = models.WorkOffer(100)
+        ticket_snap = self.create_model(models.TicketSnapshot, models.Ticket('baz', 'qux'))
+        bid = models.Bid()
+        work_offer = models.WorkOffer(bid, ticket_snap, 100)
         work = self.create_model(models.Work, work_offer)
         mediation = self.create_model(models.Mediation, work)
         arbitration = self.create_model(models.Arbitration, mediation)
@@ -28,7 +32,9 @@ class TestMediationModel(AlveareModelTestCase):
             models.Arbitration.query.get(arbitration.id)
 
     def test_update_mediation(self):
-        work_offer = models.WorkOffer(100)
+        ticket_snap = self.create_model(models.TicketSnapshot, models.Ticket('baz', 'qux'))
+        bid = models.Bid()
+        work_offer = models.WorkOffer(bid, ticket_snap, 100)
         work = self.create_model(models.Work, work_offer)
         mediation = self.create_model(models.Mediation, work)
 
