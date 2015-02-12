@@ -42,6 +42,9 @@ class TestAuctionModel(AlveareModelTestCase):
         self.assertEqual( TicketSet.query.all(),        [])
         self.assertEqual( BidLimit.query.all(),         [])
         self.assertEqual( TicketSnapshot.query.all(),   [])
+        # verify that the original tickets have not been deleted
+        for ticket, _ in self.ticket_prices:
+            self.assertNotEqual(Ticket.query.get(ticket.id), None)
 
     def test_update(self):
         current_date = datetime.datetime.today()
