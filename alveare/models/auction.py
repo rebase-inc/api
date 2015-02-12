@@ -10,7 +10,7 @@ class Auction(DB.Model):
     duration =          DB.Column(DB.Integer,   nullable=False)
     finish_work_by =    DB.Column(DB.DateTime,  nullable=False)
     redundancy =        DB.Column(DB.Integer,   nullable=False)
-    ticket_set =        DB.relationship(TicketSet, backref='auction', uselist=False, cascade="all, delete-orphan", passive_deletes=True)
+    ticket_set =        DB.relationship(TicketSet, backref='auction', uselist=False, cascade="all, delete-orphan")
 
     def __init__(self, ticket_prices, duration, finish_work_by, redundancy = 1):
         '''

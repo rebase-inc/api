@@ -4,7 +4,7 @@ import datetime
 from sqlalchemy.exc import StatementError
 
 from . import AlveareModelTestCase
-from alveare.models import Auction, Ticket, TicketSnapshot, TicketSet
+from alveare.models import Auction, Ticket, TicketSnapshot, TicketSet, BidLimit
 
 class TestAuctionModel(AlveareModelTestCase):
 
@@ -12,7 +12,7 @@ class TestAuctionModel(AlveareModelTestCase):
         self.ticket_prices = [ (Ticket('Foo','Bar'), 111), (Ticket('Joe', 'Blow'), 222) ]
         super().setUp()
 
-    def test_create_auction(self):
+    def test_create(self):
         current_date = datetime.datetime.today()
         new_auction = self.create_model(Auction, self.ticket_prices, 1000, current_date, 1)
 
@@ -33,15 +33,17 @@ class TestAuctionModel(AlveareModelTestCase):
         self.assertEqual(tickets[0].title, 'Foo')
         self.assertEqual(tickets[1].title, 'Joe')
 
-    def test_delete_auction(self):
-        current_date = datetime.datetime.today()
-        new_auction = self.create_model(Auction, self.ticket_prices, 2000, current_date, 1)
+    def test_delete(self):
+        
+        new_auction = self.create_model(Auction, self.ticket_prices, 2000, datetime.datetime.today(), 1)
+
         self.delete_instance(Auction, new_auction)
 
-        # enable this when postgresql is installed
-        #self.assertEqual( TicketSet.query.all(), [])
+        self.assertEqual( TicketSet.query.all(),        [])
+        self.assertEqual( BidLimit.query.all(),         [])
+        self.assertEqual( TicketSnapshot.query.all(),   [])
 
-    def test_update_auction(self):
+    def test_update(self):
         current_date = datetime.datetime.today()
         new_auction = self.create_model(Auction, self.ticket_prices, 3000, current_date, 1)
 
