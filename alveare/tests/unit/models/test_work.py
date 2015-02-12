@@ -1,4 +1,5 @@
 from . import AlveareModelTestCase
+from sqlalchemy.orm.exc import ObjectDeletedError
 
 from alveare import models
 
@@ -24,8 +25,25 @@ class TestWorkModel(AlveareModelTestCase):
     def test_delete(self):
         work_offer = models.WorkOffer(2000)
         work = self.create_model(self.model, work_offer)
+        review = models.Review(work, 4)
+        debit = models.Debit(work, 100)
+        credit = models.Credit(work, 110)
+        mediation = models.Mediation(work)
+        self.db.session.commit()
         self.assertNotEqual(self.model.query.get(work.id), None)
+
         self.delete_instance(self.model, work)
+
+        with self.assertRaises(ObjectDeletedError):
+            models.Review.query.get(review.id)
+        with self.assertRaises(ObjectDeletedError):
+            models.Debit.query.get(debit.id)
+        with self.assertRaises(ObjectDeletedError):
+            models.Credit.query.get(credit.id)
+        with self.assertRaises(ObjectDeletedError):
+            models.Mediation.query.get(mediation.id)
+        with self.assertRaises(ObjectDeletedError):
+            models.WorkOffer.query.get(work_offer.id)
 
     def test_update(self):
         work_offer = models.WorkOffer(100)

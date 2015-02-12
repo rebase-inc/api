@@ -5,7 +5,7 @@ from alveare.common.database import DB
 class Review(DB.Model):
     id =      DB.Column(DB.Integer, primary_key=True)
     rating =  DB.Column(DB.Integer, nullable=False)
-    work_id = DB.Column(DB.Integer, DB.ForeignKey('work.id'), nullable=False)
+    work_id = DB.Column(DB.Integer, DB.ForeignKey('work.id', ondelete='CASCADE'), nullable=False)
 
     comments = DB.relationship('Comment', lazy='dynamic', backref='review', cascade='all, delete-orphan', passive_deletes=True)
 

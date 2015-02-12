@@ -33,7 +33,7 @@ class TestReviewModel(AlveareModelTestCase):
         work = self.create_model(models.Work, models.WorkOffer(100))
         review = models.Review(work, 4)
         comment = self.create_model(models.Comment, review, 'Bye')
-        self.delete_instance(models.Comment, comment) 
+        self.delete_instance(models.Comment, comment)
         self.assertNotEqual(models.Review.query.get(review.id), None)
 
     def test_update(self):

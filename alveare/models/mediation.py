@@ -8,7 +8,7 @@ class Mediation(DB.Model):
     client_answer = DB.Column(DB.Integer, nullable=True)
     outcome =       DB.Column(DB.Integer, nullable=True)
     timeout =       DB.Column(DB.DateTime, nullable=False)
-    work_id =       DB.Column(DB.Integer, DB.ForeignKey('work.id'), nullable=False)
+    work_id =       DB.Column(DB.Integer, DB.ForeignKey('work.id', ondelete='CASCADE'), nullable=False)
 
     def __init__(self, work, timeout = datetime.datetime.now() + datetime.timedelta(days=3)):
         self.work = work
