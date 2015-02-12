@@ -29,6 +29,7 @@ class TestWorkModel(AlveareModelTestCase):
         debit = models.Debit(work, 100)
         credit = models.Credit(work, 110)
         mediation = models.Mediation(work)
+        arbitration = models.Arbitration(mediation)
         self.db.session.commit()
         self.assertNotEqual(self.model.query.get(work.id), None)
 
@@ -44,6 +45,8 @@ class TestWorkModel(AlveareModelTestCase):
             models.Mediation.query.get(mediation.id)
         with self.assertRaises(ObjectDeletedError):
             models.WorkOffer.query.get(work_offer.id)
+        with self.assertRaises(ObjectDeletedError):
+            models.Arbitration.query.get(arbitration.id)
 
     def test_update(self):
         work_offer = models.WorkOffer(100)
