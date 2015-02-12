@@ -6,7 +6,7 @@ class Debit(DB.Model):
     id =      DB.Column(DB.Integer, primary_key=True)
     price =   DB.Column(DB.Integer, nullable=False)
     paid =    DB.Column(DB.Boolean, nullable=False, default=False)
-    work_id = DB.Column(DB.Integer, DB.ForeignKey('work.id'), nullable=False)
+    work_id = DB.Column(DB.Integer, DB.ForeignKey('work.id', ondelete='CASCADE'), nullable=False)
 
     def __init__(self, work, price):
         if work.debit:

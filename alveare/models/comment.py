@@ -6,6 +6,7 @@ from alveare.common.database import DB
 class Comment(DB.Model):
     id =        DB.Column(DB.Integer, primary_key=True)
     content =   DB.Column(DB.String,  nullable=False)
+
     review_id = DB.Column(DB.Integer, DB.ForeignKey('review.id', ondelete='CASCADE'), nullable=True)
     mediation_id = DB.Column(DB.Integer, DB.ForeignKey('mediation.id', ondelete='CASCADE'), nullable=True)
 
