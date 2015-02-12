@@ -4,21 +4,26 @@ import datetime
 from sqlalchemy.exc import StatementError
 
 from . import AlveareModelTestCase
-from alveare.models import Auction, Ticket, TicketSnapshot, TicketSet, BidLimit
+from alveare.models import Auction, Ticket, TicketSnapshot, TicketSet, BidLimit, TermSheet
 
 class TestAuctionModel(AlveareModelTestCase):
 
     def setUp(self):
-        self.ticket_prices = [ (Ticket('Foo','Bar'), 111), (Ticket('Joe', 'Blow'), 222) ]
+        self.auctionArgs = {
+            'ticket_prices':  [ (Ticket('Foo','Bar'), 111), (Ticket('Joe', 'Blow'), 222) ],
+            'term_sheet':     TermSheet('yo mama shall not be so big'),
+            'duration':       1000,
+            'finish_work_by': datetime.datetime.today(),
+            'redundancy':     1
+        }
         super().setUp()
 
     def test_create(self):
-        current_date = datetime.datetime.today()
-        new_auction = self.create_model(Auction, self.ticket_prices, 1000, current_date, 1)
+        new_auction = self.create_model(Auction, **self.auctionArgs)
 
-        self.assertEqual(new_auction.duration, 1000)
-        self.assertEqual(new_auction.finish_work_by, current_date)
-        self.assertEqual(new_auction.redundancy, 1)
+        for field in ['duration', 'finish_work_by', 'redundancy']:
+            self.assertEqual( getattr(new_auction, field), self.auctionArgs[field] )
+
         self.assertNotEqual(new_auction.ticket_set, None)
         self.assertEqual(new_auction.ticket_set.auction_id, new_auction.id)
         self.assertEqual(len(new_auction.ticket_set.bid_limits), 2)
@@ -35,26 +40,25 @@ class TestAuctionModel(AlveareModelTestCase):
 
     def test_delete(self):
         
-        new_auction = self.create_model(Auction, self.ticket_prices, 2000, datetime.datetime.today(), 1)
+        new_auction = self.create_model(Auction, **self.auctionArgs)
 
         self.delete_instance(Auction, new_auction)
 
         self.assertEqual( TicketSet.query.all(),        [])
         self.assertEqual( BidLimit.query.all(),         [])
         self.assertEqual( TicketSnapshot.query.all(),   [])
+
         # verify that the original tickets have not been deleted
-        for ticket, _ in self.ticket_prices:
+        for ticket, _ in self.auctionArgs['ticket_prices']:
             self.assertNotEqual(Ticket.query.get(ticket.id), None)
 
+        # same for the term sheet
+        self.assertNotEqual( TermSheet.query.get(self.auctionArgs['term_sheet'].id), None)
+
     def test_update(self):
-        current_date = datetime.datetime.today()
-        new_auction = self.create_model(Auction, self.ticket_prices, 3000, current_date, 1)
+        new_auction = self.create_model(Auction, **self.auctionArgs)
 
-        self.assertEqual(new_auction.duration, 3000)
-        self.assertEqual(new_auction.finish_work_by, current_date)
-        self.assertEqual(new_auction.redundancy, 1)
-
-        tomorrows_date = current_date + datetime.timedelta(days=1)
+        tomorrows_date = self.auctionArgs['finish_work_by'] + datetime.timedelta(days=1)
         new_auction.duration = 4000
         new_auction.finish_work_by = tomorrows_date
         new_auction.redundancy = 2
@@ -67,9 +71,17 @@ class TestAuctionModel(AlveareModelTestCase):
         self.assertEqual(modified_auction.redundancy, 2)
 
     def test_bad_create(self):
+        args = self.auctionArgs
+        args['duration'] = 'foo'
         with self.assertRaises(ValueError):
-            self.create_model(Auction, self.ticket_prices, 'foo', datetime.datetime.today(), 1)
-        with self.assertRaises(StatementError):
-            self.create_model(Auction, self.ticket_prices, 1, 'foo', 1)
+            self.create_model(Auction, **args)
+            
+        args = self.auctionArgs
+        args['finish_work_by'] = 'foo'
         with self.assertRaises(ValueError):
-            self.create_model(Auction, self.ticket_prices, 1, datetime.datetime.today(), 'foo')
+            self.create_model(Auction, **args)
+
+        args = self.auctionArgs
+        args['redundancy'] = 'foo'
+        with self.assertRaises(ValueError):
+            self.create_model(Auction, **args)

@@ -3,7 +3,7 @@ from .. import AlveareTestCase
 class AlveareModelTestCase(AlveareTestCase):
 
     def create_model(self, model, *args, **kwargs):
-        self.db.session.add(model(*args))
+        self.db.session.add(model(*args, **kwargs))
         self.db.session.commit()
 
         all_instances = model.query.all()
