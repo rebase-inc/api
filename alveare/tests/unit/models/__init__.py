@@ -3,13 +3,12 @@ from .. import AlveareTestCase
 class AlveareModelTestCase(AlveareTestCase):
 
     def create_model(self, model, *args, **kwargs):
-        self.db.session.add(model(*args))
+        instance = model(*args) 
+        self.db.session.add(instance)
         self.db.session.commit()
 
-        all_instances = model.query.all()
-        self.assertEqual(len(all_instances), 1)
-
-        return all_instances.pop()
+        self.assertNotEqual(model.query.get(instance.id), None)
+        return instance 
 
     def delete_instance(self, model, instance):
         self.db.session.delete(instance)

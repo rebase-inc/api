@@ -11,7 +11,7 @@ class Review(DB.Model):
 
     def __init__(self, work, rating):
         if work.review:
-            raise ValueError('Work is already reviewd!')
+            raise ValueError('Work is already reviewed!')
         self.work = work
         self.rating = rating
 

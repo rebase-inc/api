@@ -1,9 +1,5 @@
 from sqlalchemy.orm import validates
 
-from .review import Review
-from .debit import Debit
-from .credit import Credit
-from .mediation import Mediation
 from .work_offer import WorkOffer
 from alveare.common.database import DB
 
@@ -27,7 +23,6 @@ class Work(DB.Model):
         if not isinstance(value, WorkOffer):
             raise ValueError('{} field on {} must be {}'.format(field, self.__tablename__, WorkOffer))
         return value
-
 
     def __repr__(self):
         return '<Work[{}] from Offer[{}]>'.format(self.id, self.offer.id)
