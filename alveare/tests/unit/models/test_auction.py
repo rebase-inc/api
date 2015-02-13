@@ -31,7 +31,7 @@ class TestAuctionModel(AlveareModelTestCase):
         tickets = [bl.snapshot.ticket for bl in auction.ticket_set.bid_limits]
         term_sheet = auction.term_sheet
 
-        self.delete_instance(Auction, auction)
+        self.delete_instance(auction)
 
         self.assertEqual( TicketSet.query.all(),        [])
         self.assertEqual( BidLimit.query.all(),         [])

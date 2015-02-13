@@ -18,7 +18,8 @@ class TestCreditModel(AlveareModelTestCase):
         self.db.session.commit()
 
         self.assertIsInstance(credit.price, int)
-        self.delete_instance(models.Credit, credit)
+        self.delete_instance(credit)
+        
         self.assertEqual(models.Credit.query.get(credit.id), None)
 
     def test_update(self):

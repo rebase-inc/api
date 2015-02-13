@@ -22,7 +22,7 @@ class TestMediationModel(AlveareModelTestCase):
 
         self.assertNotEqual(models.Mediation.query.get(mediation.id), None)
 
-        self.delete_instance(models.Mediation, mediation)
+        self.delete_instance(mediation)
 
         self.assertEqual(models.Mediation.query.get(mediation.id), None)
 

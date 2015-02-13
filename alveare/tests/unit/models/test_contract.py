@@ -1,18 +1,34 @@
 import unittest
+import datetime
 
 from . import AlveareModelTestCase
 
-from alveare import models
+from alveare.models import (
+    TermSheet,
+    Ticket,
+    Bid,
+    Auction,
+    Contractor,
+    Contract,
+)
+from alveare.common import mock
 
 class TestContractModel(AlveareModelTestCase):
-    model = models.Contract
 
     def test_create(self):
-        new_contract = self.create_model(self.model)
+        bid = mock.create_one_bid(self.db)
+        self.db.session.commit()
+
+        new_contract = self.create_model(Contract, bid)
+        self.assertEqual( new_contract.bid_id, bid.id )
 
     def test_delete(self):
-        new_contract = self.create_model(self.model)
-        self.delete_instance(self.model, new_contract)
+        bid = mock.create_one_bid(self.db)
+        self.db.session.commit()
+
+        new_contract = self.create_model(Contract, bid)
+        self.delete_instance(new_contract)
+        self.assertNotEqual( Bid.query.get(bid.id), None )
 
     @unittest.skip('Contract model doesnt have any updatable fields yet')
     def test_update(self):

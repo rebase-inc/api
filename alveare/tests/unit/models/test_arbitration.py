@@ -15,8 +15,7 @@ class TestArbitrationModel(AlveareModelTestCase):
     def test_delete(self):
         arbitration = mock.create_some_work(self.db).pop().mediation_rounds.one().arbitration
         self.db.session.commit()
-
-        self.delete_instance(models.Arbitration, arbitration)
+        self.delete_instance(arbitration)
         self.assertEqual(models.Arbitration.query.get(arbitration.id), None)
 
     @unittest.skip("arbitration has no updatable fields yet")

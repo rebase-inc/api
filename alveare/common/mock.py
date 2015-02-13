@@ -52,7 +52,7 @@ def create_one_bid(db):
     from alveare.models import Bid, WorkOffer
     auction = create_one_auction(db)
     contractor = create_one_contractor(db)
-    bid = Bid()
+    bid = Bid(auction, contractor)
     for bid_limit in auction.ticket_set.bid_limits:
         work_offer = WorkOffer(bid, bid_limit.snapshot, 150)
         db.session.add(work_offer)

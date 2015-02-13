@@ -1,6 +1,7 @@
 import datetime
 
 from .. import AlveareTestCase
+from datetime import datetime
 from alveare import models
 
 class AlveareModelTestCase(AlveareTestCase):
@@ -10,18 +11,15 @@ class AlveareModelTestCase(AlveareTestCase):
         self.db.session.add(instance)
         self.db.session.commit()
 
-        self.assertNotEqual(model.query.get(instance.id), None)
-        return instance
+        return instance 
 
-    def delete_instance(self, model, instance):
+    def delete_instance(self, instance):
         self.db.session.delete(instance)
         self.db.session.commit()
 
-        self.assertEqual(model.query.get(instance.id), None)
-
     def create_work(self, title, description, work_price=100, rating=None, debit=None, credit=None, mediation_rounds=0):
         work_offer = self.create_work_offer(title, description, work_price)
-        work = models.Work(work_offer)
+        work =models.Work(work_offer)
 
         if rating != None:
             models.Review(work, rating)
@@ -56,22 +54,31 @@ class AlveareModelTestCase(AlveareTestCase):
     def create_work_offer(self, title, description, work_price):
         project = self.create_project('dontcare', 'dontcare')
         ticket = models.Ticket(project, title, description)
-        ticket_snapshot = models.TicketSnapshot(ticket)
-        bid = models.Bid()
+        auction = self.create_auction([(title, description, work_price)], 'really good terms', 1000, datetime.today())
+        ticket_snapshot = auction.ticket_set.bid_limits[0].snapshot
+        bid = models.Bid(auction, models.Contractor(1))
         work_offer = models.WorkOffer(bid, ticket_snapshot, work_price)
         self.db.session.add(work_offer)
         return work_offer
 
-    def create_bid(self, tickets):
+    def create_bid(self, work_offers):
         ''' tickets is a list of (title, description, price) '''
-        bid = models.Bid()
-
         project = self.create_project('dontcare', 'dontcare')
-        for title, description, price in tickets:
-            ticket = models.Ticket(project, title, description)
-            ticket_snap = models.TicketSnapshot(ticket)
-            work_offer = models.WorkOffer(bid, ticket_snap, price)
+        ticket_list = []
+        for title, description, price in work_offers:
+            ticket_list.append((self.create_ticket(title, description), price))
+        term_sheet = models.TermSheet('great terms')
+        auction = models.Auction(ticket_list, term_sheet, 1000, datetime.today())
+        self.db.session.add(auction)
+        self.db.session.commit()
+
+        bid = models.Bid(auction, models.Contractor(100))
+        for ticket, price in ticket_list:
+            snapshot = models.TicketSnapshot.query.filter_by(ticket_id=ticket.id).first()
+            work_offer = models.WorkOffer(bid, snapshot, price)
+
         self.db.session.add(bid)
+        self.db.session.commit()
         return bid
 
     def create_organization(self, name):
@@ -117,6 +124,4 @@ class AlveareModelTestCase(AlveareTestCase):
         auction = models.Auction(ticket_set, term_sheet, duration, finish_by, redundancy)
         self.db.session.add(auction)
         return auction
-
-
 

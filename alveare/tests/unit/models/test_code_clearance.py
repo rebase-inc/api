@@ -14,7 +14,7 @@ class TestCodeClearanceModel(AlveareModelTestCase):
     def test_delete(self):
         new_code_clearance = self.create_model(self.model, False)
         self.assertEqual(new_code_clearance.pre_approved, False)
-        self.delete_instance(self.model, new_code_clearance)
+        self.delete_instance(new_code_clearance)
 
     def test_update(self):
         new_code_clearance = self.create_model(self.model, True)

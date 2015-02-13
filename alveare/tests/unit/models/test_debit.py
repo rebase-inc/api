@@ -18,7 +18,7 @@ class TestDebitModel(AlveareModelTestCase):
         self.db.session.commit()
 
         self.assertIsInstance(debit.price, int)
-        self.delete_instance(models.Debit, debit)
+        self.delete_instance(debit)
         self.assertEqual(models.Debit.query.get(debit.id), None)
 
     def test_update(self):

@@ -4,8 +4,8 @@ from alveare.common.database import DB
 from alveare.models.bid_limit import BidLimit
 
 class TicketSet(DB.Model):
-
-    auction_id =    DB.Column(DB.Integer, DB.ForeignKey('auction.id'), primary_key=True)
+    
+    auction_id =    DB.Column(DB.Integer, DB.ForeignKey('auction.id'), primary_key=True, nullable=False)
     bid_limits =    DB.relationship(BidLimit, backref='ticket_set', cascade='all, delete-orphan')
 
     def add_bid_limit(self, bid_limit):

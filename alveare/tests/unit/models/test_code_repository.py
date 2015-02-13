@@ -15,7 +15,7 @@ class TestCodeRepositoryModel(AlveareModelTestCase):
         repo = mock.create_one_project(self.db).code_repository
         self.db.session.commit()
 
-        self.delete_instance(models.CodeRepository, repo)
+        self.delete_instance(repo)
         self.assertEqual(models.CodeRepository.query.get(repo.id), None)
 
     @unittest.skip('CodeRepository model doesnt have any updatable fields yet')

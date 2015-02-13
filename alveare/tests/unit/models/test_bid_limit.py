@@ -1,4 +1,5 @@
 from . import AlveareModelTestCase
+from datetime import datetime
 
 from alveare import models
 from alveare.common import mock
@@ -16,7 +17,7 @@ class TestBidLimitModel(AlveareModelTestCase):
         bid_limit = mock.create_one_auction(self.db).ticket_set.bid_limits[0]
         self.db.session.commit()
 
-        self.delete_instance(models.BidLimit, bid_limit)
+        self.delete_instance(bid_limit)
         self.assertEqual( models.BidLimit.query.get(bid_limit.id), None)
 
     def test_update(self):
