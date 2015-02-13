@@ -4,21 +4,26 @@ from sqlalchemy.orm.exc import ObjectDeletedError
 from . import AlveareModelTestCase
 
 from alveare import models
+from alveare.common import mock
 
 class TestCommentModel(AlveareModelTestCase):
 
     def test_create(self):
-        review = self.create_review(4, 'Hello')
+        review = mock.create_one_work_review(self.db, 4, 'Hello')
+        self.db.session.commit()
+
         self.assertEqual(review.comments.one().content, 'Hello')
         self.db.session.commit()
 
     def test_delete(self):
-        review = self.create_review(4, 'Bye')
+        review = mock.create_one_work_review(self.db, 4, 'Bye')
+        self.db.session.commit()
+
         self.delete_instance(models.Comment, review.comments.one())
         self.assertNotEqual(models.Review.query.get(review.id), None)
 
     def test_update(self):
-        comment = self.create_review(4, 'Foo').comments.one()
+        comment = mock.create_one_work_review(self.db, 4, 'Foo').comments.one()
         self.db.session.commit()
 
         comment.content = 'Bar'
@@ -29,6 +34,6 @@ class TestCommentModel(AlveareModelTestCase):
 
     def test_bad_create(self):
         with self.assertRaises(ValueError):
-            comment = self.create_review('Foo', 'Foo').comments.one()
+            models.Review('foo', 'foo')
             self.db.session.commit()
 

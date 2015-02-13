@@ -4,18 +4,19 @@ from sqlalchemy.orm.exc import ObjectDeletedError
 
 from . import AlveareModelTestCase
 from alveare import models
+from alveare.common import mock
 
 class TestMediationModel(AlveareModelTestCase):
 
     def test_create_mediation(self):
-        mediation = self.create_mediation()
+        mediation = mock.create_some_work(self.db).pop().mediation_rounds.one()
         self.db.session.commit()
 
         found_mediation = models.Mediation.query.get(mediation.id)
         self.assertIsInstance(found_mediation.work.offer.price, int)
 
     def test_delete_mediation(self):
-        mediation = self.create_mediation()
+        mediation = mock.create_some_work(self.db).pop().mediation_rounds.one()
         self.db.session.commit()
         arbitration_id = mediation.arbitration.id
 
@@ -28,7 +29,7 @@ class TestMediationModel(AlveareModelTestCase):
         self.assertEqual(models.Arbitration.query.get(arbitration_id), None)
 
     def test_update_mediation(self):
-        mediation = self.create_mediation()
+        mediation = mock.create_some_work(self.db).pop().mediation_rounds.one()
         self.db.session.commit()
 
         found_mediation = models.Mediation.query.get(mediation.id)

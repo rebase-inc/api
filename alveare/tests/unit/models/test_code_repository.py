@@ -3,14 +3,16 @@ import unittest
 from . import AlveareModelTestCase
 
 from alveare import models
+from alveare.common import mock
 
 class TestCodeRepositoryModel(AlveareModelTestCase):
 
     def test_create(self):
-        self.create_code_repository()
+        mock.create_one_project(self.db).code_repository
+        self.db.session.commit()
 
     def test_delete(self):
-        repo = self.create_code_repository()
+        repo = mock.create_one_project(self.db).code_repository
         self.db.session.commit()
 
         self.delete_instance(models.CodeRepository, repo)

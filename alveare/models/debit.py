@@ -9,6 +9,8 @@ class Debit(DB.Model):
     work_id = DB.Column(DB.Integer, DB.ForeignKey('work.id', ondelete='CASCADE'), nullable=False)
 
     def __init__(self, work, price):
+        if not hasattr(work, 'debit'):
+            raise ValueError('work must be of a Work type')
         if work.debit:
             raise ValueError('Work is already debited!')
         self.work = work

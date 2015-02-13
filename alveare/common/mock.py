@@ -41,7 +41,7 @@ def create_one_auction(db, duration=1000, finish_work_by=None, redundancy=1):
     ticket_snaps = [TicketSnapshot(ticket) for ticket in tickets]
     bid_limits = [BidLimit(ticket_snap, 200) for ticket_snap in ticket_snaps]
     term_sheet = TermSheet('Some legal mumbo-jumbo')
-    ticket_set = TicketSet() 
+    ticket_set = TicketSet()
     for bid_limit in bid_limits:
         ticket_set.add_bid_limit(bid_limit)
     auction = Auction(ticket_set, term_sheet, duration, finish_work_by, redundancy)
@@ -58,17 +58,28 @@ def create_one_bid(db):
         db.session.add(work_offer)
     return bid
 
-def create_some_work(db, review=True, debit_credit=True, mediation=True, arbitration=True):
+def create_some_work(db, review=True, debit_credit=True, mediation=True):
     from alveare.models import Work, Review, Debit, Credit, Mediation, Arbitration
     bid = create_one_bid(db)
     works = []
     for work_offer in bid.work_offers:
-        work = Work(work_offer) 
+        work = Work(work_offer)
         works.append(work)
-        _ = Review(work, 5)
-        _ = Debit(work, 100)
-        _ = Credit(work, 120)
-        _ = Arbitration(Mediation(work))
+        if review:
+            _ = Review(work, 5)
+        if debit_credit:
+            _ = Debit(work, 100)
+            _ = Credit(work, 120)
+        if mediation:
+            _ = Arbitration(Mediation(work))
         db.session.add(work)
     return works
+
+def create_one_work_review(db, rating, comment):
+    from alveare.models import Review, Comment
+    work = create_some_work(db, review=False).pop()
+    review = Review(work, rating)
+    comment = Comment(review, comment)
+    db.session.add(review)
+    return review
 

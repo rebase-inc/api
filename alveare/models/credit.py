@@ -9,6 +9,8 @@ class Credit(DB.Model):
     work_id = DB.Column(DB.Integer, DB.ForeignKey('work.id', ondelete='CASCADE'), nullable=False)
 
     def __init__(self, work, price):
+        if not hasattr(work, 'debit'):
+            raise ValueError('work must be of a Work type')
         if work.credit:
             raise ValueError('Work is already credited!')
         self.work = work

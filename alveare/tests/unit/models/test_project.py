@@ -5,25 +5,26 @@ from sqlalchemy.orm.exc import ObjectDeletedError
 from . import AlveareModelTestCase
 
 from alveare import models
+from alveare.common import mock
 
 class TestProjectModel(AlveareModelTestCase):
 
     def test_create(self):
-        project = self.create_project('Alveare', 'Project')
+        project = mock.create_one_project(self.db, 'Alveare', 'api')
         self.db.session.commit()
 
-        self.assertEqual(project.name, 'Project')
+        self.assertEqual(project.name, 'api')
         self.assertEqual(project.organization.name, 'Alveare')
         self.assertNotEqual(project.code_repository, None)
 
     def test_delete(self):
-        project = self.create_project('Alveare', 'Project')
+        project = mock.create_one_project(self.db, 'Alveare', 'api')
         self.db.session.commit()
 
         org_id = project.organization.id
         repo_id = project.code_repository.id
 
-        self.assertEqual(project.name, 'Project')
+        self.assertEqual(project.name, 'api')
         self.assertEqual(project.organization.name, 'Alveare')
         self.assertNotEqual(project.code_repository, None)
 
