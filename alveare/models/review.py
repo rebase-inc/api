@@ -10,6 +10,10 @@ class Review(DB.Model):
     comments = DB.relationship('Comment', lazy='dynamic', backref='review', cascade='all, delete-orphan', passive_deletes=True)
 
     def __init__(self, work, rating):
+        if not isinstance(rating, int):
+            raise ValueError('{} field on {} must be {}'.format('rating', self.__tablename__, int))
+        if rating < 1 or rating > 5:
+            raise ValueError('{} field on {} must be {}'.format('rating', self.__tablename__, 'from 1 to 5'))
         if work.review:
             raise ValueError('Work is already reviewed!')
         self.work = work
@@ -17,11 +21,3 @@ class Review(DB.Model):
 
     def __repr__(self):
         return '<Review[{}] rating={}>'.format(self.id, self.rating)
-
-    @validates('rating')
-    def validate_rating(self, field, value):
-        if not isinstance(value, int):
-            raise ValueError('{} field on {} must be {}'.format(field, self.__tablename__, int))
-        if value < 1 or value > 5:
-            raise ValueError('{} field on {} must be {}'.format(field, self.__tablename__, 'from 1 to 5'))
-        return value

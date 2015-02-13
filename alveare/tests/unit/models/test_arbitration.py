@@ -2,23 +2,24 @@ import unittest
 
 from . import AlveareModelTestCase
 from alveare import models
+from alveare.common import mock
 
 class TestArbitrationModel(AlveareModelTestCase):
 
-    def test_create_arbitration(self):
-        arbitration = self.create_arbitration()
+    def test_create(self):
+        arbitration = mock.create_some_work(self.db).pop().mediation_rounds.one().arbitration
         self.db.session.commit()
 
         self.assertIsInstance(arbitration.mediation.work.offer.price, int)
 
-    def test_delete_arbitration(self):
-        arbitration = self.create_arbitration()
+    def test_delete(self):
+        arbitration = mock.create_some_work(self.db).pop().mediation_rounds.one().arbitration
         self.db.session.commit()
         self.delete_instance(arbitration)
         self.assertEqual(models.Arbitration.query.get(arbitration.id), None)
 
     @unittest.skip("arbitration has no updatable fields yet")
-    def test_update_arbitration(self):
+    def test_update(self):
         arbitration = self.create_arbitration()
         self.db.session.commit()
 

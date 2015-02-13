@@ -31,36 +31,55 @@ def create_some_tickets(db, ticket_titles=None):
     for title in ticket_titles:
         tickets.append(Ticket(project, title))
         db.session.add(tickets[-1])
+    return tickets
 
-def create_one_auction(db, duration=1000, finish_work_by=datetime.tomorrow(), redundancy=1):
+def create_one_auction(db, duration=1000, finish_work_by=None, redundancy=1):
+    if not finish_work_by:
+        finish_work_by = datetime.datetime.now() + datetime.timedelta(days=2)
     from alveare.models import Auction, TicketSet, BidLimit, TicketSnapshot, TermSheet
     tickets = create_some_tickets(db)
     ticket_snaps = [TicketSnapshot(ticket) for ticket in tickets]
-    bid_limits = [BidLimit(ticket_snaps, 200) for ticket_snap in ticket_snaps]
+    bid_limits = [BidLimit(ticket_snap, 200) for ticket_snap in ticket_snaps]
     term_sheet = TermSheet('Some legal mumbo-jumbo')
-    auction = Auction(term_sheet, duration, finish_work_by, redundancy)
-    auction.ticket_set = TicketSet()
+    ticket_set = TicketSet()
     for bid_limit in bid_limits:
-        auction.ticket_set.add(bid_limit)
+        ticket_set.add_bid_limit(bid_limit)
+    auction = Auction(ticket_set, term_sheet, duration, finish_work_by, redundancy)
     db.session.add(auction)
     return auction
 
 def create_one_bid(db):
     from alveare.models import Bid, WorkOffer
-    auction = create_one_auction()
-    contractor = create_one_contractor()
-    bid = Bid()
+    auction = create_one_auction(db)
+    contractor = create_one_contractor(db)
+    bid = Bid(auction, contractor)
     for bid_limit in auction.ticket_set.bid_limits:
         work_offer = WorkOffer(bid, bid_limit.snapshot, 150)
         db.session.add(work_offer)
     return bid
 
-def create_some_work(db):
-    from alveare.models import Work
+def create_some_work(db, review=True, debit_credit=True, mediation=True):
+    from alveare.models import Work, Review, Debit, Credit, Mediation, Arbitration
     bid = create_one_bid(db)
     works = []
     for work_offer in bid.work_offers:
-        works.append(Work(work_offer))
-        db.session.add(works[-1])
+        work = Work(work_offer)
+        works.append(work)
+        if review:
+            _ = Review(work, 5)
+        if debit_credit:
+            _ = Debit(work, 100)
+            _ = Credit(work, 120)
+        if mediation:
+            _ = Arbitration(Mediation(work))
+        db.session.add(work)
     return works
+
+def create_one_work_review(db, rating, comment):
+    from alveare.models import Review, Comment
+    work = create_some_work(db, review=False).pop()
+    review = Review(work, rating)
+    comment = Comment(review, comment)
+    db.session.add(review)
+    return review
 

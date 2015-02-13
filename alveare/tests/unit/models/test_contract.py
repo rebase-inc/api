@@ -11,16 +11,21 @@ from alveare.models import (
     Contractor,
     Contract,
 )
+from alveare.common import mock
 
 class TestContractModel(AlveareModelTestCase):
 
     def test_create(self):
-        bid = self.create_bid([('title1','descr1', 111)])
+        bid = mock.create_one_bid(self.db)
+        self.db.session.commit()
+
         new_contract = self.create_model(Contract, bid)
         self.assertEqual( new_contract.bid_id, bid.id )
 
     def test_delete(self):
-        bid = self.create_bid([('title1','descr1', 111)])
+        bid = mock.create_one_bid(self.db)
+        self.db.session.commit()
+
         new_contract = self.create_model(Contract, bid)
         self.delete_instance(new_contract)
         self.assertNotEqual( Bid.query.get(bid.id), None )

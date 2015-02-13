@@ -2,22 +2,23 @@ from . import AlveareModelTestCase
 from sqlalchemy.orm.exc import ObjectDeletedError
 
 from alveare import models
+from alveare.common import mock
 
 class TestWorkModel(AlveareModelTestCase):
     model = models.Work
 
     def test_create(self):
-        work = self.create_work('baz', 'qux', 100, rating=4, debit=100, credit=110, mediation_rounds=2)
+        work = mock.create_some_work(self.db).pop()
         self.db.session.commit()
 
         found_work = self.model.query.get(work.id)
-        self.assertEqual(found_work.offer.price, 100)
-        self.assertEqual(found_work.debit.price, 100)
-        self.assertEqual(found_work.credit.price, 110)
-        self.assertEqual(len(found_work.mediation_rounds.all()), 2)
+        self.assertIsInstance(found_work.offer.price, int)
+        self.assertIsInstance(found_work.debit.price, int)
+        self.assertIsInstance(found_work.credit.price, int)
+        self.assertIsInstance(found_work.mediation_rounds.one(), models.Mediation)
 
     def test_delete(self):
-        work = self.create_work('baz', 'qux', 100, rating=4, debit=100, credit=110, mediation_rounds=2)
+        work = mock.create_some_work(self.db).pop()
         self.db.session.commit()
 
         review_id = work.review.id
@@ -38,20 +39,14 @@ class TestWorkModel(AlveareModelTestCase):
         self.assertEqual(models.Arbitration.query.get(arbitration_id), None)
 
     def test_update(self):
-        work = self.create_work('baz', 'qux', 100, rating=4, debit=100, credit=110, mediation_rounds=2)
+        work = mock.create_some_work(self.db).pop()
         self.db.session.commit()
-
-        found_work = self.model.query.get(work.id)
-        self.assertEqual(found_work.offer.price, 100)
-        self.assertEqual(found_work.debit.price, 100)
-        self.assertEqual(found_work.credit.price, 110)
-        self.assertEqual(len(found_work.mediation_rounds.all()), 2)
 
         self.db.session.delete(work.review)
         self.db.session.delete(work.debit)
         self.db.session.delete(work.credit)
-        self.db.session.delete(work.mediation_rounds.all()[0])
-        self.db.session.delete(work.mediation_rounds.all()[0])
+        for mediation_round in work.mediation_rounds.all():
+            self.db.session.delete(mediation_round)
         self.db.session.commit()
 
         found_work = self.model.query.get(work.id)
@@ -67,11 +62,7 @@ class TestWorkModel(AlveareModelTestCase):
         _ = models.Mediation(work)
         self.db.session.commit()
         found_work = self.model.query.get(work.id)
-        self.assertEqual(found_work.offer.price, 100)
+        self.assertEqual(found_work.review.rating, 4)
         self.assertEqual(found_work.debit.price, 100)
         self.assertEqual(found_work.credit.price, 110)
         self.assertEqual(len(found_work.mediation_rounds.all()), 2)
-
-    def test_bad_create(self):
-        with self.assertRaises(ValueError):
-            self.create_work('baz', 'qux', 'foobar', rating=4, debit=100, credit=110, mediation_rounds=2)

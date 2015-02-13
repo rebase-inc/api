@@ -1,11 +1,12 @@
 from . import AlveareModelTestCase
 
 from alveare import models
+from alveare.common import mock
 
 class TestReviewModel(AlveareModelTestCase):
 
     def test_create(self):
-        review = self.create_review(3, comment = 'Hello')
+        review = mock.create_one_work_review(self.db, 3, 'Hello')
         self.db.session.commit()
 
         found_review = models.Review.query.get(review.id)
@@ -14,7 +15,7 @@ class TestReviewModel(AlveareModelTestCase):
         self.assertEqual(found_review.comments.one().content, 'Hello')
 
     def test_delete(self):
-        review = self.create_review(2)
+        review = mock.create_one_work_review(self.db, 2, 'Hello')
         self.db.session.commit()
 
         found_review = models.Review.query.get(review.id)
@@ -24,12 +25,14 @@ class TestReviewModel(AlveareModelTestCase):
         self.assertEqual(models.Review.query.get(review.id), None)
 
     def test_delete_comment(self):
-        review = self.create_review(4, comment = 'Bye')
+        review = mock.create_one_work_review(self.db, 2, 'Bye')
+        self.db.session.commit()
+
         self.delete_instance(review.comments.one())
         self.assertNotEqual(models.Review.query.get(review.id), None)
 
     def test_update(self):
-        review = self.create_review(3)
+        review = mock.create_one_work_review(self.db, 3, 'foo')
         self.db.session.commit()
 
         found_review = models.Review.query.get(review.id)
@@ -43,6 +46,6 @@ class TestReviewModel(AlveareModelTestCase):
         self.assertEqual(found_review.rating, 4)
 
     def test_bad_create(self):
-        self.assertRaises(ValueError, self.create_review, 'foo')
-        self.assertRaises(ValueError, self.create_review, -1)
-        self.assertRaises(ValueError, self.create_review, 6)
+        self.assertRaises(ValueError, mock.create_one_work_review, self.db, 'foo', 'foo')
+        self.assertRaises(ValueError, mock.create_one_work_review, self.db, -1, 'foo')
+        self.assertRaises(ValueError, mock.create_one_work_review, self.db, 6, 'foo')

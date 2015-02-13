@@ -100,9 +100,12 @@ class AlveareModelTestCase(AlveareTestCase):
         return project
 
     def create_bid_limit(self, price):
-        auction = self.create_auction([('title1', 'description1', price)], 'great terms', 1000, datetime.today())
-        self.db.session.add(auction)
-        return auction.ticket_set.bid_limits[0]
+        project = self.create_project('dontcare', 'dontcare')
+        ticket = models.Ticket(project, 'dontcare', 'dontcare')
+        ticket_snapshot = models.TicketSnapshot(ticket)
+        bid_limit = models.BidLimit(ticket_snapshot, price)
+        self.db.session.add(bid_limit)
+        return bid_limit
 
     def create_ticket(self, title, description):
         project = self.create_project('dontcare', 'dontcare')
@@ -110,11 +113,15 @@ class AlveareModelTestCase(AlveareTestCase):
         return ticket
 
     def create_auction(self, tickets, terms, duration, finish_by, redundancy=1):
-        ticket_list = []
+        project = self.create_project('dontcare', 'dontcare')
+        ticket_set = models.TicketSet()
         for title, description, price in tickets:
-            ticket_list.append((self.create_ticket(title, description), price))
-        term_sheet = models.TermSheet(terms)
-        auction = models.Auction(ticket_list, term_sheet, duration, finish_by, redundancy)
+            ticket = models.Ticket(project, title, description)
+            ticket_snapshot = models.TicketSnapshot(ticket)
+            bid_limit = models.BidLimit(ticket_snapshot, price)
+            ticket_set.add_bid_limit(bid_limit)
+        term_sheet = models.TermSheet('some legal mumbo-jumbo')
+        auction = models.Auction(ticket_set, term_sheet, duration, finish_by, redundancy)
         self.db.session.add(auction)
         return auction
 

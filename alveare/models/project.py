@@ -8,9 +8,9 @@ class Project(DB.Model):
     code_repository = DB.relationship('CodeRepository', uselist=False, backref='project', cascade="all, delete-orphan", passive_deletes=True)
     tickets = DB.relationship('Ticket', backref='project', cascade="all, delete-orphan", passive_deletes=True)
 
-    def __init__(self, name, organization):
-        self.name = name
+    def __init__(self, organization, name):
         self.organization = organization
+        self.name = name
 
     def __repr__(self):
         return '<Project[id:{}] for "{}" >'.format(self.id, self.organization)

@@ -6,21 +6,20 @@ from sqlalchemy.orm.exc import ObjectDeletedError
 from . import AlveareModelTestCase
 
 from alveare import models
+from alveare.common import mock
 
 class TestBidModel(AlveareModelTestCase):
 
     def test_create(self):
-        bid = self.create_bid([('foo','bar',100),('baz','qux',200)])
+        bid = mock.create_one_bid(self.db)
         self.db.session.commit()
 
         found_bid = models.Bid.query.get(bid.id)
-        self.assertEqual(len(found_bid.work_offers.all()), 2)
-        self.assertEqual(found_bid.work_offers.all()[0].ticket_snapshot.title, 'foo')
-        self.assertEqual(found_bid.work_offers.all()[1].ticket_snapshot.title, 'baz')
-
+        self.assertIsInstance(bid.work_offers.all()[0], models.WorkOffer)
+        self.assertIsInstance(found_bid.work_offers.all()[0].ticket_snapshot.title, unicode)
 
     def test_delete(self):
-        bid = self.create_bid([('foo','bar',100),('baz','qux',200)])
+        bid = mock.create_one_bid(self.db)
         self.db.session.commit()
 
         work_offer_id1 = bid.work_offers.all()[0].id

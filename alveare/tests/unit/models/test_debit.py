@@ -1,28 +1,32 @@
 from . import AlveareModelTestCase
 
 from alveare import models
+from alveare.common import mock
 
 class TestDebitModel(AlveareModelTestCase):
 
     def test_create(self):
-        debit, _ = self.create_debit_and_credit(10, 20)
+        work = mock.create_some_work(self.db).pop()
+        debit = work.debit
         self.db.session.commit()
 
-        self.assertEqual(debit.price, 10)
+        self.assertIsInstance(debit.price, int)
 
     def test_delete(self):
-        debit, _ = self.create_debit_and_credit(20, 30)
+        work = mock.create_some_work(self.db).pop()
+        debit = work.debit
         self.db.session.commit()
 
-        self.assertEqual(debit.price, 20)
+        self.assertIsInstance(debit.price, int)
         self.delete_instance(debit)
         self.assertEqual(models.Debit.query.get(debit.id), None)
 
     def test_update(self):
-        debit, _ = self.create_debit_and_credit(30, 40)
+        work = mock.create_some_work(self.db).pop()
+        debit = work.debit
         self.db.session.commit()
 
-        self.assertEqual(debit.price, 30)
+        self.assertIsInstance(debit.price, int)
 
         debit.price = 40
         self.db.session.commit()
@@ -32,5 +36,5 @@ class TestDebitModel(AlveareModelTestCase):
 
     def test_bad_create(self):
         with self.assertRaises(ValueError):
-            debit, _ = self.create_debit_and_credit('foo', 40)
+            self.create_model(models.Debit, 'foo', 'foo')
 
