@@ -16,18 +16,12 @@ class Auction(DB.Model):
     term_sheet =        DB.relationship('TermSheet')
     term_sheet_id =     DB.Column(DB.Integer,    DB.ForeignKey('term_sheet.id'))
 
-    def __init__(self, ticket_prices, term_sheet, duration, finish_work_by, redundancy = 1):
-        '''
-            ticket_prices is a list of (ticket, price)
-        '''
+    def __init__(self, ticket_set, term_sheet, duration, finish_work_by, redundancy = 1):
+        self.ticket_set = ticket_set
+        self.term_sheet = term_sheet
         self.duration = duration
         self.finish_work_by = finish_work_by
         self.redundancy = redundancy
-
-        self.term_sheet = term_sheet
-        self.ticket_set = TicketSet()
-        for ticket, price in ticket_prices:
-            self.ticket_set.add(ticket, price)
 
     def __repr__(self):
         return '<Auction[id:{}] finish_work_by={}>'.format(self.id, self.finish_work_by)

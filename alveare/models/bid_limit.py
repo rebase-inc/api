@@ -10,9 +10,9 @@ class BidLimit(DB.Model):
     snapshot =  DB.relationship(TicketSnapshot, uselist=False, cascade='all, delete-orphan')
     auction_id = DB.Column(DB.Integer, DB.ForeignKey('ticket_set.auction_id'))
 
-    def __init__(self, ticket, price):
+    def __init__(self, ticket_snapshot, price):
         self.price = price
-        self.snapshot = TicketSnapshot(ticket)
+        self.snapshot = ticket_snapshot
 
     def __repr__(self):
         return '<BidLimit for auction:{}, price:{} {}>'.format(self.auction_id, self.price, 'dollars')
