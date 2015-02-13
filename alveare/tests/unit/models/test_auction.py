@@ -13,20 +13,15 @@ from alveare.models import (
     TermSheet,
 )
 
+from uses_cases.use_case_0 import create
+
 class TestAuctionModel(AlveareModelTestCase):
 
-    def setUp(self):
-        self.auctionArgs = {
-            'ticket_prices':  [ (Ticket('Foo','Bar'), 111), (Ticket('Joe', 'Blow'), 222) ],
-            'term_sheet':     TermSheet('yo mama shall not be so big'),
-            'duration':       1000,
-            'finish_work_by': datetime.datetime.today(),
-            'redundancy':     1
-        }
-        super().setUp()
+    def setUp():
+        use_case_0()
 
     def test_create(self):
-        new_auction = self.create_model(Auction, **self.auctionArgs)
+        new_auction = self.auction
 
         for field in ['duration', 'finish_work_by', 'redundancy']:
             self.assertEqual( getattr(new_auction, field), self.auctionArgs[field] )
@@ -47,9 +42,9 @@ class TestAuctionModel(AlveareModelTestCase):
 
     def test_delete(self):
         
-        new_auction = self.create_model(Auction, **self.auctionArgs)
+        new_auction = self.auction
 
-        self.delete_instance(Auction, new_auction)
+        self.delete_instance(new_auction)
 
         self.assertEqual( TicketSet.query.all(),        [])
         self.assertEqual( BidLimit.query.all(),         [])
@@ -63,7 +58,7 @@ class TestAuctionModel(AlveareModelTestCase):
         self.assertNotEqual( TermSheet.query.get(self.auctionArgs['term_sheet'].id), None)
 
     def test_update(self):
-        new_auction = self.create_model(Auction, **self.auctionArgs)
+        new_auction = self.auction
 
         tomorrows_date = self.auctionArgs['finish_work_by'] + datetime.timedelta(days=1)
         new_auction.duration = 4000

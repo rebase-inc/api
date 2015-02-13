@@ -13,6 +13,8 @@ class TicketSnapshot(DB.Model):
     def __init__(self, ticket):
         self.date =  datetime.now()
         self.ticket = ticket
+        self.title = ticket.title
+        self.description = ticket.description
 
     def __repr__(self):
-	    return '<TicketSnapshot[id:{}] date: {}>'.format(self.id, self.date)
+	    return '<TicketSnapshot[id:{}] "{}" date={}>'.format(self.id, self.title, self.date)

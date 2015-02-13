@@ -32,7 +32,7 @@ class TestContractModel(AlveareModelTestCase):
 
     def test_delete(self):
         new_contract = self.create_model(Contract, self.bid)
-        self.delete_instance(Contract, new_contract)
+        self.delete_instance(new_contract)
 
         self.assertNotEqual( Bid.query.get((self.auction.id, self.contractor.id)), None )
 

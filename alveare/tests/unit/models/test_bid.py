@@ -1,6 +1,8 @@
 import unittest
 import datetime
 
+from sqlalchemy.orm.exc import ObjectDeletedError
+
 from . import AlveareModelTestCase
 
 from alveare.models import (
@@ -8,7 +10,9 @@ from alveare.models import (
     Auction,
     Contractor,
     Ticket,
-    TermSheet
+    TicketSnapshot,
+    TermSheet,
+    WorkOffer,
 )
 
 class TestBidModel(AlveareModelTestCase):
@@ -28,23 +32,49 @@ class TestBidModel(AlveareModelTestCase):
         super().setUp()
 
     def test_create(self):
-        new_bid = self.create_model(Bid, self.auction, self.contractor)
+        bid = Bid(self.auction, self.contractor)
+        ts1 = self.auction.ticket_set.bid_limits[0].snapshot
+        ts2 = self.auction.ticket_set.bid_limits[1].snapshot
+        work_offer1 = WorkOffer(bid, ts1, 100)
+        work_offer2 = WorkOffer(bid, ts2, 200)
+        self.db.session.add(bid)
+        self.db.session.commit()
+
+        found_bid = Bid.query.get((self.auction.id, self.contractor.id))
+        self.assertEqual(len(found_bid.work_offers.all()), 2)
+        self.assertIn(found_bid.work_offers.all()[0].ticket_snapshot.title, ['Foo', 'Bar'])
+        self.assertIn(found_bid.work_offers.all()[1].ticket_snapshot.title, ['Joe', 'Blow'])
 
     def test_delete(self):
-        new_bid = self.create_model(Bid, self.auction, self.contractor)
-        self.delete_instance(Bid, new_bid)
+        bid = Bid(self.auction, self.contractor)
 
+        ts1 = self.auction.ticket_set.bid_limits[0].snapshot
+        ts2 = self.auction.ticket_set.bid_limits[1].snapshot
+        work_offer1 = WorkOffer(bid, ts1, 100)
+        work_offer2 = WorkOffer(bid, ts2, 200)
+
+        self.db.session.add(bid)
+        self.db.session.commit()
+
+        self.db.session.delete(work_offer1)
+        self.db.session.delete(work_offer2)
+        self.db.session.delete(bid)
+        self.db.session.commit()
+
+        self.assertEqual(Bid.query.get((self.auction.id, self.contractor.id)), None)
         self.assertNotEqual( Auction.query.get(self.auction.id), None )
         self.assertNotEqual( Contractor.query.get(self.contractor.id), None )
 
-    @unittest.skip('Bid model doesnt have any updatable fields yet')
-    def test_update(self):
-        new_bid = self.create_model(Bid, self.auction, self.contractor)
+        #with self.assertRaises(ObjectDeletedError):
+            #WorkOffer.query.get(work_offer1.id)
+        #with self.assertRaises(ObjectDeletedError):
+            #WorkOffer.query.get(work_offer2.id)
 
-    @unittest.skip('Bid model doesnt have any creation fields yet')
-    def test_bad_create(self):
-        with self.assertRaises(ValueError):
-            self.create_model(Bid, 'foo', self.contractor)
-        with self.assertRaises(ValueError):
-            self.create_model(Bid, self.auction, 2)
+    #@unittest.skip('Bid model doesnt have any updatable fields yet')
+    #def test_update(self):
+        #return
+
+    #@unittest.skip('Bid model doesnt have any creation fields yet')
+    #def test_bad_create(self):
+        #return
 

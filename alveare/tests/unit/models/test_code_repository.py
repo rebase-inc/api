@@ -12,7 +12,7 @@ class TestCodeRepositoryModel(AlveareModelTestCase):
 
     def test_delete(self):
         new_code_repository = self.create_model(self.model)
-        self.delete_instance(self.model, new_code_repository)
+        self.delete_instance(new_code_repository)
 
     @unittest.skip('CodeRepository model doesnt have any updatable fields yet')
     def test_update(self):

@@ -5,23 +5,17 @@ from alveare import models
 class TestReviewModel(AlveareModelTestCase):
 
     def test_create(self):
-        work_offer = models.WorkOffer(100)
-        work = self.create_model(models.Work, work_offer)
-        review = self.create_model(models.Review, work, 1)
-        _ = models.Comment(review, 'Hello')
-
+        review = self.create_review(3, comment = 'Hello')
         self.db.session.commit()
-        found_review = models.Review.query.get(review.id)
 
-        self.assertEqual(found_review.work.id, work.id)
-        self.assertEqual(found_review.rating, 1)
-        comment = found_review.comments.one()
-        self.assertEqual(comment.content, 'Hello')
+        found_review = models.Review.query.get(review.id)
+        self.assertEqual(found_review.work.id, review.work.id)
+        self.assertEqual(found_review.rating, 3)
+        self.assertEqual(found_review.comments.one().content, 'Hello')
 
     def test_delete(self):
-        work_offer = models.WorkOffer(100)
-        work = self.create_model(models.Work, work_offer)
-        review = self.create_model(models.Review, work, 2)
+        review = self.create_review(2)
+        self.db.session.commit()
 
         found_review = models.Review.query.get(review.id)
         self.db.session.delete(found_review)
@@ -30,19 +24,17 @@ class TestReviewModel(AlveareModelTestCase):
         self.assertEqual(models.Review.query.get(review.id), None)
 
     def test_delete_comment(self):
-        work = self.create_model(models.Work, models.WorkOffer(100))
-        review = models.Review(work, 4)
-        comment = self.create_model(models.Comment, review, 'Bye')
-        self.delete_instance(models.Comment, comment)
+        review = self.create_review(4, comment = 'Bye')
+        self.delete_instance(review.comments.one())
         self.assertNotEqual(models.Review.query.get(review.id), None)
 
     def test_update(self):
-        work_offer = models.WorkOffer(100)
-        work = self.create_model(models.Work, work_offer)
-        review = self.create_model(models.Review, work, 3)
+        review = self.create_review(3)
+        self.db.session.commit()
+
         found_review = models.Review.query.get(review.id)
         self.assertEqual(found_review.rating, 3)
-        self.assertEqual(found_review.work.id, work.id)
+        self.assertEqual(found_review.work.id, review.work.id)
 
         found_review.rating = 4
         self.db.session.commit()
@@ -51,12 +43,6 @@ class TestReviewModel(AlveareModelTestCase):
         self.assertEqual(found_review.rating, 4)
 
     def test_bad_create(self):
-        work_offer = models.WorkOffer(100)
-        work = self.create_model(models.Work, work_offer)
-        with self.assertRaises(ValueError):
-            self.create_model(models.Review, work, 'foo')
-        with self.assertRaises(ValueError):
-            self.create_model(models.Review, work, -1)
-        with self.assertRaises(ValueError):
-            self.create_model(models.Review, work, 6)
-
+        self.assertRaises(ValueError, self.create_review, 'foo')
+        self.assertRaises(ValueError, self.create_review, -1)
+        self.assertRaises(ValueError, self.create_review, 6)

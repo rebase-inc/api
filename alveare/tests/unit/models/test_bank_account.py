@@ -14,7 +14,7 @@ class TestBankAccountModel(AlveareModelTestCase):
 
     def test_delete(self):
         new_bank_account = self.create_model(self.model, 111111111, 22222222222)
-        self.delete_instance(self.model, new_bank_account)
+        self.delete_instance(new_bank_account)
 
     def test_update(self):
         first_routing = 112112112

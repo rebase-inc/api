@@ -13,6 +13,7 @@ class Contract(DB.Model):
             ['auction_id', 'contractor_id'],
             ['bid.auction_id', 'bid.contractor_id']),
     )
+
     auction_id =    DB.Column(DB.Integer, DB.ForeignKey('auction.id'),      primary_key=True, nullable=False)
     contractor_id = DB.Column(DB.Integer, DB.ForeignKey('contractor.id'),   primary_key=True, nullable=False)
 
