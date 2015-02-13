@@ -8,39 +8,30 @@ from alveare import models
 class TestMediationModel(AlveareModelTestCase):
 
     def test_create_mediation(self):
-        ticket_snap = self.create_model(models.TicketSnapshot, models.Ticket('baz', 'qux'))
-        bid = models.Bid()
-        work_offer = models.WorkOffer(bid, ticket_snap, 100)
-        work = self.create_model(models.Work, work_offer)
-        mediation = self.create_model(models.Mediation, work)
+        mediation = self.create_mediation()
+        self.db.session.commit()
 
         found_mediation = models.Mediation.query.get(mediation.id)
-        self.assertEqual(found_mediation.work.offer.price, 100)
+        self.assertIsInstance(found_mediation.work.offer.price, int)
 
     def test_delete_mediation(self):
-        ticket_snap = self.create_model(models.TicketSnapshot, models.Ticket('baz', 'qux'))
-        bid = models.Bid()
-        work_offer = models.WorkOffer(bid, ticket_snap, 100)
-        work = self.create_model(models.Work, work_offer)
-        mediation = self.create_model(models.Mediation, work)
-        arbitration = self.create_model(models.Arbitration, mediation)
+        mediation = self.create_mediation()
+        self.db.session.commit()
+        arbitration_id = mediation.arbitration.id
+
+        self.assertNotEqual(models.Mediation.query.get(mediation.id), None)
 
         self.delete_instance(models.Mediation, mediation)
+
         self.assertEqual(models.Mediation.query.get(mediation.id), None)
 
-        with self.assertRaises(ObjectDeletedError):
-            models.Arbitration.query.get(arbitration.id)
+        self.assertEqual(models.Arbitration.query.get(arbitration_id), None)
 
     def test_update_mediation(self):
-        ticket_snap = self.create_model(models.TicketSnapshot, models.Ticket('baz', 'qux'))
-        bid = models.Bid()
-        work_offer = models.WorkOffer(bid, ticket_snap, 100)
-        work = self.create_model(models.Work, work_offer)
-        mediation = self.create_model(models.Mediation, work)
+        mediation = self.create_mediation()
+        self.db.session.commit()
 
         found_mediation = models.Mediation.query.get(mediation.id)
-        self.assertEqual(found_mediation.work.offer.price, 100)
-
         new_timeout = datetime.datetime.now() + datetime.timedelta(days = 4)
         found_mediation.timeout = new_timeout
 

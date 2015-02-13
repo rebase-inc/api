@@ -5,42 +5,33 @@ from alveare import models
 class TestCreditModel(AlveareModelTestCase):
     model = models.Credit
 
-    def test_create_credit(self):
-        ticket_snap = self.create_model(models.TicketSnapshot, models.Ticket('baz', 'qux'))
-        bid = models.Bid()
-        work_offer = models.WorkOffer(bid, ticket_snap, 100)
-        work = self.create_model(models.Work, work_offer)
-        new_credit = self.create_model(self.model, work, 10)
-        self.assertEqual(new_credit.price, 10)
-
-    def test_delete_credit(self):
-        ticket_snap = self.create_model(models.TicketSnapshot, models.Ticket('baz', 'qux'))
-        bid = models.Bid()
-        work_offer = models.WorkOffer(bid, ticket_snap, 100)
-        work = self.create_model(models.Work, work_offer)
-        new_credit = self.create_model(self.model, work, 20)
-        self.assertEqual(new_credit.price, 20)
-        self.delete_instance(self.model, new_credit)
-
-    def test_update_credit(self):
-        ticket_snap = self.create_model(models.TicketSnapshot, models.Ticket('baz', 'qux'))
-        bid = models.Bid()
-        work_offer = models.WorkOffer(bid, ticket_snap, 100)
-        work = self.create_model(models.Work, work_offer)
-        new_credit = self.create_model(self.model, work, 30)
-        self.assertEqual(new_credit.price, 30)
-
-        new_credit.price = 40
+    def test_create(self):
+        _, credit = self.create_debit_and_credit(10, 20)
         self.db.session.commit()
 
-        modified_credit = self.model.query.get(new_credit.id)
-        self.assertEqual(modified_credit.price, 40)
+        self.assertEqual(credit.price, 20)
+
+    def test_delete(self):
+        _, credit = self.create_debit_and_credit(20, 30)
+        self.db.session.commit()
+
+        self.assertEqual(credit.price, 30)
+        self.delete_instance(models.Credit, credit)
+        self.assertEqual(models.Credit.query.get(credit.id), None)
+
+    def test_update(self):
+        _, credit = self.create_debit_and_credit(30, 40)
+        self.db.session.commit()
+
+        self.assertEqual(credit.price, 40)
+
+        credit.price = 30
+        self.db.session.commit()
+
+        modified_credit = models.Credit.query.get(credit.id)
+        self.assertEqual(modified_credit.price, 30)
 
     def test_bad_create(self):
-        ticket_snap = self.create_model(models.TicketSnapshot, models.Ticket('baz', 'qux'))
-        bid = models.Bid()
-        work_offer = models.WorkOffer(bid, ticket_snap, 100)
-        work = self.create_model(models.Work, work_offer)
         with self.assertRaises(ValueError):
-            self.create_model(self.model, work, 'foo')
+            _, credit = self.create_debit_and_credit(40, 'foo')
 
