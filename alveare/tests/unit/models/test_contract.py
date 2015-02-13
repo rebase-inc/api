@@ -1,18 +1,40 @@
 import unittest
+import datetime
 
 from . import AlveareModelTestCase
 
-from alveare import models
+from alveare.models import (
+    TermSheet,
+    Ticket,
+    Bid,
+    Auction,
+    Contractor,
+    Contract,
+)
 
 class TestContractModel(AlveareModelTestCase):
-    model = models.Contract
+    def setUp(self):
+        auctionArgs = {
+            'ticket_prices':  [ (Ticket('Foo','Bar'), 111), (Ticket('Joe', 'Blow'), 222) ],
+            'term_sheet':     TermSheet('yo mama shall not be so big'),
+            'duration':       1000,
+            'finish_work_by': datetime.datetime.today(),
+            'redundancy':     1
+        }
+
+        self.auction = Auction(**auctionArgs)
+        self.contractor = Contractor(1)
+        self.bid = Bid(self.auction, self.contractor)
+        super().setUp()
 
     def test_create(self):
-        new_contract = self.create_model(self.model)
+        new_contract = self.create_model(Contract, self.bid)
 
     def test_delete(self):
-        new_contract = self.create_model(self.model)
-        self.delete_instance(self.model, new_contract)
+        new_contract = self.create_model(Contract, self.bid)
+        self.delete_instance(Contract, new_contract)
+
+        self.assertNotEqual( Bid.query.get((self.auction.id, self.contractor.id)), None )
 
     @unittest.skip('Contract model doesnt have any updatable fields yet')
     def test_update(self):

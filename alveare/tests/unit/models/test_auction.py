@@ -4,7 +4,14 @@ import datetime
 from sqlalchemy.exc import StatementError
 
 from . import AlveareModelTestCase
-from alveare.models import Auction, Ticket, TicketSnapshot, TicketSet, BidLimit, TermSheet
+from alveare.models import (
+    Auction,
+    Ticket,
+    TicketSnapshot,
+    TicketSet,
+    BidLimit,
+    TermSheet,
+)
 
 class TestAuctionModel(AlveareModelTestCase):
 

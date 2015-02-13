@@ -14,8 +14,8 @@ class Auction(DB.Model):
 
     ticket_set =        DB.relationship(TicketSet, backref='auction', uselist=False, cascade="all, delete-orphan")
 
-    term_sheet =        DB.relationship(TermSheet)
-    term_sheet_id =     DB.Column(DB.Integer,    DB.ForeignKey('term_sheet.id'))
+    term_sheet =        DB.relationship(TermSheet, uselist=False)
+    term_sheet_id =     DB.Column(DB.Integer,    DB.ForeignKey('term_sheet.id'), nullable=False)
 
     def __init__(self, ticket_prices, term_sheet, duration, finish_work_by, redundancy = 1):
         '''

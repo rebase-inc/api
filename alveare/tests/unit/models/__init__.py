@@ -7,11 +7,9 @@ class AlveareModelTestCase(AlveareTestCase):
         self.db.session.add(instance)
         self.db.session.commit()
 
-        self.assertNotEqual(model.query.get(instance.id), None)
         return instance 
 
     def delete_instance(self, model, instance):
         self.db.session.delete(instance)
         self.db.session.commit()
 
-        self.assertEqual(model.query.get(instance.id), None)
