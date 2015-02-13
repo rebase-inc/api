@@ -69,3 +69,22 @@ class AlveareModelTestCase(AlveareTestCase):
             work_offer = models.WorkOffer(bid, ticket_snap, price)
         self.db.session.add(bid)
         return bid
+
+    def create_organization(self, name):
+        organization = models.Organization(name)
+        self.db.session.add(organization)
+        return organization
+
+    def create_code_repository(self):
+        project = self.create_project('dontcare','dontcare')
+        repo = models.CodeRepository(project)
+        self.db.session.add(repo)
+        return repo
+
+    def create_project(self, organization_name, project_name):
+        organization = self.create_organization(organization_name)
+        project = models.Project(project_name, organization)
+        models.CodeRepository(project)
+        self.db.session.add(project)
+        return project
+

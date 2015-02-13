@@ -5,14 +5,16 @@ from . import AlveareModelTestCase
 from alveare import models
 
 class TestCodeRepositoryModel(AlveareModelTestCase):
-    model = models.CodeRepository
 
     def test_create(self):
-        new_code_repository = self.create_model(self.model)
+        self.create_code_repository()
 
     def test_delete(self):
-        new_code_repository = self.create_model(self.model)
-        self.delete_instance(self.model, new_code_repository)
+        repo = self.create_code_repository()
+        self.db.session.commit()
+
+        self.delete_instance(models.CodeRepository, repo)
+        self.assertEqual(models.CodeRepository.query.get(repo.id), None)
 
     @unittest.skip('CodeRepository model doesnt have any updatable fields yet')
     def test_update(self):
