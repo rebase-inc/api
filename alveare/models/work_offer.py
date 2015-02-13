@@ -1,3 +1,4 @@
+from sqlalchemy.orm import validates
 
 import alveare
 
@@ -18,3 +19,9 @@ class WorkOffer(DB.Model):
 
     def __repr__(self):
         return '<WorkOffer for {} {}>'.format(self.price, 'dollars')
+    
+    @validates('price')
+    def validate_price(self, field, value):
+        if not isinstance(value, int):
+            raise ValueError('{} field on {} must be {}'.format(field, self.__tablename__, int))
+        return value
