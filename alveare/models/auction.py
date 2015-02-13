@@ -31,3 +31,9 @@ class Auction(DB.Model):
         if not isinstance(value, int):
             raise ValueError('{} field on {} must be {}'.format(field, self.__tablename__, int))
         return value
+    
+    @validates('finish_work_by')
+    def validate_finish_work_by(self, field, value):
+        if not isinstance(value, datetime):
+            raise ValueError('{} field on {} must be {}'.format(field, self.__tablename__, datetime))
+        return value

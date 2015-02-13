@@ -6,41 +6,26 @@ from sqlalchemy.exc import StatementError
 
 from . import AlveareModelTestCase
 from alveare.models import Auction, Ticket, TicketSnapshot, TicketSet, BidLimit, TermSheet
+from alveare import models
+from alveare.common import mock
 
 class TestAuctionModel(AlveareModelTestCase):
 
-    auction_args = dict(
-        tickets = [('Foo','Bar',111),('Joe','Blow',222)],
-        terms = 'yo mama shall not be so big',
-        duration = 1000,
-        finish_by = datetime.datetime.today(),
-        redundancy = 1
-    )
-
     def test_create(self):
-        auction = self.create_auction(**self.auction_args)
+        auction = mock.create_one_auction(self.db)
         self.db.session.commit()
 
-        self.assertEqual(auction.duration, self.auction_args['duration'])
-        self.assertEqual(auction.finish_work_by, self.auction_args['finish_by'])
-        self.assertEqual(auction.redundancy, self.auction_args['redundancy'])
+        self.assertIsInstance(auction.duration, int)
+        self.assertIsInstance(auction.finish_work_by, datetime.datetime)
+        self.assertIsInstance(auction.redundancy, int)
 
-        self.assertNotEqual(auction.ticket_set, None)
+        self.assertIsInstance(auction.ticket_set, models.TicketSet)
         self.assertEqual(auction.ticket_set.auction_id, auction.id)
-        self.assertEqual(len(auction.ticket_set.bid_limits), 2)
-        self.assertEqual(auction.ticket_set.bid_limits[0].snapshot.ticket.title, 'Foo')
-        self.assertEqual(auction.ticket_set.bid_limits[1].snapshot.ticket.title, 'Joe')
-
-        snapshots = TicketSnapshot.query.all()
-        self.assertEqual(snapshots[0].title, 'Foo')
-        self.assertEqual(snapshots[1].title, 'Joe')
-
-        tickets = Ticket.query.all()
-        self.assertEqual(tickets[0].title, 'Foo')
-        self.assertEqual(tickets[1].title, 'Joe')
+        self.assertIsInstance(auction.ticket_set.bid_limits.pop(), models.BidLimit)
+        self.assertIsInstance(auction.ticket_set.bid_limits[0].snapshot.ticket.title, unicode)
 
     def test_delete(self):
-        auction = self.create_auction(**self.auction_args)
+        auction = mock.create_one_auction(self.db)
         self.db.session.commit()
 
         tickets = [bl.snapshot.ticket for bl in auction.ticket_set.bid_limits]
@@ -60,10 +45,10 @@ class TestAuctionModel(AlveareModelTestCase):
         self.assertNotEqual( TermSheet.query.get(term_sheet.id), None)
 
     def test_update(self):
-        auction = self.create_auction(**self.auction_args)
+        auction = mock.create_one_auction(self.db)
         self.db.session.commit()
 
-        tomorrows_date = self.auction_args['finish_by'] + datetime.timedelta(days=1)
+        tomorrows_date = datetime.datetime.now() + datetime.timedelta(days=1)
         auction.duration = 4000
         auction.finish_work_by = tomorrows_date
         auction.redundancy = 2
@@ -75,18 +60,14 @@ class TestAuctionModel(AlveareModelTestCase):
         self.assertEqual(modified_auction.redundancy, 2)
 
     def test_bad_create(self):
-        args = copy.copy(self.auction_args)
-        args['duration'] = 'foo'
         with self.assertRaises(ValueError):
-            self.create_auction(**args)
+            auction = mock.create_one_auction(self.db, duration='foo')
+            self.db.session.commit()
 
-        args = copy.copy(self.auction_args)
-        args['duration'] = 'foo'
-        args['finish_by'] = 'foo'
         with self.assertRaises(ValueError):
-            self.create_auction(**args)
+            auction = mock.create_one_auction(self.db, finish_work_by='foo')
+            self.db.session.commit()
 
-        args = copy.copy(self.auction_args)
-        args['redundancy'] = 'foo'
         with self.assertRaises(ValueError):
-            self.create_auction(**args)
+            auction = mock.create_one_auction(self.db, redundancy='foo')
+            self.db.session.commit()
