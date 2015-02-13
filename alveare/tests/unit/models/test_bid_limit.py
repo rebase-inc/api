@@ -5,19 +5,6 @@ from alveare import models
 
 class TestBidLimitModel(AlveareModelTestCase):
 
-    def setUp(self):
-        self.ticket_0 = models.Ticket('Foo','Bar')
-        self.ticket_1 = models.Ticket('Joe', 'Blow')
-        self.ticket_2 = models.Ticket('Yo', 'Mama')
-        self.auctionArgs = {
-            'ticket_prices':  [ (self.ticket_0, 111), (self.ticket_1, 222) ],
-            'term_sheet':     TermSheet('yo mama shall not be so big'),
-            'duration':       1000,
-            'finish_work_by': datetime.today(),
-            'redundancy':     1
-        }
-        super().setUp()
-
     def test_create(self):
         bid_limit = self.create_bid_limit(10)
         self.assertEqual(bid_limit.price, 10)
@@ -28,7 +15,7 @@ class TestBidLimitModel(AlveareModelTestCase):
     def test_delete(self):
         bid_limit = self.create_bid_limit(20)
         self.db.session.commit()
-        self.delete_instance(models.BidLimit, bid_limit)
+        self.delete_instance(bid_limit)
         self.assertEqual( models.BidLimit.query.all(), [] )
 
     def test_update(self):

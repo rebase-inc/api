@@ -18,4 +18,4 @@ class TicketSnapshot(DB.Model):
         self.description = ticket.description
 
     def __repr__(self):
-	    return '<TicketSnapshot[id:{}] "{}" date={}>'.format(self.id, self.title, self.date)
+        return '<TicketSnapshot[id:{}] "{}" date={} ticket_id={}>'.format(self.id, self.title, self.date, self.ticket_id)

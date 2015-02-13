@@ -27,7 +27,7 @@ class TestProjectModel(AlveareModelTestCase):
         self.assertEqual(project.organization.name, 'Alveare')
         self.assertNotEqual(project.code_repository, None)
 
-        self.delete_instance(models.Project, project)
+        self.delete_instance(project)
 
         self.assertEqual(models.Organization.query.get(org_id).name, 'Alveare')
         self.assertEqual(models.CodeRepository.query.get(repo_id), None)

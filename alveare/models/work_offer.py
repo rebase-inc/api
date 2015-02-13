@@ -6,17 +6,11 @@ from alveare.common.database import DB
 
 class WorkOffer(DB.Model):
 
-    __table_args__ = (
-        DB.ForeignKeyConstraint(
-            ['auction_id', 'contractor_id'],
-            ['bid.auction_id', 'bid.contractor_id']),
-    )
-
+    id =                    DB.Column(DB.Integer, primary_key = True)
     price =                 DB.Column(DB.Integer, nullable=False)
     work_id =               DB.Column(DB.Integer, DB.ForeignKey('work.id', ondelete='CASCADE'), nullable=True)
-    auction_id =            DB.Column(DB.Integer, DB.ForeignKey('auction.id'),      primary_key=True, nullable=False)
-    contractor_id =         DB.Column(DB.Integer, DB.ForeignKey('contractor.id'),   primary_key=True, nullable=False)
-    ticket_snapshot_id =    DB.Column(DB.Integer, DB.ForeignKey('ticket_snapshot.id', ondelete='CASCADE'), primary_key=True, nullable=False)
+    bid_id =                DB.Column(DB.Integer, DB.ForeignKey('bid.id'), nullable=False)
+    ticket_snapshot_id =    DB.Column(DB.Integer, DB.ForeignKey('ticket_snapshot.id', ondelete='CASCADE'), nullable=False)
     ticket_snapshot =       DB.relationship('TicketSnapshot', uselist=False)
 
     def __init__(self, bid, ticket_snapshot, price):

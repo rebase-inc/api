@@ -13,28 +13,17 @@ from alveare.models import (
 )
 
 class TestContractModel(AlveareModelTestCase):
-    def setUp(self):
-        auctionArgs = {
-            'ticket_prices':  [ (Ticket('Foo','Bar'), 111), (Ticket('Joe', 'Blow'), 222) ],
-            'term_sheet':     TermSheet('yo mama shall not be so big'),
-            'duration':       1000,
-            'finish_work_by': datetime.datetime.today(),
-            'redundancy':     1
-        }
-
-        self.auction = Auction(**auctionArgs)
-        self.contractor = Contractor(1)
-        self.bid = Bid(self.auction, self.contractor)
-        super().setUp()
 
     def test_create(self):
-        new_contract = self.create_model(Contract, self.bid)
+        bid = self.create_bid([('title1','descr1', 111)])
+        new_contract = self.create_model(Contract, bid)
+        self.assertEqual( new_contract.bid_id, bid.id )
 
     def test_delete(self):
-        new_contract = self.create_model(Contract, self.bid)
+        bid = self.create_bid([('title1','descr1', 111)])
+        new_contract = self.create_model(Contract, bid)
         self.delete_instance(new_contract)
-
-        self.assertNotEqual( Bid.query.get((self.auction.id, self.contractor.id)), None )
+        self.assertNotEqual( Bid.query.get(bid.id), None )
 
     @unittest.skip('Contract model doesnt have any updatable fields yet')
     def test_update(self):

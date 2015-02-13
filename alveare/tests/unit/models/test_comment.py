@@ -14,7 +14,7 @@ class TestCommentModel(AlveareModelTestCase):
 
     def test_delete(self):
         review = self.create_review(4, 'Bye')
-        self.delete_instance(models.Comment, review.comments.one())
+        self.delete_instance(review.comments.one())
         self.assertNotEqual(models.Review.query.get(review.id), None)
 
     def test_update(self):

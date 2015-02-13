@@ -2,6 +2,7 @@ from sqlalchemy.orm import validates
 
 from alveare.common.database import DB
 from alveare.models.ticket_set import TicketSet
+from alveare.models.term_sheet import TermSheet
 from datetime import datetime
 
 class Auction(DB.Model):

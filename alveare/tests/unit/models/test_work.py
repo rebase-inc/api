@@ -28,7 +28,7 @@ class TestWorkModel(AlveareModelTestCase):
         arbitration_id = work.mediation_rounds.all()[0].arbitration.id
 
         self.assertNotEqual(self.model.query.get(work.id), None)
-        self.delete_instance(self.model, work)
+        self.delete_instance(work)
 
         self.assertEqual(models.Review.query.get(review_id), None)
         self.assertEqual(models.Debit.query.get(debit_id), None)
