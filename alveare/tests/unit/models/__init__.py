@@ -17,21 +17,20 @@ class AlveareModelTestCase(AlveareTestCase):
 
         self.assertEqual(model.query.get(instance.id), None)
 
-    def create_work(self, title, description, work_price=100, review=None, debit=None, credit=None, mediation_rounds=0):
+    def create_work(self, title, description, work_price=100, rating=None, debit=None, credit=None, mediation_rounds=0):
         work_offer = self.create_work_offer(title, description, work_price)
-        work = self.create_model(models.Work, work_offer)
+        work = models.Work(work_offer)
 
-        if review:
-            _ = models.Review(work, review)
-        if debit:
-            _ = models.Debit(work, debit)
-        if credit:
-            _ = models.Credit(work, credit)
+        if rating != None:
+            models.Review(work, rating)
+        if debit != None:
+            models.Debit(work, debit)
+        if credit != None:
+            models.Credit(work, credit)
         for mediation_round in range(mediation_rounds):
-            _ = models.Arbitration(models.Mediation(work))
+            models.Arbitration(models.Mediation(work))
 
         self.db.session.add(work)
-        self.db.session.commit()
         return work
 
     def create_arbitration(self):
@@ -43,10 +42,9 @@ class AlveareModelTestCase(AlveareTestCase):
         return work.mediation_rounds.one()
 
     def create_review(self, rating, comment=None):
-        work = self.create_work('dontcare', 'dontcare', 666, review=rating)
+        work = self.create_work('dontcare', 'dontcare', 666, rating=rating)
         if comment:
             _ = models.Comment(work.review, comment)
-            self.db.session.commit()
         return work.review
 
     def create_debit_and_credit(self, debit_price, credit_price):
@@ -59,5 +57,4 @@ class AlveareModelTestCase(AlveareTestCase):
         bid = models.Bid()
         work_offer = models.WorkOffer(bid, ticket_snapshot, work_price)
         self.db.session.add(work_offer)
-        self.db.session.commit()
         return work_offer

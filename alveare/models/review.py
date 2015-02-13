@@ -10,7 +10,6 @@ class Review(DB.Model):
     comments = DB.relationship('Comment', lazy='dynamic', backref='review', cascade='all, delete-orphan', passive_deletes=True)
 
     def __init__(self, work, rating):
-        #raise Exception('work {} rating {}'.format(work, rating))
         if work.review:
             raise ValueError('Work is already reviewed!')
         self.work = work

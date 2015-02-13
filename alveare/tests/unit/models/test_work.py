@@ -7,7 +7,8 @@ class TestWorkModel(AlveareModelTestCase):
     model = models.Work
 
     def test_create(self):
-        work = self.create_work('baz', 'qux', 100, review=4, debit=100, credit=110, mediation_rounds=2)
+        work = self.create_work('baz', 'qux', 100, rating=4, debit=100, credit=110, mediation_rounds=2)
+        self.db.session.commit()
 
         found_work = self.model.query.get(work.id)
         self.assertEqual(found_work.offer.price, 100)
@@ -16,7 +17,8 @@ class TestWorkModel(AlveareModelTestCase):
         self.assertEqual(len(found_work.mediation_rounds.all()), 2)
 
     def test_delete(self):
-        work = self.create_work('baz', 'qux', 100, review=4, debit=100, credit=110, mediation_rounds=2)
+        work = self.create_work('baz', 'qux', 100, rating=4, debit=100, credit=110, mediation_rounds=2)
+        self.db.session.commit()
 
         review_id = work.review.id
         debit_id = work.debit.id
@@ -36,7 +38,8 @@ class TestWorkModel(AlveareModelTestCase):
         self.assertEqual(models.Arbitration.query.get(arbitration_id), None)
 
     def test_update(self):
-        work = self.create_work('baz', 'qux', 100, review=4, debit=100, credit=110, mediation_rounds=2)
+        work = self.create_work('baz', 'qux', 100, rating=4, debit=100, credit=110, mediation_rounds=2)
+        self.db.session.commit()
 
         found_work = self.model.query.get(work.id)
         self.assertEqual(found_work.offer.price, 100)
@@ -71,4 +74,4 @@ class TestWorkModel(AlveareModelTestCase):
 
     def test_bad_create(self):
         with self.assertRaises(ValueError):
-            self.create_work('baz', 'qux', 'foobar', review=4, debit=100, credit=110, mediation_rounds=2)
+            self.create_work('baz', 'qux', 'foobar', rating=4, debit=100, credit=110, mediation_rounds=2)

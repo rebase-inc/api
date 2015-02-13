@@ -6,6 +6,7 @@ class TestReviewModel(AlveareModelTestCase):
 
     def test_create(self):
         review = self.create_review(3, comment = 'Hello')
+        self.db.session.commit()
 
         found_review = models.Review.query.get(review.id)
         self.assertEqual(found_review.work.id, review.work.id)
@@ -14,6 +15,7 @@ class TestReviewModel(AlveareModelTestCase):
 
     def test_delete(self):
         review = self.create_review(2)
+        self.db.session.commit()
 
         found_review = models.Review.query.get(review.id)
         self.db.session.delete(found_review)
@@ -28,6 +30,7 @@ class TestReviewModel(AlveareModelTestCase):
 
     def test_update(self):
         review = self.create_review(3)
+        self.db.session.commit()
 
         found_review = models.Review.query.get(review.id)
         self.assertEqual(found_review.rating, 3)
@@ -41,6 +44,5 @@ class TestReviewModel(AlveareModelTestCase):
 
     def test_bad_create(self):
         self.assertRaises(ValueError, self.create_review, 'foo')
-        #self.assertRaises(ValueError, self.create_review, -1)
-        #self.assertRaises(ValueError, self.create_review, 6)
-
+        self.assertRaises(ValueError, self.create_review, -1)
+        self.assertRaises(ValueError, self.create_review, 6)
