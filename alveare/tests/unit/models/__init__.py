@@ -1,3 +1,5 @@
+import datetime
+
 from .. import AlveareTestCase
 from alveare import models
 
@@ -52,7 +54,8 @@ class AlveareModelTestCase(AlveareTestCase):
         return (work.debit, work.credit)
 
     def create_work_offer(self, title, description, work_price):
-        ticket = models.Ticket(title, description)
+        project = self.create_project('dontcare', 'dontcare')
+        ticket = models.Ticket(project, title, description)
         ticket_snapshot = models.TicketSnapshot(ticket)
         bid = models.Bid()
         work_offer = models.WorkOffer(bid, ticket_snapshot, work_price)
@@ -63,8 +66,9 @@ class AlveareModelTestCase(AlveareTestCase):
         ''' tickets is a list of (title, description, price) '''
         bid = models.Bid()
 
+        project = self.create_project('dontcare', 'dontcare')
         for title, description, price in tickets:
-            ticket = models.Ticket(title, description)
+            ticket = models.Ticket(project, title, description)
             ticket_snap = models.TicketSnapshot(ticket)
             work_offer = models.WorkOffer(bid, ticket_snap, price)
         self.db.session.add(bid)
@@ -87,4 +91,27 @@ class AlveareModelTestCase(AlveareTestCase):
         models.CodeRepository(project)
         self.db.session.add(project)
         return project
+
+    def create_bid_limit(self, price):
+        project = self.create_project('dontcare', 'dontcare')
+        ticket = models.Ticket(project, 'dontcare', 'dontcare')
+        bid_limit = models.BidLimit(ticket, price)
+        self.db.session.add(bid_limit)
+        return bid_limit
+
+    def create_ticket(self, title, description):
+        project = self.create_project('dontcare', 'dontcare')
+        ticket = models.Ticket(project, title, description)
+        return ticket
+
+    def create_auction(self, tickets, terms, duration, finish_by, redundancy=1):
+        ticket_list = []
+        for title, description, price in tickets:
+            ticket_list.append((self.create_ticket(title, description), price))
+        term_sheet = models.TermSheet(terms)
+        auction = models.Auction(ticket_list, term_sheet, duration, finish_by, redundancy)
+        self.db.session.add(auction)
+        return auction
+
+
 
