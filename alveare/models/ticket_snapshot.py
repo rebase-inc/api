@@ -8,6 +8,8 @@ class TicketSnapshot(DB.Model):
     bid_limit_id = DB.Column(DB.Integer, DB.ForeignKey('bid_limit.id'))
     ticket_id = DB.Column(DB.Integer, DB.ForeignKey('ticket.id'))
     ticket = DB.relationship('Ticket')
+    title = DB.Column(DB.String, nullable=False)
+    description = DB.Column(DB.String, nullable=False)
 
     def __init__(self, ticket):
         self.date =  datetime.now()

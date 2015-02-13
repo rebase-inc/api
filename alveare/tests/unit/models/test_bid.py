@@ -9,41 +9,28 @@ from alveare import models
 class TestBidModel(AlveareModelTestCase):
 
     def test_create(self):
-        ts1 = self.create_model(models.TicketSnapshot, models.Ticket('foo', 'bar'))
-        ts2 = self.create_model(models.TicketSnapshot, models.Ticket('baz', 'qux'))
-        bid = models.Bid()
-        work_offer1 = models.WorkOffer(bid, ts1, 100)
-        work_offer2 = models.WorkOffer(bid, ts2, 200)
-        self.db.session.add(bid)
-        self.db.session.add(work_offer1)
-        self.db.session.add(work_offer2)
+        bid = self.create_bid([('foo','bar',100),('baz','qux',200)])
         self.db.session.commit()
 
         found_bid = models.Bid.query.get(bid.id)
         self.assertEqual(len(found_bid.work_offers.all()), 2)
-        self.assertIn(found_bid.work_offers.all()[0].ticket_snapshot.title, ['foo', 'baz'])
-        self.assertIn(found_bid.work_offers.all()[1].ticket_snapshot.title, ['foo', 'baz'])
+        self.assertEqual(found_bid.work_offers.all()[0].ticket_snapshot.title, 'foo')
+        self.assertEqual(found_bid.work_offers.all()[1].ticket_snapshot.title, 'baz')
 
 
     def test_delete(self):
-        ts1 = self.create_model(models.TicketSnapshot, models.Ticket('foo', 'bar'))
-        ts2 = self.create_model(models.TicketSnapshot, models.Ticket('baz', 'qux'))
-        bid = models.Bid()
-        work_offer1 = models.WorkOffer(bid, ts1, 100)
-        work_offer2 = models.WorkOffer(bid, ts2, 200)
-        self.db.session.add(bid)
-        self.db.session.add(work_offer1)
-        self.db.session.add(work_offer2)
+        bid = self.create_bid([('foo','bar',100),('baz','qux',200)])
         self.db.session.commit()
+
+        work_offer_id1 = bid.work_offers.all()[0].id
+        work_offer_id2 = bid.work_offers.all()[1].id
 
         self.delete_instance(models.Bid, bid)
 
         self.assertEqual(models.Bid.query.get(bid.id), None)
 
-        with self.assertRaises(ObjectDeletedError):
-            models.WorkOffer.query.get(work_offer1.id)
-        with self.assertRaises(ObjectDeletedError):
-            models.WorkOffer.query.get(work_offer2.id)
+        self.assertEqual(models.WorkOffer.query.get(work_offer_id1), None)
+        self.assertEqual(models.WorkOffer.query.get(work_offer_id2), None)
 
     @unittest.skip('Bid model doesnt have any updatable fields yet')
     def test_update(self):

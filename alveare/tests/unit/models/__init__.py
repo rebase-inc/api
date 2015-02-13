@@ -58,3 +58,14 @@ class AlveareModelTestCase(AlveareTestCase):
         work_offer = models.WorkOffer(bid, ticket_snapshot, work_price)
         self.db.session.add(work_offer)
         return work_offer
+
+    def create_bid(self, tickets):
+        ''' tickets is a list of (title, description, price) '''
+        bid = models.Bid()
+
+        for title, description, price in tickets:
+            ticket = models.Ticket(title, description)
+            ticket_snap = models.TicketSnapshot(ticket)
+            work_offer = models.WorkOffer(bid, ticket_snap, price)
+        self.db.session.add(bid)
+        return bid
