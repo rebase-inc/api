@@ -1,62 +1,10 @@
+import datetime
+
 from .. import AlveareTestCase
 from datetime import datetime
-from alveare.models import (
-    Auction,
-    Bid,
-    Contractor,
-    Ticket,
-    TicketSnapshot,
-    TicketSet,
-    BidLimit,
-    TermSheet,
-    Work,
-    WorkOffer,
-    Debit,
-    Credit,
-    Arbitration,
-    Comment,
-)
+from alveare import models
 
 class AlveareModelTestCase(AlveareTestCase):
-
-    def setUp(self):
-        '''
-        Create mock data in the proper order:
-        1/ tickets
-        2/ tickets + price + termsheet => auction + ticket_snapshots
-        3/ contractor
-        4/ auction + contractor + prices  => bid + work offers
-        '''
-        super().setUp()
-
-        self.ticket_0 = Ticket('Foo','Bar')
-        self.ticket_1 = Ticket('Joe', 'Blow')
-        self.ticket_2 = Ticket('Yo', 'Mama')
-        self.term_sheet = TermSheet('yo mama shall not be so big')
-        self.auctionArgs = {
-            'ticket_prices':  [ (self.ticket_0, 111), (self.ticket_1, 222), (self.ticket_2, 333) ],
-            'term_sheet':     TermSheet('yo mama shall not be so big'),
-            'duration':       1000,
-            'finish_work_by': datetime.today(),
-            'redundancy':     1
-        }
-        self.auction = Auction(**self.auctionArgs)
-        self.contractor = Contractor(100)
-
-        self.db.session.add_all([self.auction, self.contractor])
-        self.db.session.commit()
-
-        self.ticket_snapshot_0 = TicketSnapshot.query.filter_by(ticket_id= self.ticket_0.id).first()
-        self.ticket_snapshot_1 = TicketSnapshot.query.filter_by(ticket_id= self.ticket_1.id).first()
-        self.ticket_snapshot_2 = TicketSnapshot.query.filter_by(ticket_id= self.ticket_2.id).first()
-
-        self.assertNotEqual( self.ticket_snapshot_0, None )
-        self.assertNotEqual( self.ticket_snapshot_1, None )
-        self.assertNotEqual( self.ticket_snapshot_2, None )
-
-        self.bid = Bid(self.auction, self.contractor)
-        # at this point, we have valid:
-        #( auction, contractor, bid, ticket_0, ticket_1[..2], tickket_snapshot_0[..2], term_sheet )
 
     def create_model(self, model, *args, **kwargs):
         instance = model(*args, **kwargs)
@@ -72,14 +20,14 @@ class AlveareModelTestCase(AlveareTestCase):
 
     def create_work(self, title, description, work_price=100, rating=None, debit=None, credit=None, mediation_rounds=0):
         work_offer = self.create_work_offer(title, description, work_price)
-        work = Work(work_offer)
+        work =models.Work(work_offer)
 
         if rating != None:
-            Review(work, rating)
+            models.Review(work, rating)
         if debit != None:
-            Debit(work, debit)
+            models.Debit(work, debit)
         if credit != None:
-            Credit(work, credit)
+            models.Credit(work, credit)
         for mediation_round in range(mediation_rounds):
             Arbitration(Mediation(work))
 
@@ -97,14 +45,70 @@ class AlveareModelTestCase(AlveareTestCase):
     def create_review(self, rating, comment=None):
         work = self.create_work('dontcare', 'dontcare', 666, rating=rating)
         if comment:
-            _ = Comment(work.review, comment)
+            _ = models.Comment(work.review, comment)
         return work.review
 
     def create_debit_and_credit(self, debit_price, credit_price):
         work = self.create_work('dontcare', 'dontcare', 666, debit=debit_price, credit=credit_price)
         return (work.debit, work.credit)
 
-    def create_work_offer(self, ticket_snapshot, work_price):
-        work_offer = WorkOffer(self.bid, ticket_snapshot, work_price)
+    def create_work_offer(self, title, description, work_price):
+        project = self.create_project('dontcare', 'dontcare')
+        ticket = models.Ticket(project, title, description)
+        ticket_snapshot = models.TicketSnapshot(ticket)
+        bid = models.Bid()
+        work_offer = models.WorkOffer(bid, ticket_snapshot, work_price)
         self.db.session.add(work_offer)
         return work_offer
+
+    def create_bid(self, tickets):
+        ''' tickets is a list of (title, description, price) '''
+        bid = models.Bid()
+
+        project = self.create_project('dontcare', 'dontcare')
+        for title, description, price in tickets:
+            ticket = models.Ticket(project, title, description)
+            ticket_snap = models.TicketSnapshot(ticket)
+            work_offer = models.WorkOffer(bid, ticket_snap, price)
+        self.db.session.add(bid)
+        return bid
+
+    def create_organization(self, name):
+        organization = models.Organization(name)
+        self.db.session.add(organization)
+        return organization
+
+    def create_code_repository(self):
+        project = self.create_project('dontcare','dontcare')
+        repo = models.CodeRepository(project)
+        self.db.session.add(repo)
+        return repo
+
+    def create_project(self, organization_name, project_name):
+        organization = self.create_organization(organization_name)
+        project = models.Project(project_name, organization)
+        models.CodeRepository(project)
+        self.db.session.add(project)
+        return project
+
+    def create_bid_limit(self, price):
+        project = self.create_project('dontcare', 'dontcare')
+        ticket = models.Ticket(project, 'dontcare', 'dontcare')
+        bid_limit = models.BidLimit(ticket, price)
+        self.db.session.add(bid_limit)
+        return bid_limit
+
+    def create_ticket(self, title, description):
+        project = self.create_project('dontcare', 'dontcare')
+        ticket = models.Ticket(project, title, description)
+        return ticket
+
+    def create_auction(self, tickets, terms, duration, finish_by, redundancy=1):
+        ticket_list = []
+        for title, description, price in tickets:
+            ticket_list.append((self.create_ticket(title, description), price))
+        term_sheet = models.TermSheet(terms)
+        auction = models.Auction(ticket_list, term_sheet, duration, finish_by, redundancy)
+        self.db.session.add(auction)
+        return auction
+

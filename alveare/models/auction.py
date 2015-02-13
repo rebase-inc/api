@@ -2,7 +2,6 @@ from sqlalchemy.orm import validates
 
 from alveare.common.database import DB
 from alveare.models.ticket_set import TicketSet
-from alveare.models.term_sheet import TermSheet
 from datetime import datetime
 
 class Auction(DB.Model):
@@ -12,14 +11,14 @@ class Auction(DB.Model):
     finish_work_by =    DB.Column(DB.DateTime,  nullable=False)
     redundancy =        DB.Column(DB.Integer,   nullable=False)
 
-    ticket_set =        DB.relationship(TicketSet, backref='auction', uselist=False, cascade="all, delete-orphan")
+    ticket_set =        DB.relationship('TicketSet', backref='auction', uselist=False, cascade="all, delete-orphan")
 
     term_sheet =        DB.relationship(TermSheet, uselist=False)
     term_sheet_id =     DB.Column(DB.Integer,    DB.ForeignKey('term_sheet.id'), nullable=False)
 
     def __init__(self, ticket_prices, term_sheet, duration, finish_work_by, redundancy = 1):
         '''
-            ticket_prices is a list of (ticket, price) 
+            ticket_prices is a list of (ticket, price)
         '''
         self.duration = duration
         self.finish_work_by = finish_work_by

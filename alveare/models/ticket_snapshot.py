@@ -1,6 +1,5 @@
 
 from alveare.common.database import DB
-from alveare.models.ticket import Ticket
 from datetime import datetime
 
 class TicketSnapshot(DB.Model):
@@ -8,7 +7,9 @@ class TicketSnapshot(DB.Model):
     date =          DB.Column(DB.DateTime, nullable=False)
     bid_limit_id =  DB.Column(DB.Integer, DB.ForeignKey('bid_limit.id'), nullable=False)
     ticket_id =     DB.Column(DB.Integer, DB.ForeignKey('ticket.id'), nullable=False)
-    ticket =        DB.relationship(Ticket, uselist=False)
+    ticket =        DB.relationship('Ticket', uselist=False)
+    title =         DB.Column(DB.String, nullable=False)
+    description =   DB.Column(DB.String, nullable=False)
 
     def __init__(self, ticket):
         self.date =  datetime.now()
