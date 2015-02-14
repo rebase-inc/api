@@ -28,4 +28,7 @@ class TestRemoteWorkHistoryModel(AlveareModelTestCase):
         self.assertEqual( Contractor.query.all(), [])
         self.assertEqual( RemoteWorkHistory.query.all(), [])
 
-
+    def test_bad_create(self):
+        with self.assertRaises(ValueError):
+            history = create_one_remote_work_history(self.db, contractor='bullshit')
+            self.db.session.commit()

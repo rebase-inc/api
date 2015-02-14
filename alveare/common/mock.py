@@ -12,9 +12,10 @@ def create_one_contractor(db, first_name='Andrew', last_name='Millspaugh', email
     db.session.add(contractor)
     return contractor
 
-def create_one_remote_work_history(db):
+def create_one_remote_work_history(db, contractor=None):
     from alveare.models import RemoteWorkHistory
-    contractor = create_one_contractor(db)
+    if not contractor:
+        contractor = create_one_contractor(db)
     remote_work_history = RemoteWorkHistory(contractor)
     db.session.add(remote_work_history)
     return remote_work_history
