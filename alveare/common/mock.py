@@ -7,8 +7,8 @@ def create_one_organization(db, name='Alveare'):
     return organization
 
 def create_one_contractor(db, first_name='Andrew', last_name='Millspaugh', email='andrew@alveare.io'):
-    from alveare.models import Contractor
-    contractor = Contractor(first_name, last_name, email)
+    from alveare.models import Contractor, SkillSet
+    contractor = Contractor(first_name, last_name, email, SkillSet())
     db.session.add(contractor)
     return contractor
 
