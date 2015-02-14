@@ -9,6 +9,7 @@ class Contractor(DB.Model):
     email =         DB.Column(DB.String, nullable=False)
     
     skill_set = DB.relationship('SkillSet', backref='contractor', uselist=False, cascade='all, delete-orphan', passive_deletes=True)
+    remote_work_history = DB.relationship('RemoteWorkHistory', uselist=False, backref='contractor', cascade='all, delete-orphan', passive_deletes=True)
 
     def __init__(self, first_name, last_name, email, skill_set):
         self.first_name = first_name

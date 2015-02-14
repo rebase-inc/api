@@ -37,7 +37,7 @@ class TestRemoteWorkHistoryModel(AlveareModelTestCase):
         # unrelates contractor from its only remote_work_history instance
         # that should trigger a deletion of the rwh because of the 'delete-orphan' clause
         # in the relationship definition
-        contractor.remote_work_history.clear() 
+        contractor.remote_work_history = None
 
         self.assertNotEqual( Contractor.query.all(), [])
         self.assertEqual( RemoteWorkHistory.query.all(), [])
