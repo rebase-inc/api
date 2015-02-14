@@ -8,7 +8,7 @@ class Contractor(DB.Model):
     last_name =     DB.Column(DB.String, nullable=False)
     email =         DB.Column(DB.String, nullable=False)
     
-    skill_set = DB.relationship('SkillSet', backref='contractor', uselist=False, cascade='all, delete-orphan', passive_deletes=False)
+    skill_set = DB.relationship('SkillSet', backref='contractor', uselist=False, cascade='all, delete-orphan', passive_deletes=True)
 
     def __init__(self, first_name, last_name, email, skill_set):
         self.first_name = first_name
@@ -17,4 +17,4 @@ class Contractor(DB.Model):
         self.skill_set = skill_set
 
     def __repr__(self):
-        return '<Contractor[id:{}] title="{}", busyness="{}">'.format(self.id, self.busyness)
+        return '<Contractor[id:{}] busyness="{}">'.format(self.id, self.busyness)
