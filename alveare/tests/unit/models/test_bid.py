@@ -16,7 +16,7 @@ class TestBidModel(AlveareModelTestCase):
 
         found_bid = models.Bid.query.get(bid.id)
         self.assertIsInstance(bid.work_offers.all()[0], models.WorkOffer)
-        self.assertIsInstance(found_bid.work_offers.all()[0].ticket_snapshot.title, unicode)
+        self.assertIsInstance(found_bid.work_offers.all()[0].ticket_snapshot.title, str)
 
     def test_delete(self):
         bid = mock.create_one_bid(self.db)

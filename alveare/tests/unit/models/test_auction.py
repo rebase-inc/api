@@ -22,7 +22,7 @@ class TestAuctionModel(AlveareModelTestCase):
         self.assertIsInstance(auction.ticket_set, models.TicketSet)
         self.assertEqual(auction.ticket_set.auction_id, auction.id)
         self.assertIsInstance(auction.ticket_set.bid_limits.pop(), models.BidLimit)
-        self.assertIsInstance(auction.ticket_set.bid_limits[0].snapshot.ticket.title, unicode)
+        self.assertIsInstance(auction.ticket_set.bid_limits[0].snapshot.ticket.title, str)
 
     def test_delete(self):
         auction = mock.create_one_auction(self.db)
