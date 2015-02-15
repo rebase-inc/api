@@ -20,6 +20,13 @@ def create_one_remote_work_history(db, contractor=None):
     db.session.add(remote_work_history)
     return remote_work_history
 
+def create_one_github_account(db, user_name='ravioli'):
+    from alveare.models import GithubAccount
+    remote_work_history = create_one_remote_work_history(db)
+    github_account = GithubAccount(remote_work_history, user_name)
+    db.session.add(github_account)
+    return github_account
+
 def create_one_project(db, organization_name='Alveare', project_name='api'):
     from alveare.models import Organization, Project, CodeRepository
     organization = Organization(organization_name)
