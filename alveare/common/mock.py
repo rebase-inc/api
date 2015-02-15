@@ -63,6 +63,14 @@ def create_one_auction(db, duration=1000, finish_work_by=None, redundancy=1):
     db.session.add(auction)
     return auction
 
+def create_one_feedback(db):
+    from alveare.models import Feedback
+    auction = create_one_auction(db)
+    contractor = create_one_contractor(db)
+    feedback = Feedback(auction, contractor)
+    db.session.add(feedback)
+    return feedback
+
 def create_one_bid(db):
     from alveare.models import Bid, WorkOffer
     auction = create_one_auction(db)

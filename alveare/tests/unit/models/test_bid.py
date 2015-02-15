@@ -34,6 +34,13 @@ class TestBidModel(AlveareModelTestCase):
         self.assertEqual(models.WorkOffer.query.all(), [])
         self.assertEqual(models.WorkOffer.query.all(), [])
 
+    def test_delete_auction(self):
+        bid = mock.create_one_bid(self.db)
+        self.db.session.commit()
+
+        auction = bid.auction
+        self.delete_instance(auction)
+
     @unittest.skip('Bid model doesnt have any updatable fields yet')
     def test_update(self):
         return

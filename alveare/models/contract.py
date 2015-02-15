@@ -8,10 +8,10 @@ from alveare.models.contractor  import Contractor
 
 class Contract(DB.Model):
 
-    id =   DB.Column(DB.Integer, primary_key=True)
-    bid_id =        DB.Column(DB.Integer, DB.ForeignKey('bid.id'), nullable=False)
+    id =        DB.Column(DB.Integer, primary_key=True)
+    bid_id =    DB.Column(DB.Integer, DB.ForeignKey('bid.id', ondelete='CASCADE'), nullable=False)
 
-    bid =           DB.relationship(Bid,  uselist=False)
+    bid =       DB.relationship(Bid,  uselist=False)
 
     def __init__(self, bid):
         self.bid = bid

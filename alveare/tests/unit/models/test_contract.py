@@ -22,13 +22,22 @@ class TestContractModel(AlveareModelTestCase):
         new_contract = self.create_model(Contract, bid)
         self.assertEqual( new_contract.bid_id, bid.id )
 
-    def test_delete(self):
+    def test_delete_contract(self):
         bid = mock.create_one_bid(self.db)
         self.db.session.commit()
 
         new_contract = self.create_model(Contract, bid)
         self.delete_instance(new_contract)
         self.assertNotEqual( Bid.query.get(bid.id), None )
+
+    def test_delete_bid(self):
+        bid = mock.create_one_bid(self.db)
+        self.db.session.commit()
+
+        new_contract = self.create_model(Contract, bid)
+        self.delete_instance(bid)
+
+        self.assertEqual( Contract.query.all(), [] )
 
     @unittest.skip('Contract model doesnt have any updatable fields yet')
     def test_update(self):
