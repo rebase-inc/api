@@ -6,9 +6,17 @@ def create_one_organization(db, name='Alveare'):
     db.session.add(organization)
     return organization
 
-def create_one_contractor(db, first_name='Andrew', last_name='Millspaugh', email='andrew@alveare.io'):
-    from alveare.models import Contractor, SkillSet
-    contractor = Contractor(first_name, last_name, email, SkillSet())
+def create_one_user(db, first_name='Andrew', last_name='Millspaugh', email='andrew@alveare.io'):
+    from alveare.models import User
+    user = User(first_name, last_name, email, 'hashedpassword')
+    db.session.add(user)
+    return user
+
+def create_one_contractor(db):
+    from alveare.models import User, Contractor, SkillSet
+    user = create_one_user(db)
+    contractor = Contractor(user)
+    contractor.skill_set = SkillSet()
     db.session.add(contractor)
     return contractor
 

@@ -6,7 +6,7 @@ from .contractor import Contractor
 
 class RemoteWorkHistory(DB.Model):
 
-    contractor_id = DB.Column(DB.Integer, DB.ForeignKey('contractor.id', ondelete='CASCADE'), primary_key=True, nullable=False)
+    id = DB.Column(DB.Integer, DB.ForeignKey('contractor.id', ondelete='CASCADE'), primary_key=True, nullable=False)
 
     github_accounts = DB.relationship('GithubAccount', backref='remote_work_history', cascade='all, delete-orphan', passive_deletes=True)
 
