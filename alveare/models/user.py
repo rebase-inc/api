@@ -13,8 +13,6 @@ class User(DB.Model):
     roles =             DB.relationship('Role', backref='user', cascade='all, delete-orphan')
 
     def __init__(self, first_name, last_name, email, hashed_password):
-        if not isinstance(first_name, str):
-            raise ValueError('{} field on {} must be {} not {}'.format('user', self.__tablename__, User, type(user)))
         self.first_name = first_name
         self.last_name = last_name
         self.email = email
