@@ -53,6 +53,26 @@ def create_one_project(db, organization_name='Alveare', project_name='api'):
     db.session.add(code_repo)
     return project
 
+def create_one_remote_project(db, organization_name='Alveare', project_name='api'):
+    from alveare.models import Organization, RemoteProject, CodeRepository
+    organization = Organization(organization_name)
+    remote_project = RemoteProject(organization, project_name)
+    code_repo = CodeRepository(remote_project)
+    db.session.add(organization)
+    db.session.add(remote_project)
+    db.session.add(code_repo)
+    return remote_project
+
+def create_one_github_project(db, organization_name='Alveare', project_name='api'):
+    from alveare.models import Organization, GithubProject, CodeRepository
+    organization = Organization(organization_name)
+    github_project = GithubProject(organization, project_name)
+    code_repo = CodeRepository(github_project)
+    db.session.add(organization)
+    db.session.add(github_project)
+    db.session.add(code_repo)
+    return github_project
+
 def create_some_tickets(db, ticket_titles=None):
     from alveare.models import Ticket
     project = create_one_project(db)

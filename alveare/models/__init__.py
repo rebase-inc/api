@@ -11,7 +11,7 @@ from alveare.models.contractor import *
 from alveare.models.credit import *
 from alveare.models.debit import *
 from alveare.models.feedback import *
-from alveare.models.gihub_project import *
+from alveare.models.github_project import *
 from alveare.models.github_account import *
 from alveare.models.github_ticket import *
 from alveare.models.mediation import *
