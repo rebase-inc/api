@@ -12,8 +12,16 @@ def create_one_user(db, first_name='Andrew', last_name='Millspaugh', email='andr
     db.session.add(user)
     return user
 
+def create_one_manager(db):
+    from alveare.models import Manager
+    user = create_one_user(db)
+    organization = create_one_organization(db)
+    manager = Manager(user, organization)
+    db.session.add(manager)
+    return manager
+
 def create_one_contractor(db):
-    from alveare.models import User, Contractor, SkillSet
+    from alveare.models import Contractor, SkillSet
     user = create_one_user(db)
     contractor = Contractor(user)
     contractor.skill_set = SkillSet()
