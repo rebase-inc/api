@@ -24,7 +24,7 @@ class TestContractorModel(AlveareModelTestCase):
 
         contractor_id = contractor.id
         user_id = contractor.user.id
-        skill_set_id = contractor.skill_set.id
+        skill_set_id = contractor.skill_set.contractor_id
         remote_work_history_id = contractor.remote_work_history.id
 
         found_contractor = models.Contractor.query.get(contractor_id)
@@ -41,7 +41,7 @@ class TestContractorModel(AlveareModelTestCase):
 
     def test_bad_create(self):
         with self.assertRaises(ValueError):
-            self.create_model(models.Contractor, 'foo')
+            self.create_model(models.Contractor, 'foo', models.SkillSet())
         with self.assertRaises(ValueError):
-            self.create_model(models.Contractor, 2)
+            self.create_model(models.Contractor, 2, models.SkillSet())
 

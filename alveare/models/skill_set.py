@@ -3,8 +3,8 @@ from alveare.common.database import DB
 
 class SkillSet(DB.Model):
 
-    id =  DB.Column(DB.Integer, DB.ForeignKey('contractor.id', ondelete='CASCADE'), primary_key=True, nullable=False)
+    contractor_id =  DB.Column(DB.Integer, DB.ForeignKey('contractor.id', ondelete='CASCADE'), primary_key=True)
 
     def __repr__(self):
-        return '<SkillSet[id:{}]>'.format(self.id)
+        return '<SkillSet[{}]>'.format(self.contractor_id)
 
