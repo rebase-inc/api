@@ -28,6 +28,14 @@ def create_one_contractor(db):
     db.session.add(contractor)
     return contractor
 
+def create_one_code_clearance(db):
+    from alveare.models import CodeClearance
+    contractor = create_one_contractor(db)
+    project = create_one_project(db)
+    code_clearance = CodeClearance(project, contractor)
+    db.session.add(code_clearance)
+    return code_clearance
+
 def create_one_remote_work_history(db, contractor=None):
     from alveare.models import RemoteWorkHistory
     if not contractor:
