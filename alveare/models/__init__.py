@@ -13,12 +13,13 @@ from alveare.models.debit import *
 from alveare.models.feedback import *
 from alveare.models.github_project import *
 from alveare.models.github_account import *
+from alveare.models.internal_ticket import *
+from alveare.models.remote_ticket import *
 from alveare.models.github_ticket import *
 from alveare.models.mediation import *
 from alveare.models.organization import *
 from alveare.models.project import *
 from alveare.models.remote_project import *
-from alveare.models.remote_ticket import *
 from alveare.models.remote_work_history import *
 from alveare.models.review import *
 from alveare.models.skill_requirements import *

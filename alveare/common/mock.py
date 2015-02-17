@@ -73,14 +73,42 @@ def create_one_github_project(db, organization_name='Alveare', project_name='api
     db.session.add(code_repo)
     return github_project
 
+def create_one_internal_ticket(db, title, description=None, project=None):
+    from alveare.models import InternalTicket
+    if not project:
+        project = create_one_project(db)
+    if not description:
+        description = title + '-DESCRIPTION'
+    ticket = InternalTicket(project, title, description)
+    db.session.add(ticket)
+    return ticket
+
+def create_one_remote_ticket(db, title, description=None, project=None):
+    from alveare.models import RemoteTicket
+    if not project:
+        project = create_one_project(db)
+    if not description:
+        description = title + '-DESCRIPTION'
+    ticket = RemoteTicket(project, title, description)
+    db.session.add(ticket)
+    return ticket
+
+def create_one_github_ticket(db, number, project=None):
+    from alveare.models import GithubTicket
+    if not project:
+        project = create_one_project(db)
+    ticket = GithubTicket(project, number)
+    db.session.add(ticket)
+    return ticket
+
 def create_some_tickets(db, ticket_titles=None):
-    from alveare.models import Ticket
+    from alveare.models import InternalTicket, RemoteTicket
     project = create_one_project(db)
     if not ticket_titles:
         ticket_titles = ['Foo', 'Bar', 'Baz', 'Qux']
     tickets = []
-    for title in ticket_titles:
-        tickets.append(Ticket(project, title))
+    for count, title in enumerate(ticket_titles):
+        tickets.append(InternalTicket(project, title))
         db.session.add(tickets[-1])
     return tickets
 
