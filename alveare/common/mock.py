@@ -23,8 +23,8 @@ def create_one_manager(db):
 def create_one_contractor(db):
     from alveare.models import Contractor, SkillSet
     user = create_one_user(db)
-    contractor = Contractor(user)
-    contractor.skill_set = SkillSet()
+    skill_set = SkillSet()
+    contractor = Contractor(user, skill_set)
     db.session.add(contractor)
     return contractor
 
@@ -126,6 +126,15 @@ def create_one_auction(db, duration=1000, finish_work_by=None, redundancy=1):
     auction = Auction(ticket_set, term_sheet, duration, finish_work_by, redundancy)
     db.session.add(auction)
     return auction
+
+def create_one_talent_match(db, score=100):
+    from alveare.models import TalentMatch
+    auction = create_one_auction(db)
+    contractor = create_one_contractor(db)
+    talent_match = TalentMatch(contractor, auction.ticket_set)
+    talent_match.score = score
+    db.session.add(talent_match)
+    return talent_match
 
 def create_one_feedback(db):
     from alveare.models import Feedback
