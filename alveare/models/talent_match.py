@@ -8,8 +8,9 @@ class TalentMatch(DB.Model):
     approved_auction_id =   DB.Column(DB.Integer, DB.ForeignKey('auction.id'), nullable=True)
     score =                 DB.Column(DB.Integer, nullable=False, default=0)
 
-    contractor =    DB.relationship('Contractor',  uselist=False)
-    ticket_set =    DB.relationship('TicketSet',   uselist=False)
+    contractor =        DB.relationship('Contractor',  uselist=False)
+    ticket_set =        DB.relationship('TicketSet',   uselist=False)
+    ticket_matches =    DB.relationship('TicketMatch', backref='talent_match')
 
     def __init__(self, contractor, ticket_set):
         self.contractor = contractor

@@ -14,11 +14,10 @@ class Contractor(Role):
 
     __mapper_args__ = { 'polymorphic_identity': 'contractor' }
 
-    def __init__(self, user, skill_set):
+    def __init__(self, user):
         if not isinstance(user, User):
             raise ValueError('{} field on {} must be {} not {}'.format('user', self.__tablename__, User, type(user)))
         self.user = user
-        self.skill_set = skill_set
         self.busyness = 1
 
     def __repr__(self):

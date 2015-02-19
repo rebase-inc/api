@@ -10,7 +10,8 @@ class TestUserModel(AlveareModelTestCase):
 
     def test_create(self):
         user = mock.create_one_user(self.db)
-        _ = models.Contractor(user, models.SkillSet())
+        contractor = models.Contractor(user)
+        models.SkillSet(contractor)
         self.db.session.commit()
 
         user = models.User.query.get(user.id)
@@ -25,7 +26,8 @@ class TestUserModel(AlveareModelTestCase):
 
     def test_delete_contract(self):
         user = mock.create_one_user(self.db)
-        _ = models.Contractor(user, models.SkillSet())
+        contractor = models.Contractor(user)
+        models.SkillSet(contractor)
         self.db.session.commit()
 
         user_id = user.id
@@ -39,7 +41,8 @@ class TestUserModel(AlveareModelTestCase):
 
     def test_update(self):
         user = mock.create_one_user(self.db)
-        _ = models.Contractor(user, models.SkillSet())
+        contractor = models.Contractor(user)
+        models.SkillSet(contractor)
         self.db.session.commit()
 
         new_first_name = user.first_name + 'foo'

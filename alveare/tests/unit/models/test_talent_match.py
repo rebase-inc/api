@@ -38,7 +38,6 @@ class TestTalentMatchModel(AlveareModelTestCase):
         self.assertEqual(   Contractor.query.all(),     [] )
         self.assertNotEqual(Auction.query.all(),        [] )
 
-
     def test_delete_auction(self):
         talent_match = create_one_talent_match(self.db)
         self.db.session.commit()
@@ -77,3 +76,9 @@ class TestTalentMatchModel(AlveareModelTestCase):
         with self.assertRaises(AttributeError):
             self.db.session.add(talent_match)
 
+    def test_create_bad_score(self):
+        talent_match = create_one_talent_match(self.db)
+        talent_match.score = 'foobar'
+        self.db.session.add(talent_match)
+        self.db.session.commit()
+        

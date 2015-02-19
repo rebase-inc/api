@@ -23,8 +23,8 @@ def create_one_manager(db):
 def create_one_contractor(db):
     from alveare.models import Contractor, SkillSet
     user = create_one_user(db)
-    skill_set = SkillSet()
-    contractor = Contractor(user, skill_set)
+    contractor = Contractor(user)
+    SkillSet(contractor)
     db.session.add(contractor)
     return contractor
 
@@ -74,15 +74,28 @@ def create_one_github_project(db, organization_name='Alveare', project_name='api
     return github_project
 
 def create_some_tickets(db, ticket_titles=None):
-    from alveare.models import Ticket
+    from alveare.models import Ticket, SkillRequirements
     project = create_one_project(db)
     if not ticket_titles:
         ticket_titles = ['Foo', 'Bar', 'Baz', 'Qux']
     tickets = []
     for title in ticket_titles:
-        tickets.append(Ticket(project, title))
-        db.session.add(tickets[-1])
+        ticket = Ticket(project, title)
+        SkillRequirements(ticket)
+        tickets.append(ticket)
+    db.session.add_all(tickets)
     return tickets
+
+def create_ticket_matches(db, tickets_titles):
+    from alveare.models import TicketMatch
+    tickets = create_some_tickets(db)
+    contractor = create_one_contractor(db)
+    ticket_matches = []
+    for ticket in tickets:
+        ticket_matches.append(TicketMatch(contractor.skill_set, ticket.skill_requirements))
+    db.session.add_all(ticket_matches)
+    return ticket_matches
+
 
 def create_one_auction(db, duration=1000, finish_work_by=None, redundancy=1):
     if not finish_work_by:

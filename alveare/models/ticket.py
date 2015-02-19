@@ -2,10 +2,13 @@
 from alveare.common.database import DB
 
 class Ticket(DB.Model):
-    id = DB.Column(DB.Integer, primary_key=True)
-    title = DB.Column(DB.String, nullable=False)
-    description = DB.Column(DB.String, nullable=False)
-    project_id = DB.Column(DB.Integer, DB.ForeignKey('project.id'))
+
+    id =            DB.Column(DB.Integer, primary_key=True)
+    title =         DB.Column(DB.String, nullable=False)
+    description =   DB.Column(DB.String, nullable=False)
+    project_id =    DB.Column(DB.Integer, DB.ForeignKey('project.id'), nullable=False)
+
+    skill_requirements = DB.relationship('SkillRequirements', backref='ticket', cascade='all, delete-orphan', uselist=False, passive_deletes=False)
 
     def __init__(self, project, title, description=''):
         self.project = project
@@ -13,4 +16,4 @@ class Ticket(DB.Model):
         self.description = description
 
     def __repr__(self):
-        return '<Ticket[id:{}] title="{}", description="{}">'.format(self.id, self.title, self.description)
+        return '<Ticket[{}] title="{}", description="{}">'.format(self.id, self.title, self.description)
