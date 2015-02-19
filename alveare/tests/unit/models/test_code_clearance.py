@@ -3,30 +3,40 @@ from sqlalchemy.exc import StatementError
 from . import AlveareModelTestCase
 
 from alveare import models
+from alveare.common import mock
 
 class TestCodeClearanceModel(AlveareModelTestCase):
-    model = models.CodeClearance
 
     def test_create(self):
-        new_code_clearance = self.create_model(self.model, True)
-        self.assertEqual(new_code_clearance.pre_approved, True)
+        code_clearance = mock.create_one_code_clearance(self.db)
+        self.db.session.commit()
+        found_clearance = models.CodeClearance.query.get(code_clearance.id)
+        self.assertIsInstance(found_clearance.project, models.Project)
+        self.assertIsInstance(found_clearance.contractor, models.Contractor)
 
     def test_delete(self):
-        new_code_clearance = self.create_model(self.model, False)
-        self.assertEqual(new_code_clearance.pre_approved, False)
-        self.delete_instance(new_code_clearance)
+        code_clearance = mock.create_one_code_clearance(self.db)
+        self.db.session.commit()
+        code_clearance_id = code_clearance.id
+        project_id = code_clearance.project.id
+        contractor_id = code_clearance.contractor.id
+        self.delete_instance(code_clearance)
+        self.assertEqual(models.CodeClearance.query.get(code_clearance_id), None)
+        self.assertNotEqual(models.Project.query.get(project_id), None)
+        self.assertNotEqual(models.Contractor.query.get(contractor_id), None)
 
     def test_update(self):
-        new_code_clearance = self.create_model(self.model, True)
-        self.assertEqual(new_code_clearance.pre_approved, True)
-
-        new_code_clearance.pre_approved = False
+        code_clearance = mock.create_one_code_clearance(self.db)
+        self.db.session.commit()
+        new_preapproved = not code_clearance.pre_approved
+        code_clearance.pre_approved = new_preapproved
         self.db.session.commit()
 
-        modified_code_clearance = self.model.query.get(new_code_clearance.id)
-        self.assertEqual(modified_code_clearance.pre_approved, False)
+        found_clearance = models.CodeClearance.query.get(code_clearance.id)
+        self.assertEqual(found_clearance.pre_approved, new_preapproved)
 
     def test_bad_create(self):
-        with self.assertRaises(StatementError):
-            self.create_model(self.model, 'foo')
+        with self.assertRaises(ValueError):
+            code_clearance = self.create_model(models.CodeClearance, 'foo', 'bar')
+            self.db.session.add(code_clearance)
 

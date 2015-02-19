@@ -11,8 +11,6 @@ class TicketSnapshot(DB.Model):
     bid_limit_id =  DB.Column(DB.Integer, DB.ForeignKey('bid_limit.id', ondelete='CASCADE'), nullable=False)
     ticket_id =     DB.Column(DB.Integer, DB.ForeignKey('ticket.id'), nullable=False)
 
-    ticket =        DB.relationship('Ticket', uselist=False)
-
     def __init__(self, ticket):
         self.date =  datetime.now()
         self.ticket = ticket

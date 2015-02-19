@@ -7,13 +7,19 @@ class Ticket(DB.Model):
     title =         DB.Column(DB.String, nullable=False)
     description =   DB.Column(DB.String, nullable=False)
     project_id =    DB.Column(DB.Integer, DB.ForeignKey('project.id'), nullable=False)
+    discriminator = DB.Column(DB.String)
 
     skill_requirements = DB.relationship('SkillRequirements', backref='ticket', cascade='all, delete-orphan', uselist=False, passive_deletes=False)
+    snapshots = DB.relationship('TicketSnapshot', backref='ticket', cascade='all, delete-orphan', passive_deletes=True)
+    comments = DB.relationship('Comment', backref='ticket', cascade='all, delete-orphan', passive_deletes=True)
 
-    def __init__(self, project, title, description=''):
-        self.project = project
-        self.title = title
-        self.description = description
+    __mapper_args__ = {
+        'polymorphic_identity': 'ticket',
+        'polymorphic_on': discriminator
+    }
+
+    def __init__(self, *args, **kwargs):
+        raise NotImplementedError()
 
     def __repr__(self):
         return '<Ticket[{}] title="{}", description="{}">'.format(self.id, self.title, self.description)

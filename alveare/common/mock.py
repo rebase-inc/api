@@ -28,6 +28,14 @@ def create_one_contractor(db):
     db.session.add(contractor)
     return contractor
 
+def create_one_code_clearance(db):
+    from alveare.models import CodeClearance
+    contractor = create_one_contractor(db)
+    project = create_one_project(db)
+    code_clearance = CodeClearance(project, contractor)
+    db.session.add(code_clearance)
+    return code_clearance
+
 def create_one_remote_work_history(db, contractor=None):
     from alveare.models import RemoteWorkHistory
     if not contractor:
@@ -73,14 +81,42 @@ def create_one_github_project(db, organization_name='Alveare', project_name='api
     db.session.add(code_repo)
     return github_project
 
+def create_one_internal_ticket(db, title, description=None, project=None):
+    from alveare.models import InternalTicket
+    if not project:
+        project = create_one_project(db)
+    if not description:
+        description = title + '-DESCRIPTION'
+    ticket = InternalTicket(project, title, description)
+    db.session.add(ticket)
+    return ticket
+
+def create_one_remote_ticket(db, title, description=None, project=None):
+    from alveare.models import RemoteTicket
+    if not project:
+        project = create_one_project(db)
+    if not description:
+        description = title + '-DESCRIPTION'
+    ticket = RemoteTicket(project, title, description)
+    db.session.add(ticket)
+    return ticket
+
+def create_one_github_ticket(db, number, project=None):
+    from alveare.models import GithubTicket
+    if not project:
+        project = create_one_project(db)
+    ticket = GithubTicket(project, number)
+    db.session.add(ticket)
+    return ticket
+
 def create_some_tickets(db, ticket_titles=None):
-    from alveare.models import Ticket, SkillRequirements
+    from alveare.models import InternalTicket, RemoteTicket, SkillRequirements
     project = create_one_project(db)
     if not ticket_titles:
         ticket_titles = ['Foo', 'Bar', 'Baz', 'Qux']
     tickets = []
     for title in ticket_titles:
-        ticket = Ticket(project, title)
+        ticket = InternalTicket(project, title)
         SkillRequirements(ticket)
         tickets.append(ticket)
     db.session.add_all(tickets)
