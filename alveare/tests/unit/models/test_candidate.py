@@ -7,13 +7,11 @@ from alveare.common.mock import create_one_candidate, create_one_contractor, cre
 class TestCandidateModel(AlveareModelTestCase):
 
     def test_create(self):
-        score = 200
-        candidate = create_one_candidate(self.db, score)
+        candidate = create_one_candidate(self.db)
         self.db.session.commit()
         self.assertNotEqual( candidate,              None )
         self.assertNotEqual( candidate.contractor,   None )
         self.assertNotEqual( candidate.ticket_set,   None )
-        self.assertEqual(    candidate.score,        score )
         self.assertEqual(    candidate.approved_auction, None)
 
     def test_delete(self):
@@ -75,10 +73,3 @@ class TestCandidateModel(AlveareModelTestCase):
         candidate = Candidate('foobar', auction)
         with self.assertRaises(AttributeError):
             self.db.session.add(candidate)
-
-    def test_create_bad_score(self):
-        candidate = create_one_candidate(self.db)
-        candidate.score = 'foobar'
-        self.db.session.add(candidate)
-        self.db.session.commit()
-        
