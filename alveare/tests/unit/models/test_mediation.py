@@ -12,6 +12,7 @@ class TestMediationModel(AlveareModelTestCase):
     def test_state(self):
         mediation = mock.create_some_work(self.db).pop().mediation_rounds.one()
         mediation_id = mediation.id
+        print(mediation_id)
         self.db.session.commit()
 
         mediation.machine.send_event('dev_answer')
@@ -29,6 +30,9 @@ class TestMediationModel(AlveareModelTestCase):
         mediation.machine.send_event('agree')
         RUNNER()
         self.assertEqual(mediation.state, 'agreement')
+
+        found_mediation = models.Mediation.query.get(mediation_id)
+        self.assertEqual(found_mediation.state, 'agreement')
 
 
     def test_create_mediation(self):

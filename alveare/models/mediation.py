@@ -10,31 +10,24 @@ from alveare.common.state import StateMachine, StateModel, RUNNER
 class MediationStateMachine(StateMachine):
     def discussion(self):
         self.mediation.state = 'discussion'
-        print('in discussion')
 
     def waiting_for_client(self):
         self.mediation.state = 'waiting_for_client'
-        print('in waiting_for_client')
 
     def waiting_for_dev(self):
         self.mediation.state = 'waiting_for_dev'
-        print('in waiting_for_dev')
 
     def decision(self):
         self.mediation.state = 'decision'
-        print('in decision')
 
     def timed_out(self):
         self.mediation.state = 'timed_out'
-        print('timed out!')
 
     def agreement(self):
         self.mediation.state = 'agreement'
-        print('in agreement')
 
     def arbitration(self):
         self.mediation.state = 'arbitration'
-        print('in arbitration!')
 
     def __init__(self, mediation_instance, resume_state=None):
         self.mediation = mediation_instance
