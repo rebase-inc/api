@@ -5,16 +5,16 @@ class StateMachine(object):
     def __init__(self, resume_state=None):
         self.events = {}
         self.queue = []
-        self.priority_queue = []
+        self.internal_queue = []
         RUNNER.add_machine(self)
 
         if resume_state:
             self.current_state = resume_state
         else:
             self.current_state = None
-            self.priority_queue.append(('initialize', None))
+            self.internal_queue.append(('initialize', None))
 
-    def add_event(self, name, transitions):
+    def add_event_transitions(self, name, transitions):
         self.events[name] = {}
         for current_state, new_state in transitions.items():
             self.events[name][current_state] = new_state
@@ -23,11 +23,11 @@ class StateMachine(object):
         self.queue.append((event, data))
 
     def has_events(self):
-        return any([self.queue, self.priority_queue])
+        return any([self.queue, self.internal_queue])
 
     def get_event(self):
-        if self.priority_queue:
-            return self.priority_queue.pop(0)
+        if self.internal_queue:
+            return self.internal_queue.pop(0)
         if self.queue:
             return self.queue.pop(0)
         raise NoMoreEvents
