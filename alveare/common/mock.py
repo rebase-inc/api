@@ -122,16 +122,15 @@ def create_some_tickets(db, ticket_titles=None):
     db.session.add_all(tickets)
     return tickets
 
-def create_ticket_matches(db, tickets_titles):
+def create_ticket_matches(db):
     from alveare.models import TicketMatch
     tickets = create_some_tickets(db)
     contractor = create_one_contractor(db)
     ticket_matches = []
     for ticket in tickets:
-        ticket_matches.append(TicketMatch(contractor.skill_set, ticket.skill_requirements))
+        ticket_matches.append(TicketMatch(contractor.skill_set, ticket.skill_requirements, 100))
     db.session.add_all(ticket_matches)
     return ticket_matches
-
 
 def create_one_auction(db, duration=1000, finish_work_by=None, redundancy=1):
     if not finish_work_by:
@@ -156,9 +155,16 @@ def create_one_candidate(db):
     db.session.add(candidate)
     return candidate
 
-def create_one_job_fit(db, score):
-    pass
-
+def create_one_job_fit(db):
+    from alveare.models import TicketMatch, JobFit
+    candidate = create_one_candidate(db)
+    skill_set = candidate.contractor.skill_set
+    ticket_matches = []
+    for bid_limit in candidate.ticket_set.bid_limits:
+        ticket_matches.append(TicketMatch(skill_set, bid_limit.snapshot.ticket.skill_requirements, 100))
+    job_fit = JobFit(candidate, ticket_matches)
+    db.session.add(job_fit)
+    return job_fit
 
 def create_one_feedback(db):
     from alveare.models import Feedback
