@@ -5,8 +5,23 @@ from sqlalchemy.orm.exc import ObjectDeletedError
 from . import AlveareModelTestCase
 from alveare import models
 from alveare.common import mock
+from alveare.common.state import RUNNER
 
 class TestMediationModel(AlveareModelTestCase):
+
+    def test_state(self):
+        mediation = mock.create_some_work(self.db).pop().mediation_rounds.one()
+        mediation_id = mediation.id
+        self.db.session.commit()
+
+        mediation.machine.send_event('dev_answer')
+        mediation.machine.send_event('timeout')
+        mediation.machine.send_event('timeout_answer')
+        mediation.machine.send_event('agree')
+
+        RUNNER()
+
+        self.assertEqual(mediation.state, 'agreement')
 
     def test_create_mediation(self):
         mediation = mock.create_some_work(self.db).pop().mediation_rounds.one()
