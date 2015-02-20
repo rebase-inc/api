@@ -24,7 +24,7 @@ from alveare.models.remote_work_history import *
 from alveare.models.review import *
 from alveare.models.skill_requirements import *
 from alveare.models.skill_set import *
-from alveare.models.talent_match import *
+from alveare.models.candidate import *
 from alveare.models.talent_pool import *
 from alveare.models.term_sheet import *
 from alveare.models.ticket import *
