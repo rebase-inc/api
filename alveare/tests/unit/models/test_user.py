@@ -64,7 +64,7 @@ class TestUserModel(AlveareModelTestCase):
         self.assertEqual(found_user.hashed_password, new_password)
         self.assertEqual(found_user.last_seen, new_last_seen)
 
-    @unittest.skip('i suppose its not a big deal to pass ints as strs...') 
+    @unittest.skip('i suppose its not a big deal to pass ints as strs...')
     def test_bad_create(self):
         with self.assertRaises(ValueError):
             self.create_model(models.User, 1, 1, 1, 1)
