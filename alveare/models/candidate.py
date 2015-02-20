@@ -16,5 +16,5 @@ class Candidate(DB.Model):
         self.ticket_set = ticket_set
 
     def __repr__(self):
-        return '<Candidate[contractor({}), auction({})] score={}>'.format(self.contractor_id, self.auction_id, self.score)
+        return '<Candidate[contractor({}), auction({})]>'.format(self.contractor_id, self.auction_id)
 

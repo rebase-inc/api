@@ -148,14 +148,17 @@ def create_one_auction(db, duration=1000, finish_work_by=None, redundancy=1):
     db.session.add(auction)
     return auction
 
-def create_one_candidate(db, score=100):
+def create_one_candidate(db):
     from alveare.models import Candidate
     auction = create_one_auction(db)
     contractor = create_one_contractor(db)
     candidate = Candidate(contractor, auction.ticket_set)
-    candidate.score = score
     db.session.add(candidate)
     return candidate
+
+def create_one_job_fit(db, score):
+    pass
+
 
 def create_one_feedback(db):
     from alveare.models import Feedback
