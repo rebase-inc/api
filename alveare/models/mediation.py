@@ -5,7 +5,7 @@ import sys
 import datetime
 
 from alveare.common.database import DB
-from alveare.common.state import StateMachine, StateModel, RUNNER
+from alveare.common.state import StateMachine, StateModel
 
 class Mediation(DB.Model):
     id =            DB.Column(DB.Integer, primary_key=True)
@@ -13,7 +13,7 @@ class Mediation(DB.Model):
     client_answer = DB.Column(DB.Integer, nullable=True)
     timeout =       DB.Column(DB.DateTime, nullable=False)
     work_id =       DB.Column(DB.Integer, DB.ForeignKey('work.id', ondelete='CASCADE'), nullable=False)
-    state =         DB.Column(StateModel, nullable=False, default='NONE')
+    state =         DB.Column(StateModel, nullable=False, default='discussion')
 
     arbitration =   DB.relationship('Arbitration', backref='mediation', uselist=False, cascade='all, delete-orphan', passive_deletes=True)
 
@@ -21,10 +21,7 @@ class Mediation(DB.Model):
     def machine(self):
         if hasattr(self, '_machine'):
             return self._machine
-        if self.state == 'NONE':
-            self._machine = MediationStateMachine(self)
-        else:
-            self._machine = MediationStateMachine(self, resume_state=getattr(StateMachine, self.state))
+        self._machine = MediationStateMachine(self, initial_state=self.state)
         return self._machine
 
     def __init__(self, work, timeout = datetime.datetime.now() + datetime.timedelta(days=3)):
@@ -41,30 +38,35 @@ class Mediation(DB.Model):
         return value
 
 class MediationStateMachine(StateMachine):
+
+    def set_state(self, new_state):
+        self.mediation.state = new_state.__name__
+
     def discussion(self):
-        self.mediation.state = 'discussion'
+        #print('in {} state'.format(self._current_state.__name__))
+        pass
 
     def waiting_for_client(self):
-        self.mediation.state = 'waiting_for_client'
+        pass
 
     def waiting_for_dev(self):
-        self.mediation.state = 'waiting_for_dev'
+        pass
 
     def decision(self):
-        self.mediation.state = 'decision'
+        pass
 
     def timed_out(self):
-        self.mediation.state = 'timed_out'
+        pass
 
     def agreement(self):
-        self.mediation.state = 'agreement'
+        pass
 
     def arbitration(self):
-        self.mediation.state = 'arbitration'
+        pass
 
-    def __init__(self, mediation_instance, resume_state=None):
+    def __init__(self, mediation_instance, initial_state):
         self.mediation = mediation_instance
-        StateMachine.__init__(self, resume_state = resume_state)
+        StateMachine.__init__(self, initial_state = getattr(self, initial_state))
         self.add_event_transitions('initialize', {None: self.discussion})
         self.add_event_transitions('dev_answer', {self.discussion: self.waiting_for_client, self.waiting_for_dev:self.decision})
         self.add_event_transitions('client_answer', {self.discussion:self.waiting_for_dev, self.waiting_for_client:self.decision})

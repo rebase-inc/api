@@ -1,26 +1,43 @@
 from alveare.common.database import DB
 
+class MachineSet(set):
+    def process_all_events(self):
+        while any([machine.has_events() for machine in self]):
+            for machine in self:
+                machine.run()
+
+MACHINE_SET = MachineSet()
+
 class StateMachine(object):
 
-    def __init__(self, resume_state=None):
-        self.events = {}
+    def __init__(self, initial_state):
+        self.event_transitions = {}
         self.queue = []
         self.internal_queue = []
-        RUNNER.add_machine(self)
+        self._current_state = initial_state
 
-        if resume_state:
-            self.current_state = resume_state
-        else:
-            self.current_state = None
-            self.internal_queue.append(('initialize', None))
+        MACHINE_SET.add(self)
 
-    def add_event_transitions(self, name, transitions):
-        self.events[name] = {}
-        for current_state, new_state in transitions.items():
-            self.events[name][current_state] = new_state
+    @property
+    def current_state(self):
+        return self._current_state
 
-    def send_event(self, event, data=None):
-        self.queue.append((event, data))
+    @current_state.setter
+    def current_state(self, new_state):
+        self._current_state = new_state
+        self.set_state(new_state)
+
+    def set_state(self, new_state):
+        raise NotImplementedError()
+        pass
+
+    def add_event_transitions(self, event_name, transitions):
+        self.event_transitions[event_name] = {}
+        for from_state, to_state in transitions.items():
+            self.event_transitions[event_name][from_state] = to_state
+
+    def send_event(self, event, *args, **kwargs):
+        self.queue.append((event, args, kwargs))
 
     def has_events(self):
         return any([self.queue, self.internal_queue])
@@ -34,29 +51,14 @@ class StateMachine(object):
 
     def run(self):
         while self.has_events():
-            event, data = self.get_event()
+            event, args, kwargs = self.get_event()
             try:
-                new_state = self.events[event][self.current_state]
+                state_action = self.event_transitions[event][self.current_state]
             except KeyError as e:
                 raise Exception('No transition from {} via {}'.format(self.current_state, event))
-            new_state()
-            self.current_state = new_state
+            self.current_state = state_action
+            state_action(*args, **kwargs)
 
 class StateModel(DB.String):
     pass
-
-class Runner(object):
-    def __init__(self):
-        self.machines = []
-        pass
-
-    def add_machine(self, machine):
-        self.machines.append(machine)
-
-    def __call__(self):
-        while any([machine.has_events() for machine in self.machines]):
-            for machine in self.machines:
-                machine.run()
-
-RUNNER = Runner()
 
