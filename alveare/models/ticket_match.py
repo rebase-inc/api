@@ -8,12 +8,12 @@ class TicketMatch(DB.Model):
 
     skill_requirements_id = DB.Column(DB.Integer, DB.ForeignKey('skill_requirements.id', ondelete='CASCADE'), primary_key=True)
     skill_set_id =          DB.Column(DB.Integer, DB.ForeignKey('skill_set.id',          ondelete='CASCADE'), primary_key=True)
-    contractor_id =         DB.Column(DB.Integer)
-    auction_id =            DB.Column(DB.Integer)
+    contractor_id =         DB.Column(DB.Integer, nullable=True)
+    auction_id =            DB.Column(DB.Integer, nullable=True)
     score =                 DB.Column(DB.Integer, nullable=False)
 
-    skill_set =             DB.relationship('SkillSet',             backref='candidates', uselist=False)
-    skill_requirements =    DB.relationship('SkillRequirements',    backref='candidates', uselist=False)
+    skill_set =             DB.relationship('SkillSet',             backref='ticket_matches', uselist=False)
+    skill_requirements =    DB.relationship('SkillRequirements',    backref='ticket_matches', uselist=False)
 
     def __init__(self, skill_set, skill_requirements, score):
         self.skill_set = skill_set

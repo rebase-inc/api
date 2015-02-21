@@ -9,7 +9,7 @@ class Candidate(DB.Model):
 
     contractor =    DB.relationship('Contractor',   uselist=False)
     ticket_set =    DB.relationship('TicketSet',    uselist=False)
-    job_fit =       DB.relationship('JobFit',       uselist=False)
+    job_fit =       DB.relationship('JobFit', backref=DB.backref('candidate', uselist=False), uselist=False, cascade='all, delete-orphan', passive_deletes=True)
 
     def __init__(self, contractor, ticket_set):
         self.contractor = contractor
