@@ -32,9 +32,9 @@ class TestCandidateModel(AlveareModelTestCase):
         self.db.session.delete(candidate.contractor)
         self.db.session.commit()
 
-        self.assertEqual(   Candidate.query.all(),    [] )
-        self.assertEqual(   Contractor.query.all(),     [] )
-        self.assertNotEqual(Auction.query.all(),        [] )
+        self.assertEqual(   Candidate.query.all(),  [] )
+        self.assertEqual(   Contractor.query.all(), [] )
+        self.assertNotEqual(Auction.query.all(),    [] )
 
     def test_delete_auction(self):
         candidate = create_one_candidate(self.db)
@@ -64,12 +64,10 @@ class TestCandidateModel(AlveareModelTestCase):
 
     def test_create_bad_ticket_set(self):
         contractor = create_one_contractor(self.db)
-        candidate = Candidate(contractor, 'foobar')
         with self.assertRaises(AttributeError):
-            self.db.session.add(candidate)
+            candidate = Candidate(contractor, 'foobar')
 
     def test_create_bad_contractor(self):
         auction = create_one_auction(self.db)
-        candidate = Candidate('foobar', auction)
         with self.assertRaises(AttributeError):
-            self.db.session.add(candidate)
+            candidate = Candidate('foobar', auction)

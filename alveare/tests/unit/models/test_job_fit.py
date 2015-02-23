@@ -37,6 +37,17 @@ class TestJobFit(AlveareModelTestCase):
         self.db.session.delete(job_fit.candidate)
         self.db.session.commit()
 
+    def test_unrelate_candidate(self):
+        job_fit = create_one_job_fit(self.db)
+        self.db.session.commit()
+
+        candidate = job_fit.candidate
+        candidate.job_fit = None # unrelate JobFit from Candidate
+        self.db.session.commit()
+
+        # this really tests the 'delete-orphan' clause of the relationship
+        # that is if one removes the 'delete-orphan' clause, this will fail
+        self.assertEqual(JobFit.query.all(), [])
 
     def test_empty_ticket_matches(self):
         candidate = create_one_candidate(self.db)
