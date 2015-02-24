@@ -16,7 +16,7 @@ class TestJobFit(AlveareModelTestCase):
 
         job_fit = job_fits[0]
         self.assertNotEqual(job_fit.candidate, None)
-        self.assertNotEqual(job_fit.ticket_matches, [])
+        self.assertNotEqual(TicketMatch.query.all(), [])
 
     def test_delete(self):
         job_fit = create_one_job_fit(self.db)

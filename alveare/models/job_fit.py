@@ -10,8 +10,6 @@ class JobFit(DB.Model):
     auction_id =            DB.Column(DB.Integer,  primary_key=True)
     score =                 DB.Column(DB.Integer, nullable=False, default=0)
 
-    ticket_matches =    DB.relationship('TicketMatch', backref='job_fit')
-
     def __init__(self, candidate, ticket_matches):
         if not ticket_matches:
             raise ValueError('JobFit must have at least one instance of a TicketMatch')
