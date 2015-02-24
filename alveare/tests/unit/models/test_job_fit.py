@@ -29,7 +29,6 @@ class TestJobFit(AlveareModelTestCase):
         self.assertNotEqual(ticket_matches, [])
         self.assertNotEqual(candidate, None)
 
-    @unittest.skip('need to fix cascading delete case')
     def test_delete_candidate(self):
         job_fit = create_one_job_fit(self.db)
         self.db.session.commit()
