@@ -5,9 +5,9 @@ from alveare.models.ticket_snapshot import TicketSnapshot
 
 class BidLimit(DB.Model):
 
-    id =        DB.Column(DB.Integer, primary_key=True)
-    price =     DB.Column(DB.Integer, nullable=False)
-    auction_id =DB.Column(DB.Integer, DB.ForeignKey('ticket_set.auction_id', ondelete='CASCADE'), nullable=False)
+    id =         DB.Column(DB.Integer, primary_key=True)
+    price =      DB.Column(DB.Integer, nullable=False)
+    auction_id = DB.Column(DB.Integer, DB.ForeignKey('ticket_set.auction_id', ondelete='CASCADE'), nullable=False)
 
     snapshot =  DB.relationship(TicketSnapshot, uselist=False, cascade='all, delete-orphan', passive_deletes=True)
 

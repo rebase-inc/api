@@ -14,8 +14,7 @@ class WorkOffer(DB.Model):
 
     ticket_snapshot =       DB.relationship('TicketSnapshot', uselist=False)
 
-    def __init__(self, bid, ticket_snapshot, price):
-        self.bid = bid
+    def __init__(self, ticket_snapshot, price):
         self.ticket_snapshot = ticket_snapshot
         self.price = price
 

@@ -15,6 +15,25 @@ class TestMediationModel(AlveareModelTestCase):
         self.db.session.commit()
 
         mediation.machine.send_event('dev_answer')
+        mediation.machine.send_event('timeout')
+        mediation.machine.send_event('timeout_answer')
+        mediation.machine.send_event('agree')
+
+        MACHINE_SET.process_all_events()
+
+        self.assertEqual(mediation.state, 'agreement')
+        self.db.session.commit()
+        self.db.session.close()
+
+        found_mediation = models.Mediation.query.get(mediation_id)
+        self.assertEqual(found_mediation.state, 'agreement')
+
+    def test_incremental_state(self):
+        mediation = mock.create_some_work(self.db).pop().mediation_rounds.one()
+        mediation_id = mediation.id
+        self.db.session.commit()
+
+        mediation.machine.send_event('dev_answer')
         MACHINE_SET.process_all_events()
         self.assertEqual(mediation.state, 'waiting_for_client')
 

@@ -20,7 +20,7 @@ class TestContractModel(AlveareModelTestCase):
         self.db.session.commit()
 
         new_contract = self.create_model(Contract, bid)
-        self.assertEqual( new_contract.bid_id, bid.id )
+        self.assertEqual( new_contract.id, bid.id )
 
     def test_delete_contract(self):
         bid = mock.create_one_bid(self.db)

@@ -5,11 +5,98 @@ import datetime
 from sqlalchemy.exc import StatementError
 
 from . import AlveareModelTestCase
-from alveare.models import Auction, Ticket, TicketSnapshot, TicketSet, BidLimit, TermSheet
+from alveare.models import Auction, Ticket, TicketSnapshot, TicketSet, BidLimit, TermSheet, WorkOffer, Bid
 from alveare import models
 from alveare.common import mock
+from alveare.common.state import MACHINE_SET
 
 class TestAuctionModel(AlveareModelTestCase):
+
+    def test_state(self):
+        contractor = mock.create_one_contractor(self.db)
+        auction = mock.create_one_auction(self.db, redundancy=2)
+        self.db.session.commit()
+
+        bid_limits = auction.ticket_set.bid_limits
+
+        # overbid on purpose
+        work_offers = []
+        for bid_limit in bid_limits:
+            work_offers.append(WorkOffer(bid_limit.snapshot, int(bid_limit.price * 1.2)))
+        bid = Bid(auction, contractor, work_offers)
+        self.db.session.add(bid)
+        self.db.session.commit()
+        auction.machine.send_event('bid', bid)
+
+        # underbid on purpose
+        work_offers = []
+        for bid_limit in bid_limits:
+            work_offers.append(WorkOffer(bid_limit.snapshot, int(bid_limit.price * 0.8)))
+        bid = Bid(auction, contractor, work_offers)
+        self.db.session.add(bid)
+        self.db.session.commit()
+        auction.machine.send_event('bid', bid)
+
+        # underbid on purpose
+        work_offers = []
+        for bid_limit in bid_limits:
+            work_offers.append(WorkOffer(bid_limit.snapshot, int(bid_limit.price * 0.8)))
+        bid = Bid(auction, contractor, work_offers)
+        self.db.session.add(bid)
+        self.db.session.commit()
+        auction.machine.send_event('bid', bid)
+
+        MACHINE_SET.process_all_events()
+
+        self.assertEqual(auction.state, 'ended')
+
+    def test_iterative_state(self):
+        contractor = mock.create_one_contractor(self.db)
+        auction = mock.create_one_auction(self.db, redundancy=2)
+        self.db.session.commit()
+
+        bid_limits = auction.ticket_set.bid_limits
+
+        # overbid on purpose
+        work_offers = []
+        for bid_limit in bid_limits:
+            work_offers.append(WorkOffer(bid_limit.snapshot, int(bid_limit.price * 1.2)))
+        bid = Bid(auction, contractor, work_offers)
+        self.db.session.add(bid)
+        self.db.session.commit()
+        auction.machine.send_event('bid', bid)
+
+        MACHINE_SET.process_all_events()
+
+        self.assertEqual(auction.state, 'waiting_for_bids')
+
+        # underbid on purpose
+        work_offers = []
+        for bid_limit in bid_limits:
+            work_offers.append(WorkOffer(bid_limit.snapshot, int(bid_limit.price * 0.8)))
+        bid = Bid(auction, contractor, work_offers)
+        self.db.session.add(bid)
+        self.db.session.commit()
+        auction.machine.send_event('bid', bid)
+
+        MACHINE_SET.process_all_events()
+
+        self.assertEqual(auction.state, 'waiting_for_bids')
+
+        # underbid on purpose
+        work_offers = []
+        for bid_limit in bid_limits:
+            work_offers.append(WorkOffer(bid_limit.snapshot, int(bid_limit.price * 0.8)))
+        bid = Bid(auction, contractor, work_offers)
+        self.db.session.add(bid)
+        self.db.session.commit()
+        auction.machine.send_event('bid', bid)
+
+        MACHINE_SET.process_all_events()
+
+        self.assertEqual(auction.state, 'ended')
+
+        #raise Exception(models.Bid.query.filter(Bid.auction_id == auction.id).filter(Bid
 
     def test_create(self):
         auction = mock.create_one_auction(self.db)
