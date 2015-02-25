@@ -4,7 +4,7 @@ from sqlalchemy.orm import validates
 from sqlalchemy.ext.hybrid import hybrid_property
 
 from alveare.common.database import DB
-from alveare.common.state import StateMachine, StateModel
+from alveare.common.state import StateMachine
 from alveare.models import BidLimit, Contract, Bid
 
 class Auction(DB.Model):
@@ -14,7 +14,7 @@ class Auction(DB.Model):
     finish_work_by = DB.Column(DB.DateTime,  nullable=False)
     redundancy =     DB.Column(DB.Integer,   nullable=False)
     term_sheet_id =  DB.Column(DB.Integer,   DB.ForeignKey('term_sheet.id'), nullable=False)
-    state =          DB.Column(StateModel, nullable=False, default='created')
+    state =          DB.Column(DB.String, nullable=False, default='created')
 
     term_sheet =       DB.relationship('TermSheet', uselist=False)
     ticket_set =       DB.relationship('TicketSet', backref='auction', cascade="all, delete-orphan", passive_deletes=True, uselist=False)
@@ -53,7 +53,7 @@ class Auction(DB.Model):
 
 class AuctionStateMachine(StateMachine):
 
-    def set_state(self, new_state):
+    def set_state(self, old_state, new_state):
         self.auction.state = new_state.__name__
 
     def created(self):
@@ -74,7 +74,7 @@ class AuctionStateMachine(StateMachine):
 
         bid.contract = Contract(bid)
         if self.auction.bids.filter(Bid.contract != None).count() >= self.auction.redundancy:
-            self.send_event('end')
+            self.send('end')
 
     def failed(self):
         pass

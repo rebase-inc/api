@@ -5,7 +5,7 @@ import sys
 import datetime
 
 from alveare.common.database import DB
-from alveare.common.state import StateMachine, StateModel
+from alveare.common.state import StateMachine
 
 class Mediation(DB.Model):
     id =            DB.Column(DB.Integer, primary_key=True)
@@ -13,7 +13,7 @@ class Mediation(DB.Model):
     client_answer = DB.Column(DB.Integer, nullable=True)
     timeout =       DB.Column(DB.DateTime, nullable=False)
     work_id =       DB.Column(DB.Integer, DB.ForeignKey('work.id', ondelete='CASCADE'), nullable=False)
-    state =         DB.Column(StateModel, nullable=False, default='discussion')
+    state =         DB.Column(DB.String, nullable=False, default='discussion')
 
     arbitration =   DB.relationship('Arbitration', backref='mediation', uselist=False, cascade='all, delete-orphan', passive_deletes=True)
 
@@ -39,7 +39,7 @@ class Mediation(DB.Model):
 
 class MediationStateMachine(StateMachine):
 
-    def set_state(self, new_state):
+    def set_state(self, _, new_state):
         self.mediation.state = new_state.__name__
 
     def discussion(self):

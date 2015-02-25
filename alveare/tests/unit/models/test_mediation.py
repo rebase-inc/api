@@ -5,7 +5,7 @@ from sqlalchemy.orm.exc import ObjectDeletedError
 from . import AlveareModelTestCase
 from alveare import models
 from alveare.common import mock
-from alveare.common.state import MACHINE_SET
+from alveare.common.state import MACHINES
 
 class TestMediationModel(AlveareModelTestCase):
 
@@ -14,12 +14,12 @@ class TestMediationModel(AlveareModelTestCase):
         mediation_id = mediation.id
         self.db.session.commit()
 
-        mediation.machine.send_event('dev_answer')
-        mediation.machine.send_event('timeout')
-        mediation.machine.send_event('timeout_answer')
-        mediation.machine.send_event('agree')
+        mediation.machine.send('dev_answer')
+        mediation.machine.send('timeout')
+        mediation.machine.send('timeout_answer')
+        mediation.machine.send('agree')
 
-        MACHINE_SET.process_all_events()
+        MACHINES.process_all_events()
 
         self.assertEqual(mediation.state, 'agreement')
         self.db.session.commit()
@@ -33,20 +33,20 @@ class TestMediationModel(AlveareModelTestCase):
         mediation_id = mediation.id
         self.db.session.commit()
 
-        mediation.machine.send_event('dev_answer')
-        MACHINE_SET.process_all_events()
+        mediation.machine.send('dev_answer')
+        MACHINES.process_all_events()
         self.assertEqual(mediation.state, 'waiting_for_client')
 
-        mediation.machine.send_event('timeout')
-        MACHINE_SET.process_all_events()
+        mediation.machine.send('timeout')
+        MACHINES.process_all_events()
         self.assertEqual(mediation.state, 'timed_out')
 
-        mediation.machine.send_event('timeout_answer')
-        MACHINE_SET.process_all_events()
+        mediation.machine.send('timeout_answer')
+        MACHINES.process_all_events()
         self.assertEqual(mediation.state, 'decision')
 
-        mediation.machine.send_event('agree')
-        MACHINE_SET.process_all_events()
+        mediation.machine.send('agree')
+        MACHINES.process_all_events()
         self.assertEqual(mediation.state, 'agreement')
         self.db.session.commit()
         self.db.session.close()
