@@ -104,10 +104,6 @@ class TestState(unittest.TestCase):
             pass
 
         class Z(StateMachine):
-
-            def bar(self):
-                pass
-
             def __init__(self):
                 StateMachine.__init__(self, foo)
 
@@ -120,17 +116,13 @@ class TestState(unittest.TestCase):
             pass
 
         class Z(StateMachine):
-
-            def bar(self):
-                pass
-
             def __init__(self):
-                StateMachine.__init__(self, self.bar)
+                StateMachine.__init__(self)
 
         z = Z()
         with test.assertRaises(AttributeError):
             z.add_event_transitions('some_event', {
-                z.bar: foo
+                None: foo
             })
 
     def test_bad_current_state_in_transition(test):
@@ -138,12 +130,11 @@ class TestState(unittest.TestCase):
             pass
 
         class Z(StateMachine):
+            def __init__(self):
+                StateMachine.__init__(self)
 
             def bar(self):
                 pass
-
-            def __init__(self):
-                StateMachine.__init__(self, self.bar)
 
         z = Z()
         with test.assertRaises(AttributeError):
@@ -156,7 +147,7 @@ class TestState(unittest.TestCase):
 
         class W(StateMachine):
             def __init__(self):
-                StateMachine.__init__(self, None)
+                StateMachine.__init__(self)
 
         w = W()
 
