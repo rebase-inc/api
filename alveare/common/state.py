@@ -5,14 +5,11 @@ class MachineSet(set):
             for machine in self:
                 machine.run()
 
-MACHINE_SET = MachineSet()
+MACHINES = MachineSet()
 
 class StateMachine(object):
 
     def validate_state(self, state):
-        if not state:
-            return # None is a valid state
-        # anything else should be a method of this object
         state_name = getattr(state, '__name__') # not a method
         getattr(self, state_name) # not in self object
 
@@ -20,10 +17,11 @@ class StateMachine(object):
         self.event_transitions = {}
         self.queue = []
         self.internal_queue = []
+        if initial_state:
+            self.validate_state(initial_state)
         self._current_state = initial_state
-        self.validate_state(initial_state)
 
-        MACHINE_SET.add(self)
+        MACHINES.add(self)
 
     @property
     def current_state(self):
@@ -32,10 +30,19 @@ class StateMachine(object):
     @current_state.setter
     def current_state(self, new_state):
         self._current_state = new_state
-        self.set_state(new_state)
+        self.set_state(self._current_state, new_state)
 
-    def set_state(self, new_state):
-        raise NotImplementedError()
+    def set_state(self, old_state, new_state):
+        '''
+        Provide an implementation in a derived class if you wish to track each state transition
+
+        Params:
+        old_state:  the previous current state when the event was received
+        new_state:  the new current state (i.e. the value returned by 'self.current_state')
+
+        Note that 'set_state' is called right before the call to the new_state method is made
+        '''
+        pass
 
     def add_event_transitions(self, event_name, transitions):
         '''
@@ -45,17 +52,34 @@ class StateMachine(object):
         event_name:     name of one event, string
         transitions:    dictionary of { current_state: new_state }
 
-        Note that 'current_state' and 'new_state' must be methods provided by the 
-        StateMachine object, usually by a class deriving from StateMachine.
-        If not, an AttributeError exception will be raised.
+        'current_state' can be None, in which case the event transition is describing a creation event,
+        or must be a method provided by the StateMachine object or a derived child.
+
+        'new_state' can never be None and must be a method provided by the StateMachine object or
+        a derived child.
+
+        If the pre-conditions for 'current_state' or 'new_state' are not met, an AttributeError exception will be raised.
         '''
+
         self.event_transitions[event_name] = {}
         for from_state, to_state in transitions.items():
-            self.validate_state(from_state)
+            # None is a valid from_state
+            if from_state:
+                self.validate_state(from_state)
             self.validate_state(to_state)
             self.event_transitions[event_name][from_state] = to_state
 
     def send(self, event, *args, **kwargs):
+        '''
+        send is used for communications between state machines.
+
+        Params:
+        event:          a string whose value has been declared by a call to add_event_transitions.
+        args, kwargs:   a generic function signature
+
+        If event has not been declared via a call add_event_transitions, send will raise a ValueError exception
+        '''
+
         if event not in self.event_transitions.keys():
             raise ValueError('Unknown event "{}" sent to {}',format(event, str(self)))
         self.queue.append((event, args, kwargs))

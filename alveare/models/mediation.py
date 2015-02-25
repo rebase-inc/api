@@ -39,7 +39,7 @@ class Mediation(DB.Model):
 
 class MediationStateMachine(StateMachine):
 
-    def set_state(self, new_state):
+    def set_state(self, _, new_state):
         self.mediation.state = new_state.__name__
 
     def discussion(self):

@@ -5,7 +5,7 @@ from sqlalchemy.orm.exc import ObjectDeletedError
 from . import AlveareModelTestCase
 from alveare import models
 from alveare.common import mock
-from alveare.common.state import MACHINE_SET
+from alveare.common.state import MACHINES
 
 class TestMediationModel(AlveareModelTestCase):
 
@@ -15,19 +15,19 @@ class TestMediationModel(AlveareModelTestCase):
         self.db.session.commit()
 
         mediation.machine.send('dev_answer')
-        MACHINE_SET.process_all_events()
+        MACHINES.process_all_events()
         self.assertEqual(mediation.state, 'waiting_for_client')
 
         mediation.machine.send('timeout')
-        MACHINE_SET.process_all_events()
+        MACHINES.process_all_events()
         self.assertEqual(mediation.state, 'timed_out')
 
         mediation.machine.send('timeout_answer')
-        MACHINE_SET.process_all_events()
+        MACHINES.process_all_events()
         self.assertEqual(mediation.state, 'decision')
 
         mediation.machine.send('agree')
-        MACHINE_SET.process_all_events()
+        MACHINES.process_all_events()
         self.assertEqual(mediation.state, 'agreement')
         self.db.session.commit()
         self.db.session.close()
