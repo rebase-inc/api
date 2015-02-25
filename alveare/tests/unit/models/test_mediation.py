@@ -14,19 +14,19 @@ class TestMediationModel(AlveareModelTestCase):
         mediation_id = mediation.id
         self.db.session.commit()
 
-        mediation.machine.send_event('dev_answer')
+        mediation.machine.send('dev_answer')
         MACHINE_SET.process_all_events()
         self.assertEqual(mediation.state, 'waiting_for_client')
 
-        mediation.machine.send_event('timeout')
+        mediation.machine.send('timeout')
         MACHINE_SET.process_all_events()
         self.assertEqual(mediation.state, 'timed_out')
 
-        mediation.machine.send_event('timeout_answer')
+        mediation.machine.send('timeout_answer')
         MACHINE_SET.process_all_events()
         self.assertEqual(mediation.state, 'decision')
 
-        mediation.machine.send_event('agree')
+        mediation.machine.send('agree')
         MACHINE_SET.process_all_events()
         self.assertEqual(mediation.state, 'agreement')
         self.db.session.commit()

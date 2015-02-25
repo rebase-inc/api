@@ -3,11 +3,11 @@ from sqlalchemy.ext.hybrid import hybrid_property
 
 from .work_offer import WorkOffer
 from alveare.common.database import DB
-from alveare.common.state import StateMachine, StateModel
+from alveare.common.state import StateMachine
 
 class Work(DB.Model):
     id = DB.Column(DB.Integer, primary_key=True)
-    state = DB.Column(StateModel)
+    state = DB.Column(DB.String)
 
     review =            DB.relationship('Review',    backref='work', uselist=False, cascade='all, delete-orphan', passive_deletes=True)
     debit =             DB.relationship('Debit',     backref='work', uselist=False, cascade='all, delete-orphan', passive_deletes=True)

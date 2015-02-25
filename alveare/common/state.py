@@ -1,4 +1,3 @@
-from alveare.common.database import DB
 
 class MachineSet(set):
     def process_all_events(self):
@@ -29,14 +28,13 @@ class StateMachine(object):
 
     def set_state(self, new_state):
         raise NotImplementedError()
-        pass
 
     def add_event_transitions(self, event_name, transitions):
         self.event_transitions[event_name] = {}
         for from_state, to_state in transitions.items():
             self.event_transitions[event_name][from_state] = to_state
 
-    def send_event(self, event, *args, **kwargs):
+    def send(self, event, *args, **kwargs):
         self.queue.append((event, args, kwargs))
 
     def has_events(self):
@@ -58,7 +56,4 @@ class StateMachine(object):
                 raise Exception('No transition from {} via {}'.format(self.current_state, event))
             self.current_state = state_action
             state_action(*args, **kwargs)
-
-class StateModel(DB.String):
-    pass
 
