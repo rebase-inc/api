@@ -1,15 +1,15 @@
 import copy
+from contextlib import ContextDecorator
 
-class MachineSet(set):
+class Machines(set):
     def process_all_events(self):
         while any([machine.has_events() for machine in self]):
             copy_self = copy.copy(self)
             for machine in copy_self:
                 machine.run()
 
-MACHINES = MachineSet()
-
 class StateMachine(object):
+    machine_pool = None
 
     def validate_state(self, state):
         state_name = getattr(state, '__name__') # not a method
@@ -22,8 +22,6 @@ class StateMachine(object):
         if initial_state:
             self.validate_state(initial_state)
         self._current_state = initial_state
-
-        MACHINES.add(self)
 
     @property
     def current_state(self):
@@ -84,6 +82,11 @@ class StateMachine(object):
 
         if event not in self.event_transitions.keys():
             raise ValueError('Unknown event "{}" sent to {}'.format(event, str(self)))
+
+        if isinstance(self.machine_pool, Machines):
+            self.machine_pool.add(self)
+        else:
+            raise AttributeError('This event cannot be processed outside valid a ManagedState context')
         self.queue.append((event, args, kwargs))
 
     def has_events(self):
@@ -105,4 +108,17 @@ class StateMachine(object):
                 raise Exception('No transition from {} via {}'.format(self.current_state, event))
             self.current_state = state_action
             state_action(*args, **kwargs)
+
+
+class ManagedState(ContextDecorator):
+    def __init__(self, name=''):
+        self.name = name
+        self.pool = Machines()
+
+    def __enter__(self):
+        StateMachine.machine_pool = self.pool
+
+    def __exit__(self, exc_type, exc, exc_tb):
+        StateMachine.machine_pool.process_all_events()
+        StateMachine.machine_pool = None
 
