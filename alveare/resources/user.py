@@ -4,21 +4,11 @@ from marshmallow import fields, Schema
 from flask import jsonify, make_response
 
 from alveare import models
+from alveare.views import user
 
 class UserCollection(Resource):
 
     def get(self):
         users = models.User.query.all()
-        response = jsonify(users = userSchema.dump(users, many=True).data)
+        response = jsonify(users = user.deserializer.dump(users, many=True).data)
         return response
-
-class User(Schema):
-    id = fields.Integer()
-    first_name = fields.String()
-    last_name = fields.String()
-    email = fields.Email()
-    hashed_password = fields.String()
-    last_seen = fields.DateTime()
-
-userSchema = User()
-
