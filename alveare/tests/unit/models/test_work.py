@@ -3,21 +3,22 @@ from sqlalchemy.orm.exc import ObjectDeletedError
 
 from alveare import models
 from alveare.common import mock
-from alveare.common.state import MACHINES
+from alveare.common.state import ManagedState
 
 class TestWorkModel(AlveareModelTestCase):
 
     def test_state(self):
+        managed_state = ManagedState()
+        
         work = mock.create_some_work(self.db, mediation=False).pop()
         self.db.session.commit()
         work_id = work.id
 
-        work.machine.send('halt_work', 'Just because...')
-        work.machine.send('resume_work')
-        work.machine.send('review')
-        work.machine.send('mediate')
-
-        MACHINES.process_all_events()
+        with managed_state:
+            work.machine.send('halt_work', 'Just because...')
+            work.machine.send('resume_work')
+            work.machine.send('review')
+            work.machine.send('mediate')
 
         self.assertEqual(work.state, 'in_mediation')
         self.db.session.commit()
@@ -27,10 +28,10 @@ class TestWorkModel(AlveareModelTestCase):
         self.assertEqual(found_work.state, 'in_mediation')
 
         mediation = found_work.mediation_rounds.one()
-        mediation.machine.send('dev_answer', 'resume_work')
-        mediation.machine.send('client_answer', 'resume_work')
+        with managed_state:
+            mediation.machine.send('dev_answer', 'resume_work')
+            mediation.machine.send('client_answer', 'resume_work')
 
-        MACHINES.process_all_events()
         self.assertEqual(mediation.state, 'agreement')
         self.assertEqual(found_work.state, 'in_progress')
 

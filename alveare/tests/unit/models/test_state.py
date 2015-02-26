@@ -1,10 +1,8 @@
 import unittest
 from collections import defaultdict
-from alveare.common.state import StateMachine, MACHINES
+from alveare.common.state import StateMachine, ManagedState
 
 class TestState(unittest.TestCase):
-    def setUp(self):
-        MACHINES.clear()
 
     def test_basic(test):
         time_line = []
@@ -23,13 +21,13 @@ class TestState(unittest.TestCase):
                 self.add_event_transitions('pong', {self.ping: self.pong})
                 self.add_event_transitions('ping', {self.pong: self.ping})
 
-        fsm = A()
-        fsm.send('pong')
-        fsm.send('ping')
-        fsm.send('pong')
-        fsm.send('ping')
-        fsm.send('pong')
-        MACHINES.process_all_events()
+        a = A()
+        with ManagedState():
+            a.send('pong')
+            a.send('ping')
+            a.send('pong')
+            a.send('ping')
+            a.send('pong')
 
         test.assertEqual(time_line, ['pong', 'ping', 'pong', 'ping', 'pong'])
 
@@ -94,8 +92,8 @@ class TestState(unittest.TestCase):
 
         a = A('a')
         b = B('b')
-        a.send('ping', b)
-        MACHINES.process_all_events()
+        with ManagedState():
+            a.send('ping', b)
 
         test.assertEqual(sequence_diagram['a'], ['wait_for_pong', 'wait_for_ping'])
 
@@ -157,21 +155,23 @@ class TestState(unittest.TestCase):
             w.send('bogus_event')
 
     def test_machine_creates_machine(test):
+        pool = []
         class A(StateMachine):
             limit = 10
             def __init__(self):
                 StateMachine.__init__(self, self.create)
                 self.add_event_transitions('create', { self.create: self.create })
+                pool.append(self)
 
             def create(self, counter):
                 a_prime = A()
                 if counter < A.limit:
                     a_prime.send('create', counter + 1)
-        a = A()
-        a.send('create', 1)
-        MACHINES.process_all_events()
 
-        test.assertEqual(len(MACHINES), A.limit + 1)
+        a = A()
+        with ManagedState():
+            a.send('create', 1)
+        test.assertEqual(len(pool), A.limit+1)
 
     def test_many_machines(test):
         ring_length = 100 # nodes
@@ -206,8 +206,10 @@ class TestState(unittest.TestCase):
             else:
                 node.next = ring[index+1]
 
-        first_node.send('ping')
-        MACHINES.process_all_events() # this will trigger (ring_lenth*lapses)-1 events being fired and processed
+        with ManagedState():
+            first_node.send('ping')
+
+        # by now (ring_lenth*lapses)-1 events will have been fired and processed
 
         test.assertEqual(first_node.current_state, first_node.stopped)
         test.assertEqual(first_node.ping_counter, lapses)

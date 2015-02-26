@@ -5,38 +5,39 @@ from sqlalchemy.orm.exc import ObjectDeletedError
 from . import AlveareModelTestCase
 from alveare import models
 from alveare.common import mock
-from alveare.common.state import MACHINES
+from alveare.common.state import StateMachine, ManagedState
 
 class TestMediationModel(AlveareModelTestCase):
 
     def test_state(self):
+        managed_state = ManagedState()
         work = mock.create_some_work(self.db, mediation=False).pop()
         self.db.session.commit()
 
-        work.machine.send('review')
-        work.machine.send('mediate')
-
-        MACHINES.process_all_events()
+        with managed_state:
+            work.machine.send('review')
+            work.machine.send('mediate')
 
         self.assertEqual(work.state, 'in_mediation')
 
         mediation = work.mediation_rounds.one()
-        mediation.machine.send('dev_answer', 'complete')
-        mediation.machine.send('timeout')
+        with managed_state:
+            mediation.machine.send('dev_answer', 'complete')
+            mediation.machine.send('timeout')
 
-        MACHINES.process_all_events()
         self.assertEqual(mediation.state, 'agreement')
         self.assertEqual(work.state, 'complete')
 
 
     def test_incremental_state(self):
+        managed_state = ManagedState()
+
         work = mock.create_some_work(self.db, mediation=False).pop()
         self.db.session.commit()
 
-        work.machine.send('review')
-        work.machine.send('mediate')
-
-        MACHINES.process_all_events()
+        with managed_state:
+            work.machine.send('review')
+            work.machine.send('mediate')
 
         self.assertEqual(work.state, 'in_mediation')
 
@@ -45,12 +46,12 @@ class TestMediationModel(AlveareModelTestCase):
         mediation_id = mediation.id
         self.db.session.commit()
 
-        mediation.machine.send('dev_answer', 'resume_work')
-        MACHINES.process_all_events()
+        with managed_state:
+            mediation.machine.send('dev_answer', 'resume_work')
         self.assertEqual(mediation.state, 'waiting_for_client')
 
-        mediation.machine.send('timeout')
-        MACHINES.process_all_events()
+        with managed_state:
+            mediation.machine.send('timeout')
         self.assertEqual(mediation.state, 'agreement')
 
         self.db.session.commit()

@@ -8,50 +8,51 @@ from . import AlveareModelTestCase
 from alveare.models import Auction, Ticket, TicketSnapshot, TicketSet, BidLimit, TermSheet, WorkOffer, Bid
 from alveare import models
 from alveare.common import mock
-from alveare.common.state import MACHINES
+from alveare.common.state import ManagedState
 
 class TestAuctionModel(AlveareModelTestCase):
 
     def test_state(self):
-        contractor = mock.create_one_contractor(self.db)
-        auction = mock.create_one_auction(self.db, redundancy=2)
-        self.db.session.commit()
+        with ManagedState():
+            contractor = mock.create_one_contractor(self.db)
+            auction = mock.create_one_auction(self.db, redundancy=2)
+            self.db.session.commit()
 
-        bid_limits = auction.ticket_set.bid_limits
+            bid_limits = auction.ticket_set.bid_limits
 
-        # overbid on purpose
-        work_offers = []
-        for bid_limit in bid_limits:
-            work_offers.append(WorkOffer(bid_limit.snapshot, int(bid_limit.price * 1.2)))
-        bid = Bid(auction, contractor, work_offers)
-        self.db.session.add(bid)
-        self.db.session.commit()
-        auction.machine.send('bid', bid)
+            # overbid on purpose
+            work_offers = []
+            for bid_limit in bid_limits:
+                work_offers.append(WorkOffer(bid_limit.snapshot, int(bid_limit.price * 1.2)))
+            bid = Bid(auction, contractor, work_offers)
+            self.db.session.add(bid)
+            self.db.session.commit()
+            auction.machine.send('bid', bid)
 
-        # underbid on purpose
-        work_offers = []
-        for bid_limit in bid_limits:
-            work_offers.append(WorkOffer(bid_limit.snapshot, int(bid_limit.price * 0.8)))
-        bid = Bid(auction, contractor, work_offers)
-        self.db.session.add(bid)
-        self.db.session.commit()
-        auction.machine.send('bid', bid)
+            # underbid on purpose
+            work_offers = []
+            for bid_limit in bid_limits:
+                work_offers.append(WorkOffer(bid_limit.snapshot, int(bid_limit.price * 0.8)))
+            bid = Bid(auction, contractor, work_offers)
+            self.db.session.add(bid)
+            self.db.session.commit()
+            auction.machine.send('bid', bid)
 
-        # underbid on purpose
-        work_offers = []
-        for bid_limit in bid_limits:
-            work_offers.append(WorkOffer(bid_limit.snapshot, int(bid_limit.price * 0.8)))
-        bid = Bid(auction, contractor, work_offers)
-        self.db.session.add(bid)
-        self.db.session.commit()
-        auction.machine.send('bid', bid)
-
-        MACHINES.process_all_events()
+            # underbid on purpose
+            work_offers = []
+            for bid_limit in bid_limits:
+                work_offers.append(WorkOffer(bid_limit.snapshot, int(bid_limit.price * 0.8)))
+            bid = Bid(auction, contractor, work_offers)
+            self.db.session.add(bid)
+            self.db.session.commit()
+            auction.machine.send('bid', bid)
 
         self.assertEqual(auction.state, 'ended')
 
 
     def test_iterative_state(self):
+        managed_state = ManagedState()
+
         contractor = mock.create_one_contractor(self.db)
         auction = mock.create_one_auction(self.db, redundancy=2)
         self.db.session.commit()
@@ -65,22 +66,8 @@ class TestAuctionModel(AlveareModelTestCase):
         bid = Bid(auction, contractor, work_offers)
         self.db.session.add(bid)
         self.db.session.commit()
-        auction.machine.send('bid', bid)
-
-        MACHINES.process_all_events()
-
-        self.assertEqual(auction.state, 'waiting_for_bids')
-
-        # underbid on purpose
-        work_offers = []
-        for bid_limit in bid_limits:
-            work_offers.append(WorkOffer(bid_limit.snapshot, int(bid_limit.price * 0.8)))
-        bid = Bid(auction, contractor, work_offers)
-        self.db.session.add(bid)
-        self.db.session.commit()
-        auction.machine.send('bid', bid)
-
-        MACHINES.process_all_events()
+        with managed_state:
+            auction.machine.send('bid', bid)
 
         self.assertEqual(auction.state, 'waiting_for_bids')
 
@@ -91,9 +78,20 @@ class TestAuctionModel(AlveareModelTestCase):
         bid = Bid(auction, contractor, work_offers)
         self.db.session.add(bid)
         self.db.session.commit()
-        auction.machine.send('bid', bid)
+        with managed_state:
+            auction.machine.send('bid', bid)
 
-        MACHINES.process_all_events()
+        self.assertEqual(auction.state, 'waiting_for_bids')
+
+        # underbid on purpose
+        work_offers = []
+        for bid_limit in bid_limits:
+            work_offers.append(WorkOffer(bid_limit.snapshot, int(bid_limit.price * 0.8)))
+        bid = Bid(auction, contractor, work_offers)
+        self.db.session.add(bid)
+        self.db.session.commit()
+        with managed_state:
+            auction.machine.send('bid', bid)
 
         self.assertEqual(auction.state, 'ended')
 
