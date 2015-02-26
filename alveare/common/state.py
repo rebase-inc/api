@@ -1,8 +1,10 @@
+import copy
 
 class MachineSet(set):
     def process_all_events(self):
         while any([machine.has_events() for machine in self]):
-            for machine in self:
+            copy_self = copy.copy(self)
+            for machine in copy_self:
                 machine.run()
 
 MACHINES = MachineSet()
@@ -81,7 +83,7 @@ class StateMachine(object):
         '''
 
         if event not in self.event_transitions.keys():
-            raise ValueError('Unknown event "{}" sent to {}',format(event, str(self)))
+            raise ValueError('Unknown event "{}" sent to {}'.format(event, str(self)))
         self.queue.append((event, args, kwargs))
 
     def has_events(self):

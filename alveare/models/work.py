@@ -2,12 +2,13 @@ from sqlalchemy.orm import validates
 from sqlalchemy.ext.hybrid import hybrid_property
 
 from .work_offer import WorkOffer
+from .mediation import Mediation
 from alveare.common.database import DB
 from alveare.common.state import StateMachine
 
 class Work(DB.Model):
-    id = DB.Column(DB.Integer, primary_key=True)
-    state = DB.Column(DB.String)
+    id =    DB.Column(DB.Integer, primary_key=True)
+    state = DB.Column(DB.String, nullable=False, default='in_progress')
 
     review =            DB.relationship('Review',    backref='work', uselist=False, cascade='all, delete-orphan', passive_deletes=True)
     debit =             DB.relationship('Debit',     backref='work', uselist=False, cascade='all, delete-orphan', passive_deletes=True)
@@ -22,14 +23,11 @@ class Work(DB.Model):
     def machine(self):
         if hasattr(self, '_machine'):
             return self._machine
-        if self.state == 'NONE':
-            self._machine = MediationStateMachine(self)
-        else:
-            self._machine = MediationStateMachine(self, resume_state=getattr(StateMachine, self.state))
+        self._machine = WorkStateMachine(self, initial_state=self.state)
         return self._machine
 
     def start_mediation(self):
-        self.mediation_rounds.append(Mediation())
+        self.mediation_rounds.append(Mediation(self))
 
     @validates('offer')
     def validate_work_offer(self, field, value):
@@ -41,38 +39,34 @@ class Work(DB.Model):
         return '<Work[{}] from Offer[{}]>'.format(self.id, self.offer.id)
 
 class WorkStateMachine(StateMachine):
-    def blocked(self):
-        self.mediation.state = 'blocked'
 
-    def checking_in(self):
-        self.mediation.state = 'checking_in'
+    def set_state(self, _, new_state):
+        self.work.state = new_state.__name__
 
     def in_progress(self):
-        self.mediation.state = 'in_progress'
+        pass
+
+    def blocked(self, reason):
+        pass
 
     def in_review(self):
-        self.mediation.state = 'in_review'
+        pass
+
+    def in_mediation(self):
+        self.work.start_mediation()
 
     def complete(self):
-        self.mediation.state = 'complete'
+        pass
 
     def failed(self):
-        self.mediation.state = 'failed'
+        pass
 
-    def __init__(self, mediation_instance, resume_state=None):
-        self.mediation = mediation_instance
-        StateMachine.__init__(self, resume_state = resume_state)
-        self.add_event_transitions('initialize', {None: self.in_progress})
-        self.add_event_transitions('request_check_in', {self.in_progress: self.checking_in})
+    def __init__(self, work_instance, initial_state):
+        self.work = work_instance
+        StateMachine.__init__(self, initial_state = getattr(self, initial_state))
         self.add_event_transitions('halt_work', {self.in_progress: self.blocked})
-        self.add_event_transitions('resume_work', {
-            self.checking_in: self.in_progress,
-            self.blocked: self.in_progress,
-            self.in_review: self.in_progress
-        })
-        self.add_event_transitions('request_review', {
-            self.in_progress: self.in_progress,
-            self.blocked: self.in_progress
-        })
-        self.add_event_transitions('mark_complete', {self.in_review: self.complete})
-        self.add_event_transitions('mark_failed', {self.in_review: self.failed})
+        self.add_event_transitions('review', {self.in_progress: self.in_review})
+        self.add_event_transitions('mediate', {self.in_review: self.in_mediation})
+        self.add_event_transitions('complete', {self.in_review: self.complete, self.in_mediation: self.complete})
+        self.add_event_transitions('resume_work', {self.in_mediation: self.in_progress, self.blocked: self.in_progress})
+        self.add_event_transitions('fail', {self.in_mediation: self.failed})

@@ -10,44 +10,49 @@ from alveare.common.state import MACHINES
 class TestMediationModel(AlveareModelTestCase):
 
     def test_state(self):
-        mediation = mock.create_some_work(self.db).pop().mediation_rounds.one()
-        mediation_id = mediation.id
+        work = mock.create_some_work(self.db, mediation=False).pop()
         self.db.session.commit()
 
-        mediation.machine.send('dev_answer')
-        mediation.machine.send('timeout')
-        mediation.machine.send('timeout_answer')
-        mediation.machine.send('agree')
+        work.machine.send('review')
+        work.machine.send('mediate')
 
         MACHINES.process_all_events()
 
-        self.assertEqual(mediation.state, 'agreement')
-        self.db.session.commit()
-        self.db.session.close()
+        self.assertEqual(work.state, 'in_mediation')
 
-        found_mediation = models.Mediation.query.get(mediation_id)
-        self.assertEqual(found_mediation.state, 'agreement')
+        mediation = work.mediation_rounds.one()
+        mediation.machine.send('dev_answer', 'complete')
+        mediation.machine.send('timeout')
+
+        MACHINES.process_all_events()
+        self.assertEqual(mediation.state, 'agreement')
+        self.assertEqual(work.state, 'complete')
+
 
     def test_incremental_state(self):
-        mediation = mock.create_some_work(self.db).pop().mediation_rounds.one()
+        work = mock.create_some_work(self.db, mediation=False).pop()
+        self.db.session.commit()
+
+        work.machine.send('review')
+        work.machine.send('mediate')
+
+        MACHINES.process_all_events()
+
+        self.assertEqual(work.state, 'in_mediation')
+
+        mediation = work.mediation_rounds.one()
+
         mediation_id = mediation.id
         self.db.session.commit()
 
-        mediation.machine.send('dev_answer')
+        mediation.machine.send('dev_answer', 'resume_work')
         MACHINES.process_all_events()
         self.assertEqual(mediation.state, 'waiting_for_client')
 
         mediation.machine.send('timeout')
         MACHINES.process_all_events()
-        self.assertEqual(mediation.state, 'timed_out')
-
-        mediation.machine.send('timeout_answer')
-        MACHINES.process_all_events()
-        self.assertEqual(mediation.state, 'decision')
-
-        mediation.machine.send('agree')
-        MACHINES.process_all_events()
         self.assertEqual(mediation.state, 'agreement')
+
         self.db.session.commit()
         self.db.session.close()
 

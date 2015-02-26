@@ -50,6 +50,7 @@ class TestAuctionModel(AlveareModelTestCase):
 
         self.assertEqual(auction.state, 'ended')
 
+
     def test_iterative_state(self):
         contractor = mock.create_one_contractor(self.db)
         auction = mock.create_one_auction(self.db, redundancy=2)
@@ -96,7 +97,6 @@ class TestAuctionModel(AlveareModelTestCase):
 
         self.assertEqual(auction.state, 'ended')
 
-        #raise Exception(models.Bid.query.filter(Bid.auction_id == auction.id).filter(Bid
 
     def test_create(self):
         auction = mock.create_one_auction(self.db)

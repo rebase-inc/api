@@ -1,6 +1,7 @@
 import unittest
 
 from alveare.common.database import DB
+from alveare.common.state import MACHINES
 from alveare import create_app
 
 class AlveareTestCase(unittest.TestCase):
@@ -16,4 +17,5 @@ class AlveareTestCase(unittest.TestCase):
             DB.session.remove()
             DB.drop_all()
             DB.get_engine(self.app).dispose()
+            MACHINES.clear()
         self.addCleanup(cleanup)
