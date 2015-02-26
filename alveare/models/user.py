@@ -12,11 +12,11 @@ class User(DB.Model):
     last_seen =         DB.Column(DB.DateTime,  nullable=False)
     roles =             DB.relationship('Role', backref='user', cascade='all, delete-orphan')
 
-    def __init__(self, first_name, last_name, email, hashed_password):
+    def __init__(self, first_name, last_name, email, password):
         self.first_name = first_name
         self.last_name = last_name
         self.email = email
-        self.hashed_password = hashed_password
+        self.hashed_password = password #hash it!!!
         self.last_seen = datetime.datetime.now()
 
     def __repr__(self):

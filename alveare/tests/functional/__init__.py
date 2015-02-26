@@ -35,6 +35,14 @@ class AlveareRestTestCase(unittest.TestCase):
         # the header is required because of flask jsonify
         # see http://stackoverflow.com/questions/16908943/flask-display-json-in-a-neat-way
         response = self.client.get(url, headers={'X-Requested-With': 'XMLHttpRequest'})
-        self.assertEqual(response.headers['Content-Type'], 'application/json')
         self.assertEqual(response.status_code, expected_code)
+        self.assertEqual(response.headers['Content-Type'], 'application/json')
         return json.loads(response.data.decode('utf-8'))
+
+    def post_resource(self, url, data, expected_code = 201):
+        response = self.client.post(url, data = data, headers={'X-Requested-With': 'XMLHttpRequest'})
+        self.assertEqual(response.status_code, expected_code)
+        self.assertEqual(response.headers['Content-Type'], 'application/json')
+        return json.loads(response.data.decode('utf-8'))
+
+
