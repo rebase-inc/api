@@ -12,9 +12,10 @@ def create_one_user(db, first_name='Andrew', last_name='Millspaugh', email='andr
     db.session.add(user)
     return user
 
-def create_one_manager(db):
+def create_one_manager(db, user=None):
     from alveare.models import Manager
-    user = create_one_user(db)
+    if not user:
+        user = create_one_user(db)
     organization = create_one_organization(db)
     manager = Manager(user, organization)
     db.session.add(manager)
@@ -214,6 +215,7 @@ def create_the_world(db):
     u1 = create_one_user(db, 'Andrew', 'Millspaugh', 'andrew@alveare.io')
     u2 = create_one_user(db, 'Raphael', 'Goyran', 'raphael@alveare.io')
     u3 = create_one_user(db, 'Steve', 'Gildred', 'steve@alveare.io')
+    manager = create_one_manager(db, u1) # also creates an organization
     db.session.add(u1)
     db.session.add(u2)
     db.session.add(u3)
