@@ -210,3 +210,10 @@ def create_one_work_review(db, rating, comment):
     db.session.add(review)
     return review
 
+def create_the_world(db):
+    u1 = create_one_user(db, 'Andrew', 'Millspaugh', 'andrew@alveare.io')
+    u2 = create_one_user(db, 'Raphael', 'Goyran', 'raphael@alveare.io')
+    u3 = create_one_user(db, 'Steve', 'Gildred', 'steve@alveare.io')
+    db.session.add(u1)
+    db.session.add(u2)
+    db.session.add(u3)

@@ -1,9 +1,12 @@
 import sys
 
+from flask.ext.restful import Api
 from sqlalchemy.engine import Engine
 from sqlalchemy import event
 from flask import Flask
 from flask.ext.sqlalchemy import SQLAlchemy
+
+from alveare.common.routes import register_routes
 
 sys.dont_write_bytecode = True
 
@@ -24,5 +27,7 @@ def create_app(sqlalchemy_object, database_type = 'sqlite', config_filename = 'c
         raise Exception('invalid database type!')
     #app.config.from_object(config_filename)
     sqlalchemy_object.init_app(app)
+    api = Api(app)
+    register_routes(api)
     return app
 
