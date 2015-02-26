@@ -168,10 +168,10 @@ class TestState(unittest.TestCase):
                 if counter < A.limit:
                     a_prime.send('create', counter + 1)
         a = A()
-        a.send('create', 0)
+        a.send('create', 1)
         MACHINES.process_all_events()
 
-        self.assertEqual(len(MACHINES), 10)
+        test.assertEqual(len(MACHINES), A.limit + 1)
 
     def test_many_machines(test):
         ring_length = 100 # nodes
