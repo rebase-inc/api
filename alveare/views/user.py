@@ -5,9 +5,13 @@ class User(Schema):
     first_name = fields.String()
     last_name = fields.String()
     email = fields.Email()
-    hashed_password = fields.String()
+    password = fields.String()
     last_seen = fields.DateTime()
 
-serializer = User(only=('id','first_name','last_name','last_seen'))
-deserializer = User(only=('first_name','last_name','last_seen'))
+    def make_object(self, data):
+        from alveare.models import User
+        return User(**data)
+
+serializer = User(only=('id','first_name','last_name','email','last_seen'))
+deserializer = User(only=('first_name','last_name','email','password'))
 
