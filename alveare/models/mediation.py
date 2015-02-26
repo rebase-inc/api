@@ -43,23 +43,39 @@ class MediationStateMachine(StateMachine):
         self.mediation.state = new_state.__name__
 
     def discussion(self):
-        #print('in {} state'.format(self._current_state.__name__))
         pass
 
-    def waiting_for_client(self):
+    def waiting_for_client(self, dev_answer):
+        if dev_answer not in ['resume_work', 'complete', 'fail']:
+            raise ValueError('Invalid dev answer')
+        self.dev_answer = dev_answer
         pass
 
-    def waiting_for_dev(self):
-        pass
+    def waiting_for_dev(self, client_answer):
+        if client_answer not in ['resume_work', 'complete', 'fail']:
+            raise ValueError('Invalid dev answer')
+        self.client_answer = client_answer
 
-    def decision(self):
-        pass
+    def decision(self, remaining_answer):
+        if hasattr(self, 'client_answer'):
+            self.dev_answer = remaining_answer
+        else:
+            self.client_answer = remaining_answer
+
+        if self.client_answer == self.dev_answer:
+            self.send('agree')
+        else:
+            self.send('arbitrate')
 
     def timed_out(self):
+        if hasattr(self, 'client_answer'):
+            self.send('timeout_answer', self.client_answer)
+        else:
+            self.send('timeout_answer', self.dev_answer)
         pass
 
     def agreement(self):
-        pass
+        self.mediation.work.machine.send(self.dev_answer)
 
     def arbitration(self):
         pass
@@ -73,4 +89,4 @@ class MediationStateMachine(StateMachine):
         self.add_event_transitions('timeout', {self.waiting_for_client:self.timed_out, self.waiting_for_dev:self.timed_out})
         self.add_event_transitions('timeout_answer', {self.timed_out:self.decision})
         self.add_event_transitions('agree', {self.decision:self.agreement})
-        self.add_event_transitions('enter_arbitration', {self.decision:self.arbitration})
+        self.add_event_transitions('arbitrate', {self.decision:self.arbitration})

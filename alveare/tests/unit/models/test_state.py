@@ -49,7 +49,7 @@ class TestState(unittest.TestCase):
                 sequence_diagram[self.name].append(new_state.__name__)
 
             def wait_for_ping(self):
-                ''' 
+                '''
                     Wait for an external client to send a 'ping' event to A
                 '''
                 pass
@@ -74,8 +74,8 @@ class TestState(unittest.TestCase):
                   +--+-----+   |
                   |  Wait  |   |
                   |  For   <---+
-                  |  Ping  |    
-                  +--------+    
+                  |  Ping  |
+                  +--------+
             '''
             def set_state(self, old_state, new_state):
                 sequence_diagram[self.name].append(new_state.__name__)
