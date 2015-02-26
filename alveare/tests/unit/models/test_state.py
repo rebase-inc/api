@@ -3,6 +3,8 @@ from collections import defaultdict
 from alveare.common.state import StateMachine, MACHINES
 
 class TestState(unittest.TestCase):
+    def setUp(self):
+        MACHINES.clear()
 
     def test_basic(test):
         time_line = []
@@ -154,6 +156,22 @@ class TestState(unittest.TestCase):
         with test.assertRaises(ValueError):
             w.send('bogus_event')
 
+    def test_machine_creates_machine(test):
+        class A(StateMachine):
+            limit = 10
+            def __init__(self):
+                StateMachine.__init__(self, self.create)
+                self.add_event_transitions('create', { self.create: self.create })
+
+            def create(self, counter):
+                a_prime = A()
+                if counter < A.limit:
+                    a_prime.send('create', counter + 1)
+        a = A()
+        a.send('create', 0)
+        MACHINES.process_all_events()
+
+        self.assertEqual(len(MACHINES), 10)
 
     def test_many_machines(test):
         ring_length = 100 # nodes
