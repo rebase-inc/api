@@ -19,12 +19,29 @@ class UserCollection(Resource):
         DB.session.add(new_user)
         DB.session.commit()
 
-        response = jsonify(user = user.serializer.dump(new_user).data)
+        response = jsonify(users = user.serializer.dump(new_user).data)
         response.status_code = 201
         return response
 
 class UserResource(Resource):
 
     def get(self, id):
+        single_user = models.User.query.get_or_404(id)
+        return jsonify(users = user.serializer.dump(single_user).data)
+
+    def put(self, id):
+        single_user = models.User.query.get_or_404(id)
+
+        for field, value in user.updater.load(request.form).data.items():
+            setattr(single_user, field, value)
+        DB.session.commit()
+
+        return jsonify(users = user.serializer.dump(single_user).data)
+
+    def delete(self, id):
         single_user = models.User.query.get(id)
-        return jsonify(user = user.serializer.dump(single_user).data)
+        DB.session.delete(single_user)
+        DB.session.commit()
+        response = jsonify(message = 'User succesfully deleted')
+        response.status_code = 200
+        return response

@@ -32,17 +32,41 @@ class AlveareRestTestCase(unittest.TestCase):
         self.app_context.pop()
 
     def get_resource(self, url, expected_code=200):
+        error_msg = 'Expected {}, got {}. Data: {}'
         # the header is required because of flask jsonify
         # see http://stackoverflow.com/questions/16908943/flask-display-json-in-a-neat-way
         response = self.client.get(url, headers={'X-Requested-With': 'XMLHttpRequest'})
-        self.assertEqual(response.status_code, expected_code)
-        self.assertEqual(response.headers['Content-Type'], 'application/json')
+        self.assertEqual(response.status_code, expected_code,
+            error_msg.format(expected_code, response.status_code, response.data))
+        self.assertEqual(response.headers['Content-Type'], 'application/json',
+            error_msg.format('application/json', response.headers['Content-Type'], response.data))
         return json.loads(response.data.decode('utf-8'))
 
     def post_resource(self, url, data, expected_code = 201):
+        error_msg = 'Expected {}, got {}. Data: {}'
         response = self.client.post(url, data = data, headers={'X-Requested-With': 'XMLHttpRequest'})
-        self.assertEqual(response.status_code, expected_code)
-        self.assertEqual(response.headers['Content-Type'], 'application/json')
+        self.assertEqual(response.status_code, expected_code,
+            error_msg.format(expected_code, response.status_code, response.data))
+        self.assertEqual(response.headers['Content-Type'], 'application/json',
+            error_msg.format('application/json', response.headers['Content-Type'], response.data))
+        return json.loads(response.data.decode('utf-8'))
+
+    def put_resource(self, url, data, expected_code = 200):
+        error_msg = 'Expected {}, got {}. Data: {}'
+        response = self.client.put(url, data = data, headers={'X-Requested-With': 'XMLHttpRequest'})
+        self.assertEqual(response.status_code, expected_code,
+            error_msg.format(expected_code, response.status_code, response.data))
+        self.assertEqual(response.headers['Content-Type'], 'application/json',
+            error_msg.format('application/json', response.headers['Content-Type'], response.data))
+        return json.loads(response.data.decode('utf-8'))
+
+    def delete_resource(self, url, expected_code = 200):
+        error_msg = 'Expected {}, got {}. Data: {}'
+        response = self.client.delete(url, headers={'X-Requested-With': 'XMLHttpRequest'})
+        self.assertEqual(response.status_code, expected_code,
+            error_msg.format(expected_code, response.status_code, response.data))
+        self.assertEqual(response.headers['Content-Type'], 'application/json',
+            error_msg.format('application/json', response.headers['Content-Type'], response.data))
         return json.loads(response.data.decode('utf-8'))
 
 
