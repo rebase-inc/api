@@ -8,7 +8,10 @@ from alveare.models.organization import Organization
 from alveare.common.database import DB
 
 class Manager(Role):
-    id = DB.Column(DB.Integer, DB.ForeignKey('role.id'), primary_key=True)
+    id =                DB.Column(DB.Integer, DB.ForeignKey('role.id', ondelete='CASCADE'), primary_key=True)
+    organization_id =   DB.Column(DB.Integer, DB.ForeignKey('organization.id', ondelete='CASCADE'), primary_key=True)
+
+    organization = DB.relationship('Organization', backref='managers', uselist=False)
 
     __mapper_args__ = { 'polymorphic_identity': 'manager' }
 

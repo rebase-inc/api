@@ -12,3 +12,9 @@ class OrganizationCollection(Resource):
         organizations = Organization.query.all()
         response = jsonify(organizations = organization.deserializer.dump(organizations, many=True).data)
         return response
+
+class OrganizationResource(Resource):
+
+    def get(self, id):
+        an_organization = Organization.query.get(id)
+        return jsonify(organization = organization.deserializer.dump(an_organization).data)

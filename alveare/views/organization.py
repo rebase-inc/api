@@ -6,6 +6,5 @@ class Organization(Schema):
     name = fields.String()
     #projects = fields.Nested(Project, many=True)
 
-serializer = Organization(only=('id','name'))
-deserializer = Organization(only=('name'))
+deserializer = serializer = Organization()
 
