@@ -14,7 +14,7 @@ class UserCollection(Resource):
         return response
 
     def post(self):
-        new_user = user.deserializer.load(request.form).data
+        new_user = user.deserializer.load(request.form or request.json).data
 
         DB.session.add(new_user)
         DB.session.commit()
@@ -32,7 +32,7 @@ class UserResource(Resource):
     def put(self, id):
         single_user = models.User.query.get_or_404(id)
 
-        for field, value in user.updater.load(request.form).data.items():
+        for field, value in user.updater.load(request.form or request.json).data.items():
             setattr(single_user, field, value)
         DB.session.commit()
 

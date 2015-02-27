@@ -44,7 +44,8 @@ class AlveareRestTestCase(unittest.TestCase):
 
     def post_resource(self, url, data, expected_code = 201):
         error_msg = 'Expected {}, got {}. Data: {}'
-        response = self.client.post(url, data = data, headers={'X-Requested-With': 'XMLHttpRequest'})
+        response = self.client.post(url, data = json.dumps(data),
+                headers={'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json'})
         self.assertEqual(response.status_code, expected_code,
             error_msg.format(expected_code, response.status_code, response.data))
         self.assertEqual(response.headers['Content-Type'], 'application/json',
@@ -53,7 +54,8 @@ class AlveareRestTestCase(unittest.TestCase):
 
     def put_resource(self, url, data, expected_code = 200):
         error_msg = 'Expected {}, got {}. Data: {}'
-        response = self.client.put(url, data = data, headers={'X-Requested-With': 'XMLHttpRequest'})
+        response = self.client.put(url, data = json.dumps(data),
+                headers={'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json'})
         self.assertEqual(response.status_code, expected_code,
             error_msg.format(expected_code, response.status_code, response.data))
         self.assertEqual(response.headers['Content-Type'], 'application/json',
