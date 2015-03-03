@@ -17,7 +17,6 @@ class TestManagerResource(AlveareRestTestCase):
         self.assertEqual(len(all_managers['managers']), 1)
         manager = all_managers['managers'][0]
         url = mgr_url(manager['id'])
-        print('url: {}'.format(url))
 
         response = self.get_resource(url, expected_code = 200)
         self.assertIn('manager', response)
@@ -51,4 +50,3 @@ class TestManagerResource(AlveareRestTestCase):
         org = new_mgr['organization_id']
         self.delete_resource(mgr_url(id))
         response = self.get_resource(mgr_url(id), 404)
-        print(response)
