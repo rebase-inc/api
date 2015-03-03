@@ -24,16 +24,12 @@ class TestManagerModel(AlveareModelTestCase):
         manager = mock.create_one_manager(self.db)
         self.db.session.commit()
 
-        manager_id = manager.id
-        user_id = manager.user.id
-        organization_id = manager.organization.id
-
-        found_manager = Manager.query.get(manager_id)
+        found_manager = Manager.query.get(manager.id)
         self.delete_instance(found_manager)
 
-        self.assertEqual(Manager.query.get(manager_id), None)
-        self.assertIsInstance(User.query.get(user_id), User)
-        self.assertIsInstance(Organization.query.get(organization_id), Organization)
+        self.assertEqual(Manager.query.get(manager.id), None)
+        self.assertIsInstance(User.query.get(manager.id), User)
+        self.assertIsInstance(Organization.query.get(manager.organization_id), Organization)
 
     @unittest.skip('Manager model doesnt have any updatable fields yet')
     def test_update(self):
