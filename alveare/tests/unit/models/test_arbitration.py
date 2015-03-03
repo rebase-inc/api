@@ -7,13 +7,13 @@ from alveare.common import mock
 class TestArbitrationModel(AlveareModelTestCase):
 
     def test_create(self):
-        arbitration = mock.create_some_work(self.db).pop().mediation_rounds.one().arbitration
+        arbitration = mock.create_some_work(self.db).pop().mediation_rounds[0].arbitration
         self.db.session.commit()
 
         self.assertIsInstance(arbitration.mediation.work.offer.price, int)
 
     def test_delete(self):
-        arbitration = mock.create_some_work(self.db).pop().mediation_rounds.one().arbitration
+        arbitration = mock.create_some_work(self.db).pop().mediation_rounds[0].arbitration
         self.db.session.commit()
         self.delete_instance(arbitration)
         self.assertEqual(models.Arbitration.query.get(arbitration.id), None)
