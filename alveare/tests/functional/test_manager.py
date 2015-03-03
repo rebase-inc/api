@@ -49,4 +49,4 @@ class TestManagerResource(AlveareRestTestCase):
         id = new_mgr['id']
         org = new_mgr['organization_id']
         self.delete_resource(mgr_url(id))
-        response = self.get_resource(mgr_url(id), 404)
+        self.get_resource(mgr_url(id), 404)
