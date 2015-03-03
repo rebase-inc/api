@@ -4,11 +4,12 @@ from . import AlveareModelTestCase
 from alveare.models import Auction, Contractor, Candidate
 from alveare.common.mock import create_one_candidate, create_one_contractor, create_one_auction
 
-class TestCandidateModel(AlveareModelTestCase):
+class TestCandidate(AlveareModelTestCase):
 
     def test_create(self):
         candidate = create_one_candidate(self.db)
         self.db.session.commit()
+        self.assertNotEqual( Candidate.query.get((candidate.contractor_id, candidate.auction_id)), None )
         self.assertNotEqual( candidate,              None )
         self.assertNotEqual( candidate.contractor,   None )
         self.assertNotEqual( candidate.ticket_set,   None )

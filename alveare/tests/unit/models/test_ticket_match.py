@@ -4,7 +4,7 @@ from . import AlveareModelTestCase
 from alveare.models import TicketMatch
 from alveare.common.mock import create_ticket_matches
 
-class TestCandidate(AlveareModelTestCase):
+class TestTicketMatch(AlveareModelTestCase):
 
     def test_create(self):
         ticket_matches = create_ticket_matches(self.db)

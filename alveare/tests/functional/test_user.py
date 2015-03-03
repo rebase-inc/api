@@ -28,3 +28,29 @@ class TestUserResource(AlveareRestTestCase):
         expected_response['id'] = user_id
 
         self.assertEqual(response['user'], expected_response)
+
+    def test_update(self):
+        user = dict(first_name='Walter', last_name='White', email='walterwhite@alveare.io', password='heisenberg')
+        response = self.post_resource('users', user)
+        user['id'] = response['user']['id']
+        user['last_seen'] = response['user']['last_seen']
+        user.pop('password') # it shouldn't be returned
+
+        new_name = dict(first_name = 'Jesse', last_name = 'Pinkman')
+        response = self.put_resource('users/{}'.format(user['id']), new_name)
+        user.update(new_name)
+        self.assertEqual(user, response['user'])
+
+        new_email = dict(email = 'jessepinkman@alveare.io')
+        response = self.put_resource('users/{}'.format(user['id']), new_email)
+        user.update(new_email)
+        self.assertEqual(user, response['user'])
+
+    def test_delete(self):
+        user = dict(first_name='Hank', last_name='Schrader', email='hankschrader@alveare.io', password='theyreminerals')
+        response = self.post_resource('users', user)
+        user_id = response['user']['id']
+
+        response = self.delete_resource('users/{}'.format(user_id))
+        response = self.get_resource('users/{}'.format(user_id), expected_code=404)
+

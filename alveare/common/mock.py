@@ -213,9 +213,10 @@ def create_one_work_review(db, rating, comment):
 
 def create_the_world(db):
     u1 = create_one_user(db, 'Andrew', 'Millspaugh', 'andrew@alveare.io')
-    u2 = create_one_user(db, 'Raphael', 'Goyran', 'raphael@alveare.io')
-    u3 = create_one_user(db, 'Steve', 'Gildred', 'steve@alveare.io')
-    manager = create_one_manager(db, u1) # also creates an organization
-    db.session.add(u1)
-    db.session.add(u2)
-    db.session.add(u3)
+    create_one_user(db, 'Raphael', 'Goyran', 'raphael@alveare.io')
+    create_one_user(db, 'Steve', 'Gildred', 'steve@alveare.io')
+    create_one_manager(db, u1) # also creates an organization
+    create_some_work(db)
+    create_some_work(db, review=False)
+    create_one_work_review(db, 5, 'It was amazing')
+    create_one_work_review(db, 3, 'Meh')

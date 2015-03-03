@@ -9,7 +9,7 @@ from alveare.common.database import DB
 
 class Manager(Role):
     id =                DB.Column(DB.Integer, DB.ForeignKey('role.id', ondelete='CASCADE'), primary_key=True)
-    organization_id =   DB.Column(DB.Integer, DB.ForeignKey('organization.id', ondelete='CASCADE'), primary_key=True)
+    organization_id =   DB.Column(DB.Integer, DB.ForeignKey('organization.id', ondelete='CASCADE'))
 
     organization = DB.relationship('Organization', backref='managers', uselist=False)
 
@@ -24,4 +24,4 @@ class Manager(Role):
         self.organization = organization
 
     def __repr__(self):
-        return '<Manager[id:{}] busyness="{}">'.format(self.id, self.busyness)
+        return '<Manager[{}]>'.format(self.id)
