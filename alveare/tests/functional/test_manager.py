@@ -9,16 +9,16 @@ def mgr_url(id):
 class TestManagerResource(AlveareRestTestCase):
 
     def test_get_all(self):
-        response = self.get_resource('managers', expected_code = 200)
+        response = self.get_resource('managers')
         self.assertIn('managers', response)
 
     def test_get_one(self):
-        all_managers = self.get_resource('managers', expected_code = 200)
+        all_managers = self.get_resource('managers')
         self.assertEqual(len(all_managers['managers']), 1)
         manager = all_managers['managers'][0]
         url = mgr_url(manager['id'])
 
-        response = self.get_resource(url, expected_code = 200)
+        response = self.get_resource(url)
         self.assertIn('manager', response)
         same_manager = response['manager']
 
@@ -28,12 +28,12 @@ class TestManagerResource(AlveareRestTestCase):
     def create_new_manager(self):
 
         # get the manager
-        manager = self.get_resource('managers', expected_code=200)['managers'][0]
+        manager = self.get_resource('managers')['managers'][0]
         manager_id = manager['id']
         manager_organization_id = manager['organization_id']
 
         # get a user who is not already a manager
-        all_users = self.get_resource('users', expected_code=200)['users']
+        all_users = self.get_resource('users')['users']
         user_id = next(filter(lambda user: user['id'] != manager_id, all_users))['id']
 
         new_mgr = dict(id=user_id, organization_id=manager_organization_id)
