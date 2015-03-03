@@ -1,6 +1,5 @@
 
 from flask.ext.restful import Resource, abort
-from marshmallow import fields, Schema
 from flask import jsonify, make_response, request
 
 from alveare.models.manager import Manager
