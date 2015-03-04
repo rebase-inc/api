@@ -32,6 +32,12 @@ class TestOrganizationResource(AlveareRestTestCase):
 
         organization = response['organization']
         self.assertEqual(organization['name'], organization_data['name'])
+        id = organization['id']
+
+        # verify
+        response2 = self.get_resource(url(id))
+        self.assertEqual(response2['organization']['name'], organization_data['name'])
+
 
     def test_put(self):
         org = self.get_one()
