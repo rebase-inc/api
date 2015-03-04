@@ -24,6 +24,10 @@ def register_routes(api):
     api.add_resource(GithubProjectCollection, '/github_projects', endpoint='github_projects')
     api.add_resource(GithubProjectResource, '/github_projects/<int:id>', endpoint='github_project')
 
+    from alveare.resources.code_repository import CodeRepositoryCollection, CodeRepositoryResource
+    api.add_resource(CodeRepositoryCollection, '/code_repositories', endpoint='code_repositories')
+    api.add_resource(CodeRepositoryResource, '/code_repositories/<int:id>', endpoint='code_repository')
+
     from alveare.resources.mediation import MediationCollection, MediationResource
     api.add_resource(MediationCollection, '/mediations', endpoint='mediations')
     api.add_resource(MediationResource, '/mediations/<int:id>', endpoint='mediation')

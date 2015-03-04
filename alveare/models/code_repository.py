@@ -2,8 +2,7 @@
 from alveare.common.database import DB
 
 class CodeRepository(DB.Model):
-    id = DB.Column(DB.Integer, primary_key=True)
-    project_id = DB.Column(DB.Integer, DB.ForeignKey('project.id', ondelete='CASCADE'), nullable=False)
+    id = DB.Column(DB.Integer, DB.ForeignKey('project.id', ondelete='CASCADE'), primary_key=True)
 
     def __init__(self, project):
         self.project = project

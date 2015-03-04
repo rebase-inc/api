@@ -1,6 +1,7 @@
 from marshmallow import fields, Schema
 from alveare.models.organization import Organization
 from alveare.models.github_project import GithubProject
+from alveare.models.code_repository import CodeRepository
 
 class GithubProjectSchema(Schema):
     id = fields.Integer()
@@ -14,8 +15,11 @@ class GithubProjectSchema(Schema):
             project.name = data['name']
             return project
         organization = Organization.query.get_or_404(data['organization_id'])
-        return GithubProject(organization, data['name'])
+        project = GithubProject(organization, data['name'])
+        CodeRepository(project)
+        return project
 
 serializer = GithubProjectSchema(only=('id', 'organization_id', 'name'))
 deserializer = GithubProjectSchema(only=('organization_id', 'name'))
+update_deserializer = GithubProjectSchema(only=('id', 'organization_id', 'name'))
 
