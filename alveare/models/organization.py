@@ -5,7 +5,7 @@ class Organization(DB.Model):
     id =        DB.Column(DB.Integer, primary_key=True)
     name =      DB.Column(DB.String)
 
-    projects =  DB.relationship('Project', backref='organization', cascade="all, delete-orphan", passive_deletes=True)
+    projects =  DB.relationship('Project', backref='organization', lazy='joined', cascade="all, delete-orphan", passive_deletes=True)
 
     def __init__(self, name):
         self.name = name

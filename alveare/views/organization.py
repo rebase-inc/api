@@ -1,10 +1,13 @@
 from marshmallow import fields, Schema
 from alveare.models.organization import Organization
+from alveare.views.manager import ManagerSchema
+from alveare.views.project import ProjectSchema
 
 class OrganizationSchema(Schema):
     id = fields.Integer()
     name = fields.String(required=True)
-    #projects = fields.Nested(Project, many=True)
+    projects = fields.Nested(ProjectSchema, only=('id', 'name'), many=True)
+    managers = fields.Nested(ManagerSchema, only=('id',), many=True)
     #bank_accounts = fields.Nested(BankAccount, many=True)
 
     def make_object(self, data):
@@ -17,5 +20,4 @@ class OrganizationSchema(Schema):
 
 deserializer = OrganizationSchema(only=('name',))
 update_deserializer = OrganizationSchema(only=('id', 'name'))
-serializer = OrganizationSchema(only=('id', 'name'))
-
+serializer = OrganizationSchema()

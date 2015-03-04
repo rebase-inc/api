@@ -24,6 +24,7 @@ class TestOrganizationResource(AlveareRestTestCase):
     def test_get_one(self):
         org = self.get_one()
         self.assertEqual(org['name'], 'Alveare')
+        self.assertTrue(org['managers'])
 
     def test_post(self):
         organization_data = dict(name='SpaceX')
@@ -55,7 +56,5 @@ class TestOrganizationResource(AlveareRestTestCase):
 
     def test_delete_one(self):
         org = self.get_one()
-
         self.delete_resource(url(org['id']))
-
         self.get_resource(url(org['id']), 404)
