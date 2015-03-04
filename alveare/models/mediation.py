@@ -32,9 +32,9 @@ class Mediation(DB.Model):
         return '<Mediation[id:{}] >'.format(self.id)
 
     @validates('work')
-    def validate_work_offer(self, field, value):
+    def validate_work(self, field, value):
         if not hasattr(value, 'offer'):
-            raise ValueError('{} field on {} must be {}'.format(field, self.__tablename__, 'Work type'))
+            raise ValueError('{} field on {} must be {}, not {}'.format(field, self.__tablename__, 'Work type', type(value)))
         return value
 
 class MediationStateMachine(StateMachine):

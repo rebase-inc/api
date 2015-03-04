@@ -31,3 +31,7 @@ def register_routes(api):
     from alveare.resources.mediation import MediationCollection, MediationResource
     api.add_resource(MediationCollection, '/mediations', endpoint='mediations')
     api.add_resource(MediationResource, '/mediations/<int:id>', endpoint='mediation')
+
+    from alveare.resources.arbitration import ArbitrationCollection, ArbitrationResource
+    api.add_resource(ArbitrationCollection, '/arbitrations', endpoint='arbitrations')
+    api.add_resource(ArbitrationResource, '/arbitrations/<int:id>', endpoint='arbitration')
