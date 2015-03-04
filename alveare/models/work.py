@@ -10,11 +10,11 @@ class Work(DB.Model):
     id =    DB.Column(DB.Integer, primary_key=True)
     state = DB.Column(DB.String, nullable=False, default='in_progress')
 
-    review =            DB.relationship('Review',    backref='work', uselist=False, cascade='all, delete-orphan', passive_deletes=True)
     debit =             DB.relationship('Debit',     backref='work', uselist=False, cascade='all, delete-orphan', passive_deletes=True)
     credit =            DB.relationship('Credit',    backref='work', uselist=False, cascade='all, delete-orphan', passive_deletes=True)
     offer =             DB.relationship('WorkOffer', backref='work', uselist=False, cascade='all, delete-orphan', passive_deletes=True)
-    mediation_rounds =  DB.relationship('Mediation', backref='work', lazy='dynamic', cascade='all, delete-orphan', passive_deletes=True)
+    review =            DB.relationship('Review',    backref='work', lazy='joined', uselist=False, cascade='all, delete-orphan', passive_deletes=True)
+    mediation_rounds =  DB.relationship('Mediation', backref='work', lazy='joined', cascade='all, delete-orphan', passive_deletes=True)
 
     def __init__(self, work_offer):
         self.offer = work_offer

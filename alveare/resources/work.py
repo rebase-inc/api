@@ -9,7 +9,7 @@ from alveare.common.database import DB
 class WorkCollection(Resource):
 
     def get(self):
-        all_work = models.Work.query.all()
+        all_work = models.Work.query.limit(100).all()
         response = jsonify(work = work.serializer.dump(all_work, many=True).data) #something here is very very slow..TODO: investigate
         return response
 

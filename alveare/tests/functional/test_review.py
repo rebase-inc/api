@@ -26,7 +26,7 @@ class TestReviewResource(AlveareRestTestCase):
         response = self.get_resource('work')
 
         #find a work object without a review
-        work = [work for work in response['work'] if not work['review']][0]
+        work = [work for work in response['work'] if 'review' not in work][0]
 
         review = dict(rating=4, work={'id': work['id']})
         response = self.post_resource('reviews', review)
