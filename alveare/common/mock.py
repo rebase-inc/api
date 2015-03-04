@@ -77,9 +77,7 @@ def create_one_github_project(db, organization_name='Alveare', project_name='api
     organization = Organization(organization_name)
     github_project = GithubProject(organization, project_name)
     code_repo = CodeRepository(github_project)
-    db.session.add(organization)
     db.session.add(github_project)
-    db.session.add(code_repo)
     return github_project
 
 def create_one_internal_ticket(db, title, description=None, project=None):
