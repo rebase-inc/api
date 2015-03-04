@@ -20,10 +20,13 @@ class TestMediationResource(AlveareRestTestCase):
         mediation = response['mediation']
         self.assertIsInstance(mediation.pop('id'), int)
         self.assertIsInstance(mediation.pop('work'), int)
-        self.assertIsInstance(mediation.pop('dev_answer'), str)
-        self.assertIsInstance(mediation.pop('client_answer'), str)
         self.assertIsInstance(mediation.pop('timeout'), str)
         self.assertIsInstance(mediation.pop('state'), str)
+
+        if 'arbitration' in mediation:
+            mediation.pop('arbitration')
+
+        self.assertEqual(mediation, {})
 
     def test_create_new(self):
         ''' admin only '''
@@ -33,13 +36,13 @@ class TestMediationResource(AlveareRestTestCase):
 
         mediation = dict(work={'id': work.get('id')})
         response = self.post_resource('mediations', mediation)
+        mediation = response['mediation']
 
-        self.assertIsInstance(response.pop('id'), int)
-        self.assertIsInstance(response.pop('client_answer'), str)
-        self.assertIsInstance(response.pop('dev_answer'), str)
-        self.assertIsInstance(response.pop('state'), str)
-        self.assertIsInstance(response.pop('timeout'), str) #TODO: Actually check that this is a string
-        self.assertEqual(response.pop('work'), work.get('id'))
+        self.assertIsInstance(mediation.pop('id'), int)
+        self.assertIsInstance(mediation.pop('state'), str)
+        self.assertIsInstance(mediation.pop('timeout'), str) #TODO: Actually check that this is a string
+        self.assertEqual(mediation.pop('work'), work.get('id'))
+        self.assertEqual(mediation, {})
 
     def test_update(self):
         ''' admin only '''

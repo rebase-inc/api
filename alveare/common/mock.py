@@ -186,7 +186,7 @@ def create_one_bid(db):
     db.session.add(bid)
     return bid
 
-def create_some_work(db, review=True, debit_credit=True, mediation=True):
+def create_some_work(db, review=True, debit_credit=True, mediation=True, arbitration=True):
     from alveare.models import Work, Review, Debit, Credit, Mediation, Arbitration
     bid = create_one_bid(db)
     works = []
@@ -199,7 +199,9 @@ def create_some_work(db, review=True, debit_credit=True, mediation=True):
             _ = Debit(work, 100)
             _ = Credit(work, 120)
         if mediation:
-            _ = Arbitration(Mediation(work))
+            m = Mediation(work)
+            if arbitration:
+                _ = Arbitration(m)
         db.session.add(work)
     return works
 
@@ -216,8 +218,15 @@ def create_the_world(db):
     create_one_user(db, 'Raphael', 'Goyran', 'raphael@alveare.io')
     create_one_user(db, 'Steve', 'Gildred', 'steve@alveare.io')
     create_one_manager(db, u1) # also creates an organization
-    create_some_work(db, mediation=False)
+    create_some_work(db)
     create_some_work(db)
     create_some_work(db, review=False)
+    create_some_work(db, review=False)
+    create_some_work(db, mediation=False)
+    create_some_work(db, mediation=False)
+    create_some_work(db, arbitration=False)
+    create_some_work(db, arbitration=False)
+    create_some_work(db, debit_credit=False)
+    create_some_work(db, debit_credit=False)
     create_one_work_review(db, 5, 'It was amazing')
     create_one_work_review(db, 3, 'Meh')

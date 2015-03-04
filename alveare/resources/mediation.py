@@ -18,7 +18,7 @@ class MediationCollection(Resource):
         DB.session.add(new_mediation)
         DB.session.commit()
 
-        response = jsonify(mediation.serializer.dump(new_mediation).data)
+        response = jsonify(mediation = mediation.serializer.dump(new_mediation).data)
         response.status_code = 201
         return response
 
