@@ -10,9 +10,8 @@ class WorkSchema(Schema):
     state = fields.String()
     review = fields.Nested(ReviewSchema, exclude=['work'], default=None)
     mediation = fields.Nested(MediationSchema, only=('id','state'), attribute='mediation_rounds', many=True)
-    # I don't think we will need these
-    #debit = fields.Nested(DebitSchema)
-    #credit = fields.Nested(CreditSchema)
+    debit = fields.Nested(DebitSchema, only='id', default=None)
+    credit = fields.Nested(CreditSchema, only='id', default=None)
 
     def make_object(self, data):
         from alveare.models import Work
@@ -23,4 +22,4 @@ class WorkSchema(Schema):
             return work
         return Work(**data)
 
-serializer = WorkSchema(only=('id','state','mediation','review'), skip_missing=True)
+serializer = WorkSchema(only=('id','state','mediation','review','debit','credit'), skip_missing=True)
