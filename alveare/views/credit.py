@@ -1,8 +1,6 @@
 
 from marshmallow import fields, Schema
 
-from alveare.views import NamespacedSchema
-
 class CreditSchema(Schema):
     id = fields.Integer()
     work = fields.Nested('WorkSchema', only='id')

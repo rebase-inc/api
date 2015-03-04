@@ -17,11 +17,7 @@ class ManagerCollection(Resource):
         return response
 
     def post(self):
-        new_mgr_form = deserializer.load(request.json).data
-        user = User.query.get(new_mgr_form['id'])
-        organization = Organization.query.get(new_mgr_form['organization_id'])
-
-        new_mgr = Manager(user, organization)
+        new_mgr = deserializer.load(request.json).data
         DB.session.add(new_mgr)
         DB.session.commit()
 

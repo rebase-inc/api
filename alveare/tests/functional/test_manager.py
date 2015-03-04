@@ -29,22 +29,22 @@ class TestManagerResource(AlveareRestTestCase):
 
         # get the manager
         manager = self.get_resource('managers')['managers'][0]
-        manager_id = manager['id']
-        manager_organization_id = manager['organization_id']
+        id = manager['id']
+        organization_id = manager['organization_id']
 
         # get a user who is not already a manager
         all_users = self.get_resource('users')['users']
-        user_id = next(filter(lambda user: user['id'] != manager_id, all_users))['id']
+        user_id = next(filter(lambda user: user['id'] != id, all_users))['id']
 
-        new_mgr = dict(id=user_id, organization_id=manager_organization_id)
+        new_mgr = dict(id=user_id, organization_id=organization_id)
         response = self.post_resource('managers', new_mgr)
         self.assertIn('manager', response)
         return response['manager']
 
-    def test_post_one(self):
+    def test_post(self):
         new_mgr = self.create_new_manager()
 
-    def test_delete_one_manager(self):
+    def test_delete(self):
         new_mgr = self.create_new_manager()
         id = new_mgr['id']
         org = new_mgr['organization_id']
