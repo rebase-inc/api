@@ -19,3 +19,7 @@ def register_routes(api):
     from alveare.resources.review import ReviewCollection, ReviewResource
     api.add_resource(ReviewCollection, '/reviews', endpoint='reviews')
     api.add_resource(ReviewResource, '/reviews/<int:id>', endpoint='review')
+
+    from alveare.resources.mediation import MediationCollection, MediationResource
+    api.add_resource(MediationCollection, '/mediations', endpoint='mediations')
+    api.add_resource(MediationResource, '/mediations/<int:id>', endpoint='mediation')
