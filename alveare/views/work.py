@@ -1,6 +1,5 @@
 from marshmallow import fields, Schema
 
-from alveare.views import NamespacedSchema
 from alveare.views.review import ReviewSchema
 from alveare.views.mediation import MediationSchema
 from alveare.views.debit import DebitSchema
@@ -19,7 +18,10 @@ class WorkSchema(Schema):
     def make_object(self, data):
         from alveare.models import Work
         if data.get('id'):
-            return Work.query.get(data['id'])
+            work = Work.query.get(data.get('id'))
+            if not work:
+                raise ValueError('No work with id {id}'.format(**data))
+            return work
         return Work(**data)
 
 serializer = WorkSchema(only=('id','state','mediation','review'), skip_missing=True)
