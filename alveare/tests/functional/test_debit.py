@@ -39,8 +39,24 @@ class TestDebitResource(AlveareRestTestCase):
         self.assertEqual(response.pop('paid'), False)
         self.assertEqual(response, {})
 
-    #@unittest.skip('debit has no updatable fields right now')
-    #def test_update(self):
-        #''' admin only '''
-        #pass
+    def test_update(self):
+        response = self.get_resource('debits')
+        debit_id = response['debits'][0]['id']
+
+        response = self.get_resource('debits/{}'.format(debit_id))
+        debit = response['debit']
+
+        new_fields = dict(price = debit['price']*2, paid = not debit['price'])
+        response = self.put_resource('debits/{}'.format(debit['id']), new_fields)
+        debit.update(new_fields)
+        self.assertEqual(debit, response['debit'])
+
+    def test_delete(self):
+        pass
+        user = dict(first_name='Hank', last_name='Schrader', email='hankschrader@alveare.io', password='theyreminerals')
+        response = self.post_resource('users', user)
+        user_id = response['user']['id']
+
+        response = self.delete_resource('users/{}'.format(user_id))
+        response = self.get_resource('users/{}'.format(user_id), expected_code=404)
 

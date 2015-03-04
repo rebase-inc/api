@@ -1,4 +1,5 @@
 
+
 from marshmallow import fields, Schema
 
 class CreditSchema(Schema):
@@ -10,3 +11,9 @@ class CreditSchema(Schema):
     def make_object(self, data):
         from alveare.models import Credit
         return Credit(**data)
+
+serializer = CreditSchema(only=('id','work','price','paid'))
+deserializer = CreditSchema(only=('work','price'))
+
+updater = CreditSchema(only=('work','price','paid'))
+updater.make_object = lambda data: data

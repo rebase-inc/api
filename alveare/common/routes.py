@@ -31,7 +31,11 @@ def register_routes(api):
     from alveare.resources.arbitration import ArbitrationCollection, ArbitrationResource
     api.add_resource(ArbitrationCollection, '/arbitrations', endpoint='arbitrations')
     api.add_resource(ArbitrationResource, '/arbitrations/<int:id>', endpoint='arbitration')
-    
+
     from alveare.resources.debit import DebitCollection, DebitResource
     api.add_resource(DebitCollection, '/debits', endpoint='debits')
     api.add_resource(DebitResource, '/debits/<int:id>', endpoint='debit')
+
+    from alveare.resources.credit import CreditCollection, CreditResource
+    api.add_resource(CreditCollection, '/credits', endpoint='credits')
+    api.add_resource(CreditResource, '/credits/<int:id>', endpoint='credit')

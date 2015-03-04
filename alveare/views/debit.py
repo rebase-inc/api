@@ -14,3 +14,6 @@ class DebitSchema(Schema):
 
 serializer = DebitSchema(only=('id','work','price','paid'))
 deserializer = DebitSchema(only=('work','price'))
+
+updater = DebitSchema(only=('work','price','paid'))
+updater.make_object = lambda data: data

@@ -29,11 +29,19 @@ class DebitResource(Resource):
         single_debit = models.Debit.query.get_or_404(id)
         return jsonify(debit = debit.serializer.dump(single_debit).data)
 
-    #def put(self, id):
-        #single_mediation = models.Debit.query.get_or_404(id)
+    def put(self, id):
+        single_debit = models.Debit.query.get_or_404(id)
 
-        #for field, value in mediation.updater.load(request.form or request.json).data.items():
-            #setattr(single_mediation, field, value)
-        #DB.session.commit()
+        for field, value in debit.updater.load(request.form or request.json).data.items():
+            setattr(single_debit, field, value)
+        DB.session.commit()
 
-        #return jsonify(mediation = mediation.serializer.dump(single_mediation).data)
+        return jsonify(debit = debit.serializer.dump(single_debit).data)
+
+    def delete(self, id):
+        single_debit = models.Debit.query.get(id)
+        DB.session.delete(single_debit)
+        DB.session.commit()
+        response = jsonify(message = 'Debit succesfully deleted')
+        response.status_code = 200
+        return response
