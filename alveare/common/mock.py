@@ -145,6 +145,15 @@ def create_ticket_matches(db):
     db.session.add_all(ticket_matches)
     return ticket_matches
 
+def create_one_snapshot(db, ticket=None):
+    from alveare.models import InternalTicket, TicketSnapshot
+    if not ticket:
+        ticket = InternalTicket(create_one_project(db), 'for a snapshot')
+        db.session.add(ticket)
+    ts = TicketSnapshot(ticket or InternalTicket(create_one_project(db), 'for a snapshot'))
+    db.session.add(ts)
+    return ts
+
 def create_one_auction(db, duration=1000, finish_work_by=None, redundancy=1):
     if not finish_work_by:
         finish_work_by = datetime.datetime.now() + datetime.timedelta(days=2)
@@ -193,8 +202,8 @@ def create_one_bid(db):
     contractor = create_one_contractor(db)
     work_offers = []
     for bid_limit in auction.ticket_set.bid_limits:
-        work_offers.append(WorkOffer(bid_limit.snapshot, 150))
-    bid = Bid(auction, contractor, work_offers)
+        work_offers.append(WorkOffer(contractor, bid_limit.snapshot, 150))
+    bid = Bid(auction, contractor)
     db.session.add(bid)
     return bid
 
@@ -228,6 +237,8 @@ def create_one_work_review(db, rating, comment):
 def create_the_world(db):
     andrew = create_one_user(db, 'Andrew', 'Millspaugh', 'andrew@alveare.io')
     rapha = create_one_user(db, 'Raphael', 'Goyran', 'raphael@alveare.io')
+    create_one_snapshot(db)
+    create_one_snapshot(db)
     create_one_user(db, 'Steve', 'Gildred', 'steve@alveare.io')
     create_one_manager(db, andrew) # also creates an organization
     rapha_contractor = create_one_contractor(db, rapha)

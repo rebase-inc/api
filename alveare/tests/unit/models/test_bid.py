@@ -31,9 +31,6 @@ class TestBidModel(AlveareModelTestCase):
         self.assertNotEqual( models.Auction.query.all(), [])
         self.assertNotEqual( models.Contractor.query.all(), [])
 
-        self.assertEqual(models.WorkOffer.query.all(), [])
-        self.assertEqual(models.WorkOffer.query.all(), [])
-
     def test_delete_auction(self):
         bid = mock.create_one_bid(self.db)
         self.db.session.commit()

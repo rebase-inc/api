@@ -13,5 +13,5 @@ class InternalTicket(Ticket):
         self.description = description
 
     def __repr__(self):
-        return '<RemoteTicket[id:{}]>'.format(self.id)
+        return '<InternalTicket[id:{}]>'.format(self.id)
 

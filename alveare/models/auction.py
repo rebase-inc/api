@@ -61,9 +61,9 @@ class AuctionStateMachine(StateMachine):
 
     def waiting_for_bids(self, bid):
         required_tickets = set([bid_limit.snapshot for bid_limit in self.auction.ticket_set.bid_limits])
-        bid_tickets = set([work_offer.ticket_snapshot for work_offer in bid.work_offers])
+        bid_tickets = set([work_offer.ticket_snapshot for work_offer in bid.work_offers.all()])
         if required_tickets ^ bid_tickets:
-            raise Exception('bid didnt match expected tickets!')
+            raise Exception('bid didnt match expected tickets! we needed {} but got {}'.format(required_tickets, bid_tickets))
         self.auction.bids.append(bid)
 
         # check to see if overbid or underbid
