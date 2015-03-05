@@ -42,6 +42,12 @@ class TestGithubProjectResource(AlveareRestTestCase):
         self.assertIn('code_repository', code_repo_response)
         code_repo = code_repo_response['code_repository']
 
+        # verify the created project is listed in the organization data
+        org_response = self.get_resource('organizations/{}'.format(new_project['organization_id']))
+        self.assertIn('organization', org_response)
+        org = org_response['organization']
+        self.assertTrue(any(map(lambda project: project['id']==project_id, org['projects'])))
+
     def test_delete(self):
         project = self.create_project()
         project_id = project['id']
@@ -73,4 +79,4 @@ class TestGithubProjectResource(AlveareRestTestCase):
         response = self.get_resource('github_projects')
         self.assertIn('github_projects', response)
         projects = response['github_projects']
-        self.assertEqual(len(list(filter(lambda project: project['id']==project_id, projects))), 1)
+        self.assertTrue(any(map(lambda project: project['id']==project_id, projects)))

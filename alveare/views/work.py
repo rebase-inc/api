@@ -6,7 +6,6 @@ from alveare.views.debit import DebitSchema
 from alveare.views.credit import CreditSchema
 from alveare.views.work_offer import WorkOfferSchema
 
-# TODO: Figure out why this schema is sooooooooooooo slow
 class WorkSchema(Schema):
     id = fields.Integer()
     state = fields.String()
