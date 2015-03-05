@@ -4,9 +4,10 @@ from alveare.models.github_project import GithubProject
 from alveare.models.code_repository import CodeRepository
 
 class GithubProjectSchema(Schema):
-    id = fields.Integer()
-    organization_id = fields.Integer()
-    name = fields.String()
+
+    id =                fields.Integer()
+    organization_id =   fields.Integer()
+    name =              fields.String()
 
     def make_object(self, data):
         if data.get('id'):
@@ -19,7 +20,7 @@ class GithubProjectSchema(Schema):
         CodeRepository(project)
         return project
 
-serializer = GithubProjectSchema(only=('id', 'organization_id', 'name'))
-deserializer = GithubProjectSchema(only=('organization_id', 'name'))
-update_deserializer = GithubProjectSchema(only=('id', 'organization_id', 'name'))
+serializer =            GithubProjectSchema(only=('id', 'organization_id', 'name'))
+deserializer =          GithubProjectSchema(only=('organization_id', 'name'))
+update_deserializer =   GithubProjectSchema(only=('id', 'organization_id', 'name'))
 

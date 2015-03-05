@@ -3,16 +3,20 @@ from sqlalchemy.orm import validates
 from alveare.common.database import DB
 
 class BankAccount(DB.Model):
-    id =            DB.Column(DB.Integer, primary_key=True)
-    routing_number = DB.Column(DB.Integer, nullable=False)
-    account_number = DB.Column(DB.Integer, nullable=False)
+    id =                DB.Column(DB.Integer, primary_key=True)
+    organization_id =   DB.Column(DB.Integer, DB.ForeignKey('organization.id', ondelete='CASCADE'), nullable=True)
+    contractor_id =     DB.Column(DB.Integer, DB.ForeignKey('contractor.id', ondelete='CASCADE'), nullable=True)
+    name =              DB.Column(DB.String, nullable=False)
+    routing_number =    DB.Column(DB.Integer, nullable=False)
+    account_number =    DB.Column(DB.Integer, nullable=False)
 
-    def __init__(self, routing_number, account_number):
+    def __init__(self, name, routing_number, account_number):
+        self.name = name
         self.routing_number = routing_number
         self.account_number = account_number
 
     def __repr__(self):
-        return '<BankAccount[id:{}] routing={} account={}>'.format(self.id, self.routing_number, self.account_number)
+        return '<BankAccount[{}] name="{}" routing={} account={}>'.format(self.id, self.name, self.routing_number, self.account_number)
 
     @validates('routing_number')
     def validate_routing(self, field, value):

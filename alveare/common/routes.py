@@ -43,3 +43,7 @@ def register_routes(api):
     from alveare.resources.credit import CreditCollection, CreditResource
     api.add_resource(CreditCollection, '/credits', endpoint='credits')
     api.add_resource(CreditResource, '/credits/<int:id>', endpoint='credit')
+
+    from alveare.resources.bank_account import BankAccountCollection, BankAccountResource
+    api.add_resource(BankAccountCollection, '/bank_accounts', endpoint='bank_accounts')
+    api.add_resource(BankAccountResource, '/bank_accounts/<int:id>', endpoint='bank_account')

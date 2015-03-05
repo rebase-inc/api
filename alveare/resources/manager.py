@@ -1,10 +1,8 @@
 
-from flask.ext.restful import Resource, abort
+from flask.ext.restful import Resource
 from flask import jsonify, make_response, request
 
 from alveare.models.manager import Manager
-from alveare.models.user import User
-from alveare.models.organization import Organization
 from alveare.views.manager import serializer, deserializer
 from alveare.common.database import DB
 
@@ -28,10 +26,8 @@ class ManagerCollection(Resource):
 class ManagerResource(Resource):
 
     def get(self, id):
-        single_manager = Manager.query.get(id)
-        if single_manager:
-            return jsonify(manager = serializer.dump(single_manager).data)
-        abort(404, message='manager/{} does not exit'.format(id))
+        single_manager = Manager.query.get_or_404(id)
+        return jsonify(manager = serializer.dump(single_manager).data)
 
     def delete(self, id):
         DB.session.query(Manager).filter_by(id=id).delete()
