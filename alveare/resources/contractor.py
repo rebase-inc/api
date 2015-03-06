@@ -26,6 +26,14 @@ class ContractorResource(Resource):
         single_contractor = models.Contractor.query.get_or_404(id)
         return jsonify(contractor = contractor.serializer.dump(single_contractor).data)
 
+    def delete(self, id):
+        contractor = models.Contractor.query.get_or_404(id)
+        DB.session.delete(contractor)
+        DB.session.commit()
+        response = jsonify(message = 'Contractor succesfully deleted')
+        response.status_code = 200
+        return response
+
     #def put(self, id):
         #single_user = models.Work.query.get_or_404(id)
 

@@ -5,6 +5,7 @@ from unittest import skip
 url = 'bank_accounts/{}'.format
 
 def name(res):
+    ''' return a name (str) given a contractor or organization object '''
     if 'user' in res.keys():
         user = res['user']
         return user['first_name']+' '+user['last_name']
@@ -81,11 +82,9 @@ class TestBankAccountResource(AlveareRestTestCase):
     def test_delete_organization_bank_account(self):
         self.delete_bank_account('organization', name)
 
-    def test_delete_organization(self):
+    def test_delete_contractor(self):
         contractor = self.find_resource_with_no_bank_account('contractors')
         account = self.create_bank_account('contractor_id', contractor['id'], name(contractor))
         account_url = url(account['id'])
-        self.delete_resource(account_url)
+        self.delete_resource('contractors/{}'.format(contractor['id']))
         self.get_resource(account_url, 404)
-        same_contractor = self.get('contractor', contractor['id'])
-        self.assertEqual(same_contractor['bank_account'], 0)
