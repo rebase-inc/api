@@ -1,4 +1,5 @@
 import datetime
+from random import randint
 
 def create_one_organization(db, name='Alveare'):
     from alveare.models import Organization
@@ -22,13 +23,26 @@ def create_one_manager(db, user=None):
     db.session.add(manager)
     return manager
 
-def create_one_contractor(db):
+def create_one_contractor(db, user=None):
     from alveare.models import Contractor, SkillSet
-    user = create_one_user(db)
+    if not user:
+        user = create_one_user(db)
     contractor = Contractor(user)
     SkillSet(contractor)
     db.session.add(contractor)
     return contractor
+
+def create_one_bank_account(db, owner):
+    from alveare.models import BankAccount, Organization, Contractor
+    if any(map(lambda ownerType: isinstance(owner, ownerType), [Organization, Contractor])):
+        account = BankAccount(
+            owner.name if isinstance(owner, Organization) else owner.user.first_name+' '+owner.user.last_name,
+            123456000+randint(0, 999),
+            1230000+randint(0,9999)
+        )
+        owner.bank_account = account
+        return account
+    raise ValueError('owner is of type "{}", should be Organization or Contractor'.format(type(owner)))
 
 def create_one_code_clearance(db):
     from alveare.models import CodeClearance
@@ -65,7 +79,7 @@ def create_one_project(db, organization_name='Alveare', project_name='api'):
 
 def create_one_remote_project(db, organization_name='Alveare', project_name='api'):
     from alveare.models import Organization, RemoteProject, CodeRepository
-    organization = Organization(organization_name)
+    organization = create_one_organization(db, organization_name)
     remote_project = RemoteProject(organization, project_name)
     code_repo = CodeRepository(remote_project)
     db.session.add(organization)
@@ -75,7 +89,7 @@ def create_one_remote_project(db, organization_name='Alveare', project_name='api
 
 def create_one_github_project(db, organization_name='Alveare', project_name='api'):
     from alveare.models import Organization, GithubProject, CodeRepository
-    organization = Organization(organization_name)
+    organization = create_one_organization(db, organization_name)
     github_project = GithubProject(organization, project_name)
     code_repo = CodeRepository(github_project)
     db.session.add(github_project)
@@ -222,12 +236,14 @@ def create_one_work_review(db, rating, comment):
     return review
 
 def create_the_world(db):
+    andrew = create_one_user(db, 'Andrew', 'Millspaugh', 'andrew@alveare.io')
+    rapha = create_one_user(db, 'Raphael', 'Goyran', 'raphael@alveare.io')
     create_one_snapshot(db)
     create_one_snapshot(db)
-    u1 = create_one_user(db, 'Andrew', 'Millspaugh', 'andrew@alveare.io')
-    create_one_user(db, 'Raphael', 'Goyran', 'raphael@alveare.io')
     create_one_user(db, 'Steve', 'Gildred', 'steve@alveare.io')
-    create_one_manager(db, u1) # also creates an organization
+    create_one_manager(db, andrew) # also creates an organization
+    rapha_contractor = create_one_contractor(db, rapha)
+    create_one_bank_account(db, rapha_contractor)
     create_some_work(db)
     create_some_work(db, review=False)
     create_some_work(db, mediation=False)

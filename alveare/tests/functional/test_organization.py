@@ -26,7 +26,6 @@ class TestOrganizationResource(AlveareRestTestCase):
     def test_get_one(self):
         org = self.get_one()
         self.assertEqual(org['name'], 'Alveare')
-        self.assertTrue(org['managers'])
 
     def test_post(self):
         organization_data = dict(name='SpaceX', user={'id':1})
