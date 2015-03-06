@@ -1,18 +1,12 @@
 from marshmallow import fields, Schema
 
-from alveare.views import NamespacedSchema
-
-class UserSchema(NamespacedSchema):
+class UserSchema(Schema):
     id = fields.Integer()
     first_name = fields.String()
     last_name = fields.String()
     email = fields.Email()
     password = fields.String(load_only=True)
     last_seen = fields.DateTime(dump_only=True)
-
-    class Meta:
-        name = 'user'
-        plural_name = 'users'
 
     def make_object(self, data):
         from alveare.models import User
