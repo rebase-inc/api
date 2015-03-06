@@ -29,7 +29,7 @@ class TestOrganizationResource(AlveareRestTestCase):
         self.assertTrue(org['managers'])
 
     def test_post(self):
-        organization_data = dict(name='SpaceX')
+        organization_data = dict(name='SpaceX', user={'id':1})
         response = self.post_resource('organizations', organization_data)
         self.assertIn('organization', response)
 
@@ -55,7 +55,6 @@ class TestOrganizationResource(AlveareRestTestCase):
         org2 = response2['organization']
         self.assertEqual(org2['name'], org['name'])
 
-    @unittest.skip('cant for the life of me figure this one out')
     def test_delete_one(self):
         org = self.get_one()
         self.delete_resource(url(org['id']))

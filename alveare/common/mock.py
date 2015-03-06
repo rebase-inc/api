@@ -2,7 +2,8 @@ import datetime
 
 def create_one_organization(db, name='Alveare'):
     from alveare.models import Organization
-    organization = Organization(name)
+    user = create_one_user(db)
+    organization = Organization(name, user)
     db.session.add(organization)
     return organization
 
@@ -54,7 +55,7 @@ def create_one_github_account(db, user_name='ravioli'):
 
 def create_one_project(db, organization_name='Alveare', project_name='api'):
     from alveare.models import Organization, Project, CodeRepository
-    organization = Organization(organization_name)
+    organization = create_one_organization(db)
     project = Project(organization, project_name)
     code_repo = CodeRepository(project)
     db.session.add(organization)
