@@ -10,6 +10,11 @@ class UserSchema(Schema):
 
     def make_object(self, data):
         from alveare.models import User
+        if data.get('id'):
+            user = User.query.get(data.get('id', None))
+            if not user:
+                raise ValueError('No user with id {}'.format(data.get('id')))
+            return user
         return User(**data)
 
 serializer = UserSchema(only=('id','first_name','last_name','email','last_seen'))

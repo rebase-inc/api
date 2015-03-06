@@ -3,7 +3,8 @@ from random import randint
 
 def create_one_organization(db, name='Alveare'):
     from alveare.models import Organization
-    organization = Organization(name)
+    user = create_one_user(db)
+    organization = Organization(name, user)
     db.session.add(organization)
     return organization
 
@@ -68,7 +69,7 @@ def create_one_github_account(db, user_name='ravioli'):
 
 def create_one_project(db, organization_name='Alveare', project_name='api'):
     from alveare.models import Organization, Project, CodeRepository
-    organization = Organization(organization_name)
+    organization = create_one_organization(db)
     project = Project(organization, project_name)
     code_repo = CodeRepository(project)
     db.session.add(organization)
@@ -78,7 +79,7 @@ def create_one_project(db, organization_name='Alveare', project_name='api'):
 
 def create_one_remote_project(db, organization_name='Alveare', project_name='api'):
     from alveare.models import Organization, RemoteProject, CodeRepository
-    organization = Organization(organization_name)
+    organization = create_one_organization(db, organization_name)
     remote_project = RemoteProject(organization, project_name)
     code_repo = CodeRepository(remote_project)
     db.session.add(organization)
@@ -88,7 +89,7 @@ def create_one_remote_project(db, organization_name='Alveare', project_name='api
 
 def create_one_github_project(db, organization_name='Alveare', project_name='api'):
     from alveare.models import Organization, GithubProject, CodeRepository
-    organization = Organization(organization_name)
+    organization = create_one_organization(db, organization_name)
     github_project = GithubProject(organization, project_name)
     code_repo = CodeRepository(github_project)
     db.session.add(github_project)

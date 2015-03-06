@@ -11,8 +11,6 @@ class Manager(Role):
     id =                DB.Column(DB.Integer, DB.ForeignKey('role.id', ondelete='CASCADE'), primary_key=True)
     organization_id =   DB.Column(DB.Integer, DB.ForeignKey('organization.id', ondelete='CASCADE'))
 
-    organization = DB.relationship('Organization', backref=DB.backref('managers', lazy='joined'), uselist=False)
-
     __mapper_args__ = { 'polymorphic_identity': 'manager' }
 
     def __init__(self, user, organization):

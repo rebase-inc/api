@@ -14,7 +14,7 @@ class TestManagerResource(AlveareRestTestCase):
 
     def test_get_one(self):
         all_managers = self.get_resource('managers')
-        self.assertEqual(len(all_managers['managers']), 1)
+        self.assertIsInstance(all_managers['managers'], list)
         manager = all_managers['managers'][0]
         url = mgr_url(manager['id'])
 
