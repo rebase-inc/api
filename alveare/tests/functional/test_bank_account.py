@@ -35,7 +35,7 @@ class TestBankAccountResource(AlveareRestTestCase):
         return account
 
     def find_resource_with_no_bank_account(self, resources):
-        ''' resources can either 'organizations' or 'contractors' '''
+        ''' resources can either be 'organizations' or 'contractors' '''
         response = self.get_resource(resources)
         self.assertIn(resources, response)
         all_resources = response[resources]

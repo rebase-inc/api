@@ -9,7 +9,7 @@ class OrganizationSchema(Schema):
     id =            fields.Integer()
     name =          fields.String(required=True)
     projects =      fields.Nested(ProjectSchema,        only=('id', 'name'),    many=True)
-    bank_account =  fields.Nested(BankAccountSchema,    only=('id',))
+    bank_account =  fields.Nested(BankAccountSchema,    only='id')
     user =          fields.Nested(UserSchema, only='id') #only used for deserialize
     managers =      fields.Nested(ManagerSchema,        only='id',           many=True)
 

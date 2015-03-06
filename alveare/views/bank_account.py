@@ -1,8 +1,9 @@
 from marshmallow import fields, Schema
+from flask.ext.restful import abort
+
 from alveare.models.bank_account import BankAccount
 from alveare.models.organization import Organization
 from alveare.models.contractor import Contractor
-from flask.ext.restful import abort
 
 class BankAccountSchema(Schema):
     id =                fields.Integer()
@@ -34,15 +35,15 @@ class BankAccountSchema(Schema):
         if data.get('id'):
             # an id is provided, so we're doing an update
             account = BankAccount.query.get_or_404(data['id'])
-            for attribute in ['name', 'routing_number', 'account_number']:
-                setattr(account, attribute, data[attribute])
+            data.pop('id')
+            for field, value in data.items():
+                setattr(account, field, value)
             return account
-
         owner = self.get_owner_and_name(data)
         account = BankAccount(**data)
         owner.bank_account = account
         return account
 
 deserializer =          BankAccountSchema(exclude=('id'))
-update_deserializer =   BankAccountSchema()
+update_deserializer =   BankAccountSchema(exclude=('organization_id', 'contractor_id'))
 serializer =            BankAccountSchema()
