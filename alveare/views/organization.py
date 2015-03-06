@@ -8,8 +8,8 @@ class OrganizationSchema(Schema):
     id =            fields.Integer()
     name =          fields.String(required=True)
     projects =      fields.Nested(ProjectSchema,        only=('id', 'name'),    many=True)
-    managers =      fields.Nested(ManagerSchema,        only=('id',),           many=True)
-    bank_account =  fields.Nested(BankAccountSchema,    only=('id',))
+    managers =      fields.Nested(ManagerSchema,        only='id',           many=True)
+    bank_account =  fields.Nested(BankAccountSchema,    only='id')
 
     def make_object(self, data):
         if data.get('id'):

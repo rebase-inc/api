@@ -22,10 +22,9 @@ class ContractorCollection(Resource):
         #return response
 
 class ContractorResource(Resource):
-    pass
-    #def get(self, id):
-        #single_contractor = models.Contractor.query.get_or_404(id)
-        #return jsonify(contractor = contractor.serializer.dump(single_contractor).data)
+    def get(self, id):
+        single_contractor = models.Contractor.query.get_or_404(id)
+        return jsonify(contractor = contractor.serializer.dump(single_contractor).data)
 
     #def put(self, id):
         #single_user = models.Work.query.get_or_404(id)
