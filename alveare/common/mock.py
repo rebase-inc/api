@@ -41,6 +41,7 @@ def create_one_bank_account(db, owner):
             1230000+randint(0,9999)
         )
         owner.bank_account = account
+        db.session.add(owner)
         return account
     raise ValueError('owner is of type "{}", should be Organization or Contractor'.format(type(owner)))
 

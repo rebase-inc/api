@@ -3,7 +3,7 @@ from flask.ext.restful import Resource
 from flask import jsonify, make_response, request
 
 from alveare.models.bank_account import BankAccount
-from alveare.views.bank_account import serializer, deserializer
+from alveare.views.bank_account import serializer, deserializer, update_deserializer
 from alveare.common.database import DB
 
 

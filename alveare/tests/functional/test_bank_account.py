@@ -1,6 +1,8 @@
 from . import AlveareRestTestCase
 from random import randint
 from unittest import skip
+from functools import partial
+from operator import eq, ne
 
 url = 'bank_accounts/{}'.format
 
@@ -13,6 +15,12 @@ def name(res):
         return res['name']
     else:
         raise TypeError('res should be Contractor or Organization')
+
+def bank_ownership(resource, op):
+    return op(resource['bank_account'], 0)
+
+has_bank =      partial(bank_ownership, op=ne)
+has_no_bank =   partial(bank_ownership, op=eq)
 
 class TestBankAccountResource(AlveareRestTestCase):
 
@@ -34,14 +42,23 @@ class TestBankAccountResource(AlveareRestTestCase):
         self.assertEqual(account['account_number'], account_data['account_number'])
         return account
 
-    def find_resource_with_no_bank_account(self, resources):
-        ''' resources can either be 'organizations' or 'contractors' '''
+    def find_resource(self, resources, bank_ownership):
+        '''
+        resources can either be 'organizations' or 'contractors'
+        bank_ownership is a function that returns a boolean given a resource
+        '''
         response = self.get_resource(resources)
         self.assertIn(resources, response)
         all_resources = response[resources]
-        resources_with_no_bank_account = list(filter(lambda org: org['bank_account']==0, all_resources))
-        self.assertTrue(resources_with_no_bank_account)
-        return resources_with_no_bank_account[0]
+        matching_resources = list(filter(lambda resource: bank_ownership(resource), all_resources))
+        self.assertTrue(matching_resources)
+        return matching_resources[0]
+
+    def find_resource_with_bank_account(self, resources):
+        return self.find_resource(resources, has_bank)
+
+    def find_resource_with_no_bank_account(self, resources):
+        return self.find_resource(resources, has_no_bank)
 
     def get(self, resource, resource_id):
         response = self.get_resource('{}s/{}'.format(resource, resource_id))
@@ -88,3 +105,26 @@ class TestBankAccountResource(AlveareRestTestCase):
         account_url = url(account['id'])
         self.delete_resource('contractors/{}'.format(contractor['id']))
         self.get_resource(account_url, 404)
+
+    @skip('TODO: fix this: broken by unmet foreign constraint when projects get deleted')
+    def test_delete_organization(self):
+        org = self.find_resource_with_no_bank_account('organizations')
+        account = self.create_bank_account('organization_id', org['id'], name(org))
+        account_url = url(account['id'])
+        self.delete_resource('organizations/{}'.format(org['id']))
+        self.get_resource(account_url, 404)
+
+    def test_update_bank_account(self):
+        contractor = self.find_resource_with_bank_account('contractors')
+        account = self.get('bank_account', contractor['bank_account'])
+        new_name = account['name'] + 'XXXX'
+        new_routing = account['routing_number']+123
+        new_account = account['account_number']+456
+        account['name'] = new_name
+        account['routing_number'] = new_routing
+        account['account_number'] = new_account
+
+        self.put_resource(url(account['id']), account)
+
+        updated_account = self.get('bank_account', account['id'])
+        self.assertEqual(account, updated_account)
