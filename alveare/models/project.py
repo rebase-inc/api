@@ -7,9 +7,9 @@ class Project(DB.Model):
     organization_id =   DB.Column(DB.Integer, DB.ForeignKey('organization.id', ondelete='CASCADE'), nullable=False)
     type =              DB.Column(DB.String)
 
-    code_repository =   DB.relationship('CodeRepository', uselist=False, backref='project', cascade="all, delete-orphan", passive_deletes=True)
-    tickets =           DB.relationship('Ticket', backref='project', cascade="all, delete-orphan", passive_deletes=True)
-    clearances =        DB.relationship('CodeClearance', backref='project', cascade="all, delete-orphan", passive_deletes=True)
+    code_repository =   DB.relationship('CodeRepository',   backref='project', cascade="all, delete-orphan", passive_deletes=True, uselist=False)
+    tickets =           DB.relationship('Ticket',           backref='project', cascade="all, delete-orphan", passive_deletes=True)
+    clearances =        DB.relationship('CodeClearance',    backref='project', cascade="all, delete-orphan", passive_deletes=True)
 
     __mapper_args__ = {
         'polymorphic_identity': 'project',
@@ -21,5 +21,5 @@ class Project(DB.Model):
         self.name = name
 
     def __repr__(self):
-        return '<Project[id:{}] for "{}" >'.format(self.id, self.organization)
+        return '<Project[{} "{}"] for "{}" >'.format(self.id, self.name, self.organization)
 

@@ -3,8 +3,8 @@ from alveare.common.database import DB
 from alveare.models import RemoteTicket
 
 class GithubTicket(RemoteTicket):
-    id = DB.Column(DB.Integer, DB.ForeignKey('remote_ticket.id'), primary_key=True)
-    number = DB.Column(DB.Integer, nullable=False)
+    id =        DB.Column(DB.Integer, DB.ForeignKey('remote_ticket.id', ondelete='CASCADE'), primary_key=True)
+    number =    DB.Column(DB.Integer, nullable=False)
 
     __mapper_args__ = { 'polymorphic_identity': 'github_ticket' }
 

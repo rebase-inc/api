@@ -4,7 +4,7 @@ from alveare.common.database import DB
 from alveare.models.remote_project import RemoteProject
 
 class GithubProject(RemoteProject):
-    id = DB.Column(DB.Integer, DB.ForeignKey('remote_project.id'), primary_key=True)
+    github_project_id = DB.Column(DB.Integer, DB.ForeignKey('remote_project.remote_project_id', ondelete='CASCADE'), primary_key=True)
 
     __mapper_args__ = { 'polymorphic_identity': 'remote_project' }
 
@@ -13,5 +13,5 @@ class GithubProject(RemoteProject):
         self.name = name
 
     def __repr__(self):
-        return '<GithubProject[id:{}]>'.format(self.id)
+        return '<GithubProject[id:{}]>'.format(self.github_project_id)
 

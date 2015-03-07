@@ -3,7 +3,7 @@ from alveare.common.database import DB
 from alveare.models.ticket import Ticket
 
 class InternalTicket(Ticket):
-    id = DB.Column(DB.Integer, DB.ForeignKey('ticket.id'), primary_key=True)
+    id = DB.Column(DB.Integer, DB.ForeignKey('ticket.id', ondelete='CASCADE'), primary_key=True)
 
     __mapper_args__ = { 'polymorphic_identity': 'internal_ticket' }
 

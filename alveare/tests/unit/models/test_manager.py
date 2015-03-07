@@ -20,7 +20,7 @@ class TestManagerModel(AlveareModelTestCase):
         self.assertIsInstance(manager.user, User)
         self.assertIsInstance(manager.organization, Organization)
 
-    def test_delete_contract(self):
+    def test_delete(self):
         manager = mock.create_one_manager(self.db)
         self.db.session.commit()
 
@@ -30,6 +30,19 @@ class TestManagerModel(AlveareModelTestCase):
         self.assertEqual(Manager.query.get(manager.id), None)
         self.assertIsInstance(User.query.get(manager.id), User)
         self.assertIsInstance(Organization.query.get(manager.organization_id), Organization)
+
+    def test_delete_organization(self):
+        manager = mock.create_one_manager(self.db)
+        self.db.session.commit()
+        org = manager.organization
+        org_id = org.id
+        manager_id = manager.id
+        user_id = manager.user.id
+        self.db.session.delete(org)
+        self.db.session.commit()
+        self.assertFalse(Organization.query.get(org_id))
+        self.assertFalse(Manager.query.get(manager_id))
+        self.assertTrue(User.query.get(user_id))
 
     @unittest.skip('Manager model doesnt have any updatable fields yet')
     def test_update(self):
