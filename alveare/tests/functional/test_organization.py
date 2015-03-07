@@ -56,6 +56,5 @@ class TestOrganizationResource(AlveareRestTestCase):
 
     def test_delete_one(self):
         org = self.get_one()
-        print(org)
         self.delete_resource(url(org['id']))
         self.get_resource(url(org['id']), 404)

@@ -106,10 +106,8 @@ class TestBankAccountResource(AlveareRestTestCase):
         self.delete_resource('contractors/{}'.format(contractor['id']))
         self.get_resource(account_url, 404)
 
-    #@skip('TODO: fix this: broken by unmet foreign constraint when projects get deleted')
     def test_delete_organization(self):
         org = self.find_resource_with_no_bank_account('organizations')
-        print(org)
         account = self.create_bank_account('organization_id', org['id'], name(org))
         account_url = url(account['id'])
         self.delete_resource('organizations/{}'.format(org['id']))
