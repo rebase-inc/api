@@ -25,6 +25,28 @@ class TestCodeClearanceModel(AlveareModelTestCase):
         self.assertNotEqual(models.Project.query.get(project_id), None)
         self.assertNotEqual(models.Contractor.query.get(contractor_id), None)
 
+    def test_delete_project(self):
+        code_clearance = mock.create_one_code_clearance(self.db)
+        self.db.session.commit()
+        code_clearance_id = code_clearance.id
+        project_id = code_clearance.project.id
+        contractor_id = code_clearance.contractor.id
+        self.delete_instance(code_clearance.project)
+        self.assertFalse(models.CodeClearance.query.get(code_clearance_id))
+        self.assertFalse(models.Project.query.get(project_id))
+        self.assertTrue(models.Contractor.query.get(contractor_id))
+
+    def test_delete_contractor(self):
+        code_clearance = mock.create_one_code_clearance(self.db)
+        self.db.session.commit()
+        code_clearance_id = code_clearance.id
+        project_id = code_clearance.project.id
+        contractor_id = code_clearance.contractor.id
+        self.delete_instance(code_clearance.contractor)
+        self.assertFalse(models.CodeClearance.query.get(code_clearance_id))
+        self.assertTrue(models.Project.query.get(project_id))
+        self.assertFalse(models.Contractor.query.get(contractor_id))
+
     def test_update(self):
         code_clearance = mock.create_one_code_clearance(self.db)
         self.db.session.commit()
