@@ -131,6 +131,15 @@ class TestAuctionModel(AlveareModelTestCase):
         # same for the term sheet
         self.assertNotEqual( TermSheet.query.get(term_sheet.id), None)
 
+    def test_delete_term_sheet(self):
+        auction = mock.create_one_auction(self.db)
+        self.db.session.commit()
+
+        auction_id = auction.id
+        term_sheet_id = auction.term_sheet.id
+        #self.db.session.delete(auction.term_sheet)
+        #self.db.session.commit()
+
     def test_update(self):
         auction = mock.create_one_auction(self.db)
         self.db.session.commit()
