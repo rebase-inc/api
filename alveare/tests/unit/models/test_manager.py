@@ -44,6 +44,18 @@ class TestManagerModel(AlveareModelTestCase):
         self.assertFalse(Manager.query.get(manager_id))
         self.assertTrue(User.query.get(user_id))
 
+    def test_delete_user(self):
+        manager = mock.create_one_manager(self.db)
+        self.db.session.commit()
+
+        user_id = manager.user.id
+        manager_id = manager.id
+        self.db.session.delete(manager.user)
+        self.db.session.commit()
+
+        self.assertFalse(Manager.query.get(manager_id))
+        self.assertFalse(User.query.get(user_id))
+
     @unittest.skip('Manager model doesnt have any updatable fields yet')
     def test_update(self):
         contract = self.create_model(self.model)
