@@ -13,7 +13,7 @@ class Auction(DB.Model):
     duration =       DB.Column(DB.Integer,   nullable=False)
     finish_work_by = DB.Column(DB.DateTime,  nullable=False)
     redundancy =     DB.Column(DB.Integer,   nullable=False)
-    term_sheet_id =  DB.Column(DB.Integer,   DB.ForeignKey('term_sheet.id'), nullable=False)
+    term_sheet_id =  DB.Column(DB.Integer,   DB.ForeignKey('term_sheet.id', ondelete='CASCADE'), nullable=False)
     state =          DB.Column(DB.String, nullable=False, default='created')
 
     term_sheet =       DB.relationship('TermSheet', uselist=False)

@@ -137,8 +137,8 @@ class TestAuctionModel(AlveareModelTestCase):
 
         auction_id = auction.id
         term_sheet_id = auction.term_sheet.id
-        #self.db.session.delete(auction.term_sheet)
-        #self.db.session.commit()
+        self.db.session.delete(auction.term_sheet)
+        self.db.session.commit()
 
     def test_update(self):
         auction = mock.create_one_auction(self.db)
