@@ -52,6 +52,7 @@ class TestCandidate(AlveareModelTestCase):
         candidate = create_one_candidate(self.db)
         self.db.session.commit()
 
+        candidate_id = (candidate.contractor_id, candidate.auction_id)
         auction = candidate.ticket_set.auction
         auction.approved_talents.append(candidate)
         self.db.session.commit()
@@ -60,8 +61,10 @@ class TestCandidate(AlveareModelTestCase):
 
         # now disapprove talent
         auction.approved_talents.clear()
-        self.assertNotEqual(Candidate.query.all(), [])
-        self.assertEqual(candidate.approved_auction, None)
+        self.db.session.add(auction)
+        self.db.session.commit()
+        self.assertTrue(Candidate.query.get(candidate_id))
+        self.assertFalse(candidate.approved_auction)
 
     def test_create_bad_ticket_set(self):
         contractor = create_one_contractor(self.db)
