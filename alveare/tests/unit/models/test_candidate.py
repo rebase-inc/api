@@ -63,8 +63,10 @@ class TestCandidate(AlveareModelTestCase):
         auction.approved_talents.clear()
         self.db.session.add(auction)
         self.db.session.commit()
-        self.assertTrue(Candidate.query.get(candidate_id))
-        self.assertFalse(candidate.approved_auction)
+        queried_candidate = Candidate.query.get(candidate_id)
+        self.assertTrue(queried_candidate)
+        self.assertFalse(queried_candidate.approved_auction)
+        self.assertTrue(queried_candidate.ticket_set)
 
     def test_create_bad_ticket_set(self):
         contractor = create_one_contractor(self.db)
