@@ -13,6 +13,9 @@ class TestRemoteWorkHistoryResource(AlveareRestTestCase):
         self.assertTrue(rwh) # mock should have created at least one account
         self.assertTrue(rwh['id'])
 
+        contractor = self.get('contractor', rwh['id'])
+        self.assertEqual(contractor['remote_work_history'], contractor['id'])
+
     def test_create(self):
         contractor = AlveareResource(self, 'contractor').get_any()
         new_rwh = self.r.create(
