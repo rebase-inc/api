@@ -34,6 +34,13 @@ class AlveareResource(object):
         else:
             return self.url_format(resource['id'])
 
+    def get(self, resource_id):
+        ''' helper function that returns the actual dictionary of fields for 'resource'/'resource_id'
+        '''
+        response = self.test.get_resource('{}/{}'.format(self.col_url, resource_id))
+        self.test.assertIn(self.resource, response)
+        return response[self.resource]
+
     def get_all(self):
         ''' returns all the instances of this resource
         '''
