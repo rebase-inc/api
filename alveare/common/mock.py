@@ -149,9 +149,10 @@ def create_ticket_matches(db):
     return ticket_matches
 
 def create_one_snapshot(db, ticket=None):
-    from alveare.models import InternalTicket, TicketSnapshot
+    from alveare.models import InternalTicket, TicketSnapshot, SkillRequirements
     if not ticket:
         ticket = InternalTicket(create_one_project(db), 'for a snapshot')
+        SkillRequirements(ticket)
         db.session.add(ticket)
     ts = TicketSnapshot(ticket or InternalTicket(create_one_project(db), 'for a snapshot'))
     db.session.add(ts)

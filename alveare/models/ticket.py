@@ -22,4 +22,4 @@ class Ticket(DB.Model):
         raise NotImplementedError()
 
     def __repr__(self):
-        return '<Ticket[{}] title="{}", description="{}">'.format(self.id, self.title, self.description)
+        return '<Ticket[{}] title="{}">'.format(self.id, self.title)
