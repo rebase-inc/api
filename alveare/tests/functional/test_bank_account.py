@@ -60,11 +60,6 @@ class TestBankAccountResource(AlveareRestTestCase):
     def find_resource_with_no_bank_account(self, resources):
         return self.find_resource(resources, has_no_bank)
 
-    def get(self, resource, resource_id):
-        response = self.get_resource('{}s/{}'.format(resource, resource_id))
-        self.assertIn(resource, response)
-        return response[resource]
-
     def test_create_org_account(self):
         org = self.find_resource_with_no_bank_account('organizations')
         account = self.create_bank_account('organization_id', org['id'], org['name'])

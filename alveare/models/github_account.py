@@ -3,9 +3,10 @@ from alveare.common.database import DB
 
 class GithubAccount(DB.Model):
 
-    account_id =    DB.Column(DB.Integer, primary_key=True)
-    id = DB.Column(DB.Integer, DB.ForeignKey('remote_work_history.id', ondelete='CASCADE'))
-    user_name =     DB.Column(DB.String, nullable=False)
+    id =                        DB.Column(DB.Integer, primary_key=True)
+    remote_work_history_id =    DB.Column(DB.Integer, DB.ForeignKey('remote_work_history.id', ondelete='CASCADE'))
+    user_name =                 DB.Column(DB.String, nullable=False)
+    auth_token =                DB.Column(DB.String)
 
     def __init__(self, remote_work_history, user_name):
         self.remote_work_history = remote_work_history

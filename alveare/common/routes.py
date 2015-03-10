@@ -59,3 +59,11 @@ def register_routes(api):
     from alveare.resources.contractor import ContractorCollection, ContractorResource
     api.add_resource(ContractorCollection, '/contractors', endpoint='contractors')
     api.add_resource(ContractorResource, '/contractors/<int:id>', endpoint='contractor')
+
+    from alveare.resources.github_account import GithubAccountCollection, GithubAccountResource
+    api.add_resource(GithubAccountCollection, '/github_accounts', endpoint='github_accounts')
+    api.add_resource(GithubAccountResource, '/github_accounts/<int:id>', endpoint='github_account')
+
+    from alveare.resources.remote_work_history import RemoteWorkHistoryCollection, RemoteWorkHistoryResource
+    api.add_resource(RemoteWorkHistoryCollection, '/remote_work_histories', endpoint='remote_work_histories')
+    api.add_resource(RemoteWorkHistoryResource, '/remote_work_histories/<int:id>', endpoint='remote_work_history')
