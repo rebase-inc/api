@@ -1,3 +1,4 @@
+from alveare.resources import add_alveare_resource
 
 def register_routes(api):
     from alveare.resources.user import UserCollection, UserResource
@@ -64,14 +65,41 @@ def register_routes(api):
     api.add_resource(ContractorCollection, '/contractors', endpoint='contractors')
     api.add_resource(ContractorResource, '/contractors/<int:id>', endpoint='contractor')
 
-    from alveare.resources.github_account import GithubAccountCollection, GithubAccountResource
-    api.add_resource(GithubAccountCollection, '/github_accounts', endpoint='github_accounts')
-    api.add_resource(GithubAccountResource, '/github_accounts/<int:id>', endpoint='github_account')
+    from alveare.models.github_account import GithubAccount
+    import alveare.views.github_account as github_account_view
+    add_alveare_resource(
+        api,
+        GithubAccount,
+        'github_account',
+        'github_accounts',
+        '/<int:id>',
+        github_account_view.serializer,
+        github_account_view.deserializer,
+        github_account_view.update_deserializer
+    )
 
-    from alveare.resources.remote_work_history import RemoteWorkHistoryCollection, RemoteWorkHistoryResource
-    api.add_resource(RemoteWorkHistoryCollection, '/remote_work_histories', endpoint='remote_work_histories')
-    api.add_resource(RemoteWorkHistoryResource, '/remote_work_histories/<int:id>', endpoint='remote_work_history')
+    from alveare.models.remote_work_history import RemoteWorkHistory
+    import alveare.views.remote_work_history as remote_work_history_view
+    add_alveare_resource(
+        api,
+        RemoteWorkHistory,
+        'remote_work_history',
+        'remote_work_histories',
+        '/<int:id>',
+        remote_work_history_view.serializer,
+        remote_work_history_view.deserializer,
+        remote_work_history_view.update_deserializer
+    )
 
-    from alveare.resources.ticket import TicketCollection, TicketResource
-    api.add_resource(TicketCollection, '/tickets', endpoint='tickets')
-    api.add_resource(TicketResource, '/tickets/<int:id>', endpoint='ticket')
+    from alveare.models.ticket import Ticket
+    import alveare.views.ticket as ticket_view
+    add_alveare_resource(
+        api,
+        Ticket,
+        'ticket',
+        'tickets',
+        '/<int:id>',
+        ticket_view.serializer,
+        ticket_view.deserializer,
+        ticket_view.update_deserializer
+    )
