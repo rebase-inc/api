@@ -34,12 +34,16 @@ class AlveareResource(object):
         else:
             return self.url_format(resource['id'])
 
-    def get(self, resource_id):
+    def get(self, resource):
         ''' helper function that returns the actual dictionary of fields for 'resource'/'resource_id'
         '''
-        response = self.test.get_resource('{}/{}'.format(self.col_url, resource_id))
+        response = self.test.get_resource(self.url(resource))
         self.test.assertIn(self.resource, response)
         return response[self.resource]
+
+    def delete(self, resource):
+        self.test.delete_resource(self.url(resource))
+        self.test.get_resource(self.url(resource), 404)
 
     def get_all(self):
         ''' returns all the instances of this resource

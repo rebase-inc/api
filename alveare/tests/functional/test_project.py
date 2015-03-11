@@ -25,3 +25,23 @@ class TestProjectResource(AlveareRestTestCase):
         project = self.r.get_any()
         project['name'] = 'a better project name'
         self.r.update(**project) 
+
+    def test_add_and_remote_tickets(self):
+        project = self.r.get_any()
+        t = AlveareResource(self, 'internal_ticket')
+        ticket = dict(
+            title='Superb title',
+            description='Lame description',
+            project_id=project['id']
+        )
+        for i in range(50):
+            ticket['title'] += ' #{}'.format(i)
+            t.create(**ticket)
+        queried_project = self.get('project', project['id'])
+        self.assertTrue(queried_project)
+        self.assertGreaterEqual(len(queried_project['tickets']), 50)
+
+        # remote all tickets now
+        for one_ticket in queried_project['tickets']:
+            t.delete(one_ticket)
+

@@ -2,6 +2,7 @@ from marshmallow import fields, Schema
 from alveare.common.database import DB
 from alveare.models.project import Project
 from alveare.models.user import User
+#from alveare.models.ticket import Ticket
 from alveare.models.organization import Organization
 
 class ProjectSchema(Schema):
@@ -9,6 +10,7 @@ class ProjectSchema(Schema):
     organization_id =   fields.Integer()
     name =              fields.String()
     type =              fields.String()
+    tickets =           fields.Nested('TicketSchema', only=('id',), many=True)
 
     def make_object(self, data):
         if data.get('id'):
