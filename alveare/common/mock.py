@@ -109,34 +109,34 @@ def create_one_internal_ticket(db, title, description=None, project=None):
     return ticket
 
 def create_one_remote_ticket(db, title, description=None, project=None):
-    from alveare.models import RemoteTicket, SkillRequirements
+    from alveare.models import RemoteTicket, SkillRequirement
     if not project:
         project = create_one_project(db)
     if not description:
         description = title + '-DESCRIPTION'
     ticket = RemoteTicket(project, title, description)
-    SkillRequirements(ticket)
+    SkillRequirement(ticket)
     db.session.add(ticket)
     return ticket
 
 def create_one_github_ticket(db, number, project=None):
-    from alveare.models import GithubTicket, SkillRequirements
+    from alveare.models import GithubTicket, SkillRequirement
     if not project:
         project = create_one_github_project(db)
     ticket = GithubTicket(project, number)
-    SkillRequirements(ticket)
+    SkillRequirement(ticket)
     db.session.add(ticket)
     return ticket
 
 def create_some_tickets(db, ticket_titles=None):
-    from alveare.models import InternalTicket, RemoteTicket, SkillRequirements
+    from alveare.models import InternalTicket, RemoteTicket, SkillRequirement
     project = create_one_project(db)
     if not ticket_titles:
         ticket_titles = ['Foo', 'Bar', 'Baz', 'Qux']
     tickets = []
     for title in ticket_titles:
         ticket = InternalTicket(project, title)
-        SkillRequirements(ticket)
+        SkillRequirement(ticket)
         tickets.append(ticket)
     db.session.add_all(tickets)
     return tickets
@@ -147,15 +147,15 @@ def create_ticket_matches(db):
     contractor = create_one_contractor(db)
     ticket_matches = []
     for ticket in tickets:
-        ticket_matches.append(TicketMatch(contractor.skill_set, ticket.skill_requirements, 100))
+        ticket_matches.append(TicketMatch(contractor.skill_set, ticket.skill_requirement, 100))
     db.session.add_all(ticket_matches)
     return ticket_matches
 
 def create_one_snapshot(db, ticket=None):
-    from alveare.models import InternalTicket, TicketSnapshot, SkillRequirements
+    from alveare.models import InternalTicket, TicketSnapshot, SkillRequirement
     if not ticket:
         ticket = InternalTicket(create_one_project(db), 'for a snapshot')
-        SkillRequirements(ticket)
+        SkillRequirement(ticket)
         db.session.add(ticket)
     ts = TicketSnapshot(ticket or InternalTicket(create_one_project(db), 'for a snapshot'))
     db.session.add(ts)
@@ -190,7 +190,7 @@ def create_one_job_fit(db):
     skill_set = candidate.contractor.skill_set
     ticket_matches = []
     for bid_limit in candidate.ticket_set.bid_limits:
-        ticket_matches.append(TicketMatch(skill_set, bid_limit.snapshot.ticket.skill_requirements, 100))
+        ticket_matches.append(TicketMatch(skill_set, bid_limit.snapshot.ticket.skill_requirement, 100))
     job_fit = JobFit(candidate, ticket_matches)
     db.session.add(job_fit)
     return job_fit

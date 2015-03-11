@@ -112,6 +112,19 @@ def register_routes(api):
         ticket_view.update_deserializer
     )
 
+    from alveare.models.skill_requirements import SkillRequirement
+    import alveare.views.skill_requirements as skill_requirement_view
+    add_alveare_resource(
+        api,
+        SkillRequirement,
+        'skill_requirement',
+        'skill_requirements',
+        '/<int:id>',
+        skill_requirement_view.serializer,
+        skill_requirement_view.deserializer,
+        skill_requirement_view.update_deserializer
+    )
+
     from alveare.models.internal_ticket import InternalTicket
     import alveare.views.internal_ticket as internal_ticket_view
     add_alveare_resource(

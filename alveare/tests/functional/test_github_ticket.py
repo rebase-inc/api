@@ -12,14 +12,14 @@ class TestGithubTicketResource(AlveareRestTestCase):
         ticket = self.r.get_any()
         self.assertTrue(ticket) # mock should have created at least one account
         self.assertTrue(ticket['id'])
-        self.assertTrue(ticket['skill_requirements'])
-        self.assertEqual(ticket['skill_requirements']['id'], ticket['id'])
+        self.assertTrue(ticket['skill_requirement'])
+        self.assertEqual(ticket['skill_requirement']['id'], ticket['id'])
 
     def test_create(self):
         ticket = self.r.get_any()
         ticket.pop('id')
         ticket.pop('snapshots')
-        ticket.pop('skill_requirements')
+        ticket.pop('skill_requirement')
         ticket['number'] = 1234
         self.r.create(**ticket)
 

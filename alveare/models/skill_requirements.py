@@ -1,7 +1,7 @@
 
 from alveare.common.database import DB
 
-class SkillRequirements(DB.Model):
+class SkillRequirement(DB.Model):
 
     id = DB.Column(DB.Integer, DB.ForeignKey('ticket.id', ondelete='CASCADE'), primary_key=True)
 
@@ -9,5 +9,5 @@ class SkillRequirements(DB.Model):
         self.ticket = ticket
 
     def __repr__(self):
-        return '<SkillRequirements[{}]>'.format(self.id)
+        return '<SkillRequirement[{}]>'.format(self.id)
 

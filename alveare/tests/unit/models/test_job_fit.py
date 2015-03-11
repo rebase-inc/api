@@ -62,7 +62,7 @@ class TestJobFit(AlveareModelTestCase):
         skill_set = candidate.contractor.skill_set
         ticket_matches = []
         for bid_limit in candidate.ticket_set.bid_limits:
-            ticket_matches.append(TicketMatch(skill_set, bid_limit.snapshot.ticket.skill_requirements, 100))
+            ticket_matches.append(TicketMatch(skill_set, bid_limit.snapshot.ticket.skill_requirement, 100))
         ticket_matches.pop() # so we know we're missing one ticket_match
         with self.assertRaises(ValueError):
             job_fit = JobFit(candidate, ticket_matches)

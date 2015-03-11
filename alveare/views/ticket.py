@@ -1,6 +1,6 @@
 from marshmallow import fields, Schema
 from alveare.models.ticket import Ticket
-from alveare.views.skill_requirements import SkillRequirementsSchema
+from alveare.views.skill_requirements import SkillRequirementSchema
 from flask.ext.restful import abort
 
 class TicketSchema(Schema):
@@ -9,7 +9,7 @@ class TicketSchema(Schema):
     description =   fields.String()
     project_id =    fields.Integer()
 
-    skill_requirements =    fields.Nested(SkillRequirementsSchema,  only=('id',))
+    skill_requirement =     fields.Nested(SkillRequirementSchema,   only=('id',))
     snapshots =             fields.Nested('TicketSnapshotSchema',   only=('id',), many=True)
     comments =              fields.Nested('CommentSchema',          only=('id',), many=True)
 

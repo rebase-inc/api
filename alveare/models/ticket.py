@@ -9,7 +9,7 @@ class Ticket(DB.Model):
     project_id =    DB.Column(DB.Integer, DB.ForeignKey('project.id', ondelete='CASCADE'), nullable=False)
     discriminator = DB.Column(DB.String)
 
-    skill_requirements =    DB.relationship('SkillRequirements',    backref='ticket', cascade='all, delete-orphan', passive_deletes=False, uselist=False)
+    skill_requirement =     DB.relationship('SkillRequirement',     backref='ticket', cascade='all, delete-orphan', passive_deletes=False, uselist=False)
     snapshots =             DB.relationship('TicketSnapshot',       backref='ticket', cascade='all, delete-orphan', passive_deletes=True)
     comments =              DB.relationship('Comment',              backref='ticket', cascade='all, delete-orphan', passive_deletes=True)
 
