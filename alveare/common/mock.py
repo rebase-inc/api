@@ -61,9 +61,10 @@ def create_one_remote_work_history(db, contractor=None):
     db.session.add(remote_work_history)
     return remote_work_history
 
-def create_one_github_account(db, user_name='ravioli'):
+def create_one_github_account(db, remote_work_history=None, user_name='ravioli'):
     from alveare.models import GithubAccount
-    remote_work_history = create_one_remote_work_history(db)
+    if not remote_work_history:
+        remote_work_history = create_one_remote_work_history(db)
     github_account = GithubAccount(remote_work_history, user_name)
     db.session.add(github_account)
     return github_account
@@ -148,9 +149,10 @@ def create_ticket_matches(db):
     return ticket_matches
 
 def create_one_snapshot(db, ticket=None):
-    from alveare.models import InternalTicket, TicketSnapshot
+    from alveare.models import InternalTicket, TicketSnapshot, SkillRequirements
     if not ticket:
         ticket = InternalTicket(create_one_project(db), 'for a snapshot')
+        SkillRequirements(ticket)
         db.session.add(ticket)
     ts = TicketSnapshot(ticket or InternalTicket(create_one_project(db), 'for a snapshot'))
     db.session.add(ts)
@@ -245,6 +247,9 @@ def create_the_world(db):
     create_one_manager(db, andrew) # also creates an organization
     rapha_contractor = create_one_contractor(db, rapha)
     create_one_bank_account(db, rapha_contractor)
+    rapha_rwh = create_one_remote_work_history(db, rapha_contractor)
+    create_one_github_account(db, rapha_rwh, 'rapha.opensource')
+    create_one_github_account(db, rapha_rwh, 'joe-la-mitraille')
     create_some_work(db)
     create_some_work(db, review=False)
     create_some_work(db, mediation=False)

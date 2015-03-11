@@ -20,6 +20,10 @@ def register_routes(api):
     api.add_resource(ReviewCollection, '/reviews', endpoint='reviews')
     api.add_resource(ReviewResource, '/reviews/<int:id>', endpoint='review')
 
+    from alveare.resources.project import ProjectCollection, ProjectResource
+    api.add_resource(ProjectCollection, '/projects', endpoint='projects')
+    api.add_resource(ProjectResource, '/projects/<int:id>', endpoint='project')
+
     from alveare.resources.github_project import GithubProjectCollection, GithubProjectResource
     api.add_resource(GithubProjectCollection, '/github_projects', endpoint='github_projects')
     api.add_resource(GithubProjectResource, '/github_projects/<int:id>', endpoint='github_project')
@@ -67,3 +71,15 @@ def register_routes(api):
     from alveare.resources.auction import AuctionCollection, AuctionResource
     api.add_resource(AuctionCollection, '/auctions', endpoint='auctions')
     api.add_resource(AuctionResource, '/auctions/<int:id>', endpoint='auction')
+    
+    from alveare.resources.github_account import GithubAccountCollection, GithubAccountResource
+    api.add_resource(GithubAccountCollection, '/github_accounts', endpoint='github_accounts')
+    api.add_resource(GithubAccountResource, '/github_accounts/<int:id>', endpoint='github_account')
+
+    from alveare.resources.remote_work_history import RemoteWorkHistoryCollection, RemoteWorkHistoryResource
+    api.add_resource(RemoteWorkHistoryCollection, '/remote_work_histories', endpoint='remote_work_histories')
+    api.add_resource(RemoteWorkHistoryResource, '/remote_work_histories/<int:id>', endpoint='remote_work_history')
+
+    from alveare.resources.ticket import TicketCollection, TicketResource
+    api.add_resource(TicketCollection, '/tickets', endpoint='tickets')
+    api.add_resource(TicketResource, '/tickets/<int:id>', endpoint='ticket')
