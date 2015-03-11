@@ -137,4 +137,16 @@ def register_routes(api):
         github_ticket_view.deserializer,
         github_ticket_view.update_deserializer
     )
-    
+
+    from alveare.models.remote_ticket import RemoteTicket
+    import alveare.views.remote_ticket as remote_ticket_view
+    add_alveare_resource(
+        api,
+        RemoteTicket,
+        'remote_ticket',
+        'remote_tickets',
+        '/<int:id>',
+        remote_ticket_view.serializer,
+        remote_ticket_view.deserializer,
+        remote_ticket_view.update_deserializer
+    )

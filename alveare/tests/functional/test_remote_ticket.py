@@ -3,9 +3,12 @@ from alveare.common.resource import AlveareResource
 from unittest import skip
 
 
-class TestGithubTicketResource(AlveareRestTestCase):
+# Note: no creation tests, as RemoteTicket does not have a usable constructor.
+# a child class must be used instead
+
+class TestRemoteTicketResource(AlveareRestTestCase):
     def setUp(self):
-        self.r = AlveareResource(self, 'github_ticket')
+        self.r = AlveareResource(self, 'remote_ticket')
         super().setUp()
 
     def test_get_one(self):
@@ -14,14 +17,6 @@ class TestGithubTicketResource(AlveareRestTestCase):
         self.assertTrue(ticket['id'])
         self.assertTrue(ticket['skill_requirements'])
         self.assertEqual(ticket['skill_requirements']['id'], ticket['id'])
-
-    def test_create(self):
-        ticket = self.r.get_any()
-        ticket.pop('id')
-        ticket.pop('snapshots')
-        ticket.pop('skill_requirements')
-        ticket['number'] = 1234
-        self.r.create(**ticket)
 
     # TODO: should fail, but read-only remote tickets are not implemented yet
     def test_update(self):
