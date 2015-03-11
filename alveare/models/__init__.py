@@ -35,3 +35,4 @@ from alveare.models.user import *
 from alveare.models.work import *
 from alveare.models.work_offer import *
 from alveare.models.manager import *
+from alveare.models.bid import *

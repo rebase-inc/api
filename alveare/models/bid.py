@@ -8,7 +8,6 @@ class Bid(DB.Model):
     auction_id =    DB.Column(DB.Integer, DB.ForeignKey('auction.id', ondelete='CASCADE'),      nullable=False)
     contractor_id = DB.Column(DB.Integer, DB.ForeignKey('contractor.id', ondelete='CASCADE'),   nullable=False)
 
-    contractor =    DB.relationship('Contractor', uselist=False)
     work_offers =   DB.relationship('WorkOffer',
             backref=DB.backref('bid', cascade='all, delete-orphan', single_parent=True),
             lazy='dynamic')

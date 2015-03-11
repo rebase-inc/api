@@ -22,3 +22,4 @@ class ContractorSchema(Schema):
         return Contractor(**data)
 
 serializer = ContractorSchema(only=('id', 'user', 'busyness','work_offers', 'bank_account'), skip_missing=True)
+deserializer = ContractorSchema(only=('user',), strict=True)

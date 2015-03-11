@@ -59,3 +59,11 @@ def register_routes(api):
     from alveare.resources.contractor import ContractorCollection, ContractorResource
     api.add_resource(ContractorCollection, '/contractors', endpoint='contractors')
     api.add_resource(ContractorResource, '/contractors/<int:id>', endpoint='contractor')
+
+    from alveare.resources.bid import BidCollection, BidResource
+    api.add_resource(BidCollection, '/bids', endpoint='bids')
+    api.add_resource(BidResource, '/bids/<int:id>', endpoint='bid')
+
+    from alveare.resources.auction import AuctionCollection, AuctionResource
+    api.add_resource(AuctionCollection, '/auctions', endpoint='auctions')
+    api.add_resource(AuctionResource, '/auctions/<int:id>', endpoint='auction')

@@ -20,7 +20,7 @@ class Auction(DB.Model):
     ticket_set =       DB.relationship('TicketSet', backref='auction', cascade="all, delete-orphan", passive_deletes=True, uselist=False)
     feedbacks =        DB.relationship('Feedback',  backref='auction', cascade='all, delete-orphan', passive_deletes=True)
     bids =             DB.relationship('Bid',       backref='auction', cascade='all, delete-orphan', passive_deletes=True, lazy='dynamic')
-    approved_talents = DB.relationship('Candidate', backref='approved_auction') # both ends are conditional
+    approved_talents = DB.relationship('Candidate', backref='approved_for_auction') # both ends are conditional
 
     def __init__(self, ticket_set, term_sheet, duration, finish_work_by, redundancy = 1):
         self.ticket_set = ticket_set
