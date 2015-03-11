@@ -9,11 +9,11 @@ class TestCandidate(AlveareModelTestCase):
     def test_create(self):
         candidate = create_one_candidate(self.db)
         self.db.session.commit()
-        self.assertNotEqual( Candidate.query.get((candidate.contractor_id, candidate.auction_id)), None )
+        self.assertNotEqual( Candidate.query.get((candidate.contractor_id, candidate.ticket_set_id)), None )
         self.assertNotEqual( candidate,              None )
         self.assertNotEqual( candidate.contractor,   None )
         self.assertNotEqual( candidate.ticket_set,   None )
-        self.assertEqual(    candidate.approved_auction, None)
+        self.assertEqual(    candidate.approved_for_auction, None)
 
     def test_delete(self):
         candidate = create_one_candidate(self.db)
@@ -52,12 +52,12 @@ class TestCandidate(AlveareModelTestCase):
         candidate = create_one_candidate(self.db)
         self.db.session.commit()
 
-        candidate_id = (candidate.contractor_id, candidate.auction_id)
+        candidate_id = (candidate.contractor_id, candidate.ticket_set_id)
         auction = candidate.ticket_set.auction
         auction.approved_talents.append(candidate)
         self.db.session.commit()
 
-        self.assertEqual(candidate.approved_auction.id, auction.id)
+        self.assertEqual(candidate.approved_for_auction.id, auction.id)
 
         # now disapprove talent
         auction.approved_talents.clear()
@@ -65,15 +65,15 @@ class TestCandidate(AlveareModelTestCase):
         self.db.session.commit()
         queried_candidate = Candidate.query.get(candidate_id)
         self.assertTrue(queried_candidate)
-        self.assertFalse(queried_candidate.approved_auction)
+        self.assertFalse(queried_candidate.approved_for_auction)
         self.assertTrue(queried_candidate.ticket_set)
 
     def test_create_bad_ticket_set(self):
         contractor = create_one_contractor(self.db)
-        with self.assertRaises(AttributeError):
+        with self.assertRaises(ValueError):
             candidate = Candidate(contractor, 'foobar')
 
     def test_create_bad_contractor(self):
         auction = create_one_auction(self.db)
-        with self.assertRaises(AttributeError):
+        with self.assertRaises(ValueError):
             candidate = Candidate('foobar', auction)

@@ -20,7 +20,7 @@ class TestRemoteWorkHistoryResource(AlveareRestTestCase):
         contractor = AlveareResource(self, 'contractor').get_any()
         new_rwh = self.r.create(
             id=contractor['id']
-        ) 
+        )
 
     def test_delete(self):
         self.r.delete_any()
@@ -37,7 +37,7 @@ class TestRemoteWorkHistoryResource(AlveareRestTestCase):
             remote_work_history_id=rwh_id,
             user_name='george_washington',
             auth_token='1234123415245353543'
-        ) 
+        )
         modified_rwh = self.get('remote_work_history', rwh_id)
 
         account_ids = list(map(lambda account: account['id'], modified_rwh['github_accounts']))

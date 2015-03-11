@@ -12,14 +12,14 @@ class ContractorCollection(Resource):
         response = jsonify(contractors = contractor.serializer.dump(all_contractors, many=True).data)
         return response
 
-    #def post(self):
-        #new_contractor = contractor.deserializer.load(request.form or request.json).data
-        #DB.session.add(new_contractor)
-        #DB.session.commit()
+    def post(self):
+        new_contractor = contractor.deserializer.load(request.form or request.json).data
+        DB.session.add(new_contractor)
+        DB.session.commit()
 
-        #response = jsonify(contractor = contractor.serializer.dump(new_contractor).data)
-        #response.status_code = 201
-        #return response
+        response = jsonify(contractor = contractor.serializer.dump(new_contractor).data)
+        response.status_code = 201
+        return response
 
 class ContractorResource(Resource):
     def get(self, id):

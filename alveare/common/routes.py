@@ -65,6 +65,14 @@ def register_routes(api):
     api.add_resource(ContractorCollection, '/contractors', endpoint='contractors')
     api.add_resource(ContractorResource, '/contractors/<int:id>', endpoint='contractor')
 
+    from alveare.resources.bid import BidCollection, BidResource
+    api.add_resource(BidCollection, '/bids', endpoint='bids')
+    api.add_resource(BidResource, '/bids/<int:id>', endpoint='bid')
+
+    from alveare.resources.auction import AuctionCollection, AuctionResource
+    api.add_resource(AuctionCollection, '/auctions', endpoint='auctions')
+    api.add_resource(AuctionResource, '/auctions/<int:id>', endpoint='auction')
+
     from alveare.models.github_account import GithubAccount
     import alveare.views.github_account as github_account_view
     add_alveare_resource(
@@ -103,3 +111,4 @@ def register_routes(api):
         ticket_view.deserializer,
         ticket_view.update_deserializer
     )
+    

@@ -107,7 +107,7 @@ class TestAuctionModel(AlveareModelTestCase):
         self.assertIsInstance(auction.redundancy, int)
 
         self.assertIsInstance(auction.ticket_set, models.TicketSet)
-        self.assertEqual(auction.ticket_set.auction_id, auction.id)
+        self.assertEqual(auction.ticket_set.id, auction.id)
         self.assertIsInstance(auction.ticket_set.bid_limits.pop(), models.BidLimit)
         self.assertIsInstance(auction.ticket_set.bid_limits[0].snapshot.ticket.title, str)
 
