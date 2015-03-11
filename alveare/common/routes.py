@@ -163,3 +163,16 @@ def register_routes(api):
         remote_ticket_view.deserializer,
         remote_ticket_view.update_deserializer
     )
+
+    from alveare.models.code_clearance import CodeClearance
+    import alveare.views.code_clearance as code_clearance_view
+    add_alveare_resource(
+        api,
+        CodeClearance,
+        'code_clearance',
+        'code_clearances',
+        '/<int:id>',
+        code_clearance_view.serializer,
+        code_clearance_view.deserializer,
+        code_clearance_view.update_deserializer
+    )

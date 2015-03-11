@@ -28,7 +28,7 @@ class TestProjectResource(AlveareRestTestCase):
         project['name'] = 'a better project name'
         self.r.update(**project) 
 
-    def test_add_and_remote_tickets(self):
+    def test_add_and_remove_tickets(self):
         project = self.r.get_any()
         t = AlveareResource(self, 'internal_ticket')
         ticket = dict(
@@ -43,7 +43,29 @@ class TestProjectResource(AlveareRestTestCase):
         self.assertTrue(queried_project)
         self.assertGreaterEqual(len(queried_project['tickets']), 50)
 
-        # remote all tickets now
+        # remove all tickets now
         for one_ticket in queried_project['tickets']:
             t.delete(one_ticket)
+
+    def test_add_and_remove_code_clearance(self):
+        contractor = AlveareResource(self, 'contractor').get_any()
+        project = self.r.get_any()
+        code_clearance = dict(
+            pre_approved=   True,
+            project_id=     project['id'],
+            contractor_id=  contractor['id']
+        )
+        cc = AlveareResource(self, 'code_clearance')
+        new_code_clearance = cc.create(**code_clearance)
+
+        queried_project = self.r.get(project['id'])
+        code_clearances = queried_project['clearances']
+        self.assertTrue(code_clearances)
+        self.assertIn(new_code_clearance['id'], queried_project['clearances'])
+
+        # now delete all code clearances
+        for code_clearance in code_clearances:
+            cc.delete(code_clearance)
+
+        self.assertTrue(self.r.get(project['id']))
 
