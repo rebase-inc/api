@@ -1,7 +1,7 @@
 from marshmallow import fields, Schema
 from alveare.models.github_ticket import GithubTicket
 from alveare.models.project import Project
-from alveare.views.skill_requirements import SkillRequirementSchema
+from alveare.views.skill_requirement import SkillRequirementSchema
 from flask.ext.restful import abort
 
 class GithubTicketSchema(Schema):

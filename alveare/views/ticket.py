@@ -1,6 +1,6 @@
 from marshmallow import fields, Schema
 from alveare.models.ticket import Ticket
-from alveare.views.skill_requirements import SkillRequirementSchema
+from alveare.views.skill_requirement import SkillRequirementSchema
 from flask.ext.restful import abort
 
 class TicketSchema(Schema):

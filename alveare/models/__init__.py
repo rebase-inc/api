@@ -22,7 +22,7 @@ from alveare.models.project import *
 from alveare.models.remote_project import *
 from alveare.models.remote_work_history import *
 from alveare.models.review import *
-from alveare.models.skill_requirements import *
+from alveare.models.skill_requirement import *
 from alveare.models.skill_set import *
 from alveare.models.candidate import *
 from alveare.models.talent_pool import *

@@ -1,20 +1,20 @@
 from marshmallow import fields, Schema
-from alveare.models.skill_requirements import SkillRequirement
+from alveare.models.skill_requirement import SkillRequirement
 from flask.ext.restful import abort
 
 class SkillRequirementSchema(Schema):
     id =            fields.Integer()
 
     def make_object(self, data):
-        skill_requirements = SkillRequirement.query.get(data['id'])
-        if skill_requirements:
+        skill_requirement = SkillRequirement.query.get(data['id'])
+        if skill_requirement:
             data.pop('id')
             for field, value in data:
                 setattr(rwh, field, value)
-            return skill_requirements
+            return skill_requirement
         ticket = Ticket.query.get_or_404(data['id'])
-        skill_requirements = SkillRequirement(ticket)
-        return skill_requirements
+        skill_requirement = SkillRequirement(ticket)
+        return skill_requirement
 
 deserializer =          SkillRequirementSchema()
 update_deserializer =   SkillRequirementSchema()
