@@ -111,4 +111,17 @@ def register_routes(api):
         ticket_view.deserializer,
         ticket_view.update_deserializer
     )
+
+    from alveare.models.internal_ticket import InternalTicket
+    import alveare.views.internal_ticket as internal_ticket_view
+    add_alveare_resource(
+        api,
+        InternalTicket,
+        'internal_ticket',
+        'internal_tickets',
+        '/<int:id>',
+        internal_ticket_view.serializer,
+        internal_ticket_view.deserializer,
+        internal_ticket_view.update_deserializer
+    )
     

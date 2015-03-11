@@ -3,12 +3,9 @@ from alveare.common.resource import AlveareResource
 from unittest import skip
 
 
-# Note: there are no ticket creation tests here because only
-# children classes of ticket have a valid constructor
-
-class TestTicketResource(AlveareRestTestCase):
+class TestInternalTicketResource(AlveareRestTestCase):
     def setUp(self):
-        self.r = AlveareResource(self, 'ticket')
+        self.r = AlveareResource(self, 'internal_ticket')
         super().setUp()
 
     def test_get_one(self):
@@ -17,6 +14,15 @@ class TestTicketResource(AlveareRestTestCase):
         self.assertTrue(ticket['id'])
         self.assertTrue(ticket['skill_requirements'])
         self.assertEqual(ticket['skill_requirements']['id'], ticket['id'])
+
+    def test_create(self):
+        ticket = self.r.get_any()
+        ticket.pop('id')
+        ticket.pop('snapshots')
+        ticket.pop('skill_requirements')
+        ticket['title'] = 'great title'
+        ticket['description'] = 'awesome description'
+        self.r.create(**ticket)
 
     def test_update(self):
         ticket = self.r.get_any()

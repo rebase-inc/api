@@ -20,3 +20,8 @@ class TestProjectResource(AlveareRestTestCase):
         project = self.r.get_any()
         self.delete_resource('organizations/{}'.format(project['organization_id']))
         self.get_resource(self.r.url(project), 404)
+
+    def test_update(self):
+        project = self.r.get_any()
+        project['name'] = 'a better project name'
+        self.r.update(**project) 

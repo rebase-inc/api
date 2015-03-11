@@ -20,6 +20,7 @@ class TicketSchema(Schema):
             setattr(ticket, field, value)
         return ticket
 
+
 deserializer =          TicketSchema(exclude=('id',))
 update_deserializer =   TicketSchema()
 serializer =            TicketSchema()
