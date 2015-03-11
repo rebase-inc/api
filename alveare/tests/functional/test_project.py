@@ -12,9 +12,11 @@ class TestProjectResource(AlveareRestTestCase):
         project = self.r.get_any()
         self.assertTrue(project) # mock should have created at least one account
         self.assertTrue(project['id'])
+        self.assertNotEqual(project['code_repository'], 0)
 
     def test_delete(self):
-        self.r.delete_any()
+        project = self.r.delete_any()
+        AlveareResource(self, 'code_repository').get(project['code_repository'], 404)
 
     def test_delete_organization(self):
         project = self.r.get_any()

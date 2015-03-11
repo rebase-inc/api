@@ -11,6 +11,7 @@ class ProjectSchema(Schema):
     name =              fields.String()
     type =              fields.String()
     tickets =           fields.Nested('TicketSchema', only=('id',), many=True)
+    code_repository =   fields.Nested('CodeRepositorySchema', only=('id',))
 
     def make_object(self, data):
         if data.get('id'):

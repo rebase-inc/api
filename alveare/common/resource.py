@@ -34,10 +34,12 @@ class AlveareResource(object):
         else:
             return self.url_format(resource['id'])
 
-    def get(self, resource):
+    def get(self, resource, expected_status=200):
         ''' helper function that returns the actual dictionary of fields for 'resource'/'resource_id'
         '''
-        response = self.test.get_resource(self.url(resource))
+        response = self.test.get_resource(self.url(resource), expected_status)
+        if expected_status == 404:
+            return None
         self.test.assertIn(self.resource, response)
         return response[self.resource]
 
@@ -65,9 +67,12 @@ class AlveareResource(object):
         return one_resource
 
     def delete_any(self):
-        resource_url = self.url(self.get_any())
+        ''' deletes any object from this resource and returns the deleted object '''
+        resource = self.get_any()
+        resource_url = self.url(resource)
         self.test.delete_resource(resource_url)
         self.test.get_resource(resource_url, 404)
+        return resource
 
     def compare(self, a, b):
         ''' verifies that each key, value in a is found in b '''
