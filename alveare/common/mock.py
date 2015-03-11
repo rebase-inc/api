@@ -89,9 +89,10 @@ def create_one_remote_project(db, organization_name='Alveare', project_name='api
     db.session.add(code_repo)
     return remote_project
 
-def create_one_github_project(db, organization_name='Alveare', project_name='api'):
+def create_one_github_project(db, organization=None, project_name='api'):
     from alveare.models import Organization, GithubProject, CodeRepository
-    organization = create_one_organization(db, organization_name)
+    if not organization:
+        organization = create_one_organization(db, 'Alveare')
     github_project = GithubProject(organization, project_name)
     code_repo = CodeRepository(github_project)
     db.session.add(github_project)
@@ -108,20 +109,22 @@ def create_one_internal_ticket(db, title, description=None, project=None):
     return ticket
 
 def create_one_remote_ticket(db, title, description=None, project=None):
-    from alveare.models import RemoteTicket
+    from alveare.models import RemoteTicket, SkillRequirements
     if not project:
         project = create_one_project(db)
     if not description:
         description = title + '-DESCRIPTION'
     ticket = RemoteTicket(project, title, description)
+    SkillRequirements(ticket)
     db.session.add(ticket)
     return ticket
 
 def create_one_github_ticket(db, number, project=None):
-    from alveare.models import GithubTicket
+    from alveare.models import GithubTicket, SkillRequirements
     if not project:
-        project = create_one_project(db)
+        project = create_one_github_project(db)
     ticket = GithubTicket(project, number)
+    SkillRequirements(ticket)
     db.session.add(ticket)
     return ticket
 
@@ -244,7 +247,9 @@ def create_the_world(db):
     create_one_snapshot(db)
     create_one_snapshot(db)
     create_one_user(db, 'Steve', 'Gildred', 'steve@alveare.io')
-    create_one_manager(db, andrew) # also creates an organization
+    manager_andrew = create_one_manager(db, andrew) # also creates an organization
+    manhattan_project = create_one_github_project(db, manager_andrew.organization, 'Manhattan')
+    [ create_one_github_ticket(db, ticket_number, manhattan_project) for ticket_number in range(10) ]
     rapha_contractor = create_one_contractor(db, rapha)
     create_one_bank_account(db, rapha_contractor)
     rapha_rwh = create_one_remote_work_history(db, rapha_contractor)
