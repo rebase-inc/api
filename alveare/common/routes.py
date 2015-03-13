@@ -176,3 +176,16 @@ def register_routes(api):
         code_clearance_view.deserializer,
         code_clearance_view.update_deserializer
     )
+
+    from alveare.models.skill_set import SkillSet
+    import alveare.views.skill_set as skill_set_view
+    add_alveare_resource(
+        api,
+        SkillSet,
+        'skill_set',
+        'skill_sets',
+        '/<int:id>',
+        skill_set_view.serializer,
+        skill_set_view.deserializer,
+        skill_set_view.update_deserializer
+    )
