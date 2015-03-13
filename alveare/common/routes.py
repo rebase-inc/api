@@ -219,3 +219,16 @@ def register_routes(api):
         bid_limit_view.deserializer,
         bid_limit_view.update_deserializer
     )
+
+    from alveare.models.term_sheet import TermSheet
+    import alveare.views.term_sheet as term_sheet_view
+    add_alveare_resource(
+        api,
+        TermSheet,
+        'term_sheet',
+        'term_sheets',
+        '/<int:id>',
+        term_sheet_view.serializer,
+        term_sheet_view.deserializer,
+        term_sheet_view.update_deserializer
+    )

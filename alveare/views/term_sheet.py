@@ -17,3 +17,4 @@ class TermSheetSchema(Schema):
 
 serializer = TermSheetSchema(only=('id', 'legalese'), skip_missing=True)
 deserializer = TermSheetSchema(only=('legalese',), strict=True)
+update_deserializer = TermSheetSchema(only=('legalese',), strict=True)
