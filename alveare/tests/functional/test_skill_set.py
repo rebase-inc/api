@@ -30,7 +30,7 @@ class TestSkillSetResource(AlveareRestTestCase):
     def test_delete(self):
         self.r.delete_any()
 
-    def test_delete_project(self):
+    def test_delete_contractor(self):
         skill_set = self.r.get_any()
         c = AlveareResource(self, 'contractor').delete(skill_set['contractor'])
         self.get_resource(self.r.url(skill_set), 404)
