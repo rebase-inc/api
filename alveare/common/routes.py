@@ -202,3 +202,29 @@ def register_routes(api):
         contractor_view.deserializer,
         contractor_view.update_deserializer
     )
+
+    from alveare.models.ticket_set import TicketSet
+    import alveare.views.ticket_set as ticket_set_view
+    add_alveare_resource(
+        api,
+        TicketSet,
+        'ticket_set',
+        'ticket_sets',
+        '/<int:id>',
+        ticket_set_view.serializer,
+        ticket_set_view.deserializer,
+        ticket_set_view.update_deserializer
+    )
+
+    from alveare.models.bid_limit import BidLimit
+    import alveare.views.bid_limit as bid_limit_view
+    add_alveare_resource(
+        api,
+        BidLimit,
+        'bid_limit',
+        'bid_limits',
+        '/<int:id>',
+        bid_limit_view.serializer,
+        bid_limit_view.deserializer,
+        bid_limit_view.update_deserializer
+    )

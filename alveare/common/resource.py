@@ -3,6 +3,7 @@ from random import choice, seed
 def plural(text):
     known_forms = {
         'y': 'ies',
+        'h': 'hes',
     }
     if text[-1] in known_forms.keys():
         return text[0:-1]+known_forms[text[-1]]
@@ -26,7 +27,7 @@ class AlveareResource(object):
         resource can be a dictionary (containing the primary keys) or an integer.
         If resource is an integer, the returned URL will be 'self.col_url+'/{resource}'
         if resource is a dictionary, the default implementation will assume the primary key is 'id'.
-        You must therefore redefine this method for the dictionary case if your primary keys is not 'id' 
+        You must therefore redefine this method for the dictionary case if your primary keys is not 'id'
         or is composite.
         '''
         if isinstance(resource, int):
@@ -108,7 +109,7 @@ class AlveareResource(object):
     def modify_or_create(self, rest_method, resource_url, **resource):
         response = rest_method(resource_url, resource)
         self.test.assertIn(self.resource, response)
-        new_res = response[self.resource] 
+        new_res = response[self.resource]
         self.is_in(resource, new_res)
 
         # verify the new resource has been committed to the database
