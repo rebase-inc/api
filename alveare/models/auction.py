@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from sqlalchemy.orm import validates
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -22,7 +22,7 @@ class Auction(DB.Model):
     bids =             DB.relationship('Bid',       backref='auction', cascade='all, delete-orphan', passive_deletes=True, lazy='dynamic')
     approved_talents = DB.relationship('Candidate', backref='approved_for_auction') # both ends are conditional
 
-    def __init__(self, ticket_set, term_sheet, duration, finish_work_by, redundancy = 1):
+    def __init__(self, ticket_set, term_sheet, duration=3, finish_work_by=datetime.now() + timedelta(days = 7), redundancy = 1):
         self.ticket_set = ticket_set
         self.term_sheet = term_sheet
         self.duration = duration
@@ -60,7 +60,7 @@ class AuctionStateMachine(StateMachine):
         pass
 
     def waiting_for_bids(self, bid):
-        required_tickets = set([bid_limit.snapshot for bid_limit in self.auction.ticket_set.bid_limits])
+        required_tickets = set([bid_limit.ticket_snapshot for bid_limit in self.auction.ticket_set.bid_limits])
         bid_tickets = set([work_offer.ticket_snapshot for work_offer in bid.work_offers.all()])
         if required_tickets ^ bid_tickets:
             raise Exception('bid didnt match expected tickets! we needed {} but got {}'.format(required_tickets, bid_tickets))
@@ -68,7 +68,7 @@ class AuctionStateMachine(StateMachine):
 
         # check to see if overbid or underbid
         for work_offer in bid.work_offers:
-            price_limit = BidLimit.query.filter(BidLimit.snapshot == work_offer.ticket_snapshot).one().price
+            price_limit = BidLimit.query.filter(BidLimit.ticket_snapshot == work_offer.ticket_snapshot).one().price
             if work_offer.price > price_limit:
                 return
 

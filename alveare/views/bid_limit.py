@@ -1,19 +1,18 @@
 from marshmallow import fields, Schema
 
 class BidLimitSchema(Schema):
-    id =       fields.Integer()
-    price =    fields.Integer()
-    auction =  fields.Nested('AuctionSchema', only='id')
-    snapshot = fields.Nested('TicketSnapshotSchema', only='id', required=True)
+    id =              fields.Integer()
+    price =           fields.Integer()
+    ticket_snapshot = fields.Nested('TicketSnapshotSchema', required=True)
 
     def make_object(self, data):
-        from alveare.models import TicketSet
+        from alveare.models import BidLimit
         if data.get('id'):
-            ticket_set = TicketSet.query.get(data.get('id'))
-            if not ticket_set:
-                raise ValueError('No ticket_set with id {id}'.format(**data))
-            return ticket_set
-        return TicketSet(**data)
+            bid_limit = BidLimit.query.get(data.get('id'))
+            if not bid_limit:
+                raise ValueError('No bid_limit with id {id}'.format(**data))
+            return bid_limit
+        return BidLimit(**data)
 
-serializer = BidLimitSchema(only=('id', 'price', 'auction', 'snapshot'), skip_missing=True)
-deserializer = BidLimitSchema(only=('price','snapshot'), strict=True)
+serializer = BidLimitSchema(only=('id', 'price', 'snapshot'), skip_missing=True)
+deserializer = BidLimitSchema(only=('price','ticket_snapshot'), strict=True)

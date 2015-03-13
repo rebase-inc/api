@@ -70,8 +70,12 @@ def register_routes(api):
     api.add_resource(BidResource, '/bids/<int:id>', endpoint='bid')
 
     from alveare.resources.auction import AuctionCollection, AuctionResource
+    from alveare.resources.auction import AuctionBidEvents, AuctionEndEvents, AuctionFailEvents
     api.add_resource(AuctionCollection, '/auctions', endpoint='auctions')
     api.add_resource(AuctionResource, '/auctions/<int:id>', endpoint='auction')
+    api.add_resource(AuctionBidEvents, '/auctions/<int:id>/bid_events', endpoint='auction_bid_events')
+    api.add_resource(AuctionEndEvents, '/auctions/<int:id>/end_events', endpoint='auction_end_events')
+    api.add_resource(AuctionFailEvents, '/auctions/<int:id>/fail_events', endpoint='auction_fail_events')
 
     from alveare.models.github_account import GithubAccount
     import alveare.views.github_account as github_account_view

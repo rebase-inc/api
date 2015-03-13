@@ -25,7 +25,7 @@ class TestAuctionModel(AlveareModelTestCase):
             # overbid on purpose
             work_offers = []
             for bid_limit in bid_limits:
-                work_offers.append(WorkOffer(contractor1, bid_limit.snapshot, int(bid_limit.price * 1.2)))
+                work_offers.append(WorkOffer(contractor1, bid_limit.ticket_snapshot, int(bid_limit.price * 1.2)))
             bid = Bid(auction, contractor1)
             self.db.session.add(bid)
             self.db.session.commit()
@@ -34,7 +34,7 @@ class TestAuctionModel(AlveareModelTestCase):
             # underbid on purpose
             work_offers = []
             for bid_limit in bid_limits:
-                work_offers.append(WorkOffer(contractor2, bid_limit.snapshot, int(bid_limit.price * 0.8)))
+                work_offers.append(WorkOffer(contractor2, bid_limit.ticket_snapshot, int(bid_limit.price * 0.8)))
             bid = Bid(auction, contractor2)
             self.db.session.add(bid)
             self.db.session.commit()
@@ -43,7 +43,7 @@ class TestAuctionModel(AlveareModelTestCase):
             # underbid on purpose
             work_offers = []
             for bid_limit in bid_limits:
-                work_offers.append(WorkOffer(contractor3, bid_limit.snapshot, int(bid_limit.price * 0.8)))
+                work_offers.append(WorkOffer(contractor3, bid_limit.ticket_snapshot, int(bid_limit.price * 0.8)))
             bid = Bid(auction, contractor3)
             self.db.session.add(bid)
             self.db.session.commit()
@@ -65,7 +65,7 @@ class TestAuctionModel(AlveareModelTestCase):
         # overbid on purpose
         work_offers = []
         for bid_limit in bid_limits:
-            work_offers.append(WorkOffer(contractor1, bid_limit.snapshot, int(bid_limit.price * 1.2)))
+            work_offers.append(WorkOffer(contractor1, bid_limit.ticket_snapshot, int(bid_limit.price * 1.2)))
         bid = Bid(auction, contractor1)
         self.db.session.add(bid)
         self.db.session.commit()
@@ -77,7 +77,7 @@ class TestAuctionModel(AlveareModelTestCase):
         # underbid on purpose
         work_offers = []
         for bid_limit in bid_limits:
-            work_offers.append(WorkOffer(contractor2, bid_limit.snapshot, int(bid_limit.price * 0.8)))
+            work_offers.append(WorkOffer(contractor2, bid_limit.ticket_snapshot, int(bid_limit.price * 0.8)))
         bid = Bid(auction, contractor2)
         self.db.session.add(bid)
         self.db.session.commit()
@@ -89,7 +89,7 @@ class TestAuctionModel(AlveareModelTestCase):
         # underbid on purpose
         work_offers = []
         for bid_limit in bid_limits:
-            work_offers.append(WorkOffer(contractor3, bid_limit.snapshot, int(bid_limit.price * 0.8)))
+            work_offers.append(WorkOffer(contractor3, bid_limit.ticket_snapshot, int(bid_limit.price * 0.8)))
         bid = Bid(auction, contractor3)
         self.db.session.add(bid)
         self.db.session.commit()
@@ -109,13 +109,13 @@ class TestAuctionModel(AlveareModelTestCase):
         self.assertIsInstance(auction.ticket_set, models.TicketSet)
         self.assertEqual(auction.ticket_set.id, auction.id)
         self.assertIsInstance(auction.ticket_set.bid_limits.pop(), models.BidLimit)
-        self.assertIsInstance(auction.ticket_set.bid_limits[0].snapshot.ticket.title, str)
+        self.assertIsInstance(auction.ticket_set.bid_limits[0].ticket_snapshot.ticket.title, str)
 
     def test_delete(self):
         auction = mock.create_one_auction(self.db)
         self.db.session.commit()
 
-        tickets = [bl.snapshot.ticket for bl in auction.ticket_set.bid_limits]
+        tickets = [bl.ticket_snapshot.ticket for bl in auction.ticket_set.bid_limits]
         term_sheet = auction.term_sheet
 
         self.delete_instance(auction)

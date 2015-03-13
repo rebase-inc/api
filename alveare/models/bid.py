@@ -19,7 +19,7 @@ class Bid(DB.Model):
         self.auction = auction
         self.contractor = contractor
         self.work_offers = WorkOffer.query.filter(WorkOffer.contractor == contractor,
-            WorkOffer.ticket_snapshot_id.in_([bl.snapshot.id for bl in auction.ticket_set.bid_limits]))
+            WorkOffer.ticket_snapshot_id.in_([bl.ticket_snapshot.id for bl in auction.ticket_set.bid_limits]))
 
     def __repr__(self):
         return '<Bid[auction({}), contractor({})]>'.format(self.auction_id, self.contractor_id)

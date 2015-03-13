@@ -192,7 +192,7 @@ def create_one_job_fit(db):
     skill_set = candidate.contractor.skill_set
     ticket_matches = []
     for bid_limit in candidate.ticket_set.bid_limits:
-        ticket_matches.append(TicketMatch(skill_set, bid_limit.snapshot.ticket.skill_requirement, 100))
+        ticket_matches.append(TicketMatch(skill_set, bid_limit.ticket_snapshot.ticket.skill_requirement, 100))
     job_fit = JobFit(candidate, ticket_matches)
     db.session.add(job_fit)
     return job_fit
@@ -211,7 +211,7 @@ def create_one_bid(db):
     contractor = create_one_contractor(db)
     work_offers = []
     for bid_limit in auction.ticket_set.bid_limits:
-        work_offers.append(WorkOffer(contractor, bid_limit.snapshot, 150))
+        work_offers.append(WorkOffer(contractor, bid_limit.ticket_snapshot, 150))
     bid = Bid(auction, contractor)
     db.session.add(bid)
     return bid
