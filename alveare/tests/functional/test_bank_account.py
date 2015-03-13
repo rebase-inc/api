@@ -17,7 +17,7 @@ def name(res):
         raise TypeError('res should be Contractor or Organization')
 
 def bank_ownership(resource, op):
-    return op(resource['bank_account'], 0)
+    return op(resource['bank_account']['id'], 0)
 
 has_bank =      partial(bank_ownership, op=ne)
 has_no_bank =   partial(bank_ownership, op=eq)
@@ -65,14 +65,14 @@ class TestBankAccountResource(AlveareRestTestCase):
         account = self.create_bank_account('organization_id', org['id'], org['name'])
 
         updated_org = self.get('organization', org['id'])
-        self.assertEqual(updated_org['bank_account'], account['id'])
+        self.assertEqual(updated_org['bank_account']['id'], account['id'])
 
     def test_contractor_account(self):
         contractor = self.find_resource_with_no_bank_account('contractors')
         account = self.create_bank_account('contractor_id', contractor['id'], name(contractor))
 
         updated_contractor = self.get('contractor', contractor['id'])
-        self.assertEqual(updated_contractor['bank_account'], account['id'])
+        self.assertEqual(updated_contractor['bank_account']['id'], account['id'])
 
     def delete_bank_account(self, resource, name_fn):
         '''
@@ -85,7 +85,7 @@ class TestBankAccountResource(AlveareRestTestCase):
         self.delete_resource(account_url)
         self.get_resource(account_url, 404)
         same_owner = self.get(resource, owner['id'])
-        self.assertEqual(same_owner['bank_account'], 0)
+        self.assertEqual(same_owner['bank_account']['id'], 0)
 
 
     def test_delete_contractor_bank_account(self):
@@ -108,9 +108,9 @@ class TestBankAccountResource(AlveareRestTestCase):
         self.delete_resource('organizations/{}'.format(org['id']))
         self.get_resource(account_url, 404)
 
-    def test_update_bank_account(self):
+    def test_update(self):
         contractor = self.find_resource_with_bank_account('contractors')
-        account = self.get('bank_account', contractor['bank_account'])
+        account = self.get('bank_account', contractor['bank_account']['id'])
         new_name = account['name'] + 'XXXX'
         new_routing = account['routing_number']+123
         new_account = account['account_number']+456

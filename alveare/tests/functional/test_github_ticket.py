@@ -17,11 +17,10 @@ class TestGithubTicketResource(AlveareRestTestCase):
 
     def test_create(self):
         ticket = self.r.get_any()
-        ticket.pop('id')
-        ticket.pop('snapshots')
-        ticket.pop('skill_requirement')
-        ticket['number'] = 1234
-        self.r.create(**ticket)
+        self.r.create(
+            project_id =    ticket['project_id'],
+            number =        1234,
+        )
 
     # TODO: should fail, but read-only remote tickets are not implemented yet
     def test_update(self):

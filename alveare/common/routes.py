@@ -61,10 +61,6 @@ def register_routes(api):
     api.add_resource(TicketSnapshotCollection, '/ticket_snapshots', endpoint='ticket_snapshots')
     api.add_resource(TicketSnapshotResource, '/ticket_snapshots/<int:id>', endpoint='ticket_snapshot')
 
-    from alveare.resources.contractor import ContractorCollection, ContractorResource
-    api.add_resource(ContractorCollection, '/contractors', endpoint='contractors')
-    api.add_resource(ContractorResource, '/contractors/<int:id>', endpoint='contractor')
-
     from alveare.resources.bid import BidCollection, BidResource
     api.add_resource(BidCollection, '/bids', endpoint='bids')
     api.add_resource(BidResource, '/bids/<int:id>', endpoint='bid')
@@ -192,4 +188,17 @@ def register_routes(api):
         skill_set_view.serializer,
         skill_set_view.deserializer,
         skill_set_view.update_deserializer
+    )
+
+    from alveare.models.contractor import Contractor
+    import alveare.views.contractor as contractor_view
+    add_alveare_resource(
+        api,
+        Contractor,
+        'contractor',
+        'contractors',
+        '/<int:id>',
+        contractor_view.serializer,
+        contractor_view.deserializer,
+        contractor_view.update_deserializer
     )
