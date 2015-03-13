@@ -16,7 +16,7 @@ class BidLimit(DB.Model):
         self.ticket_snapshot = ticket_snapshot
 
     def __repr__(self):
-        return '<BidLimit for auction:{}, price:{} {}>'.format(self.auction_id, self.price, 'dollars')
+        return '<BidLimit for ticket_set:{}, price:{} {}>'.format(self.ticket_set_id, self.price, 'dollars')
 
     @validates('price')
     def validate_price(self, field, value):

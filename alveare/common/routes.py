@@ -206,3 +206,16 @@ def register_routes(api):
         ticket_set_view.deserializer,
         ticket_set_view.update_deserializer
     )
+
+    from alveare.models.bid_limit import BidLimit
+    import alveare.views.bid_limit as bid_limit_view
+    add_alveare_resource(
+        api,
+        BidLimit,
+        'bid_limit',
+        'bid_limits',
+        '/<int:id>',
+        bid_limit_view.serializer,
+        bid_limit_view.deserializer,
+        bid_limit_view.update_deserializer
+    )
