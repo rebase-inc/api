@@ -12,16 +12,14 @@ class TicketSnapshotCollection(Resource):
         response = jsonify(ticket_snapshots = ticket_snapshot.serializer.dump(all_snapshots, many=True).data)
         return response
 
-    #def post(self):
-        #''' admin only '''
-        ##raise Exception(request.form or request.json)
-        #new_ticket_snapshot = ticket_snapshot.deserializer.load(request.form or request.json).data
-        #DB.session.add(new_ticket_snapshot)
-        #DB.session.commit()
+    def post(self):
+        new_ticket_snapshot = ticket_snapshot.deserializer.load(request.form or request.json).data
+        DB.session.add(new_ticket_snapshot)
+        DB.session.commit()
 
-        #response = jsonify(ticket_snapshot = ticket_snapshot.serializer.dump(new_ticket_snapshot).data)
-        #response.status_code = 201
-        #return response
+        response = jsonify(ticket_snapshot = ticket_snapshot.serializer.dump(new_ticket_snapshot).data)
+        response.status_code = 201
+        return response
 
 class TicketSnapshotResource(Resource):
 

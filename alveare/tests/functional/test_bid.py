@@ -32,7 +32,7 @@ class TestArbitrationResource(AlveareRestTestCase):
         auction = self.get_resource('auctions')['auctions'][0]
         work_offer_ids = []
         for bid_limit in auction['ticket_set']['bid_limits']:
-            snapshot_data = dict(ticket_snapshot = dict(id=bid_limit['snapshot']), price=666, contractor=contractor)
+            snapshot_data = dict(ticket_snapshot = dict(id=bid_limit['ticket_snapshot']['id']), price=666, contractor=contractor)
             work_offer = self.post_resource('work_offers', snapshot_data)['work_offer']
             work_offer_ids.append(work_offer['id'])
         bid_data = dict(auction=auction, contractor=contractor)

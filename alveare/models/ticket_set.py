@@ -5,7 +5,8 @@ from alveare.models.bid_limit import BidLimit
 
 class TicketSet(DB.Model):
 
-    id =         DB.Column(DB.Integer, DB.ForeignKey('auction.id', ondelete='CASCADE'), primary_key=True, nullable=False)
+    id =         DB.Column(DB.Integer, primary_key=True)
+    auction_id = DB.Column(DB.Integer, DB.ForeignKey('auction.id', ondelete='CASCADE'), nullable=False)
     bid_limits = DB.relationship(BidLimit, backref='ticket_set', cascade='all, delete-orphan', passive_deletes=True)
     candidates = DB.relationship('Candidate', backref='ticket_set', cascade='all, delete-orphan', passive_deletes=True)
 

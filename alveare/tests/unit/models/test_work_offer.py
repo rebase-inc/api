@@ -15,7 +15,7 @@ class TestWorkOfferModel(AlveareModelTestCase):
         work_offers = []
         work_offer_ids = []
         for bid_limit in bid_limits:
-            work_offers.append(models.WorkOffer(contractor, bid_limit.snapshot, int(bid_limit.price * 1.2)))
+            work_offers.append(models.WorkOffer(contractor, bid_limit.ticket_snapshot, int(bid_limit.price * 1.2)))
         bid = models.Bid(auction, contractor)
         self.db.session.add(bid)
         self.db.session.commit()
@@ -37,7 +37,7 @@ class TestWorkOfferModel(AlveareModelTestCase):
         work_offers = []
         work_offer_ids = []
         for bid_limit in bid_limits:
-            work_offers.append(models.WorkOffer(contractor, bid_limit.snapshot, int(bid_limit.price * 1.2)))
+            work_offers.append(models.WorkOffer(contractor, bid_limit.ticket_snapshot, int(bid_limit.price * 1.2)))
         bid = models.Bid(auction, contractor)
         self.db.session.add(bid)
         self.db.session.commit()

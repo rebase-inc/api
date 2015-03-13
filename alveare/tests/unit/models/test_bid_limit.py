@@ -11,7 +11,7 @@ class TestBidLimitModel(AlveareModelTestCase):
         self.db.session.commit()
 
         self.assertIsInstance(bid_limit.price, int)
-        self.assertIsInstance(bid_limit.snapshot, models.TicketSnapshot)
+        self.assertIsInstance(bid_limit.ticket_snapshot, models.TicketSnapshot)
 
     def test_delete(self):
         bid_limit = mock.create_one_auction(self.db).ticket_set.bid_limits[0]
