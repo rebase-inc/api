@@ -3,12 +3,16 @@ from alveare.common.database import DB
 from alveare.models.project import Project
 from alveare.models.user import User
 from alveare.models.organization import Organization
+from alveare.views.code_clearance import CodeClearanceSchema
 
 class ProjectSchema(Schema):
     id =                fields.Integer()
     organization_id =   fields.Integer()
     name =              fields.String()
     type =              fields.String()
+    clearances =        fields.Nested(CodeClearanceSchema,      only='id',      many=True)
+    tickets =           fields.Nested('TicketSchema',           only=('id',),   many=True)
+    code_repository =   fields.Nested('CodeRepositorySchema',   only=('id',))
 
     def make_object(self, data):
         if data.get('id'):

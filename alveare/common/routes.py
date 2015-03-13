@@ -167,3 +167,29 @@ def register_routes(api):
         remote_ticket_view.deserializer,
         remote_ticket_view.update_deserializer
     )
+
+    from alveare.models.code_clearance import CodeClearance
+    import alveare.views.code_clearance as code_clearance_view
+    add_alveare_resource(
+        api,
+        CodeClearance,
+        'code_clearance',
+        'code_clearances',
+        '/<int:id>',
+        code_clearance_view.serializer,
+        code_clearance_view.deserializer,
+        code_clearance_view.update_deserializer
+    )
+
+    from alveare.models.skill_set import SkillSet
+    import alveare.views.skill_set as skill_set_view
+    add_alveare_resource(
+        api,
+        SkillSet,
+        'skill_set',
+        'skill_sets',
+        '/<int:id>',
+        skill_set_view.serializer,
+        skill_set_view.deserializer,
+        skill_set_view.update_deserializer
+    )

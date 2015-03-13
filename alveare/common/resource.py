@@ -34,12 +34,18 @@ class AlveareResource(object):
         else:
             return self.url_format(resource['id'])
 
-    def get(self, resource_id):
+    def get(self, resource, expected_status=200):
         ''' helper function that returns the actual dictionary of fields for 'resource'/'resource_id'
         '''
-        response = self.test.get_resource('{}/{}'.format(self.col_url, resource_id))
+        response = self.test.get_resource(self.url(resource), expected_status)
+        if expected_status == 404:
+            return None
         self.test.assertIn(self.resource, response)
         return response[self.resource]
+
+    def delete(self, resource):
+        self.test.delete_resource(self.url(resource))
+        self.test.get_resource(self.url(resource), 404)
 
     def get_all(self):
         ''' returns all the instances of this resource
@@ -61,21 +67,41 @@ class AlveareResource(object):
         return one_resource
 
     def delete_any(self):
-        resource_url = self.url(self.get_any())
+        ''' deletes any object from this resource and returns the deleted object '''
+        resource = self.get_any()
+        resource_url = self.url(resource)
         self.test.delete_resource(resource_url)
         self.test.get_resource(resource_url, 404)
+        return resource
 
-    def compare(self, a, b):
-        ''' verifies that each key, value in a is found in b '''
+    def dict_in(self, a, b):
         for key, value in a.items():
             self.test.assertIn(key, b)
-            self.test.assertEqual(b[key], value)
+            self.is_in(value, b[key])
+
+    type_to_compare = {
+        type(dict()):   dict_in,
+        #type(list):    list_in, # TODO implement if need be
+        #type(set):     set_in
+    }
+
+    def is_in(self, a, b):
+        ''' 
+        Verifies that a is found in b.
+
+        '''
+        if type(a) != type(b):
+            raise ValueError('Trying to compare {} to {}'.format(type(a), type(b)))
+        if type(a) in AlveareResource.type_to_compare.keys():
+            AlveareResource.type_to_compare[type(a)](self, a, b)
+        else:
+            self.test.assertEqual(a, b)
 
     def modify_or_create(self, rest_method, resource_url, **resource):
         response = rest_method(resource_url, resource)
         self.test.assertIn(self.resource, response)
         new_res = response[self.resource] 
-        self.compare(resource, new_res)
+        self.is_in(resource, new_res)
 
         # verify the new resource has been committed to the database
         # by doing an independent request
@@ -83,7 +109,7 @@ class AlveareResource(object):
         self.test.assertIn(self.resource, response)
         queried_resource = response[self.resource]
         self.test.assertTrue(queried_resource)
-        self.compare(resource, queried_resource)
+        self.is_in(resource, queried_resource)
         return queried_resource
 
     def create(self, **resource):

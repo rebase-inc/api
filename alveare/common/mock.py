@@ -45,11 +45,13 @@ def create_one_bank_account(db, owner):
         return account
     raise ValueError('owner is of type "{}", should be Organization or Contractor'.format(type(owner)))
 
-def create_one_code_clearance(db):
+def create_one_code_clearance(db, project=None, contractor=None, pre_approved=False):
     from alveare.models import CodeClearance
-    contractor = create_one_contractor(db)
-    project = create_one_project(db)
-    code_clearance = CodeClearance(project, contractor)
+    if not contractor:
+        contractor = create_one_contractor(db)
+    if not project:
+        project = create_one_project(db)
+    code_clearance = CodeClearance(project, contractor, pre_approved)
     db.session.add(code_clearance)
     return code_clearance
 
@@ -251,6 +253,9 @@ def create_the_world(db):
     manhattan_project = create_one_github_project(db, manager_andrew.organization, 'Manhattan')
     [ create_one_github_ticket(db, ticket_number, manhattan_project) for ticket_number in range(10) ]
     rapha_contractor = create_one_contractor(db, rapha)
+    andrew_contractor = create_one_contractor(db, andrew)
+    create_one_code_clearance(db, manhattan_project, rapha_contractor, pre_approved=True)
+    create_one_code_clearance(db, manhattan_project, andrew_contractor, pre_approved=False)
     create_one_bank_account(db, rapha_contractor)
     rapha_rwh = create_one_remote_work_history(db, rapha_contractor)
     create_one_github_account(db, rapha_rwh, 'rapha.opensource')
