@@ -3,8 +3,9 @@ from marshmallow import fields, Schema
 from alveare.views.bid_limit import BidLimitSchema
 
 class TicketSetSchema(Schema):
-    id =               fields.Integer()
-    bid_limits =       fields.Nested(BidLimitSchema, exclude=('ticket_set',), many=True)
+    id =         fields.Integer()
+    bid_limits = fields.Nested(BidLimitSchema, exclude=('ticket_set',), many=True)
+    auction =    fields.Nested('AuctionSchema', only='id')
 
     def make_object(self, data):
         from alveare.models import TicketSet
@@ -15,5 +16,6 @@ class TicketSetSchema(Schema):
             return ticket_set
         return TicketSet(**data)
 
-serializer = TicketSetSchema(only=('id', 'bid_limits'), skip_missing=True)
+serializer = TicketSetSchema(only=('id', 'bid_limits','auction'), skip_missing=True)
 deserializer = TicketSetSchema(only=('bid_limits',), strict=True)
+update_deserializer = TicketSetSchema(only=tuple(), strict=True)

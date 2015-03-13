@@ -193,3 +193,16 @@ def register_routes(api):
         skill_set_view.deserializer,
         skill_set_view.update_deserializer
     )
+
+    from alveare.models.ticket_set import TicketSet
+    import alveare.views.ticket_set as ticket_set_view
+    add_alveare_resource(
+        api,
+        TicketSet,
+        'ticket_set',
+        'ticket_sets',
+        '/<int:id>',
+        ticket_set_view.serializer,
+        ticket_set_view.deserializer,
+        ticket_set_view.update_deserializer
+    )
