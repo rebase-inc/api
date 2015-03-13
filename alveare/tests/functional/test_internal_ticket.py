@@ -16,19 +16,20 @@ class TestInternalTicketResource(AlveareRestTestCase):
         self.assertEqual(ticket['skill_requirement']['id'], ticket['id'])
 
     def test_create(self):
-        ticket = self.r.get_any()
-        ticket.pop('id')
-        ticket.pop('snapshots')
-        ticket.pop('skill_requirement')
-        ticket['title'] = 'great title'
-        ticket['description'] = 'awesome description'
-        self.r.create(**ticket)
+        project = AlveareResource(self, 'project').get_any()
+        self.r.create(
+            title =         'great title',
+            description =   'awesome description',
+            project_id =    project['id']
+        )
 
     def test_update(self):
         ticket = self.r.get_any()
-        ticket['title'] = 'Compelling title'
-        ticket['description'] = 'Detailed description'
-        self.r.update(**ticket) 
+        self.r.update(
+            id =            ticket['id'],
+            title =         'Compelling title',
+            description =   'Detailed description'
+        )
 
     def test_delete(self):
         self.r.delete_any()

@@ -9,6 +9,7 @@ class CodeClearanceSchema(Schema):
     pre_approved =      fields.Boolean()
     project_id =        fields.Integer(required=True)
     contractor_id =     fields.Integer(required=True)
+    project =           fields.Nested('ProjectSchema', only=('id', 'name'))
 
     def make_object(self, data):
         if data.get('id'):

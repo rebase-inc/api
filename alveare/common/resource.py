@@ -1,4 +1,4 @@
-from random import choice
+from random import choice, seed
 
 def plural(text):
     known_forms = {
@@ -57,19 +57,24 @@ class AlveareResource(object):
         self.test.assertTrue(all_resources)
         return all_resources
 
-    def get_any(self):
-        ''' return any object from the collection of resources
+    def get_any(self, seed_value=None):
+        '''
+            Return any object from the collection of resources.
+            seed_value will optionally be used to initialize the random generator.
+            If you need a deterministic behavior (while debugging for instance), always provide the same value.
         '''
         all_resources = self.get_all()
+        if seed_value:
+            seed(seed_value)
         any_res = choice(all_resources)
         res_response = self.test.get_resource(self.url(any_res))
         self.test.assertIn(self.resource, res_response)
         one_resource = res_response[self.resource]
         return one_resource
 
-    def delete_any(self):
+    def delete_any(self, seed_value=None):
         ''' deletes any object from this resource and returns the deleted object '''
-        resource = self.get_any()
+        resource = self.get_any(seed_value)
         resource_url = self.url(resource)
         self.test.delete_resource(resource_url)
         self.test.get_resource(resource_url, 404)
@@ -87,14 +92,17 @@ class AlveareResource(object):
     }
 
     def is_in(self, a, b):
-        '''
-        Verifies that a is found in b.
-
+        ''' 
+            Verify that a is found in b, if a and b are composites.
+            If they are scalars, verify that they are equal.
         '''
         if type(a) != type(b):
             raise ValueError('Trying to compare {} to {}'.format(type(a), type(b)))
         if type(a) in AlveareResource.type_to_compare.keys():
-            AlveareResource.type_to_compare[type(a)](self, a, b)
+            try:
+                AlveareResource.type_to_compare[type(a)](self, a, b)
+            except AssertionError as e:
+                raise ValueError('Caught exception {}\nwhile comparing:\n {}\nto\n{}'.format(e, a, b))
         else:
             self.test.assertEqual(a, b)
 
@@ -118,11 +126,3 @@ class AlveareResource(object):
 
     def update(self, **resource):
         return self.modify_or_create(self.test.put_resource, self.url(resource), **resource)
-
-    def delete_related_resource(self, resource, related, related_id, persists):
-        '''
-        Delete 'related' and if persists is True, make sure resource is still available.
-        If persists is False, make sure 'resource' has been deleted as well
-        '''
-        pass
-
