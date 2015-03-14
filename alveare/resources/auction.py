@@ -15,7 +15,6 @@ class AuctionCollection(Resource):
         return jsonify(auctions = auction.serializer.dump(all_auctions, many=True).data)
 
     def post(self):
-        #raise Exception(request.form or request.json)
         new_auction = auction.deserializer.load(request.form or request.json).data
 
         DB.session.add(new_auction)
