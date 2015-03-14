@@ -32,12 +32,12 @@ class ProjectResource(Resource):
         return jsonify(project = serializer.dump(account).data)
 
     def put(self, id):
-        updated_account = update_deserializer.load(request.form or request.json).data
+        updated_project = update_deserializer.load(request.form or request.json).data
 
-        DB.session.add(updated_account)
+        DB.session.add(updated_project)
         DB.session.commit()
 
-        response = jsonify(project=serializer.dump(updated_account).data)
+        response = jsonify(project=serializer.dump(updated_project).data)
         response.status_code = 200
         return response
 
