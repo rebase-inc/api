@@ -10,6 +10,27 @@ def plural(text):
     else:
         return text+'s'
 
+def get_or_make_object(model, data):
+    instance_id = data.get('id', None)
+    if instance_id:
+        instance = model.query.get(instance_id)
+        if not instance:
+            data['__name'] = model.__tablename__
+            raise ValueError('No {__name} with id {id}'.format(**data))
+        return instance
+    return model(**data)
+
+def update_object(model, data):
+    instance_id = data.get('id', None)
+    if instance_id:
+        instance = get_or_make_object(model, data)
+        for key, value in data.items():
+            setattr(instance, key, value)
+        return instance
+    else:
+        data['__name'] = model.__tablename__
+        raise ValueError('No {__name} id given!'.format(**data))
+
 class AlveareResource(object):
     def __init__(self, test, resource):
         '''

@@ -1,4 +1,5 @@
 from marshmallow import fields, Schema
+from alveare.common.resource import get_or_make_object, update_object
 
 class FeedbackSchema(Schema):
     id =         fields.Integer()
@@ -8,22 +9,11 @@ class FeedbackSchema(Schema):
 
     def make_object(self, data):
         from alveare.models import Feedback
-        if data.get('id'):
-            feedback = Feedback.query.get(data.get('id'))
-            if not feedback:
-                raise ValueError('No feedback with id {id}'.format(**data))
-            return feedback
-        return Feedback(**data)
+        return get_or_make_object(Feedback, data)
 
     def _update_object(self, data):
         from alveare.models import Feedback
-        feedback_id = data.get('id', None)
-        if not feedback_id:
-            raise ValueError('No feedback id provided!')
-        feedback = Feedback.query.get(feedback_id)
-        for key, value in data.items():
-            setattr(feedback, key, value)
-        return feedback
+        return update_object(Feedback, data)
 
 serializer = FeedbackSchema(only=('id','auction', 'contractor', 'message'))
 deserializer = FeedbackSchema(only=('auction', 'contractor', 'message'), strict=True)

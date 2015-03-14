@@ -44,6 +44,16 @@ class BankAccountSchema(Schema):
         owner.bank_account = account
         return account
 
+    def _update_object(self, data):
+        from alveare.models import Feedback
+        feedback_id = data.get('id', None)
+        if not feedback_id:
+            raise ValueError('No feedback id provided!')
+        feedback = Feedback.query.get(feedback_id)
+        for key, value in data.items():
+            setattr(feedback, key, value)
+        return feedback
+
 deserializer =          BankAccountSchema(exclude=('id'))
 update_deserializer =   BankAccountSchema(exclude=('organization_id', 'contractor_id'))
 serializer =            BankAccountSchema()
