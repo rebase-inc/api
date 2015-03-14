@@ -36,7 +36,6 @@ def make_collection_and_resource_classes(
             return jsonify(**{model: serializer.dump(thing).data})
 
         def put(self, id):
-            #raise Exception(request.form or request.json)
             updated_thing = update_deserializer.load(request.form or request.json).data
 
             DB.session.add(updated_thing)
