@@ -42,7 +42,6 @@ class TestFeedbackResource(AlveareRestTestCase):
         self.assertEqual(feedback.pop('message'), 'blah blah blah')
         self.assertEqual(feedback, {})
 
-    @unittest.skip('confused...')
     def test_update(self):
         user_data = dict(first_name='foo', last_name='bar', email='foo@bar.com', password='baz')
         user = self.post_resource('users', user_data)['user']

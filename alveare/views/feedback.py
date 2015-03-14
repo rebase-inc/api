@@ -15,6 +15,20 @@ class FeedbackSchema(Schema):
             return feedback
         return Feedback(**data)
 
+    def _update_object(self, data):
+        from alveare.models import Feedback
+        feedback_id = data.get('id', None)
+        if not feedback_id:
+            raise ValueError('No feedback id provided!')
+        feedback = Feedback.query.get(feedback_id)
+        for key, value in data.items():
+            setattr(feedback, key, value)
+        return feedback
+
 serializer = FeedbackSchema(only=('id','auction', 'contractor', 'message'))
 deserializer = FeedbackSchema(only=('auction', 'contractor', 'message'), strict=True)
 update_deserializer = FeedbackSchema('message',)
+update_deserializer.make_object = update_deserializer._update_object
+
+
+
