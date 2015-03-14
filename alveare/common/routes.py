@@ -241,3 +241,16 @@ def register_routes(api):
         term_sheet_view.deserializer,
         term_sheet_view.update_deserializer
     )
+
+    from alveare.models.contract import Contract
+    import alveare.views.contract as contract_view
+    add_alveare_resource(
+        api,
+        Contract,
+        'contract',
+        'contracts',
+        '/<int:id>',
+        contract_view.serializer,
+        contract_view.deserializer,
+        contract_view.update_deserializer
+    )
