@@ -12,8 +12,8 @@ class TestBidLimitResource(AlveareRestTestCase):
         self.assertTrue(bid_limit)
         self.assertTrue(bid_limit.pop('id'))
         self.assertIsInstance(bid_limit.pop('price'), int)
-        self.assertIsInstance(bid_limit.pop('ticket_set'), int)
-        self.assertIsInstance(bid_limit.pop('ticket_snapshot'), int)
+        self.assertIsInstance(bid_limit.pop('ticket_set').pop('id'), int)
+        self.assertIsInstance(bid_limit.pop('ticket_snapshot').pop('id'), int)
         self.assertEqual(bid_limit, {})
 
     @skip('ticket set doesnt have any updatable fields')
@@ -25,5 +25,5 @@ class TestBidLimitResource(AlveareRestTestCase):
 
     def test_delete_auction(self):
         bid_limit = self.resource.get_any()
-        self.delete_resource('ticket_sets/{}'.format(bid_limit['ticket_set']))
+        self.delete_resource('ticket_sets/{}'.format(bid_limit['ticket_set']['id']))
         self.get_resource(self.resource.url(bid_limit), 404)

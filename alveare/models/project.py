@@ -21,5 +21,5 @@ class Project(DB.Model):
         self.name = name
 
     def __repr__(self):
-        return '<Project[{} "{}"] for "{}" >'.format(self.id, self.name, self.organization)
+        return '<Project[{}] "{}" for "{}" >'.format(self.id, self.name, self.organization)
 

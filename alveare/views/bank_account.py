@@ -4,56 +4,38 @@ from flask.ext.restful import abort
 from alveare.models.bank_account import BankAccount
 from alveare.models.organization import Organization
 from alveare.models.contractor import Contractor
+from alveare.common.resource import get_or_make_object, update_object
 
 class BankAccountSchema(Schema):
-    id =                fields.Integer()
-    name =              fields.String()
-    routing_number =    fields.Integer()
-    account_number =    fields.Integer()
-    organization_id =   fields.Integer()
-    contractor_id =     fields.Integer()
-
-    def get_owner_and_name(self, data):
-        owner = None
-        org_id = data.get('organization_id')
-        contractor_id = data.get('contractor_id')
-        if org_id:
-            owner = Organization.query.get_or_404(org_id)
-            del data['organization_id']
-            if contractor_id:
-                abort(400, 'Inconsistent data: both organization_id and contractor_id are provided')
-        elif contractor_id:
-            owner = Contractor.query.get_or_404(contractor_id)
-            del data['contractor_id']
-            if org_id:
-                abort(400, 'Inconsistent data: both organization_id and contractor_id are provided')
-        else:
-            abort(400, 'Invalid request: missing organization_id or contractor_id')
-        return owner
+    id =             fields.Integer()
+    name =           fields.String(required=True)
+    routing_number = fields.Integer(required=True)
+    account_number = fields.Integer(required=True)
+    organization =   fields.Nested('OrganizationSchema', only=('id',))
+    contractor =     fields.Nested('ContractorSchema', only=('id',))
 
     def make_object(self, data):
-        if data.get('id'):
-            # an id is provided, so we're doing an update
-            account = BankAccount.query.get_or_404(data['id'])
-            data.pop('id')
-            for field, value in data.items():
-                setattr(account, field, value)
-            return account
-        owner = self.get_owner_and_name(data)
-        account = BankAccount(**data)
-        owner.bank_account = account
-        return account
+        from alveare.models import BankAccount
+        return get_or_make_object(BankAccount, data)
 
     def _update_object(self, data):
-        from alveare.models import Feedback
-        feedback_id = data.get('id', None)
-        if not feedback_id:
-            raise ValueError('No feedback id provided!')
-        feedback = Feedback.query.get(feedback_id)
-        for key, value in data.items():
-            setattr(feedback, key, value)
-        return feedback
+        from alveare.models import BankAccount
+        return update_object(BankAccount, data)
 
-deserializer =          BankAccountSchema(exclude=('id'))
-update_deserializer =   BankAccountSchema(exclude=('organization_id', 'contractor_id'))
-serializer =            BankAccountSchema()
+# this is a hack...TODO: GET RID OF IT
+@BankAccountSchema.data_handler
+def remove_empty_objects(schema, data, obj):
+    if isinstance(data, list):
+        return [remove_empty_objects(schema, elem, obj) for elem in data]
+    if data.get('contractor', None) == dict(id=0):
+        data.pop('contractor')
+    elif data.get('organization', None) == dict(id=0):
+        data.pop('organization')
+    return data
+
+serializer = BankAccountSchema(skip_missing=True)
+deserializer = BankAccountSchema(exclude=('id',), strict=True)
+
+update_deserializer =   BankAccountSchema(only=('id', 'name',))
+update_deserializer.make_object = update_deserializer._update_object
+

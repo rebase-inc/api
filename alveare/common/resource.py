@@ -11,9 +11,8 @@ def plural(text):
         return text+'s'
 
 def get_or_make_object(model, data):
-    instance_id = data.get('id', None)
-    if instance_id:
-        instance = model.query.get(instance_id)
+    if 'id' in data:
+        instance = model.query.get(data.get('id'))
         if not instance:
             data['__name'] = model.__tablename__
             raise ValueError('No {__name} with id {id}'.format(**data))
@@ -21,11 +20,12 @@ def get_or_make_object(model, data):
     return model(**data)
 
 def update_object(model, data):
-    instance_id = data.get('id', None)
-    if instance_id:
+    if 'id' in data:
         instance = get_or_make_object(model, data)
         for key, value in data.items():
-            setattr(instance, key, value)
+            if key == 'id': continue
+            if getattr(instance, key) != value:
+                setattr(instance, key, value)
         return instance
     else:
         data['__name'] = model.__tablename__
@@ -113,7 +113,7 @@ class AlveareResource(object):
     }
 
     def is_in(self, a, b):
-        ''' 
+        '''
             Verify that a is found in b, if a and b are composites.
             If they are scalars, verify that they are equal.
         '''

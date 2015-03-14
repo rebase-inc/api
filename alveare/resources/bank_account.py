@@ -16,7 +16,6 @@ class BankAccountCollection(Resource):
 
     def post(self):
         new_account = deserializer.load(request.form or request.json).data
-
         DB.session.add(new_account)
         DB.session.commit()
 
@@ -37,7 +36,7 @@ class BankAccountResource(Resource):
         DB.session.add(updated_account)
         DB.session.commit()
 
-        response = jsonify(organization=serializer.dump(updated_account).data)
+        response = jsonify(bank_account=serializer.dump(updated_account).data)
         response.status_code = 200
         return response
 

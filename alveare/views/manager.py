@@ -3,14 +3,19 @@ from alveare.common.database import DB
 from alveare.models.manager import Manager
 from alveare.models.user import User
 from alveare.models.organization import Organization
+from alveare.common.resource import get_or_make_object, update_object
 
 class ManagerSchema(Schema):
-    id =                fields.Integer()
-    organization_id =   fields.Integer()
+    id =           fields.Integer()
+    organization = fields.Nested('OrganizationSchema', only=('id',))
+    user =         fields.Nested('UserSchema', only=('id',))
 
     def make_object(self, data):
-        user = User.query.get_or_404(data['id'])
-        organization = Organization.query.get_or_404(data['organization_id'])
-        return Manager(user, organization)
+        from alveare.models import Manager
+        return get_or_make_object(Manager, data)
 
-deserializer = serializer = ManagerSchema(only=('id', 'organization_id'))
+    def _update_object(self, data):
+        from alveare.models import Manager
+        return update_object(Manager, data)
+
+deserializer = serializer = ManagerSchema(only=('id', 'user', 'organization'))

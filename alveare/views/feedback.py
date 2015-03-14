@@ -17,8 +17,6 @@ class FeedbackSchema(Schema):
 
 serializer = FeedbackSchema(only=('id','auction', 'contractor', 'message'))
 deserializer = FeedbackSchema(only=('auction', 'contractor', 'message'), strict=True)
-update_deserializer = FeedbackSchema('message',)
+update_deserializer = FeedbackSchema()
 update_deserializer.make_object = update_deserializer._update_object
-
-
 

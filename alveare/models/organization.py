@@ -2,8 +2,8 @@
 from alveare.common.database import DB
 
 class Organization(DB.Model):
-    id =                DB.Column(DB.Integer, primary_key=True)
-    name =              DB.Column(DB.String)
+    id =   DB.Column(DB.Integer, primary_key=True)
+    name = DB.Column(DB.String)
 
     managers =      DB.relationship('Manager', backref=DB.backref('organization', lazy='joined', uselist=False), cascade='all, delete-orphan', passive_deletes=True, innerjoin=True)
     projects =      DB.relationship('Project', backref='organization', lazy='joined', cascade="all, delete-orphan", passive_deletes=True)

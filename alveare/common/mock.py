@@ -34,16 +34,16 @@ def create_one_contractor(db, user=None):
 
 def create_one_bank_account(db, owner):
     from alveare.models import BankAccount, Organization, Contractor
-    if any(map(lambda ownerType: isinstance(owner, ownerType), [Organization, Contractor])):
-        account = BankAccount(
-            owner.name if isinstance(owner, Organization) else owner.user.first_name+' '+owner.user.last_name,
-            123456000+randint(0, 999),
-            1230000+randint(0,9999)
-        )
-        owner.bank_account = account
-        db.session.add(owner)
-        return account
-    raise ValueError('owner is of type "{}", should be Organization or Contractor'.format(type(owner)))
+    routing = 123456000+randint(0, 999) 
+    account = 1230000+randint(0, 9999) 
+    if isinstance(owner, Organization): 
+        account = BankAccount('Main Account', routing, account, organization=owner)
+    elif isinstance(owner, Contractor): 
+        account = BankAccount('Main Account', routing, account, contractor=owner)
+    else: 
+        raise ValueError('owner is of type "{}", should be Organization or Contractor'.format(type(owner)))
+    db.session.add(account)
+    return account
 
 def create_one_code_clearance(db, project=None, contractor=None, pre_approved=False):
     from alveare.models import CodeClearance

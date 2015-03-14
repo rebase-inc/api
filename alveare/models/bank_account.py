@@ -10,10 +10,13 @@ class BankAccount(DB.Model):
     routing_number =    DB.Column(DB.Integer, nullable=False)
     account_number =    DB.Column(DB.Integer, nullable=False)
 
-    def __init__(self, name, routing_number, account_number):
+    def __init__(self, name, routing_number, account_number, organization=None, contractor=None):
         self.name = name
         self.routing_number = routing_number
         self.account_number = account_number
+
+        self.organization = organization
+        self.contractor = contractor
 
     def __repr__(self):
         return '<BankAccount[{}] name="{}" routing={} account={}>'.format(self.id, self.name, self.routing_number, self.account_number)

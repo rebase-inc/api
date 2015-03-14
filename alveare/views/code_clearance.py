@@ -3,26 +3,29 @@ from alveare.common.database import DB
 from alveare.models.code_clearance import CodeClearance
 from alveare.models.project import Project
 from alveare.models.contractor import Contractor
+from alveare.views.project import ProjectSchema
+from alveare.views.contractor import ContractorSchema
+from alveare.common.resource import get_or_make_object, update_object
 
 class CodeClearanceSchema(Schema):
-    id =                fields.Integer()
-    pre_approved =      fields.Boolean()
-    project_id =        fields.Integer(required=True)
-    contractor_id =     fields.Integer(required=True)
-    project =           fields.Nested('ProjectSchema', only=('id', 'name'))
+    id =           fields.Integer()
+    pre_approved = fields.Boolean()
+    project =      fields.Nested('ProjectSchema', only=('id', 'name'), exclude=('code_clearance',), required=True)
+    contractor =   fields.Nested('ContractorSchema', only=('id',), exclude=('code_clearance',), required=True)
 
     def make_object(self, data):
-        if data.get('id'):
-            # an id is provided, so we're doing an update
-            code_clearance = CodeClearance.query.get_or_404(data['id'])
-            for field, value in data.items():
-                setattr(code_clearance, field, value)
-            return code_clearance
-        project = Project.query.get_or_404(data['project_id'])
-        contractor = Contractor.query.get_or_404(data['contractor_id'])
-        code_clearance = CodeClearance(project, contractor, data['pre_approved'])
-        return code_clearance
+        from alveare.models import CodeClearance
+        return get_or_make_object(CodeClearance, data)
 
-serializer = CodeClearanceSchema()
-deserializer = CodeClearanceSchema(skip_missing=True)
-update_deserializer = CodeClearanceSchema()
+    def _update_object(self, data):
+        from alveare.models import CodeClearance
+        return update_object(CodeClearance, data)
+
+serializer = CodeClearanceSchema(skip_missing=True)
+
+deserializer = CodeClearanceSchema(only=('pre_approved','project','contractor'), strict=True)
+deserializer.declared_fields['project'].only = None
+deserializer.declared_fields['contractor'].only = None
+
+update_deserializer = CodeClearanceSchema('message',)
+update_deserializer.make_object = update_deserializer._update_object

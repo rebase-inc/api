@@ -30,16 +30,20 @@ class TestBankAccountResource(AlveareRestTestCase):
         accounts = response['bank_accounts']
         self.assertTrue(accounts)
 
-    def create_bank_account(self, owner_id_key, owner_id_value, owner_name):
-        account_data = dict(name=owner_name, routing_number=123450000+randint(1,9999), account_number=12345000+randint(1,999))
-        account_data[owner_id_key] = owner_id_value
-        response = self.post_resource('bank_accounts', account_data)
+    def create_bank_account(self, owner_type, owner, owner_name):
+        bank_account_data = dict(
+            name=owner_name,
+            routing_number=123450000+randint(1,9999),
+            account_number=12345000+randint(1,999)
+        )
+        bank_account_data[owner_type] = owner
+        response = self.post_resource('bank_accounts', bank_account_data)
         self.assertIn('bank_account', response)
         account = response['bank_account']
         self.assertEqual(account['name'], owner_name)
-        self.assertEqual(account[owner_id_key], owner_id_value)
-        self.assertEqual(account['routing_number'], account_data['routing_number'])
-        self.assertEqual(account['account_number'], account_data['account_number'])
+        self.assertEqual(account[owner_type]['id'], owner['id'])
+        self.assertEqual(account['routing_number'], bank_account_data['routing_number'])
+        self.assertEqual(account['account_number'], bank_account_data['account_number'])
         return account
 
     def find_resource(self, resources, bank_ownership):
@@ -62,14 +66,14 @@ class TestBankAccountResource(AlveareRestTestCase):
 
     def test_create_org_account(self):
         org = self.find_resource_with_no_bank_account('organizations')
-        account = self.create_bank_account('organization_id', org['id'], org['name'])
+        account = self.create_bank_account('organization', dict(id=org['id']), org['name'])
 
         updated_org = self.get('organization', org['id'])
         self.assertEqual(updated_org['bank_account']['id'], account['id'])
 
     def test_contractor_account(self):
         contractor = self.find_resource_with_no_bank_account('contractors')
-        account = self.create_bank_account('contractor_id', contractor['id'], name(contractor))
+        account = self.create_bank_account('contractor', dict(id=contractor['id']), name(contractor))
 
         updated_contractor = self.get('contractor', contractor['id'])
         self.assertEqual(updated_contractor['bank_account']['id'], account['id'])
@@ -80,7 +84,7 @@ class TestBankAccountResource(AlveareRestTestCase):
         name_fn is a function that, given an instance of a resource, returns a name (str)
         '''
         owner = self.find_resource_with_no_bank_account('{}s'.format(resource))
-        account = self.create_bank_account('{}_id'.format(resource), owner['id'], name_fn(owner))
+        account = self.create_bank_account('{}'.format(resource), dict(id=owner['id']), name_fn(owner))
         account_url = url(account['id'])
         self.delete_resource(account_url)
         self.get_resource(account_url, 404)
@@ -96,14 +100,14 @@ class TestBankAccountResource(AlveareRestTestCase):
 
     def test_delete_contractor(self):
         contractor = self.find_resource_with_no_bank_account('contractors')
-        account = self.create_bank_account('contractor_id', contractor['id'], name(contractor))
+        account = self.create_bank_account('contractor', dict(id=contractor['id']), name(contractor))
         account_url = url(account['id'])
         self.delete_resource('contractors/{}'.format(contractor['id']))
         self.get_resource(account_url, 404)
 
     def test_delete_organization(self):
         org = self.find_resource_with_no_bank_account('organizations')
-        account = self.create_bank_account('organization_id', org['id'], name(org))
+        account = self.create_bank_account('organization', dict(id=org['id']), name(org))
         account_url = url(account['id'])
         self.delete_resource('organizations/{}'.format(org['id']))
         self.get_resource(account_url, 404)
@@ -111,12 +115,8 @@ class TestBankAccountResource(AlveareRestTestCase):
     def test_update(self):
         contractor = self.find_resource_with_bank_account('contractors')
         account = self.get('bank_account', contractor['bank_account']['id'])
-        new_name = account['name'] + 'XXXX'
-        new_routing = account['routing_number']+123
-        new_account = account['account_number']+456
-        account['name'] = new_name
-        account['routing_number'] = new_routing
-        account['account_number'] = new_account
+
+        account['name'] = account['name'] + 'XXXXX'
 
         self.put_resource(url(account['id']), account)
 

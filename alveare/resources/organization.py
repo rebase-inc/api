@@ -33,16 +33,12 @@ class OrganizationResource(Resource):
         return jsonify(organization = organization.serializer.dump(an_organization).data)
 
     def put(self, id):
-        single_organization = Organization.query.get_or_404(id)
+        updated_organization = organization.update_deserializer.load(request.form or request.json).data
 
-        for field, value in organization.updater.load(request.form or request.json).data.items():
-            setattr(single_organization, field, value)
+        DB.session.add(updated_organization)
         DB.session.commit()
 
-        DB.session.add(single_organization)
-        DB.session.commit()
-
-        response = jsonify(organization=organization.serializer.dump(single_organization).data)
+        response = jsonify(organization=organization.serializer.dump(updated_organization).data)
         response.status_code = 200
         return response
 

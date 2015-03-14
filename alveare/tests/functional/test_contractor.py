@@ -29,8 +29,8 @@ class TestContractorResource(AlveareRestTestCase):
         cc = AlveareResource(self, 'code_clearance')
         code_clearance = cc.create(
             pre_approved =   True,
-            project_id =     project['id'],
-            contractor_id =  contractor['id']
+            project = {'id': project['id']},
+            contractor = {'id': contractor['id']}
         )
         queried_contractor = self.r.get(contractor)
         for clearance in queried_contractor['clearances']:
@@ -46,14 +46,14 @@ class TestContractorResource(AlveareRestTestCase):
         user = AlveareResource(self, 'user').get_any()
         user.pop('last_seen')
         user.pop('email')
-        self.r.create(
-            user =  user
-        )
+        self.r.create(user=user)
 
     def test_update(self):
         contractor = self.r.get_any()
         contractor['busyness'] = 123
-        self.r.update(**contractor) 
+        #contractor = dict(id = contractor['id'], busyness = 4)
+        #raise Exception(contractor)
+        self.r.update(**contractor)
 
     def test_delete(self):
         self.r.delete_any()

@@ -28,13 +28,9 @@ class TestAuctionResource(AlveareRestTestCase):
 
     def test_create_new(self):
         ticket = self.get_resource('tickets')['tickets'][0]
-        ticket = dict(id = ticket['id'])
+        ticket_snapshot = self.post_resource('ticket_snapshots', dict(ticket=ticket))['ticket_snapshot']
         auction_data = dict(
-            ticket_set = dict(
-                bid_limits=[
-                    dict(ticket_snapshot=dict(ticket=ticket), price=1000)
-                ]
-            ),
+            ticket_set = dict(bid_limits=[dict(ticket_snapshot=ticket_snapshot, price=1000)]),
             term_sheet = dict(legalese='Thou shalt not steal'),
             redundancy = 2
         )
@@ -60,10 +56,6 @@ class TestAuctionResource(AlveareRestTestCase):
         ticket_snapshot = bid_limit.pop('ticket_snapshot')
         self.assertEqual(bid_limit, {})
         self.assertIsInstance(ticket_snapshot.pop('id'), int)
-        self.assertIsInstance(ticket_snapshot.pop('ticket'), int)
-        self.assertIsInstance(ticket_snapshot.pop('title'), str)
-        self.assertIsInstance(ticket_snapshot.pop('description'), str)
-        self.assertIsInstance(ticket_snapshot.pop('date'), str)
         self.assertEqual(ticket_snapshot, {})
 
         term_sheet = auction.pop('term_sheet')
@@ -75,13 +67,9 @@ class TestAuctionResource(AlveareRestTestCase):
 
     def test_update(self):
         ticket = self.get_resource('tickets')['tickets'][0]
-        ticket = dict(id = ticket['id'])
+        ticket_snapshot = self.post_resource('ticket_snapshots', dict(ticket=ticket))['ticket_snapshot']
         auction_data = dict(
-            ticket_set = dict(
-                bid_limits=[
-                    dict(ticket_snapshot=dict(ticket=ticket), price=1000)
-                ]
-            ),
+            ticket_set = dict(bid_limits=[dict(ticket_snapshot=ticket_snapshot, price=1000)]),
             term_sheet = dict(legalese='Thou shalt not steal'),
             redundancy = 2
         )

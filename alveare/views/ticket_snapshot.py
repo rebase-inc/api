@@ -1,4 +1,5 @@
 from marshmallow import fields, Schema
+from alveare.common.resource import get_or_make_object, update_object
 
 class TicketSnapshotSchema(Schema):
     id =          fields.Integer()
@@ -10,13 +11,11 @@ class TicketSnapshotSchema(Schema):
 
     def make_object(self, data):
         from alveare.models import TicketSnapshot
-        ticket_snapshot_id = data.pop('id', None)
-        if ticket_snapshot_id:
-            ticket_snapshot = TicketSnapshot.query.get(ticket_snapshot_id)
-            if not ticket_snapshot:
-                raise ValueError('No ticket snapshot with id {id}'.format(**data))
-            return ticket_snapshot
-        return TicketSnapshot(**data)
+        return get_or_make_object(TicketSnapshot, data)
+
+    def _update_object(self, data):
+        from alveare.models import TicketSnapshot
+        return update_object(TicketSnapshot, data)
 
 serializer = TicketSnapshotSchema(skip_missing=True)
 

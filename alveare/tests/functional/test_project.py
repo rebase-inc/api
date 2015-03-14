@@ -50,18 +50,15 @@ class TestProjectResource(AlveareRestTestCase):
     def test_add_and_remove_code_clearance(self):
         contractor = AlveareResource(self, 'contractor').get_any()
         project = self.r.get_any()
-        code_clearance = dict(
-            pre_approved=   True,
-            project_id=     project['id'],
-            contractor_id=  contractor['id']
-        )
+        code_clearance = dict(pre_approved=True, project={'id': project['id']}, contractor={'id': contractor['id']})
         cc = AlveareResource(self, 'code_clearance')
         new_code_clearance = cc.create(**code_clearance)
 
         queried_project = self.r.get(project['id'])
         code_clearances = queried_project['clearances']
         self.assertTrue(code_clearances)
-        self.assertIn(new_code_clearance['id'], queried_project['clearances'])
+        queried_clearances = [c['id'] for c in queried_project['clearances']]
+        self.assertIn(new_code_clearance['id'], queried_clearances)
 
         # now delete all code clearances
         for code_clearance in code_clearances:
