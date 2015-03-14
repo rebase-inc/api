@@ -201,7 +201,7 @@ def create_one_feedback(db):
     from alveare.models import Feedback
     auction = create_one_auction(db)
     contractor = create_one_contractor(db)
-    feedback = Feedback(auction, contractor)
+    feedback = Feedback(auction, contractor, 'Your auction sucks')
     db.session.add(feedback)
     return feedback
 
@@ -267,6 +267,8 @@ def create_the_world(db):
     rapha_rwh = create_one_remote_work_history(db, rapha_contractor)
     create_one_github_account(db, rapha_rwh, 'rapha.opensource')
     create_one_github_account(db, rapha_rwh, 'joe-la-mitraille')
+    create_one_feedback(db) 
+    create_one_feedback(db) 
     create_one_contract(db)
     create_one_contract(db)
     create_some_work(db)

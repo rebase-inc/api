@@ -2,7 +2,7 @@ import unittest
 
 from . import AlveareRestTestCase
 
-class TestArbitrationResource(AlveareRestTestCase):
+class TestBidResource(AlveareRestTestCase):
 
     def test_get_all(self):
         response = self.get_resource('bids')

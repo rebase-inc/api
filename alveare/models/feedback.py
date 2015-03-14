@@ -3,14 +3,18 @@ from alveare.common.database import DB
 
 class Feedback(DB.Model):
 
-    contractor_id = DB.Column(DB.Integer, DB.ForeignKey('contractor.id', ondelete='CASCADE'), primary_key=True)
-    auction_id =    DB.Column(DB.Integer, DB.ForeignKey('auction.id', ondelete='CASCADE'), primary_key=True)
+    id =        DB.Column(DB.Integer, primary_key=True)
 
-    contractor = DB.relationship('Contractor', uselist=False, backref=DB.backref('feedbacks', cascade='all, delete-orphan', passive_deletes=True))
+    # note these 2 together form a primary key, so bid_id is redundant
+    contractor_id = DB.Column(DB.Integer, DB.ForeignKey('contractor.id', ondelete='CASCADE'))
+    auction_id =    DB.Column(DB.Integer, DB.ForeignKey('auction.id', ondelete='CASCADE'))
+    
+    message =       DB.Column(DB.String, nullable=False)
 
-    def __init__(self, auction, contractor):
+    def __init__(self, auction, contractor, message):
         self.auction = auction
         self.contractor = contractor
+        self.message = message
 
     def __repr__(self):
         return '<Feedback[auction({}), contractor({})] >'.format(self.auction_id, self.contractor_id)

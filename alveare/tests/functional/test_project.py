@@ -20,13 +20,13 @@ class TestProjectResource(AlveareRestTestCase):
 
     def test_delete_organization(self):
         project = self.r.get_any()
-        self.delete_resource('organizations/{}'.format(project['organization_id']))
+        self.delete_resource('organizations/{}'.format(project['organization']['id']))
         self.get_resource(self.r.url(project), 404)
 
     def test_update(self):
         project = self.r.get_any()
         project['name'] = 'a better project name'
-        self.r.update(**project) 
+        self.r.update(**project)
 
     def test_add_and_remove_tickets(self):
         project = self.r.get_any()

@@ -7,7 +7,7 @@ from alveare.views.code_clearance import CodeClearanceSchema
 
 class ProjectSchema(Schema):
     id =                fields.Integer()
-    organization_id =   fields.Integer()
+    organization =      fields.Nested('OrganizationSchema', only=('id',))
     name =              fields.String()
     type =              fields.String()
     clearances =        fields.Nested(CodeClearanceSchema,      only='id',      many=True)

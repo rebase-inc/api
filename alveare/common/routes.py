@@ -254,3 +254,16 @@ def register_routes(api):
         contract_view.deserializer,
         contract_view.update_deserializer
     )
+
+    from alveare.models.feedback import Feedback
+    import alveare.views.feedback as feedback_view
+    add_alveare_resource(
+        api,
+        Feedback,
+        'feedback',
+        'feedbacks',
+        '/<int:id>',
+        feedback_view.serializer,
+        feedback_view.deserializer,
+        feedback_view.update_deserializer
+    )
