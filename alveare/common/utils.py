@@ -14,6 +14,9 @@ def plural(text):
     else:
         return text+'s'
 
+def primary_key(model):
+    return list(map(lambda key: key.name, inspect(model).primary_key))
+
 class AlveareResource(object):
 
     all_models = dict(getmembers(alveare.models, predicate=isclass))

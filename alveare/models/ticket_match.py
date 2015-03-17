@@ -8,7 +8,7 @@ class TicketMatch(DB.Model):
                                                 [JobFit.contractor_id,   JobFit.auction_id], ondelete='SET NULL'), {})
 
     skill_requirement_id =  DB.Column(DB.Integer, DB.ForeignKey('skill_requirement.id', ondelete='CASCADE'), primary_key=True)
-    skill_set_id =          DB.Column(DB.Integer, DB.ForeignKey('skill_set.id',          ondelete='CASCADE'), primary_key=True)
+    skill_set_id =          DB.Column(DB.Integer, DB.ForeignKey('skill_set.id',         ondelete='CASCADE'), primary_key=True)
     contractor_id =         DB.Column(DB.Integer, nullable=True)
     auction_id =            DB.Column(DB.Integer, nullable=True)
     score =                 DB.Column(DB.Integer, nullable=False)

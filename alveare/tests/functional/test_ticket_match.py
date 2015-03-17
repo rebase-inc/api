@@ -1,5 +1,5 @@
 from . import AlveareRestTestCase
-from alveare.common.resource import AlveareResource
+from alveare.common.utils import AlveareResource
 from unittest import skip
 
 
@@ -39,6 +39,6 @@ class TestTicketMatchResource(AlveareRestTestCase):
 
     def test_delete_skill_set(self):
         ticket_match = self.r.get_any()
-        skill_set = self.sr.get(ticket_match['skill_set'])
-        self.sr.delete(skill_set)
-        self.sr.get(skill_set, 404)
+        skill_set = self.ss.get(ticket_match['skill_set'])
+        self.ss.delete(skill_set)
+        self.ss.get(skill_set, 404)
