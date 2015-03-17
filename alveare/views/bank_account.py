@@ -4,7 +4,7 @@ from flask.ext.restful import abort
 from alveare.models.bank_account import BankAccount
 from alveare.models.organization import Organization
 from alveare.models.contractor import Contractor
-from alveare.common.resource import get_or_make_object, update_object
+from alveare.common.database import get_or_make_object, update_object
 
 class BankAccountSchema(Schema):
     id =             fields.Integer()
@@ -17,10 +17,6 @@ class BankAccountSchema(Schema):
     def make_object(self, data):
         from alveare.models import BankAccount
         return get_or_make_object(BankAccount, data)
-
-    def _update_object(self, data):
-        from alveare.models import BankAccount
-        return update_object(BankAccount, data)
 
 # this is a hack...TODO: GET RID OF IT
 @BankAccountSchema.data_handler
@@ -37,5 +33,5 @@ serializer = BankAccountSchema(skip_missing=True)
 deserializer = BankAccountSchema(exclude=('id',), strict=True)
 
 update_deserializer =   BankAccountSchema(only=('id', 'name',))
-update_deserializer.make_object = update_deserializer._update_object
+update_deserializer.make_object = lambda data: data 
 

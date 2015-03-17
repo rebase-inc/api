@@ -2,6 +2,7 @@
 from alveare.common.database import DB
 
 class Feedback(DB.Model):
+    __pluralname__ = 'feedbacks'
 
     id =        DB.Column(DB.Integer, primary_key=True)
 

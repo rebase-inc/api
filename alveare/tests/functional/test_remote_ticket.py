@@ -1,5 +1,5 @@
 from . import AlveareRestTestCase
-from alveare.common.resource import AlveareResource
+from alveare.common.utils import AlveareResource
 from unittest import skip
 
 
@@ -30,5 +30,5 @@ class TestRemoteTicketResource(AlveareRestTestCase):
 
     def test_delete_project(self):
         ticket = self.r.get_any()
-        self.delete_resource('projects/{}'.format(ticket['project_id']))
+        self.delete_resource('projects/{id}'.format(**ticket['project']))
         self.get_resource(self.r.url(ticket), 404)

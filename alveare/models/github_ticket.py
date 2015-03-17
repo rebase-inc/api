@@ -3,6 +3,8 @@ from alveare.common.database import DB
 from alveare.models import RemoteTicket
 
 class GithubTicket(RemoteTicket):
+    __pluralname__ = 'github_tickets'
+
     id =        DB.Column(DB.Integer, DB.ForeignKey('remote_ticket.id', ondelete='CASCADE'), primary_key=True)
     number =    DB.Column(DB.Integer, nullable=False)
 

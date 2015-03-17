@@ -1,5 +1,5 @@
 from . import AlveareRestTestCase
-from alveare.common.resource import AlveareResource
+from alveare.common.utils import AlveareResource
 from unittest import skip
 
 
@@ -15,9 +15,9 @@ class TestSkillRequirementResource(AlveareRestTestCase):
         skill_requirement = self.r.get_any()
         self.assertTrue(skill_requirement) # mock should have created at least one ticket and its related SkillRequirement object
         self.assertTrue(skill_requirement['id'])
-        ticket = self.get('ticket', skill_requirement['id'])
+        ticket = self.get_resource('tickets/{id}'.format(**skill_requirement))['ticket']
         self.assertTrue(ticket)
-        project = self.get('project', ticket['project_id'])
+        project = self.get_resource('projects/{project_id}'.format(**ticket))
         self.assertEqual(ticket['skill_requirement']['id'], skill_requirement['id'])
 
     @skip('nothing to update in the SkillRequirement object yet')
@@ -31,6 +31,6 @@ class TestSkillRequirementResource(AlveareRestTestCase):
 
     def test_delete_project(self):
         skill_requirement = self.r.get_any()
-        ticket = self.get('ticket', skill_requirement['id'])
-        self.delete_resource('projects/{}'.format(ticket['project_id']))
+        ticket = self.get_resource('tickets/{id}'.format(**skill_requirement))['ticket']
+        self.delete_resource('projects/{project_id}'.format(**ticket))
         self.get_resource(self.r.url(skill_requirement), 404)

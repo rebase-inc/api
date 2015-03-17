@@ -8,6 +8,8 @@ from alveare.common.database import DB
 from alveare.common.state import StateMachine
 
 class Mediation(DB.Model):
+    __pluralname__ = 'mediations'
+
     id =            DB.Column(DB.Integer, primary_key=True)
     dev_answer =    DB.Column(DB.Integer, nullable=True)
     client_answer = DB.Column(DB.Integer, nullable=True)

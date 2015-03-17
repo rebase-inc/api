@@ -3,6 +3,8 @@ from alveare.common.database import DB
 from alveare.models.ticket import Ticket
 
 class RemoteTicket(Ticket):
+    __pluralname__ = 'remote_tickets'
+
     id = DB.Column(DB.Integer, DB.ForeignKey('ticket.id', ondelete='CASCADE'), primary_key=True)
 
     __mapper_args__ = { 'polymorphic_identity': 'remote_ticket' }

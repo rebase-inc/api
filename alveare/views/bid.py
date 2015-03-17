@@ -1,5 +1,7 @@
 from marshmallow import fields, Schema
 
+from alveare.common.database import get_or_make_object, update_object
+
 class BidSchema(Schema):
     id =          fields.Integer()
     auction =     fields.Nested('AuctionSchema', only='id')
@@ -9,12 +11,9 @@ class BidSchema(Schema):
 
     def make_object(self, data):
         from alveare.models import Bid
-        if data.get('id'):
-            bid = Bid.query.get(data.get('id'))
-            if not bid:
-                raise ValueError('No bid with id {id}'.format(**data))
-            return bid
-        return Bid(**data)
+        return get_or_make_object(Bid, data)
 
 serializer = BidSchema(only=('id', 'auction', 'contractor','work_offers'))
 deserializer = BidSchema(only=('auction', 'contractor'), strict=True)
+update_deserializer = BidSchema(only=tuple(), strict=True)
+update_deserializer.make_object = lambda data: data 

@@ -2,6 +2,8 @@
 from alveare.common.database import DB
 
 class Organization(DB.Model):
+    __pluralname__ = 'organizations'
+
     id =   DB.Column(DB.Integer, primary_key=True)
     name = DB.Column(DB.String)
 

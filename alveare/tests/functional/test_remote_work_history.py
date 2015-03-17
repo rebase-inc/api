@@ -1,5 +1,5 @@
 from . import AlveareRestTestCase
-from alveare.common.resource import AlveareResource
+from alveare.common.utils import AlveareResource
 from unittest import skip
 
 
@@ -13,7 +13,7 @@ class TestRemoteWorkHistoryResource(AlveareRestTestCase):
         self.assertTrue(rwh) # mock should have created at least one account
         self.assertTrue(rwh['id'])
 
-        contractor = self.get('contractor', rwh['id'])
+        contractor = self.get_resource('contractors/{id}'.format(**rwh))['contractor']
         self.assertEqual(contractor['remote_work_history']['id'], contractor['id'])
 
     def test_create(self):
@@ -34,11 +34,11 @@ class TestRemoteWorkHistoryResource(AlveareRestTestCase):
         rwh = self.r.get_any()
         rwh_id = rwh['id']
         new_account = AlveareResource(self, 'github_account').create(
-            remote_work_history_id=rwh_id,
+            remote_work_history = dict(id=rwh_id),
             user_name='george_washington',
             auth_token='1234123415245353543'
         )
-        modified_rwh = self.get('remote_work_history', rwh_id)
+        modified_rwh = self.get_resource('remote_work_histories/{}'.format(rwh_id))['remote_work_history']
 
         account_ids = list(map(lambda account: account['id'], modified_rwh['github_accounts']))
         self.assertIn(new_account['id'], account_ids)

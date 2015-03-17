@@ -5,6 +5,7 @@ from alveare.common.database import DB
 from .contractor import Contractor
 
 class RemoteWorkHistory(DB.Model):
+    __pluralname__ = 'remote_work_histories'
 
     id = DB.Column(DB.Integer, DB.ForeignKey('contractor.id', ondelete='CASCADE'), primary_key=True, nullable=False)
 

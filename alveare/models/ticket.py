@@ -2,6 +2,7 @@
 from alveare.common.database import DB
 
 class Ticket(DB.Model):
+    __pluralname__ = 'tickets'
 
     id =            DB.Column(DB.Integer, primary_key=True)
     title =         DB.Column(DB.String, nullable=False)

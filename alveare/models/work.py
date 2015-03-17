@@ -7,6 +7,8 @@ from alveare.common.database import DB
 from alveare.common.state import StateMachine
 
 class Work(DB.Model):
+    __pluralname__ = 'works'
+
     id =    DB.Column(DB.Integer, primary_key=True)
     state = DB.Column(DB.String, nullable=False, default='in_progress')
 

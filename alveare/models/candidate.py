@@ -2,6 +2,7 @@
 from alveare.common.database import DB
 
 class Candidate(DB.Model):
+    __pluralname__ = 'candidates'
 
     contractor_id =           DB.Column(DB.Integer, DB.ForeignKey('contractor.id', ondelete='CASCADE'), primary_key=True)
     ticket_set_id =           DB.Column(DB.Integer, DB.ForeignKey('ticket_set.id', ondelete='CASCADE'), primary_key=True)

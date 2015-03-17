@@ -2,6 +2,7 @@
 from alveare.common.database import DB
 
 class SkillRequirement(DB.Model):
+    __pluralname__ = 'skill_requirements'
 
     id = DB.Column(DB.Integer, DB.ForeignKey('ticket.id', ondelete='CASCADE'), primary_key=True)
 

@@ -3,6 +3,8 @@ from sqlalchemy.orm import validates
 from alveare.common.database import DB
 
 class Credit(DB.Model):
+    __pluralname__ = 'credits'
+
     id =      DB.Column(DB.Integer, primary_key=True)
     price =   DB.Column(DB.Integer, nullable=False)
     paid =    DB.Column(DB.Boolean, nullable=False, default=False)

@@ -3,7 +3,7 @@ from alveare.common.database import DB
 from alveare.models.project import Project
 from alveare.models.user import User
 from alveare.models.organization import Organization
-from alveare.common.resource import get_or_make_object, update_object
+from alveare.common.database import get_or_make_object, update_object
 
 class ProjectSchema(Schema):
     id =                fields.Integer()
@@ -18,12 +18,8 @@ class ProjectSchema(Schema):
         from alveare.models import Project
         return get_or_make_object(Project, data)
 
-    def _update_object(self, data):
-        from alveare.models import Project
-        return update_object(Project, data)
-
 serializer = ProjectSchema()
 deserializer = ProjectSchema(only=('organization_id', 'name'))
 update_deserializer = ProjectSchema()
-update_deserializer.make_object = update_deserializer._update_object
+update_deserializer.make_object = lambda data: data 
 

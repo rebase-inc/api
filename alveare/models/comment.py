@@ -5,6 +5,8 @@ from .mediation import Mediation
 from .ticket import Ticket
 
 class Comment(DB.Model):
+    __pluralname__ = 'comments'
+    
     id =        DB.Column(DB.Integer, primary_key=True)
     content =   DB.Column(DB.String,  nullable=False)
 

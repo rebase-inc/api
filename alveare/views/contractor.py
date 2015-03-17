@@ -1,5 +1,5 @@
 from marshmallow import fields, Schema
-from alveare.common.resource import get_or_make_object, update_object
+from alveare.common.database import get_or_make_object, update_object
 
 class ContractorSchema(Schema):
     id =                    fields.Integer()
@@ -16,12 +16,17 @@ class ContractorSchema(Schema):
         from alveare.models import Contractor
         return get_or_make_object(Contractor, data)
 
-    def _update_object(self, data):
-        from alveare.models import Contractor
-        return update_object(Contractor, data)
+# this is a hack...TODO: GET RID OF IT
+@ContractorSchema.data_handler
+def remove_empty_bank_account(schema, data, obj):
+    if isinstance(data, list):
+        return [remove_empty_bank_account(schema, elem, obj) for elem in data]
+    if data.get('bank_account', None) == dict(id=0):
+        data.pop('bank_account')
+    return data
 
 serializer = ContractorSchema(skip_missing=True)
 deserializer = ContractorSchema(only=('user',), strict=True)
 update_deserializer = ContractorSchema(only=('id', 'busyness',))
-update_deserializer.make_object = update_deserializer._update_object
+update_deserializer.make_object = lambda data: data 
 

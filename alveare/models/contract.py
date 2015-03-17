@@ -2,6 +2,7 @@
 from alveare.common.database import DB
 
 class Contract(DB.Model):
+    __pluralname__ = 'contracts'
 
     id = DB.Column(DB.Integer, DB.ForeignKey('bid.id', ondelete='CASCADE'), primary_key=True)
 

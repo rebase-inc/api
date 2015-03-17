@@ -3,6 +3,8 @@ from sqlalchemy.orm import validates
 from alveare.common.database import DB
 
 class BankAccount(DB.Model):
+    __pluralname__ = 'bank_accounts'
+
     id =                DB.Column(DB.Integer, primary_key=True)
     organization_id =   DB.Column(DB.Integer, DB.ForeignKey('organization.id', ondelete='CASCADE'), nullable=True)
     contractor_id =     DB.Column(DB.Integer, DB.ForeignKey('contractor.id', ondelete='CASCADE'), nullable=True)

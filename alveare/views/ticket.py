@@ -2,6 +2,7 @@ from marshmallow import fields, Schema
 from alveare.models.ticket import Ticket
 from alveare.views.skill_requirement import SkillRequirementSchema
 from flask.ext.restful import abort
+from alveare.common.database import get_or_make_object, update_object
 
 class TicketSchema(Schema):
     id =            fields.Integer()
@@ -14,13 +15,11 @@ class TicketSchema(Schema):
     comments =              fields.Nested('CommentSchema',          only=('id',), many=True)
 
     def make_object(self, data):
-        ticket = Ticket.query.get_or_404(data['id'])
-        data.pop('id')
-        for field, value in data.items():
-            setattr(ticket, field, value)
-        return ticket
+        from alveare.models import Ticket
+        return get_or_make_object(Ticket, data) 
 
 
 deserializer =          TicketSchema(exclude=('id',))
 update_deserializer =   TicketSchema()
+update_deserializer.make_object = lambda data: data 
 serializer =            TicketSchema()

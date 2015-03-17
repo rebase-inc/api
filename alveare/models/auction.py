@@ -8,6 +8,8 @@ from alveare.common.state import StateMachine
 from alveare.models import BidLimit, Contract, Bid
 
 class Auction(DB.Model):
+    __pluralname__ = 'auctions'
+
 
     id =             DB.Column(DB.Integer,   primary_key=True)
     duration =       DB.Column(DB.Integer,   nullable=False)

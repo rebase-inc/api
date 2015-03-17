@@ -1,5 +1,5 @@
 from . import AlveareRestTestCase
-from alveare.common.resource import AlveareResource
+from alveare.common.utils import AlveareResource
 from unittest import skip
 
 
@@ -20,7 +20,7 @@ class TestContractorResource(AlveareRestTestCase):
             id=contractor['id']
         )
         queried_contractor = self.r.get(contractor)
-        self.r.is_in(queried_contractor['remote_work_history'], new_rwh)
+        self.r.assertComposite(queried_contractor['remote_work_history'], new_rwh)
         rwh_res.delete(new_rwh)
 
     def test_code_clearance(self):
@@ -35,7 +35,7 @@ class TestContractorResource(AlveareRestTestCase):
         queried_contractor = self.r.get(contractor)
         for clearance in queried_contractor['clearances']:
             if clearance['id'] == code_clearance['id']:
-                self.r.is_in(clearance, code_clearance)
+                self.r.assertComposite(clearance, code_clearance)
 
         # now delete all clearances
         for clearance in queried_contractor['clearances']:

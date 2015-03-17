@@ -5,6 +5,7 @@ import alveare
 from alveare.common.database import DB
 
 class WorkOffer(DB.Model):
+    __pluralname__ = 'work_offers'
 
     id =                    DB.Column(DB.Integer, primary_key = True)
     price =                 DB.Column(DB.Integer, nullable=False)

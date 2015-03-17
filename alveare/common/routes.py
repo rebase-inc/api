@@ -1,9 +1,19 @@
 from alveare.resources import add_alveare_resource
 
 def register_routes(api):
-    from alveare.resources.user import UserCollection, UserResource
-    api.add_resource(UserCollection, '/users', endpoint='users')
-    api.add_resource(UserResource, '/users/<int:id>', endpoint='user')
+    def add_resource(resour):
+        api.add_resource(collection, collection.url)
+   
+    from alveare.resources import user, github_ticket
+    all_resources = [
+            user.UserCollection,
+            user.UserResource,
+            github_ticket.GithubTicketCollection,
+            github_ticket.GithubTicketResource
+    ]
+
+    for resource in all_resources:
+        api.add_resource(resource, resource.url)
 
     from alveare.resources.organization import OrganizationCollection, OrganizationResource
     api.add_resource(OrganizationCollection, '/organizations', endpoint='organizations')
@@ -136,19 +146,6 @@ def register_routes(api):
         internal_ticket_view.serializer,
         internal_ticket_view.deserializer,
         internal_ticket_view.update_deserializer
-    )
-
-    from alveare.models.github_ticket import GithubTicket
-    import alveare.views.github_ticket as github_ticket_view
-    add_alveare_resource(
-        api,
-        GithubTicket,
-        'github_ticket',
-        'github_tickets',
-        '/<int:id>',
-        github_ticket_view.serializer,
-        github_ticket_view.deserializer,
-        github_ticket_view.update_deserializer
     )
 
     from alveare.models.remote_ticket import RemoteTicket

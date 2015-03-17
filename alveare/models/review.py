@@ -3,6 +3,8 @@ from sqlalchemy.orm import validates
 from alveare.common.database import DB
 
 class Review(DB.Model):
+    __pluralname__ = 'reviews'
+
     id =      DB.Column(DB.Integer, primary_key=True)
     rating =  DB.Column(DB.Integer, nullable=False)
     work_id = DB.Column(DB.Integer, DB.ForeignKey('work.id', ondelete='CASCADE'), nullable=False)

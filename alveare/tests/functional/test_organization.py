@@ -44,7 +44,6 @@ class TestOrganizationResource(AlveareRestTestCase):
     def test_put(self):
         org = self.get_one()
         org['name'] = 'SpaceY'
-        org.pop('bank_account') # hack TODO: FIX
         response = self.put_resource(url(org['id']), org)
         self.assertIn('organization', response)
         updated_org = response['organization']

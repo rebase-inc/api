@@ -1,5 +1,5 @@
 from marshmallow import fields, Schema
-from alveare.common.resource import get_or_make_object, update_object
+from alveare.common.database import get_or_make_object, update_object
 
 class FeedbackSchema(Schema):
     id =         fields.Integer()
@@ -11,12 +11,8 @@ class FeedbackSchema(Schema):
         from alveare.models import Feedback
         return get_or_make_object(Feedback, data)
 
-    def _update_object(self, data):
-        from alveare.models import Feedback
-        return update_object(Feedback, data)
-
 serializer = FeedbackSchema(only=('id','auction', 'contractor', 'message'))
 deserializer = FeedbackSchema(only=('auction', 'contractor', 'message'), strict=True)
 update_deserializer = FeedbackSchema()
-update_deserializer.make_object = update_deserializer._update_object
+update_deserializer.make_object = lambda data: data 
 

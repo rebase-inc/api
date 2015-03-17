@@ -30,95 +30,79 @@ class TestBankAccountResource(AlveareRestTestCase):
         accounts = response['bank_accounts']
         self.assertTrue(accounts)
 
-    def create_bank_account(self, owner_type, owner, owner_name):
+    def create_bank_account(self, owner_type, owner_id, account_title):
         bank_account_data = dict(
-            name=owner_name,
-            routing_number=123450000+randint(1,9999),
-            account_number=12345000+randint(1,999)
+            name=account_title,
+            routing_number=123450000 + randint(1,9999),
+            account_number=12345000 + randint(1,999)
         )
-        bank_account_data[owner_type] = owner
+        bank_account_data[owner_type] = dict(id = owner_id)
         response = self.post_resource('bank_accounts', bank_account_data)
         self.assertIn('bank_account', response)
         account = response['bank_account']
-        self.assertEqual(account['name'], owner_name)
-        self.assertEqual(account[owner_type]['id'], owner['id'])
+        self.assertEqual(account['name'], account_title)
+        self.assertEqual(account[owner_type]['id'], owner_id)
         self.assertEqual(account['routing_number'], bank_account_data['routing_number'])
         self.assertEqual(account['account_number'], bank_account_data['account_number'])
         return account
 
-    def find_resource(self, resources, bank_ownership):
-        '''
-        resources can either be 'organizations' or 'contractors'
-        bank_ownership is a function that returns a boolean given a resource
-        '''
-        response = self.get_resource(resources)
-        self.assertIn(resources, response)
-        all_resources = response[resources]
-        matching_resources = list(filter(lambda resource: bank_ownership(resource), all_resources))
-        self.assertTrue(matching_resources)
-        return matching_resources[0]
+    def find_resource_with_bank_account(self, rest_resource):
+        if rest_resource not in ['contractors', 'organizations']:
+            raise ValueError('rest_resouce must be "contractors" or "organizations", not "{}"'.format(rest_resource))
+        instances = self.get_resource(rest_resource)[rest_resource]
+        return next(filter(lambda res: 'bank_account' in res, instances), None)
 
-    def find_resource_with_bank_account(self, resources):
-        return self.find_resource(resources, has_bank)
+    def find_resource_without_bank_account(self, rest_resource):
+        if rest_resource not in ['contractors', 'organizations']:
+            raise ValueError('rest_resouce must be "contractors" or "organizations", not "{}"'.format(rest_resource))
+        instances = self.get_resource(rest_resource)[rest_resource]
+        return next(filter(lambda res: 'bank_account' not in res, instances), None)
 
-    def find_resource_with_no_bank_account(self, resources):
-        return self.find_resource(resources, has_no_bank)
+    def test_create_bank_account_for_organization(self):
+        org = self.find_resource_without_bank_account('organizations')
+        account = self.create_bank_account('organization', org['id'], 'Our Account')
+        org_with_account = self.get_resource('organizations/{id}'.format(**org))['organization']
+        self.assertEqual(org_with_account['bank_account']['id'], account['id'])
 
-    def test_create_org_account(self):
-        org = self.find_resource_with_no_bank_account('organizations')
-        account = self.create_bank_account('organization', dict(id=org['id']), org['name'])
+    def test_create_bank_account_for_contractor(self):
+        contractor = self.find_resource_without_bank_account('contractors')
+        account = self.create_bank_account('contractor', contractor['id'], 'My Account')
+        contractor_with_account = self.get_resource('contractors/{id}'.format(**contractor))['contractor']
+        self.assertEqual(contractor_with_account['bank_account']['id'], account['id'])
 
-        updated_org = self.get('organization', org['id'])
-        self.assertEqual(updated_org['bank_account']['id'], account['id'])
-
-    def test_contractor_account(self):
-        contractor = self.find_resource_with_no_bank_account('contractors')
-        account = self.create_bank_account('contractor', dict(id=contractor['id']), name(contractor))
-
-        updated_contractor = self.get('contractor', contractor['id'])
-        self.assertEqual(updated_contractor['bank_account']['id'], account['id'])
-
-    def delete_bank_account(self, resource, name_fn):
-        '''
-        resource can be 'organization' or 'contractor'
-        name_fn is a function that, given an instance of a resource, returns a name (str)
-        '''
-        owner = self.find_resource_with_no_bank_account('{}s'.format(resource))
-        account = self.create_bank_account('{}'.format(resource), dict(id=owner['id']), name_fn(owner))
-        account_url = url(account['id'])
-        self.delete_resource(account_url)
-        self.get_resource(account_url, 404)
-        same_owner = self.get(resource, owner['id'])
-        self.assertEqual(same_owner['bank_account']['id'], 0)
-
+    def delete_bank_account(self, owner_type):
+        owner = self.find_resource_without_bank_account('{}s'.format(owner_type))
+        account = self.create_bank_account(owner_type, owner['id'], 'Account to be deleted')
+        self.delete_resource('bank_accounts/{id}'.format(**account))
+        self.get_resource('bank_accounts/{id}'.format(**account), 404)
+        same_owner = self.get_resource('{}s/{}'.format(owner_type, owner['id']))[owner_type]
+        self.assertNotIn('bank_account', same_owner)
 
     def test_delete_contractor_bank_account(self):
-        self.delete_bank_account('contractor', name)
+        self.delete_bank_account('contractor')
 
     def test_delete_organization_bank_account(self):
-        self.delete_bank_account('organization', name)
+        self.delete_bank_account('organization')
 
     def test_delete_contractor(self):
-        contractor = self.find_resource_with_no_bank_account('contractors')
-        account = self.create_bank_account('contractor', dict(id=contractor['id']), name(contractor))
-        account_url = url(account['id'])
-        self.delete_resource('contractors/{}'.format(contractor['id']))
-        self.get_resource(account_url, 404)
+        contractor = self.find_resource_without_bank_account('contractors')
+        account = self.create_bank_account('contractor', contractor['id'], 'Account to be cascade deleted')
+        self.delete_resource('contractors/{id}'.format(**contractor))
+        self.get_resource('bank_accounts/{id}'.format(**account), 404)
 
     def test_delete_organization(self):
-        org = self.find_resource_with_no_bank_account('organizations')
-        account = self.create_bank_account('organization', dict(id=org['id']), name(org))
-        account_url = url(account['id'])
-        self.delete_resource('organizations/{}'.format(org['id']))
-        self.get_resource(account_url, 404)
+        org = self.find_resource_without_bank_account('organizations')
+        account = self.create_bank_account('organization', org['id'], 'Account to be cascade deleted')
+        self.delete_resource('organizations/{id}'.format(**org))
+        self.get_resource('bank_accounts/{id}'.format(**account), 404)
 
     def test_update(self):
         contractor = self.find_resource_with_bank_account('contractors')
-        account = self.get('bank_account', contractor['bank_account']['id'])
+        account = self.get_resource('bank_accounts/{id}'.format(**contractor['bank_account']))['bank_account']
+        account['name'] = account['name'] + '-UPDATED'
 
-        account['name'] = account['name'] + 'XXXXX'
+        self.put_resource('bank_accounts/{id}'.format(**account), account)
 
-        self.put_resource(url(account['id']), account)
-
-        updated_account = self.get('bank_account', account['id'])
+        updated_account = self.get_resource('bank_accounts/{id}'.format(**account))['bank_account']
         self.assertEqual(account, updated_account)
+

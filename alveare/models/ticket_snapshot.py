@@ -3,6 +3,7 @@ from alveare.common.database import DB
 from datetime import datetime
 
 class TicketSnapshot(DB.Model):
+    __pluralname__ = 'ticket_snapshots'
 
     id =            DB.Column(DB.Integer, primary_key=True)
     title =         DB.Column(DB.String, nullable=False)

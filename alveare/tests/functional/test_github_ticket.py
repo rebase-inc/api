@@ -1,5 +1,5 @@
 from . import AlveareRestTestCase
-from alveare.common.resource import AlveareResource
+from alveare.common.utils import AlveareResource
 from unittest import skip
 
 
@@ -17,10 +17,7 @@ class TestGithubTicketResource(AlveareRestTestCase):
 
     def test_create(self):
         ticket = self.r.get_any()
-        self.r.create(
-            project_id =    ticket['project_id'],
-            number =        1234,
-        )
+        self.r.create(project = ticket['project'], number = 1234)
 
     # TODO: should fail, but read-only remote tickets are not implemented yet
     def test_update(self):
@@ -34,5 +31,5 @@ class TestGithubTicketResource(AlveareRestTestCase):
 
     def test_delete_project(self):
         ticket = self.r.get_any()
-        self.delete_resource('projects/{}'.format(ticket['project_id']))
+        self.delete_resource('projects/{id}'.format(**ticket['project']))
         self.get_resource(self.r.url(ticket), 404)

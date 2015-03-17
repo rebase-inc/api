@@ -1,5 +1,5 @@
 from . import AlveareRestTestCase
-from alveare.common.resource import AlveareResource
+from alveare.common.utils import AlveareResource
 from unittest import skip
 
 
@@ -34,12 +34,12 @@ class TestProjectResource(AlveareRestTestCase):
         ticket = dict(
             title='Superb title',
             description='Lame description',
-            project_id=project['id']
+            project = dict(id=project['id'])
         )
         for i in range(50):
             ticket['title'] += ' #{}'.format(i)
             t.create(**ticket)
-        queried_project = self.get('project', project['id'])
+        queried_project = self.get_resource('projects/{id}'.format(**project))['project']
         self.assertTrue(queried_project)
         self.assertGreaterEqual(len(queried_project['tickets']), 50)
 

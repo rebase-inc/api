@@ -1,52 +1,33 @@
 
-from flask.ext.restful import Resource, abort
-from marshmallow import fields, Schema
+from flask.ext.restful import Resource
 from flask import jsonify, make_response, request
 
-from alveare.models.organization import Organization
+from alveare.models import Organization
 from alveare.views import organization
 from alveare.common.database import DB
+from alveare.common.rest import get_collection, add_to_collection, get_resource, update_resource, delete_resource
 
 class OrganizationCollection(Resource):
-
-    def get(self):
-        organizations = Organization.query.all()
-        #raise Exception(organizations)
-        response = jsonify(organizations = organization.serializer.dump(organizations, many=True).data)
-        return response
-
-    def post(self):
-        new_org = organization.deserializer.load(request.form or request.json).data
-
-        DB.session.add(new_org)
-        DB.session.commit()
-
-        response = jsonify(organization=organization.serializer.dump(new_org).data)
-        response.status_code = 201
-        return response
-
+    model = Organization
+    serializer = organization.serializer
+    deserializer = organization.deserializer
+    url = '/{}'.format(model.__pluralname__)
+    
+    def get(self): 
+        return get_collection(self.model, self.serializer)
+    def post(self): 
+        return add_to_collection(self.model, self.deserializer, self.serializer)
 
 class OrganizationResource(Resource):
-
-    def get(self, id):
-        an_organization = Organization.query.get_or_404(id)
-        return jsonify(organization = organization.serializer.dump(an_organization).data)
-
-    def put(self, id):
-        updated_organization = organization.update_deserializer.load(request.form or request.json).data
-
-        DB.session.add(updated_organization)
-        DB.session.commit()
-
-        response = jsonify(organization=organization.serializer.dump(updated_organization).data)
-        response.status_code = 200
-        return response
-
-
-    def delete(self, id):
-        an_organization = Organization.query.get_or_404(id)
-        DB.session.delete(an_organization)
-        DB.session.commit()
-        response = jsonify(message = 'Organization succesfully deleted')
-        response.status_code = 200
-        return response
+    model = Organization
+    serializer = organization.serializer
+    deserializer = organization.deserializer
+    update_deserializer = organization.update_deserializer
+    url = '/{}/<int:id>'.format(model.__pluralname__)
+    
+    def get(self, id): 
+        return get_resource(self.model, id, self.serializer)
+    def put(self, id): 
+        return update_resource(self.model, id, self.update_deserializer, self.serializer) 
+    def delete(self, id): 
+        return delete_resource(self.model, id)

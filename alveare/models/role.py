@@ -1,6 +1,7 @@
 from alveare.common.database import DB
 
 class Role(DB.Model):
+    __pluralname__ = 'roles'
 
     id =      DB.Column(DB.Integer, primary_key=True)
     user_id = DB.Column(DB.Integer, DB.ForeignKey('user.id'), nullable=False)

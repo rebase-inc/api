@@ -1,31 +1,26 @@
 from marshmallow import fields, Schema
+from flask.ext.restful import abort
+
 from alveare.models.internal_ticket import InternalTicket
 from alveare.models.project import Project
 from alveare.views.skill_requirement import SkillRequirementSchema
-from flask.ext.restful import abort
+from alveare.common.database import get_or_make_object
 
 class InternalTicketSchema(Schema):
-    id =            fields.Integer()
-    title =         fields.String()
-    description =   fields.String()
-    project_id =    fields.Integer()
+    id =          fields.Integer()
+    title =       fields.String(required=True)
+    description = fields.String(required=True)
+    project =     fields.Nested('ProjectSchema', only=('id',), required=True)
 
     skill_requirement =    fields.Nested(SkillRequirementSchema,  only=('id',))
     snapshots =             fields.Nested('TicketSnapshotSchema',   only=('id',), many=True)
     comments =              fields.Nested('CommentSchema',          only=('id',), many=True)
 
     def make_object(self, data):
-        if data.get('id'):
-            internal_ticket = InternalTicket.query.get_or_404(data['id'])
-            data.pop('id')
-            for field, value in data.items():
-                setattr(internal_ticket, field, value)
-            return internal_ticket
-        project = Project.query.get_or_404(data['project_id'])
-        new_internal_ticket = InternalTicket(project, data['title'], data['description'])
-        return new_internal_ticket
+        from alveare.models import InternalTicket
+        return get_or_make_object(InternalTicket, data) 
 
-
-deserializer =          InternalTicketSchema(skip_missing=True)
+serializer =            InternalTicketSchema(skip_missing=True)
+deserializer =          InternalTicketSchema(strict=True)
 update_deserializer =   InternalTicketSchema()
-serializer =            InternalTicketSchema()
+update_deserializer.make_object = lambda data: data 

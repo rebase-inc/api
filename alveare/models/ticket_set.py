@@ -4,6 +4,7 @@ from alveare.common.database import DB
 from alveare.models.bid_limit import BidLimit
 
 class TicketSet(DB.Model):
+    __pluralname__ = 'ticket_sets'
 
     id =         DB.Column(DB.Integer, primary_key=True)
     auction_id = DB.Column(DB.Integer, DB.ForeignKey('auction.id', ondelete='CASCADE'), nullable=False)

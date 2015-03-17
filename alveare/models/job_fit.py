@@ -3,6 +3,7 @@ from alveare.common.database import DB
 from alveare.models import Candidate
 
 class JobFit(DB.Model):
+    __pluralname__ = 'job_fits'
     __table_args__ = (DB.ForeignKeyConstraint(  ['contractor_id',           'auction_id'],
                                                 [Candidate.contractor_id, Candidate.ticket_set_id], ondelete='CASCADE'), {})
 

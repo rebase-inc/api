@@ -3,30 +3,24 @@ from alveare.models.github_ticket import GithubTicket
 from alveare.models.project import Project
 from alveare.views.skill_requirement import SkillRequirementSchema
 from flask.ext.restful import abort
+from alveare.common.database import get_or_make_object
 
 class GithubTicketSchema(Schema):
-    id =            fields.Integer()
-    title =         fields.String()
-    description =   fields.String()
-    project_id =    fields.Integer()
-    number =        fields.Integer()
+    id =          fields.Integer()
+    title =       fields.String()
+    description = fields.String()
+    project =     fields.Nested('ProjectSchema', only=('id',))
+    number =      fields.Integer()
 
     skill_requirement =    fields.Nested(SkillRequirementSchema,  only=('id',))
     snapshots =             fields.Nested('TicketSnapshotSchema',   only=('id',), many=True)
     comments =              fields.Nested('CommentSchema',          only=('id',), many=True)
 
     def make_object(self, data):
-        if data.get('id'):
-            github_ticket = GithubTicket.query.get_or_404(data['id'])
-            data.pop('id')
-            for field, value in data.items():
-                setattr(github_ticket, field, value)
-            return github_ticket
-        project = Project.query.get_or_404(data['project_id'])
-        new_github_ticket = GithubTicket(project, data['number'])
-        return new_github_ticket
+        from alveare.models import GithubTicket
+        return get_or_make_object(GithubTicket, data) 
 
-
-deserializer =          GithubTicketSchema(skip_missing=True)
-update_deserializer =   GithubTicketSchema()
 serializer =            GithubTicketSchema()
+deserializer =          GithubTicketSchema()
+update_deserializer =   GithubTicketSchema()
+update_deserializer.make_object = lambda data: data 

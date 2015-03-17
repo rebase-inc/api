@@ -2,6 +2,8 @@
 from alveare.common.database import DB
 
 class Project(DB.Model):
+    __pluralname__ = 'projects'
+
     id =                DB.Column(DB.Integer, primary_key=True)
     name =              DB.Column(DB.String, nullable=False)
     organization_id =   DB.Column(DB.Integer, DB.ForeignKey('organization.id', ondelete='CASCADE'), nullable=False)

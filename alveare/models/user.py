@@ -3,6 +3,7 @@ import datetime
 from alveare.common.database import DB
 
 class User(DB.Model):
+    __pluralname__ = 'users'
 
     id =                DB.Column(DB.Integer,   primary_key=True)
     first_name =        DB.Column(DB.String,    nullable=False)

@@ -4,6 +4,7 @@ from alveare.common.database import DB
 from alveare.models.ticket_snapshot import TicketSnapshot
 
 class BidLimit(DB.Model):
+    __pluralname__ = 'bid_limits'
 
     id =            DB.Column(DB.Integer, primary_key=True)
     price =         DB.Column(DB.Integer, nullable=False)

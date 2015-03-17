@@ -5,6 +5,7 @@ from alveare.models.user import User
 from alveare.common.database import DB
 
 class Contractor(Role):
+    __pluralname__ = 'contractors'
 
     id =            DB.Column(DB.Integer, DB.ForeignKey('role.id'), primary_key=True)
     busyness =      DB.Column(DB.Integer, nullable=False, default=1)

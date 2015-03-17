@@ -1,6 +1,7 @@
 from alveare.common.database import DB
 
 class Bid(DB.Model):
+    __pluralname__ = 'bids'
 
     id =        DB.Column(DB.Integer, primary_key=True)
 

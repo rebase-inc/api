@@ -5,7 +5,6 @@ import unittest
 from alveare import models, create_app
 from alveare.common.database import DB
 from alveare.common.mock import create_the_world
-from alveare.common.resource import plural
 
 class AlveareRestTestCase(unittest.TestCase):
 
@@ -38,25 +37,17 @@ class AlveareRestTestCase(unittest.TestCase):
         # see http://stackoverflow.com/questions/16908943/flask-display-json-in-a-neat-way
         response = self.client.get(url, headers={'X-Requested-With': 'XMLHttpRequest'})
         self.assertEqual(response.status_code, expected_code,
-            error_msg.format(expected_code, response.status_code, response.data))
+            error_msg.format(expected_code, response.status_code, 'GET to {} failed: {}'.format(url, response.data)))
         self.assertEqual(response.headers['Content-Type'], 'application/json',
             error_msg.format('application/json', response.headers['Content-Type'], response.data))
         return json.loads(response.data.decode('utf-8'))
-
-    def get(self, resource, resource_id):
-        ''' helper function that returns the actual dictionary of fields for 'resource'/'resource_id'
-        '''
-        resources = plural(resource)
-        response = self.get_resource('{}/{}'.format(resources, resource_id))
-        self.assertIn(resource, response)
-        return response[resource]
 
     def post_resource(self, url, data, expected_code = 201):
         error_msg = 'Expected {}, got {}. Data: {}'
         response = self.client.post(url, data = json.dumps(data),
                 headers={'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json'})
         self.assertEqual(response.status_code, expected_code,
-            error_msg.format(expected_code, response.status_code, response.data))
+            error_msg.format(expected_code, response.status_code, 'POST to {} failed: {}'.format(url, response.data)))
         self.assertEqual(response.headers['Content-Type'], 'application/json',
             error_msg.format('application/json', response.headers['Content-Type'], response.data))
         return json.loads(response.data.decode('utf-8'))
@@ -66,7 +57,7 @@ class AlveareRestTestCase(unittest.TestCase):
         response = self.client.put(url, data = json.dumps(data),
                 headers={'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json'})
         self.assertEqual(response.status_code, expected_code,
-            error_msg.format(expected_code, response.status_code, response.data))
+            error_msg.format(expected_code, response.status_code, 'PUT to {} failed: {}'.format(url, response.data)))
         self.assertEqual(response.headers['Content-Type'], 'application/json',
             error_msg.format('application/json', response.headers['Content-Type'], response.data))
         return json.loads(response.data.decode('utf-8'))
@@ -75,7 +66,7 @@ class AlveareRestTestCase(unittest.TestCase):
         error_msg = 'Expected {}, got {}. Data: {}'
         response = self.client.delete(url, headers={'X-Requested-With': 'XMLHttpRequest'})
         self.assertEqual(response.status_code, expected_code,
-            error_msg.format(expected_code, response.status_code, response.data))
+            error_msg.format(expected_code, response.status_code, 'DELETE to {} failed: {}'.format(url, response.data)))
         self.assertEqual(response.headers['Content-Type'], 'application/json',
             error_msg.format('application/json', response.headers['Content-Type'], response.data))
         return json.loads(response.data.decode('utf-8'))

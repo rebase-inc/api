@@ -2,16 +2,15 @@
 from flask.ext.restful import Resource
 from flask import jsonify, make_response, request
 
-from alveare.models import BankAccount
-from alveare.views import bank_account
+from alveare.models import GithubTicket
+from alveare.views import github_ticket
 from alveare.common.database import DB
 from alveare.common.rest import get_collection, add_to_collection, get_resource, update_resource, delete_resource
 
-
-class BankAccountCollection(Resource):
-    model = BankAccount
-    serializer = bank_account.serializer
-    deserializer = bank_account.deserializer
+class GithubTicketCollection(Resource):
+    model = GithubTicket
+    serializer = github_ticket.serializer
+    deserializer = github_ticket.deserializer
     url = '/{}'.format(model.__pluralname__)
     
     def get(self): 
@@ -19,11 +18,11 @@ class BankAccountCollection(Resource):
     def post(self): 
         return add_to_collection(self.model, self.deserializer, self.serializer)
 
-class BankAccountResource(Resource):
-    model = BankAccount
-    serializer = bank_account.serializer
-    deserializer = bank_account.deserializer
-    update_deserializer = bank_account.update_deserializer
+class GithubTicketResource(Resource):
+    model = GithubTicket
+    serializer = github_ticket.serializer
+    deserializer = github_ticket.deserializer
+    update_deserializer = github_ticket.update_deserializer
     url = '/{}/<int:id>'.format(model.__pluralname__)
     
     def get(self, id): 

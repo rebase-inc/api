@@ -2,6 +2,8 @@
 from alveare.common.database import DB
 
 class TermSheet(DB.Model):
+    __pluralname__ = 'term_sheets'
+
     id = DB.Column(DB.Integer, primary_key=True)
     legalese = DB.Column(DB.String, nullable=False)
 

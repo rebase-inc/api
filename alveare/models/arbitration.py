@@ -5,6 +5,8 @@ from .mediation import Mediation
 from alveare.common.database import DB
 
 class Arbitration(DB.Model):
+    __pluralname__ = 'arbitrations'
+
     id =            DB.Column(DB.Integer, primary_key=True)
     mediation_id =  DB.Column(DB.Integer, DB.ForeignKey('mediation.id', ondelete='CASCADE'), nullable=False)
 

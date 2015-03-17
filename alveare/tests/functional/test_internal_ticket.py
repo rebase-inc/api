@@ -1,5 +1,5 @@
 from . import AlveareRestTestCase
-from alveare.common.resource import AlveareResource
+from alveare.common.utils import AlveareResource
 from unittest import skip
 
 
@@ -17,11 +17,7 @@ class TestInternalTicketResource(AlveareRestTestCase):
 
     def test_create(self):
         project = AlveareResource(self, 'project').get_any()
-        self.r.create(
-            title =         'great title',
-            description =   'awesome description',
-            project_id =    project['id']
-        )
+        self.r.create(title = 'Foo', description = 'Bar', project = dict(id=project['id']))
 
     def test_update(self):
         ticket = self.r.get_any()
@@ -36,5 +32,5 @@ class TestInternalTicketResource(AlveareRestTestCase):
 
     def test_delete_project(self):
         ticket = self.r.get_any()
-        self.delete_resource('projects/{}'.format(ticket['project_id']))
+        self.delete_resource('projects/{}'.format(ticket['project']['id']))
         self.get_resource(self.r.url(ticket), 404)

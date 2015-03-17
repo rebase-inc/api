@@ -2,6 +2,7 @@
 from flask.ext.restful import Resource
 from flask import jsonify, make_response, request
 from alveare.common.database import DB
+from alveare.common.rest import get_collection, add_to_collection, get_resource, update_resource, delete_resource
 
 def make_collection_and_resource_classes(
     Model,
@@ -12,46 +13,19 @@ def make_collection_and_resource_classes(
     update_deserializer
 ):
     class AlveareCollection(Resource):
-
         def get(self):
-            things = Model.query.all()
-            response = jsonify(**{ models: serializer.dump(things, many=True).data })
-            return response
-
+            return get_collection(Model, serializer)
         def post(self):
-            new_thing = deserializer.load(request.form or request.json).data
-
-            DB.session.add(new_thing)
-            DB.session.commit()
-
-            response = jsonify(**{model: serializer.dump(new_thing).data})
-            response.status_code = 201
-            return response
-
+            return add_to_collection(Model, deserializer, serializer)
 
     class AlveareResource(Resource):
-
         def get(self, id):
-            thing = Model.query.get_or_404(id)
-            return jsonify(**{model: serializer.dump(thing).data})
-
+            return get_resource(Model, id, serializer)
         def put(self, id):
-            updated_thing = update_deserializer.load(request.form or request.json).data
-
-            DB.session.add(updated_thing)
-            DB.session.commit()
-
-            response = jsonify(**{model: serializer.dump(updated_thing).data})
-            response.status_code = 200
-            return response
-
+            return update_resource(Model, id, update_deserializer, serializer)
         def delete(self, id):
-            DB.session.query(Model).filter_by(id=id).delete()
-            DB.session.commit()
-
-            response = jsonify(message = '{} succesfully deleted'.format(Model.__name__))
-            response.status_code = 200
-            return response
+            return delete_resource(Model, id)
+    
     return AlveareCollection, AlveareResource
 
 def add_alveare_resource(

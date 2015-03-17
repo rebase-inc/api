@@ -8,6 +8,7 @@ from alveare.models.organization import Organization
 from alveare.common.database import DB
 
 class Manager(Role):
+    __pluralname__ = 'managers'
     id =                DB.Column(DB.Integer, DB.ForeignKey('role.id', ondelete='CASCADE'), primary_key=True)
     organization_id =   DB.Column(DB.Integer, DB.ForeignKey('organization.id', ondelete='CASCADE'))
 

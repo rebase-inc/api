@@ -10,27 +10,6 @@ def plural(text):
     else:
         return text+'s'
 
-def get_or_make_object(model, data):
-    if 'id' in data:
-        instance = model.query.get(data.get('id'))
-        if not instance:
-            data['__name'] = model.__tablename__
-            raise ValueError('No {__name} with id {id}'.format(**data))
-        return instance
-    return model(**data)
-
-def update_object(model, data):
-    if 'id' in data:
-        instance = get_or_make_object(model, data)
-        for key, value in data.items():
-            if key == 'id': continue
-            if getattr(instance, key) != value:
-                setattr(instance, key, value)
-        return instance
-    else:
-        data['__name'] = model.__tablename__
-        raise ValueError('No {__name} id given!'.format(**data))
-
 class AlveareResource(object):
     def __init__(self, test, resource):
         '''
@@ -101,29 +80,16 @@ class AlveareResource(object):
         self.test.get_resource(resource_url, 404)
         return resource
 
-    def dict_in(self, a, b):
-        for key, value in a.items():
-            self.test.assertIn(key, b)
-            self.is_in(value, b[key])
-
-    type_to_compare = {
-        type(dict()):   dict_in,
-        #type(list):    list_in, # TODO implement if need be
-        #type(set):     set_in
-    }
-
-    def is_in(self, a, b):
+    def assertComposite(self, first, second):
         '''
-            Verify that a is found in b, if a and b are composites.
+            Verify that first is found in second, if first and second are composites.
             If they are scalars, verify that they are equal.
         '''
-        if type(a) != type(b):
-            raise ValueError('Trying to compare {} to {}'.format(type(a), type(b)))
-        if type(a) in AlveareResource.type_to_compare.keys():
-            try:
-                AlveareResource.type_to_compare[type(a)](self, a, b)
-            except AssertionError as e:
-                raise ValueError('Caught exception {}\nwhile comparing:\n {}\nto\n{}'.format(e, a, b))
+        if type(first) != type(second):
+            raise ValueError('Trying to compare {} to {}'.format(type(first), type(second)))
+        if isinstance(first, dict):
+            for key, value in first.items():
+                self.test.assertEqual(value, second[key]) 
         else:
             self.test.assertEqual(a, b)
 
@@ -131,7 +97,7 @@ class AlveareResource(object):
         response = rest_method(resource_url, resource)
         self.test.assertIn(self.resource, response)
         new_res = response[self.resource]
-        self.is_in(resource, new_res)
+        self.assertComposite(resource, new_res)
 
         # verify the new resource has been committed to the database
         # by doing an independent request
@@ -139,7 +105,7 @@ class AlveareResource(object):
         self.test.assertIn(self.resource, response)
         queried_resource = response[self.resource]
         self.test.assertTrue(queried_resource)
-        self.is_in(resource, queried_resource)
+        self.assertComposite(resource, queried_resource)
         return queried_resource
 
     def create(self, **resource):
