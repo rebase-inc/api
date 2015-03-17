@@ -4,7 +4,7 @@ from unittest import skip
 
 class TestContractResource(AlveareRestTestCase):
     def setUp(self):
-        self.resource = AlveareResource(self, 'contract')
+        self.resource = AlveareResource(self, 'Contract')
         super().setUp()
 
     def test_get_one(self):

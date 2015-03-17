@@ -4,7 +4,7 @@ from unittest import skip
 
 class TestTicketSetResource(AlveareRestTestCase):
     def setUp(self):
-        self.resource = AlveareResource(self, 'ticket_set')
+        self.resource = AlveareResource(self, 'TicketSet')
         super().setUp()
 
     def test_get_one(self):

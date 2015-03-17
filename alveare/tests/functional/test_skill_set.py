@@ -5,7 +5,7 @@ from unittest import skip
 
 class TestSkillSetResource(AlveareRestTestCase):
     def setUp(self):
-        self.r = AlveareResource(self, 'skill_set')
+        self.r = AlveareResource(self, 'SkillSet')
         super().setUp()
 
     def test_get_one(self):
@@ -16,7 +16,7 @@ class TestSkillSetResource(AlveareRestTestCase):
         self.assertEqual(skill_set['contractor']['id'], skill_set['id'])
 
     def test_create(self):
-        contractor = AlveareResource(self, 'contractor').get_any()
+        contractor = AlveareResource(self, 'Contractor').get_any()
         skill_set = dict(
             contractor={ 'id': contractor['id'] }
         )
@@ -32,5 +32,5 @@ class TestSkillSetResource(AlveareRestTestCase):
 
     def test_delete_contractor(self):
         skill_set = self.r.get_any()
-        c = AlveareResource(self, 'contractor').delete(skill_set['contractor'])
+        c = AlveareResource(self, 'Contractor').delete(skill_set['contractor'])
         self.get_resource(self.r.url(skill_set), 404)

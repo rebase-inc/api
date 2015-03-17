@@ -13,9 +13,9 @@ class TicketMatch(DB.Model):
     auction_id =            DB.Column(DB.Integer, nullable=True)
     score =                 DB.Column(DB.Integer, nullable=False)
 
-    skill_set =             DB.relationship('SkillSet',             backref='ticket_matches', uselist=False)
-    skill_requirement =     DB.relationship('SkillRequirement',    backref='ticket_matches', uselist=False)
-    job_fit =               DB.relationship('JobFit', backref='ticket_matches', uselist=False)
+    skill_set =             DB.relationship('SkillSet',         backref='ticket_matches', uselist=False)
+    skill_requirement =     DB.relationship('SkillRequirement', backref='ticket_matches', uselist=False)
+    job_fit =               DB.relationship('JobFit',           backref='ticket_matches', uselist=False)
 
     def __init__(self, skill_set, skill_requirement, score):
         self.skill_set = skill_set

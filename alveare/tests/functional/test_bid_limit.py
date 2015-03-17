@@ -4,7 +4,7 @@ from unittest import skip
 
 class TestBidLimitResource(AlveareRestTestCase):
     def setUp(self):
-        self.resource = AlveareResource(self, 'bid_limit')
+        self.resource = AlveareResource(self, 'BidLimit')
         super().setUp()
 
     def test_get_one(self):

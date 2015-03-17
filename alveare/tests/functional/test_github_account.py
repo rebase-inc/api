@@ -5,7 +5,7 @@ from unittest import skip
 
 class TestGithubAccountResource(AlveareRestTestCase):
     def setUp(self):
-        self.r = AlveareResource(self, 'github_account')
+        self.r = AlveareResource(self, 'GithubAccount')
         super().setUp()
 
     def test_get_one(self):

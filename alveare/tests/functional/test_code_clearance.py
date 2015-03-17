@@ -5,7 +5,7 @@ from unittest import skip
 
 class TestCodeClearanceResource(AlveareRestTestCase):
     def setUp(self):
-        self.r = AlveareResource(self, 'code_clearance')
+        self.r = AlveareResource(self, 'CodeClearance')
         super().setUp()
 
     def test_get_one(self):
@@ -16,8 +16,8 @@ class TestCodeClearanceResource(AlveareRestTestCase):
         self.assertTrue(code_clearance['project'])
 
     def test_create(self):
-        contractor =    AlveareResource(self, 'contractor').get_any()
-        project =       AlveareResource(self, 'project').get_any()
+        contractor =    AlveareResource(self, 'Contractor').get_any()
+        project =       AlveareResource(self, 'Project').get_any()
         code_clearance = dict(
             pre_approved=   True,
             project = dict(id=project['id']),

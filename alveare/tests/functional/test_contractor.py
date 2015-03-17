@@ -5,7 +5,7 @@ from unittest import skip
 
 class TestContractorResource(AlveareRestTestCase):
     def setUp(self):
-        self.r = AlveareResource(self, 'contractor')
+        self.r = AlveareResource(self, 'Contractor')
         super().setUp()
 
     def test_get_one(self):
@@ -15,7 +15,7 @@ class TestContractorResource(AlveareRestTestCase):
 
     def test_remote_work_history(self):
         contractor = self.r.get_any()
-        rwh_res = AlveareResource(self, 'remote_work_history')
+        rwh_res = AlveareResource(self, 'RemoteWorkHistory')
         new_rwh = rwh_res.create(
             id=contractor['id']
         )
@@ -25,8 +25,8 @@ class TestContractorResource(AlveareRestTestCase):
 
     def test_code_clearance(self):
         contractor = self.r.get_any()
-        project = AlveareResource(self, 'project').get_any()
-        cc = AlveareResource(self, 'code_clearance')
+        project = AlveareResource(self, 'Project').get_any()
+        cc = AlveareResource(self, 'CodeClearance')
         code_clearance = cc.create(
             pre_approved =   True,
             project = {'id': project['id']},
@@ -43,7 +43,7 @@ class TestContractorResource(AlveareRestTestCase):
         self.assertFalse(self.r.get(contractor)['clearances'])
 
     def test_create(self):
-        user = AlveareResource(self, 'user').get_any()
+        user = AlveareResource(self, 'User').get_any()
         user.pop('last_seen')
         user.pop('email')
         self.r.create(user=user)

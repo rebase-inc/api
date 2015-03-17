@@ -5,7 +5,7 @@ from unittest import skip
 
 class TestRemoteWorkHistoryResource(AlveareRestTestCase):
     def setUp(self):
-        self.r = AlveareResource(self, 'remote_work_history')
+        self.r = AlveareResource(self, 'RemoteWorkHistory')
         super().setUp()
 
     def test_get_one(self):
@@ -17,7 +17,7 @@ class TestRemoteWorkHistoryResource(AlveareRestTestCase):
         self.assertEqual(contractor['remote_work_history']['id'], contractor['id'])
 
     def test_create(self):
-        contractor = AlveareResource(self, 'contractor').get_any()
+        contractor = AlveareResource(self, 'Contractor').get_any()
         new_rwh = self.r.create(
             id=contractor['id']
         )
@@ -33,7 +33,7 @@ class TestRemoteWorkHistoryResource(AlveareRestTestCase):
     def test_add_and_remove_accounts(self):
         rwh = self.r.get_any()
         rwh_id = rwh['id']
-        new_account = AlveareResource(self, 'github_account').create(
+        new_account = AlveareResource(self, 'GithubAccount').create(
             remote_work_history = dict(id=rwh_id),
             user_name='george_washington',
             auth_token='1234123415245353543'
