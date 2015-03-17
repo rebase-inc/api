@@ -8,11 +8,11 @@ from unittest import skip
 
 class TestRemoteTicketResource(AlveareRestTestCase):
     def setUp(self):
-        self.r = AlveareResource(self, 'RemoteTicket')
+        self.remote_ticket_resource = AlveareResource(self, 'RemoteTicket')
         super().setUp()
 
     def test_get_one(self):
-        ticket = self.r.get_any()
+        ticket = self.remote_ticket_resource.get_any()
         self.assertTrue(ticket) # mock should have created at least one account
         self.assertTrue(ticket['id'])
         self.assertTrue(ticket['skill_requirement'])
@@ -20,15 +20,15 @@ class TestRemoteTicketResource(AlveareRestTestCase):
 
     # TODO: should fail, but read-only remote tickets are not implemented yet
     def test_update(self):
-        ticket = self.r.get_any()
+        ticket = self.remote_ticket_resource.get_any()
         ticket['title'] = 'Compelling title'
         ticket['description'] = 'Detailed description'
-        self.r.update(**ticket) 
+        self.remote_ticket_resource.update(**ticket) 
 
     def test_delete(self):
-        self.r.delete_any()
+        self.remote_ticket_resource.delete_any()
 
     def test_delete_project(self):
-        ticket = self.r.get_any()
+        ticket = self.remote_ticket_resource.get_any()
         self.delete_resource('projects/{id}'.format(**ticket['project']))
-        self.get_resource(self.r.url(ticket), 404)
+        self.get_resource(self.remote_ticket_resource.url(ticket), 404)

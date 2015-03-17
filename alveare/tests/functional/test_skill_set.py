@@ -5,11 +5,11 @@ from unittest import skip
 
 class TestSkillSetResource(AlveareRestTestCase):
     def setUp(self):
-        self.r = AlveareResource(self, 'SkillSet')
+        self.skill_set_resource = AlveareResource(self, 'SkillSet')
         super().setUp()
 
     def test_get_one(self):
-        skill_set = self.r.get_any()
+        skill_set = self.skill_set_resource.get_any()
         self.assertTrue(skill_set) # mock should have created at least one account
         self.assertTrue(skill_set['id'])
         self.assertTrue(skill_set['contractor'])
@@ -20,17 +20,17 @@ class TestSkillSetResource(AlveareRestTestCase):
         skill_set = dict(
             contractor={ 'id': contractor['id'] }
         )
-        new_skill_set = self.r.create(**skill_set)
+        new_skill_set = self.skill_set_resource.create(**skill_set)
 
     def test_update(self):
-        skill_set = self.r.get_any()
+        skill_set = self.skill_set_resource.get_any()
         # nothing to update yet!
-        self.r.update(**skill_set) 
+        self.skill_set_resource.update(**skill_set) 
 
     def test_delete(self):
-        self.r.delete_any()
+        self.skill_set_resource.delete_any()
 
     def test_delete_contractor(self):
-        skill_set = self.r.get_any()
-        c = AlveareResource(self, 'Contractor').delete(skill_set['contractor'])
-        self.get_resource(self.r.url(skill_set), 404)
+        skill_set = self.skill_set_resource.get_any()
+        AlveareResource(self, 'Contractor').delete(skill_set['contractor'])
+        self.get_resource(self.skill_set_resource.url(skill_set), 404)

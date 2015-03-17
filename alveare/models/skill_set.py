@@ -6,6 +6,8 @@ class SkillSet(DB.Model):
 
     id =  DB.Column(DB.Integer, DB.ForeignKey('contractor.id', ondelete='CASCADE'), primary_key=True)
 
+    ticket_matches = DB.relationship('TicketMatch', backref='skill_set', cascade="all, delete-orphan", passive_deletes=True)
+
     def __init__(self, contractor):
         self.contractor = contractor
 
