@@ -73,6 +73,10 @@ def register_routes(api):
     api.add_resource(AuctionEndEvents, '/auctions/<int:id>/end_events', endpoint='auction_end_events')
     api.add_resource(AuctionFailEvents, '/auctions/<int:id>/fail_events', endpoint='auction_fail_events')
 
+    from alveare.resources.ticket_match import TicketMatchCollection, TicketMatchResource
+    api.add_resource(TicketMatchCollection, '/ticket_matches', endpoint='ticket_matches')
+    api.add_resource(TicketMatchResource, '/ticket_matches/<int:skill_requirement_id>/<int:skill_set_id>', endpoint='ticket_match')
+
     from alveare.models.github_account import GithubAccount
     import alveare.views.github_account as github_account_view
     add_alveare_resource(

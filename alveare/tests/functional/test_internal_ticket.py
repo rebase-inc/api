@@ -5,7 +5,7 @@ from unittest import skip
 
 class TestInternalTicketResource(AlveareRestTestCase):
     def setUp(self):
-        self.r = AlveareResource(self, 'internal_ticket')
+        self.r = AlveareResource(self, 'InternalTicket')
         super().setUp()
 
     def test_get_one(self):
@@ -16,7 +16,7 @@ class TestInternalTicketResource(AlveareRestTestCase):
         self.assertEqual(ticket['skill_requirement']['id'], ticket['id'])
 
     def test_create(self):
-        project = AlveareResource(self, 'project').get_any()
+        project = AlveareResource(self, 'Project').get_any()
         self.r.create(
             title =         'great title',
             description =   'awesome description',

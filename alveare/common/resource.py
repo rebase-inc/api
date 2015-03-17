@@ -1,4 +1,8 @@
 from random import choice, seed
+import alveare.models
+from inspect import getmembers, isclass
+from sqlalchemy.inspection import inspect
+
 
 def plural(text):
     known_forms = {
@@ -10,20 +14,24 @@ def plural(text):
     else:
         return text+'s'
 
-def get_or_make_object(model, data):
-    if 'id' in data:
-        instance = model.query.get(data.get('id'))
+def primary_key(model):
+    return list(map(lambda key: key.name, inspect(model).primary_key))
+
+def get_or_make_object(model, data, ids=['id']):
+    if ids[0] in data:
+        id = tuple( data[key] for key in ids )
+        instance = model.query.get(id)
         if not instance:
             data['__name'] = model.__tablename__
-            raise ValueError('No {__name} with id {id}'.format(**data))
+            raise ValueError('No {__name} with id {id}'.format(id=id, **data))
         return instance
     return model(**data)
 
-def update_object(model, data):
-    if 'id' in data:
-        instance = get_or_make_object(model, data)
+def update_object(model, data, ids=['id']):
+    if ids[0] in data:
+        instance = get_or_make_object(model, data, ids)
         for key, value in data.items():
-            if key == 'id': continue
+            if key in ids: continue
             if getattr(instance, key) != value:
                 setattr(instance, key, value)
         return instance
@@ -32,29 +40,34 @@ def update_object(model, data):
         raise ValueError('No {__name} id given!'.format(**data))
 
 class AlveareResource(object):
+
+    all_models = dict(getmembers(alveare.models, predicate=isclass))
+
     def __init__(self, test, resource):
         '''
         test is an AlveareTestCase
-        resource is a string such as 'organization' or 'remote_work_history', matching the singular
-        name of a resource
+        resource is a string such as 'Organization' or 'RemoteWorkHistory', matching the name of a model
         '''
+        if resource not in self.all_models:
+            raise ValueError('Unknown model "{}"'.format(resource))
+        model = self.all_models[resource]
         self.test = test
-        self.resource = resource
+        self.resource = model.__tablename__
         self.col_url = plural(self.resource)
-        self.url_format = (self.col_url+'/{}').format
+        url_format = ''
+        self.primary_key = primary_key(model)
+        for key in self.primary_key:
+            url_format += '/{}'
+        self.url_format = (self.col_url+url_format).format
 
     def url(self, resource):
         ''' returns the URL uniquely identifying 'resource'
         resource can be a dictionary (containing the primary keys) or an integer.
         If resource is an integer, the returned URL will be 'self.col_url+'/{resource}'
-        if resource is a dictionary, the default implementation will assume the primary key is 'id'.
-        You must therefore redefine this method for the dictionary case if your primary keys is not 'id'
-        or is composite.
         '''
         if isinstance(resource, int):
             return self.url_format(resource)
-        else:
-            return self.url_format(resource['id'])
+        return self.url_format(*(map(lambda key: resource[key], self.primary_key)))
 
     def get(self, resource, expected_status=200):
         ''' helper function that returns the actual dictionary of fields for 'resource'/'resource_id'

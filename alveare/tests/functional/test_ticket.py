@@ -8,7 +8,7 @@ from unittest import skip
 
 class TestTicketResource(AlveareRestTestCase):
     def setUp(self):
-        self.r = AlveareResource(self, 'ticket')
+        self.r = AlveareResource(self, 'Ticket')
         super().setUp()
 
     def test_get_one(self):

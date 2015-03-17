@@ -143,10 +143,12 @@ def create_some_tickets(db, ticket_titles=None):
     db.session.add_all(tickets)
     return tickets
 
-def create_ticket_matches(db):
+def create_ticket_matches(db, tickets=None, contractor=None):
     from alveare.models import TicketMatch
-    tickets = create_some_tickets(db)
-    contractor = create_one_contractor(db)
+    if not tickets:
+        tickets = create_some_tickets(db)
+    if not contractor:
+        contractor = create_one_contractor(db)
     ticket_matches = []
     for ticket in tickets:
         ticket_matches.append(TicketMatch(contractor.skill_set, ticket.skill_requirement, 100))
@@ -258,9 +260,10 @@ def create_the_world(db):
     create_one_user(db, 'Steve', 'Gildred', 'steve@alveare.io')
     manager_andrew = create_one_manager(db, andrew) # also creates an organization
     manhattan_project = create_one_github_project(db, manager_andrew.organization, 'Manhattan')
-    [ create_one_github_ticket(db, ticket_number, manhattan_project) for ticket_number in range(10) ]
+    manhattan_tickets = [ create_one_github_ticket(db, ticket_number, manhattan_project) for ticket_number in range(10) ]
     rapha_contractor = create_one_contractor(db, rapha)
     andrew_contractor = create_one_contractor(db, andrew)
+    manhattan_ticket_matches = create_ticket_matches(db, manhattan_tickets, rapha_contractor)
     create_one_code_clearance(db, manhattan_project, rapha_contractor, pre_approved=True)
     create_one_code_clearance(db, manhattan_project, andrew_contractor, pre_approved=False)
     create_one_bank_account(db, rapha_contractor)

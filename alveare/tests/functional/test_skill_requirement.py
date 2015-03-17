@@ -8,7 +8,7 @@ from unittest import skip
 
 class TestSkillRequirementResource(AlveareRestTestCase):
     def setUp(self):
-        self.r = AlveareResource(self, 'skill_requirement')
+        self.r = AlveareResource(self, 'SkillRequirement')
         super().setUp()
 
     def test_get_one(self):

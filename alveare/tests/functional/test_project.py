@@ -5,7 +5,7 @@ from unittest import skip
 
 class TestProjectResource(AlveareRestTestCase):
     def setUp(self):
-        self.r = AlveareResource(self, 'project')
+        self.r = AlveareResource(self, 'Project')
         super().setUp()
 
     def test_get_one(self):
@@ -16,7 +16,7 @@ class TestProjectResource(AlveareRestTestCase):
 
     def test_delete(self):
         project = self.r.delete_any()
-        AlveareResource(self, 'code_repository').get(project['code_repository'], 404)
+        AlveareResource(self, 'CodeRepository').get(project['code_repository'], 404)
 
     def test_delete_organization(self):
         project = self.r.get_any()
@@ -30,7 +30,7 @@ class TestProjectResource(AlveareRestTestCase):
 
     def test_add_and_remove_tickets(self):
         project = self.r.get_any()
-        t = AlveareResource(self, 'internal_ticket')
+        t = AlveareResource(self, 'InternalTicket')
         ticket = dict(
             title='Superb title',
             description='Lame description',
@@ -48,10 +48,10 @@ class TestProjectResource(AlveareRestTestCase):
             t.delete(one_ticket)
 
     def test_add_and_remove_code_clearance(self):
-        contractor = AlveareResource(self, 'contractor').get_any()
+        contractor = AlveareResource(self, 'Contractor').get_any()
         project = self.r.get_any()
         code_clearance = dict(pre_approved=True, project={'id': project['id']}, contractor={'id': contractor['id']})
-        cc = AlveareResource(self, 'code_clearance')
+        cc = AlveareResource(self, 'CodeClearance')
         new_code_clearance = cc.create(**code_clearance)
 
         queried_project = self.r.get(project['id'])
