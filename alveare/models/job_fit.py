@@ -4,12 +4,14 @@ from alveare.models import Candidate
 
 class JobFit(DB.Model):
     __pluralname__ = 'job_fits'
-    __table_args__ = (DB.ForeignKeyConstraint(  ['contractor_id',           'auction_id'],
-                                                [Candidate.contractor_id, Candidate.ticket_set_id], ondelete='CASCADE'), {})
+    __table_args__ = (DB.ForeignKeyConstraint(  ['contractor_id',           'ticket_set_id'],
+                                                [Candidate.contractor_id,   Candidate.ticket_set_id], ondelete='CASCADE'), {})
 
     contractor_id =         DB.Column(DB.Integer,  primary_key=True)
-    auction_id =            DB.Column(DB.Integer,  primary_key=True)
+    ticket_set_id =         DB.Column(DB.Integer,  primary_key=True)
     score =                 DB.Column(DB.Integer, nullable=False, default=0)
+
+    ticket_matches = DB.relationship('TicketMatch', backref='job_fit', cascade="all")
 
     def __init__(self, candidate, ticket_matches):
         if not ticket_matches:

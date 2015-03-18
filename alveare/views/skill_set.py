@@ -4,7 +4,7 @@ from marshmallow import fields, Schema
 from alveare.models.skill_set import SkillSet
 from alveare.models.contractor import Contractor
 from alveare.views.contractor import ContractorSchema
-from alveare.common.database import get_or_make_object, update_object
+from alveare.common.database import get_or_make_object
 
 class SkillSetSchema(Schema):
     id =            fields.Integer()

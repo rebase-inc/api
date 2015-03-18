@@ -2,7 +2,7 @@ from marshmallow import fields, Schema
 from alveare.models.github_account import GithubAccount
 from alveare.models.remote_work_history import RemoteWorkHistory
 from flask.ext.restful import abort
-from alveare.common.database import get_or_make_object, update_object
+from alveare.common.database import get_or_make_object
 
 class GithubAccountSchema(Schema):
     id =                        fields.Integer()

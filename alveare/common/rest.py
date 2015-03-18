@@ -19,9 +19,9 @@ def get_resource(model, instance_id, serializer):
     instance = model.query.get_or_404(instance_id)
     return jsonify(**{model.__tablename__: serializer.dump(instance).data})
 
-def update_resource(model, instance_id, deserializer, serializer):
+def update_resource(model, instance_id, update_deserializer, serializer):
     instance = model.query.get_or_404(instance_id)    
-    fields_to_update = deserializer.load(request.form or request.json).data
+    fields_to_update = update_deserializer.load(request.form or request.json).data
     for field, value in fields_to_update.items():
         if getattr(instance, field) != value:
             setattr(instance, field, value)

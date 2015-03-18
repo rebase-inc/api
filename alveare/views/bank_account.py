@@ -4,7 +4,7 @@ from flask.ext.restful import abort
 from alveare.models.bank_account import BankAccount
 from alveare.models.organization import Organization
 from alveare.models.contractor import Contractor
-from alveare.common.database import get_or_make_object, update_object
+from alveare.common.database import get_or_make_object
 
 class BankAccountSchema(Schema):
     id =             fields.Integer()

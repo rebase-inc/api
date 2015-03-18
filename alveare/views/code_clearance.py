@@ -5,7 +5,7 @@ from alveare.models.project import Project
 from alveare.models.contractor import Contractor
 from alveare.views.project import ProjectSchema
 from alveare.views.contractor import ContractorSchema
-from alveare.common.database import get_or_make_object, update_object
+from alveare.common.database import get_or_make_object
 
 class CodeClearanceSchema(Schema):
     id =           fields.Integer()
