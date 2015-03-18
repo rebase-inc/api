@@ -89,14 +89,15 @@ def register_routes(api):
     api.add_resource(TicketMatchCollection, '/ticket_matches', endpoint='ticket_matches')
     api.add_resource(TicketMatchResource, '/ticket_matches/<int:skill_requirement_id>/<int:skill_set_id>', endpoint='ticket_match')
 
+    from alveare.resources.candidate import CandidateCollection, CandidateResource
+    api.add_resource(CandidateCollection, '/candidates', endpoint='candidates')
+    api.add_resource(CandidateResource, '/candidates/<int:contractor_id>/<int:ticket_set_id>', endpoint='candidate')
+
     from alveare.models.github_account import GithubAccount
     import alveare.views.github_account as github_account_view
     add_alveare_resource(
         api,
         GithubAccount,
-        'github_account',
-        'github_accounts',
-        '/<int:id>',
         github_account_view.serializer,
         github_account_view.deserializer,
         github_account_view.update_deserializer
@@ -107,9 +108,6 @@ def register_routes(api):
     add_alveare_resource(
         api,
         RemoteWorkHistory,
-        'remote_work_history',
-        'remote_work_histories',
-        '/<int:id>',
         remote_work_history_view.serializer,
         remote_work_history_view.deserializer,
         remote_work_history_view.update_deserializer
@@ -120,9 +118,6 @@ def register_routes(api):
     add_alveare_resource(
         api,
         Ticket,
-        'ticket',
-        'tickets',
-        '/<int:id>',
         ticket_view.serializer,
         ticket_view.deserializer,
         ticket_view.update_deserializer
@@ -133,9 +128,6 @@ def register_routes(api):
     add_alveare_resource(
         api,
         SkillRequirement,
-        'skill_requirement',
-        'skill_requirements',
-        '/<int:id>',
         skill_requirement_view.serializer,
         skill_requirement_view.deserializer,
         skill_requirement_view.update_deserializer
@@ -146,9 +138,6 @@ def register_routes(api):
     add_alveare_resource(
         api,
         RemoteTicket,
-        'remote_ticket',
-        'remote_tickets',
-        '/<int:id>',
         remote_ticket_view.serializer,
         remote_ticket_view.deserializer,
         remote_ticket_view.update_deserializer
@@ -159,9 +148,6 @@ def register_routes(api):
     add_alveare_resource(
         api,
         CodeClearance,
-        'code_clearance',
-        'code_clearances',
-        '/<int:id>',
         code_clearance_view.serializer,
         code_clearance_view.deserializer,
         code_clearance_view.update_deserializer
@@ -172,9 +158,6 @@ def register_routes(api):
     add_alveare_resource(
         api,
         SkillSet,
-        'skill_set',
-        'skill_sets',
-        '/<int:id>',
         skill_set_view.serializer,
         skill_set_view.deserializer,
         skill_set_view.update_deserializer
@@ -185,9 +168,6 @@ def register_routes(api):
     add_alveare_resource(
         api,
         Contractor,
-        'contractor',
-        'contractors',
-        '/<int:id>',
         contractor_view.serializer,
         contractor_view.deserializer,
         contractor_view.update_deserializer
@@ -198,9 +178,6 @@ def register_routes(api):
     add_alveare_resource(
         api,
         TicketSet,
-        'ticket_set',
-        'ticket_sets',
-        '/<int:id>',
         ticket_set_view.serializer,
         ticket_set_view.deserializer,
         ticket_set_view.update_deserializer
@@ -211,9 +188,6 @@ def register_routes(api):
     add_alveare_resource(
         api,
         BidLimit,
-        'bid_limit',
-        'bid_limits',
-        '/<int:id>',
         bid_limit_view.serializer,
         bid_limit_view.deserializer,
         bid_limit_view.update_deserializer
@@ -224,9 +198,6 @@ def register_routes(api):
     add_alveare_resource(
         api,
         TermSheet,
-        'term_sheet',
-        'term_sheets',
-        '/<int:id>',
         term_sheet_view.serializer,
         term_sheet_view.deserializer,
         term_sheet_view.update_deserializer
@@ -237,9 +208,6 @@ def register_routes(api):
     add_alveare_resource(
         api,
         Contract,
-        'contract',
-        'contracts',
-        '/<int:id>',
         contract_view.serializer,
         contract_view.deserializer,
         contract_view.update_deserializer
@@ -250,9 +218,6 @@ def register_routes(api):
     add_alveare_resource(
         api,
         Feedback,
-        'feedback',
-        'feedbacks',
-        '/<int:id>',
         feedback_view.serializer,
         feedback_view.deserializer,
         feedback_view.update_deserializer

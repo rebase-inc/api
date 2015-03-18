@@ -22,7 +22,7 @@ class TicketMatchResource(Resource):
     serializer = ticket_match.serializer
     deserializer = ticket_match.deserializer
     update_deserializer = ticket_match.update_deserializer
-    url = '/{}/<int:id>'.format(model.__pluralname__)
+    url = '/{}/<int:skill_requirement_id>/<int:skill_set_id>'.format(model.__pluralname__)
 
     def get(self, skill_requirement_id, skill_set_id):
         composite_id = (skill_requirement_id, skill_set_id)

@@ -17,6 +17,22 @@ def plural(text):
 def primary_key(model):
     return tuple(map(lambda key: key.name, inspect(model).primary_key))
 
+def collection_url(model):
+    return '/'+plural(model.__tablename__)
+
+def resource_url(model, use_flask_format=False):
+    '''
+        Given a model, return the URL format string for a single resource
+        if use_flask_format is True, return the URL format for Flask routes
+    '''
+    url_format = ''
+    for key in primary_key(model):
+        if use_flask_format:
+            url_format += '/<int:'+key+'>'
+        else:
+            url_format += '/{}'
+    return collection_url(model)+url_format
+
 class AlveareResource(object):
 
     all_models = dict(getmembers(alveare.models, predicate=isclass))
@@ -31,17 +47,15 @@ class AlveareResource(object):
         model = self.all_models[resource]
         self.test = test
         self.resource = model.__tablename__
-        self.col_url = plural(self.resource)
-        url_format = ''
+
+        self.collection_url = plural(self.resource)
         self.primary_key = primary_key(model)
-        for key in self.primary_key:
-            url_format += '/{}'
-        self.url_format = (self.col_url+url_format).format
+        self.url_format = resource_url(model).format
 
     def url(self, resource):
         ''' returns the URL uniquely identifying 'resource'
         resource can be a dictionary (containing the primary keys) or an integer.
-        If resource is an integer, the returned URL will be 'self.col_url+'/{resource}'
+        If resource is an integer, the returned URL will be 'self.collection_url+'/{resource}'
         '''
         if isinstance(resource, int):
             return self.url_format(resource)
@@ -63,9 +77,9 @@ class AlveareResource(object):
     def get_all(self):
         ''' returns all the instances of this resource
         '''
-        response = self.test.get_resource(self.col_url)
-        self.test.assertIn(self.col_url, response)
-        all_resources = response[self.col_url]
+        response = self.test.get_resource(self.collection_url)
+        self.test.assertIn(self.collection_url, response)
+        all_resources = response[self.collection_url]
         self.test.assertTrue(all_resources)
         return all_resources
 
@@ -121,7 +135,7 @@ class AlveareResource(object):
         return queried_resource
 
     def create(self, **resource):
-        return self.modify_or_create(self.test.post_resource, self.col_url, **resource)
+        return self.modify_or_create(self.test.post_resource, self.collection_url, **resource)
 
     def update(self, **resource):
         return self.modify_or_create(self.test.put_resource, self.url(resource), **resource)

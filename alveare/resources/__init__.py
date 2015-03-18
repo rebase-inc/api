@@ -3,11 +3,10 @@ from flask.ext.restful import Resource
 from flask import jsonify, make_response, request
 from alveare.common.database import DB
 from alveare.common.rest import get_collection, add_to_collection, get_resource, update_resource, delete_resource
+from alveare.common.utils import collection_url, resource_url
 
 def make_collection_and_resource_classes(
     Model,
-    model,
-    models,
     serializer,
     deserializer,
     update_deserializer
@@ -31,9 +30,6 @@ def make_collection_and_resource_classes(
 def add_alveare_resource(
     api,
     Model,
-    model,
-    models,
-    url_suffix,
     serializer,
     deserializer,
     update_deserializer
@@ -44,9 +40,6 @@ def add_alveare_resource(
 
     api is a Flask api object.
     Model is a SqlAlchemy Model class.
-    model is a string that represents the singular name of the resource.
-    models is a string that represents the plural name of the resource.
-    url_suffix is a string that forms the suffix of the URI for a single resource.
     serializer, deserializer, update_serializer map to GET, POST, PUT respectively.
 
     TODO: this could be abstracted more using 2 maps of HTTP verbs (one for the collection, one for a single resource)
@@ -54,11 +47,9 @@ def add_alveare_resource(
 
     ModelCollection, ModelResource = make_collection_and_resource_classes(
         Model,
-        model,
-        models,
         serializer,
         deserializer,
         update_deserializer
     )
-    api.add_resource(ModelCollection, '/{}'.format(models), endpoint=models)
-    api.add_resource(ModelResource, '/{}{}'.format(models, url_suffix), endpoint=model)
+    api.add_resource(ModelCollection, collection_url(Model), endpoint=Model.__pluralname__)
+    api.add_resource(ModelResource, resource_url(Model, use_flask_format=True), endpoint=Model.__tablename__)

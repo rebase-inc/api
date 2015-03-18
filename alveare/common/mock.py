@@ -165,11 +165,12 @@ def create_one_snapshot(db, ticket=None):
     db.session.add(ts)
     return ts
 
-def create_one_auction(db, duration=1000, finish_work_by=None, redundancy=1):
+def create_one_auction(db, tickets=None, duration=1000, finish_work_by=None, redundancy=1):
     if not finish_work_by:
         finish_work_by = datetime.datetime.now() + datetime.timedelta(days=2)
     from alveare.models import Auction, TicketSet, BidLimit, TicketSnapshot, TermSheet
-    tickets = create_some_tickets(db)
+    if not tickets:
+        tickets = create_some_tickets(db)
     ticket_snaps = [TicketSnapshot(ticket) for ticket in tickets]
     bid_limits = [BidLimit(ticket_snap, 200) for ticket_snap in ticket_snaps]
     term_sheet = TermSheet('Some legal mumbo-jumbo')
@@ -180,10 +181,12 @@ def create_one_auction(db, duration=1000, finish_work_by=None, redundancy=1):
     db.session.add(auction)
     return auction
 
-def create_one_candidate(db):
+def create_one_candidate(db, auction=None, contractor=None):
     from alveare.models import Candidate
-    auction = create_one_auction(db)
-    contractor = create_one_contractor(db)
+    if not auction:
+        auction = create_one_auction(db)
+    if not contractor:
+        contractor = create_one_contractor(db)
     candidate = Candidate(contractor, auction.ticket_set)
     db.session.add(candidate)
     return candidate
@@ -264,6 +267,8 @@ def create_the_world(db):
     rapha_contractor = create_one_contractor(db, rapha)
     andrew_contractor = create_one_contractor(db, andrew)
     manhattan_ticket_matches = create_ticket_matches(db, manhattan_tickets, rapha_contractor)
+    auction = create_one_auction(db, manhattan_tickets)
+    create_one_candidate(db, auction, rapha_contractor)
     create_one_code_clearance(db, manhattan_project, rapha_contractor, pre_approved=True)
     create_one_code_clearance(db, manhattan_project, andrew_contractor, pre_approved=False)
     create_one_bank_account(db, rapha_contractor)

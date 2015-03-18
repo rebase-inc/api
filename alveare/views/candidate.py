@@ -9,7 +9,9 @@ class CandidateSchema(Schema):
     ticket_set_id =             fields.Integer()
     approved_for_auction_id =   fields.Integer()
 
-    job_fit =                   fields.Nested('JobFitSchema', only('contractor_id', 'ticket_set_id'))
+    job_fit =                   fields.Nested('JobFitSchema',       only=('contractor_id', 'ticket_set_id'), default=None)
+    contractor =                fields.Nested('ContractorSchema',   only=('id',), default=None)
+    ticket_set =                fields.Nested('TicketSetSchema',    only=('id',), default=None)
 
     _primary_keys = primary_key(Candidate)
 
@@ -17,6 +19,6 @@ class CandidateSchema(Schema):
         return get_or_make_object(Candidate, data, self._primary_keys)
 
 deserializer =          CandidateSchema(skip_missing=True)
-serializer =            CandidateSchema()
+serializer =            CandidateSchema(skip_missing=True)
 update_deserializer =   CandidateSchema()
 update_deserializer.make_object = lambda data: data
