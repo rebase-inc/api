@@ -33,12 +33,10 @@ class TestTicketMatchResource(AlveareRestTestCase):
 
     def test_delete_skill_requirement(self):
         ticket_match = self.ticket_match_resource.get_any()
-        skill_requirement = self.skill_requirement_resource.get(ticket_match['skill_requirement'])
-        self.skill_requirement_resource.delete(skill_requirement)
+        self.skill_requirement_resource.delete(ticket_match['skill_requirement'])
         self.ticket_match_resource.get(ticket_match, 404)
 
     def test_delete_skill_set(self):
         ticket_match = self.ticket_match_resource.get_any()
-        skill_set = self.skill_set_resource.get(ticket_match['skill_set'])
-        self.skill_set_resource.delete(skill_set)
+        self.skill_set_resource.delete(ticket_match['skill_set'])
         self.ticket_match_resource.get(ticket_match, 404)
