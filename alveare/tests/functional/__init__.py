@@ -25,6 +25,13 @@ class AlveareRestTestCase(unittest.TestCase):
 
         self.addCleanup(self.cleanup)
 
+        # hack to deal with auth for now
+        self.get_resource('auctions', expected_code=401)
+        user = self.get_resource('users')['users'][0]
+        models.User.query.get(user['id']).admin = True
+        response = self.post_resource('/auth', dict(user=user), 200)
+        self.db.session.commit()
+
     def cleanup(self):
         self.db.session.remove()
         self.db.drop_all()

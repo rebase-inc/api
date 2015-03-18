@@ -5,10 +5,12 @@ DB = SQLAlchemy()
 def get_or_make_object(model, data, id_fields=None):
     id_fields = id_fields or ['id']
     instance_id = tuple(data.get(id_field) for id_field in id_fields)
-    if all(instance_id): 
+    if all(instance_id):
         instance = model.query.get(instance_id)
         if not instance:
             data['__name'] = model.__tablename__
             raise ValueError('No {__name} with id {id}'.format(**data))
         return instance
+    elif not data:
+        raise ValueError('No data or valid ids provided to get/make {}!'.format(model.__tablename__))
     return model(**data)

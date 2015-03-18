@@ -1,10 +1,50 @@
 import unittest
+from datetime import datetime, timedelta
 
 from alveare.common import mock
 
 from . import AlveareRestTestCase
 
 class TestAuctionResource(AlveareRestTestCase):
+
+    def test_get_auctions_for_org(self):
+        self.post_resource('auth', dict(), 200) #logout
+        self.get_resource('auctions', 401)
+        user_data = dict(
+            first_name = 'Andrew',
+            last_name = 'Millspaugh',
+            email = 'andrew@alveare.io',
+            password = 'foobar'
+        )
+        user = self.post_resource('users', user_data)['user']
+        self.post_resource('auth', dict(user=user), 200) #login
+
+        org_data = dict(name='Bitstrap', user=user)
+        organization = self.post_resource('organizations', org_data)['organization']
+
+        project_data = dict(organization=organization, name='Some stupid app')
+        project = self.post_resource('projects', project_data)['project']
+
+        ticket_data = dict(project=project, title='TiTlE', description='dEsCrIpTiOn')
+        ticket = self.post_resource('internal_tickets', ticket_data)['internal_ticket']
+
+        ticket_snapshot = self.post_resource('ticket_snapshots', dict(ticket=ticket))['ticket_snapshot']
+        bid_limit = self.post_resource('bid_limits', dict(ticket_snapshot=ticket_snapshot, price=999))['bid_limit']
+
+        ticket_set = self.post_resource('ticket_sets', dict(bid_limits=[bid_limit]))['ticket_set']
+        term_sheet = self.post_resource('term_sheets', dict(legalese='piss off'))['term_sheet']
+        auction_data = dict(
+            organization = organization,
+            ticket_set = ticket_set,
+            finish_work_by = '2015-03-20T01:58:51.593347+00:00',
+            duration = 123423, # no clue what this number means
+            redundancy = 1,
+            term_sheet = term_sheet
+        )
+        auction = self.post_resource('auctions', auction_data)['auction']
+        auctions = self.get_resource('auctions')['auctions']
+        self.assertEqual(len(auctions), 1)
+        self.assertEqual(auctions, [auction])
 
     def test_get_all(self):
         response = self.get_resource('auctions')
@@ -28,9 +68,12 @@ class TestAuctionResource(AlveareRestTestCase):
 
     def test_create_new(self):
         ticket = self.get_resource('tickets')['tickets'][0]
+        project = self.get_resource('projects/{id}'.format(**ticket['project']))['project']
         ticket_snapshot = self.post_resource('ticket_snapshots', dict(ticket=ticket))['ticket_snapshot']
+        bid_limit = self.post_resource('bid_limits', dict(ticket_snapshot=ticket_snapshot, price=1000))['bid_limit']
         auction_data = dict(
-            ticket_set = dict(bid_limits=[dict(ticket_snapshot=ticket_snapshot, price=1000)]),
+            organization = project['organization'],
+            ticket_set = dict(bid_limits=[bid_limit]),
             term_sheet = dict(legalese='Thou shalt not steal'),
             redundancy = 2
         )
@@ -66,15 +109,7 @@ class TestAuctionResource(AlveareRestTestCase):
         self.assertEqual(auction, {})
 
     def test_update(self):
-        ticket = self.get_resource('tickets')['tickets'][0]
-        ticket_snapshot = self.post_resource('ticket_snapshots', dict(ticket=ticket))['ticket_snapshot']
-        auction_data = dict(
-            ticket_set = dict(bid_limits=[dict(ticket_snapshot=ticket_snapshot, price=1000)]),
-            term_sheet = dict(legalese='Thou shalt not steal'),
-            redundancy = 2
-        )
-
-        auction = self.post_resource('auctions', auction_data)['auction']
+        auction = next(filter(lambda a: a['state'] == 'created', self.get_resource('auctions')['auctions']))
 
         auction = self.post_resource('auctions/{}/fail_events'.format(auction['id']), dict())['auction']
         self.assertEqual(auction.pop('state'), 'failed')

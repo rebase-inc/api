@@ -4,6 +4,7 @@ from alveare.models.project import Project
 from alveare.models.user import User
 from alveare.models.organization import Organization
 from alveare.common.database import get_or_make_object
+from alveare.views.ticket import TicketSchema
 
 class ProjectSchema(Schema):
     id =                fields.Integer()
@@ -19,7 +20,7 @@ class ProjectSchema(Schema):
         return get_or_make_object(Project, data)
 
 serializer = ProjectSchema()
-deserializer = ProjectSchema(only=('organization_id', 'name'))
+deserializer = ProjectSchema(only=('organization', 'name'))
 update_deserializer = ProjectSchema()
-update_deserializer.make_object = lambda data: data 
+update_deserializer.make_object = lambda data: data
 

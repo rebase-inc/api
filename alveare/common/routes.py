@@ -1,10 +1,12 @@
 from alveare.resources import add_alveare_resource
 
+
 def register_routes(api):
     def add_resource(resour):
         api.add_resource(collection, collection.url)
-   
-    from alveare.resources import user, github_ticket, internal_ticket
+
+    # TODO: Clean this up
+    from alveare.resources import user, github_ticket, internal_ticket, auth, ticket, bid_limit, ticket_set
     all_resources = [
             user.UserCollection,
             user.UserResource,
@@ -12,6 +14,13 @@ def register_routes(api):
             github_ticket.GithubTicketResource,
             internal_ticket.InternalTicketResource,
             internal_ticket.InternalTicketCollection,
+            auth.AuthCollection,
+            ticket.TicketResource,
+            ticket.TicketCollection,
+            bid_limit.BidLimitResource,
+            bid_limit.BidLimitCollection,
+            ticket_set.TicketSetResource,
+            ticket_set.TicketSetCollection,
     ]
 
     for resource in all_resources:
@@ -89,9 +98,9 @@ def register_routes(api):
     api.add_resource(TicketMatchCollection, '/ticket_matches', endpoint='ticket_matches')
     api.add_resource(TicketMatchResource, '/ticket_matches/<int:skill_requirement_id>/<int:skill_set_id>', endpoint='ticket_match')
 
-    from alveare.resources.candidate import CandidateCollection, CandidateResource
-    api.add_resource(CandidateCollection, '/candidates', endpoint='candidates')
-    api.add_resource(CandidateResource, '/candidates/<int:contractor_id>/<int:ticket_set_id>', endpoint='candidate')
+    from alveare.resources.nomination import NominationCollection, NominationResource
+    api.add_resource(NominationCollection, '/nominations', endpoint='nominations')
+    api.add_resource(NominationResource, '/nominations/<int:contractor_id>/<int:ticket_set_id>', endpoint='nomination')
 
     from alveare.models.github_account import GithubAccount
     import alveare.views.github_account as github_account_view
@@ -111,16 +120,6 @@ def register_routes(api):
         remote_work_history_view.serializer,
         remote_work_history_view.deserializer,
         remote_work_history_view.update_deserializer
-    )
-
-    from alveare.models.ticket import Ticket
-    import alveare.views.ticket as ticket_view
-    add_alveare_resource(
-        api,
-        Ticket,
-        ticket_view.serializer,
-        ticket_view.deserializer,
-        ticket_view.update_deserializer
     )
 
     from alveare.models.skill_requirement import SkillRequirement
@@ -171,26 +170,6 @@ def register_routes(api):
         contractor_view.serializer,
         contractor_view.deserializer,
         contractor_view.update_deserializer
-    )
-
-    from alveare.models.ticket_set import TicketSet
-    import alveare.views.ticket_set as ticket_set_view
-    add_alveare_resource(
-        api,
-        TicketSet,
-        ticket_set_view.serializer,
-        ticket_set_view.deserializer,
-        ticket_set_view.update_deserializer
-    )
-
-    from alveare.models.bid_limit import BidLimit
-    import alveare.views.bid_limit as bid_limit_view
-    add_alveare_resource(
-        api,
-        BidLimit,
-        bid_limit_view.serializer,
-        bid_limit_view.deserializer,
-        bid_limit_view.update_deserializer
     )
 
     from alveare.models.term_sheet import TermSheet

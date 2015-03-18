@@ -1,5 +1,6 @@
 from marshmallow import fields, Schema
 from alveare.common.database import get_or_make_object
+from alveare.views.nomination import NominationSchema
 
 class ContractorSchema(Schema):
     id =                    fields.Integer()
@@ -10,7 +11,7 @@ class ContractorSchema(Schema):
     remote_work_history =   fields.Nested('RemoteWorkHistorySchema',    only=('id',))
     skill_set =             fields.Nested('SkillSetSchema',             only=('id',), default=None)
     clearances =            fields.Nested('CodeClearanceSchema',        only=('id', 'project', 'pre_approved'), many=True)
-    candidates =            fields.Nested('CandidateSchema',            only=('id',), many=True, default=None)
+    nominations =           fields.Nested('NominationSchema',           only='id', many=True, default=None)
 
     def make_object(self, data):
         from alveare.models import Contractor

@@ -6,13 +6,13 @@ from alveare.common.database import get_or_make_object
 class TicketSetSchema(Schema):
     id =         fields.Integer()
     bid_limits = fields.Nested(BidLimitSchema, exclude=('ticket_set',), many=True)
-    auction =    fields.Nested('AuctionSchema', only='id')
+    auction =    fields.Nested('AuctionSchema', only=('id',))
 
     def make_object(self, data):
         from alveare.models import TicketSet
-        return get_or_make_object(TicketSet, data) 
+        return get_or_make_object(TicketSet, data)
 
 serializer = TicketSetSchema(only=('id', 'bid_limits','auction'), skip_missing=True)
 deserializer = TicketSetSchema(only=('bid_limits',), strict=True)
 update_deserializer = TicketSetSchema(only=tuple(), strict=True)
-update_deserializer.make_object = lambda data: data 
+update_deserializer.make_object = lambda data: data

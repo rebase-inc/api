@@ -2,16 +2,16 @@
 from flask.ext.restful import Resource
 from flask import jsonify, make_response, request
 
-from alveare.models import Candidate
-from alveare.views import candidate
+from alveare.models import Nomination
+from alveare.views import nomination
 from alveare.common.database import DB
 from alveare.common.rest import get_collection, add_to_collection, get_resource, update_resource, delete_resource
 from alveare.common.utils import collection_url, resource_url
 
-class CandidateCollection(Resource):
-    model = Candidate
-    serializer = candidate.serializer
-    deserializer = candidate.deserializer
+class NominationCollection(Resource):
+    model = Nomination
+    serializer = nomination.serializer
+    deserializer = nomination.deserializer
     url = collection_url(model)
 
     def get(self):
@@ -19,11 +19,11 @@ class CandidateCollection(Resource):
     def post(self):
         return add_to_collection(self.model, self.deserializer, self.serializer)
 
-class CandidateResource(Resource):
-    model = Candidate
-    serializer = candidate.serializer
-    deserializer = candidate.deserializer
-    update_deserializer = candidate.update_deserializer
+class NominationResource(Resource):
+    model = Nomination
+    serializer = nomination.serializer
+    deserializer = nomination.deserializer
+    update_deserializer = nomination.update_deserializer
     url = resource_url(model)
 
     def get(self, contractor_id, ticket_set_id):

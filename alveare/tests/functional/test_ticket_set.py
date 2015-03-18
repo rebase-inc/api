@@ -11,7 +11,7 @@ class TestTicketSetResource(AlveareRestTestCase):
         ticket_set = self.resource.get_any()
         self.assertTrue(ticket_set)
         self.assertTrue(ticket_set['id'])
-        self.assertIsInstance(ticket_set['auction'], int)
+        self.assertIsInstance(ticket_set['auction']['id'], int)
         self.assertIsInstance(ticket_set['bid_limits'], list)
 
     @skip('ticket set doesnt have any updatable fields')
@@ -23,5 +23,5 @@ class TestTicketSetResource(AlveareRestTestCase):
 
     def test_delete_auction(self):
         ticket_set = self.resource.get_any()
-        self.delete_resource('auctions/{}'.format(ticket_set['auction']))
+        self.delete_resource('auctions/{id}'.format(**ticket_set['auction']))
         self.get_resource(self.resource.url(ticket_set), 404)

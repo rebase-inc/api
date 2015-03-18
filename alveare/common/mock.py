@@ -177,28 +177,29 @@ def create_one_auction(db, tickets=None, duration=1000, finish_work_by=None, red
     ticket_set = TicketSet()
     for bid_limit in bid_limits:
         ticket_set.add_bid_limit(bid_limit)
-    auction = Auction(ticket_set, term_sheet, duration, finish_work_by, redundancy)
+    organization = tickets[0].project.organization 
+    auction = Auction(organization, ticket_set, term_sheet, duration, finish_work_by, redundancy)
     db.session.add(auction)
     return auction
 
-def create_one_candidate(db, auction=None, contractor=None):
-    from alveare.models import Candidate
+def create_one_nomination(db, auction=None, contractor=None):
+    from alveare.models import Nomination
     if not auction:
         auction = create_one_auction(db)
     if not contractor:
         contractor = create_one_contractor(db)
-    candidate = Candidate(contractor, auction.ticket_set)
-    db.session.add(candidate)
-    return candidate
+    nomination = Nomination(contractor, auction.ticket_set)
+    db.session.add(nomination)
+    return nomination
 
 def create_one_job_fit(db):
     from alveare.models import TicketMatch, JobFit
-    candidate = create_one_candidate(db)
-    skill_set = candidate.contractor.skill_set
+    nomination = create_one_nomination(db)
+    skill_set = nomination.contractor.skill_set
     ticket_matches = []
-    for bid_limit in candidate.ticket_set.bid_limits:
+    for bid_limit in nomination.ticket_set.bid_limits:
         ticket_matches.append(TicketMatch(skill_set, bid_limit.ticket_snapshot.ticket.skill_requirement, 100))
-    job_fit = JobFit(candidate, ticket_matches)
+    job_fit = JobFit(nomination, ticket_matches)
     db.session.add(job_fit)
     return job_fit
 
@@ -268,7 +269,7 @@ def create_the_world(db):
     andrew_contractor = create_one_contractor(db, andrew)
     manhattan_ticket_matches = create_ticket_matches(db, manhattan_tickets, rapha_contractor)
     auction = create_one_auction(db, manhattan_tickets)
-    create_one_candidate(db, auction, rapha_contractor)
+    create_one_nomination(db, auction, rapha_contractor)
     create_one_code_clearance(db, manhattan_project, rapha_contractor, pre_approved=True)
     create_one_code_clearance(db, manhattan_project, andrew_contractor, pre_approved=False)
     create_one_bank_account(db, rapha_contractor)

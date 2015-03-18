@@ -1,9 +1,9 @@
 from marshmallow import fields, Schema
 from alveare.common.database import get_or_make_object
 from alveare.common.utils import primary_key
-from alveare.models import Candidate
+from alveare.models import Nomination
 
-class CandidateSchema(Schema):
+class NominationSchema(Schema):
 
     contractor_id =             fields.Integer()
     ticket_set_id =             fields.Integer()
@@ -13,12 +13,12 @@ class CandidateSchema(Schema):
     contractor =                fields.Nested('ContractorSchema',   only=('id',), default=None)
     ticket_set =                fields.Nested('TicketSetSchema',    only=('id',), default=None)
 
-    _primary_keys = primary_key(Candidate)
+    _primary_keys = primary_key(Nomination)
 
     def make_object(self, data):
-        return get_or_make_object(Candidate, data, self._primary_keys)
+        return get_or_make_object(Nomination, data, self._primary_keys)
 
-deserializer =          CandidateSchema(skip_missing=True)
-serializer =            CandidateSchema(skip_missing=True)
-update_deserializer =   CandidateSchema()
+deserializer =          NominationSchema(skip_missing=True)
+serializer =            NominationSchema(skip_missing=True)
+update_deserializer =   NominationSchema()
 update_deserializer.make_object = lambda data: data
