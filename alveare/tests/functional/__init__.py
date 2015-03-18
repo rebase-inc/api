@@ -28,8 +28,8 @@ class AlveareRestTestCase(unittest.TestCase):
         # hack to deal with auth for now
         self.get_resource('auctions', expected_code=401)
         user = self.get_resource('users')['users'][0]
+        models.User.query.get(user['id']).admin = True
         response = self.post_resource('/auth', dict(user=user), 200)
-        models.User.query.get(user['id']).is_admin = True
         self.db.session.commit()
 
     def cleanup(self):

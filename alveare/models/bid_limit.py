@@ -8,7 +8,7 @@ class BidLimit(DB.Model):
 
     id =            DB.Column(DB.Integer, primary_key=True)
     price =         DB.Column(DB.Integer, nullable=False)
-    ticket_set_id = DB.Column(DB.Integer, DB.ForeignKey('ticket_set.id', ondelete='CASCADE'), nullable=False)
+    ticket_set_id = DB.Column(DB.Integer, DB.ForeignKey('ticket_set.id', ondelete='CASCADE'), nullable=True)
 
     ticket_snapshot = DB.relationship(TicketSnapshot, uselist=False, cascade='all, delete-orphan', passive_deletes=True)
 

@@ -1,15 +1,16 @@
+
 from flask.ext.restful import Resource
 from flask import jsonify, make_response, request
 
-from alveare.models import TicketSet
-from alveare.views import ticket_set
+from alveare.models import Ticket
+from alveare.views import ticket
 from alveare.common.database import DB
 from alveare.common.rest import get_collection, add_to_collection, get_resource, update_resource, delete_resource
 
-class TicketSetCollection(Resource):
-    model = TicketSet
-    serializer = ticket_set.serializer
-    deserializer = ticket_set.deserializer
+class TicketCollection(Resource):
+    model = Ticket
+    serializer = ticket.serializer
+    deserializer = ticket.deserializer
     url = '/{}'.format(model.__pluralname__)
 
     def get(self):
@@ -17,11 +18,11 @@ class TicketSetCollection(Resource):
     def post(self):
         return add_to_collection(self.model, self.deserializer, self.serializer)
 
-class TicketSetResource(Resource):
-    model = TicketSet
-    serializer = ticket_set.serializer
-    deserializer = ticket_set.deserializer
-    update_deserializer = ticket_set.update_deserializer
+class TicketResource(Resource):
+    model = Ticket
+    serializer = ticket.serializer
+    deserializer = ticket.deserializer
+    update_deserializer = ticket.update_deserializer
     url = '/{}/<int:id>'.format(model.__pluralname__)
 
     def get(self, id):

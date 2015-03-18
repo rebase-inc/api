@@ -1,7 +1,6 @@
 from flask.ext.restful import Resource
 from flask.ext.login import login_required, current_user
 from flask import jsonify, make_response, request
-from sqlalchemy import or_
 
 from marshmallow.exceptions import UnmarshallingError
 

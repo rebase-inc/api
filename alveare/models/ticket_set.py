@@ -7,7 +7,7 @@ class TicketSet(DB.Model):
     __pluralname__ = 'ticket_sets'
 
     id =         DB.Column(DB.Integer, primary_key=True)
-    auction_id = DB.Column(DB.Integer, DB.ForeignKey('auction.id', ondelete='CASCADE'), nullable=False)
+    auction_id = DB.Column(DB.Integer, DB.ForeignKey('auction.id', ondelete='CASCADE'), nullable=True)
     bid_limits = DB.relationship(BidLimit, backref='ticket_set', cascade='all, delete-orphan', passive_deletes=True)
     nominations = DB.relationship('Nomination', backref='ticket_set', cascade='all, delete-orphan', passive_deletes=True)
 

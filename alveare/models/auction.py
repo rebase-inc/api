@@ -24,15 +24,14 @@ class Auction(DB.Model):
     bids =             DB.relationship('Bid',          backref='auction', cascade='all, delete-orphan', passive_deletes=True, lazy='dynamic')
     approved_talents = DB.relationship('Nomination',    backref='approved_for_auction') # both ends are conditional
 
-    def __init__(self, ticket_set, term_sheet, duration=3, finish_work_by=datetime.now() + timedelta(days = 7), redundancy = 1):
+    def __init__(self, organization, ticket_set, term_sheet, duration=3, finish_work_by=datetime.now() + timedelta(days = 7), redundancy = 1):
         self.ticket_set = ticket_set
         self.term_sheet = term_sheet
         self.duration = duration
         self.finish_work_by = finish_work_by
         self.redundancy = redundancy
 
-        #TODO: REMOVE THIS
-        self.organization = ticket_set.bid_limits[0].ticket_snapshot.ticket.project.organization
+        self.organization = organization 
 
     def __repr__(self):
         return '<Auction[id:{}] finish_work_by={}>'.format(self.id, self.finish_work_by)

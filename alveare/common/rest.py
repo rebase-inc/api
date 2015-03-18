@@ -3,10 +3,9 @@ from flask.ext.login import current_user
 
 from alveare.common.database import DB
 
-def get_collection(model, serializer, query_filters=None):
+def get_collection(model, serializer, query_filter=None):
     query = model.query
-    query_filters = query_filters or []
-    for query_filter in query_filters:
+    if query_filter is not None:
         query = query.filter(query_filter)
     all_instances = query.limit(100).all()
     return jsonify(**{model.__pluralname__: serializer.dump(all_instances, many=True).data})

@@ -11,4 +11,6 @@ def get_or_make_object(model, data, id_fields=None):
             data['__name'] = model.__tablename__
             raise ValueError('No {__name} with id {id}'.format(**data))
         return instance
+    elif not data:
+        raise ValueError('No data or valid ids provided to get/make {}!'.format(model.__tablename__))
     return model(**data)

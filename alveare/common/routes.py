@@ -5,7 +5,8 @@ def register_routes(api):
     def add_resource(resour):
         api.add_resource(collection, collection.url)
 
-    from alveare.resources import user, github_ticket, internal_ticket, auth
+    # TODO: Clean this up
+    from alveare.resources import user, github_ticket, internal_ticket, auth, ticket, bid_limit, ticket_set
     all_resources = [
             user.UserCollection,
             user.UserResource,
@@ -14,6 +15,12 @@ def register_routes(api):
             internal_ticket.InternalTicketResource,
             internal_ticket.InternalTicketCollection,
             auth.AuthCollection,
+            ticket.TicketResource,
+            ticket.TicketCollection,
+            bid_limit.BidLimitResource,
+            bid_limit.BidLimitCollection,
+            ticket_set.TicketSetResource,
+            ticket_set.TicketSetCollection,
     ]
 
     for resource in all_resources:
@@ -117,19 +124,6 @@ def register_routes(api):
         remote_work_history_view.update_deserializer
     )
 
-    from alveare.models.ticket import Ticket
-    import alveare.views.ticket as ticket_view
-    add_alveare_resource(
-        api,
-        Ticket,
-        'ticket',
-        'tickets',
-        '/<int:id>',
-        ticket_view.serializer,
-        ticket_view.deserializer,
-        ticket_view.update_deserializer
-    )
-
     from alveare.models.skill_requirement import SkillRequirement
     import alveare.views.skill_requirement as skill_requirement_view
     add_alveare_resource(
@@ -193,32 +187,6 @@ def register_routes(api):
         contractor_view.serializer,
         contractor_view.deserializer,
         contractor_view.update_deserializer
-    )
-
-    from alveare.models.ticket_set import TicketSet
-    import alveare.views.ticket_set as ticket_set_view
-    add_alveare_resource(
-        api,
-        TicketSet,
-        'ticket_set',
-        'ticket_sets',
-        '/<int:id>',
-        ticket_set_view.serializer,
-        ticket_set_view.deserializer,
-        ticket_set_view.update_deserializer
-    )
-
-    from alveare.models.bid_limit import BidLimit
-    import alveare.views.bid_limit as bid_limit_view
-    add_alveare_resource(
-        api,
-        BidLimit,
-        'bid_limit',
-        'bid_limits',
-        '/<int:id>',
-        bid_limit_view.serializer,
-        bid_limit_view.deserializer,
-        bid_limit_view.update_deserializer
     )
 
     from alveare.models.term_sheet import TermSheet

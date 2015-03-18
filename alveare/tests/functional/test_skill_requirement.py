@@ -17,7 +17,7 @@ class TestSkillRequirementResource(AlveareRestTestCase):
         self.assertTrue(skill_requirement['id'])
         ticket = self.get_resource('tickets/{id}'.format(**skill_requirement))['ticket']
         self.assertTrue(ticket)
-        project = self.get_resource('projects/{project_id}'.format(**ticket))
+        project = self.get_resource('projects/{id}'.format(**ticket['project']))
         self.assertEqual(ticket['skill_requirement']['id'], skill_requirement['id'])
 
     @skip('nothing to update in the SkillRequirement object yet')
@@ -32,5 +32,5 @@ class TestSkillRequirementResource(AlveareRestTestCase):
     def test_delete_project(self):
         skill_requirement = self.skill_requirement_resource.get_any()
         ticket = self.get_resource('tickets/{id}'.format(**skill_requirement))['ticket']
-        self.delete_resource('projects/{project_id}'.format(**ticket))
+        self.delete_resource('projects/{id}'.format(**ticket['project']))
         self.get_resource(self.skill_requirement_resource.url(skill_requirement), 404)
