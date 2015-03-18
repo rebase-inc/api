@@ -3,7 +3,7 @@ from alveare.common.database import DB
 from alveare.models.project import Project
 from alveare.models.user import User
 from alveare.models.organization import Organization
-from alveare.common.database import get_or_make_object, update_object
+from alveare.common.database import get_or_make_object
 
 class ProjectSchema(Schema):
     id =                fields.Integer()

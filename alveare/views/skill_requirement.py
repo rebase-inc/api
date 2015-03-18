@@ -2,7 +2,7 @@ from flask.ext.restful import abort
 from marshmallow import fields, Schema
 
 from alveare.models.skill_requirement import SkillRequirement
-from alveare.common.database import get_or_make_object, update_object
+from alveare.common.database import get_or_make_object
 
 class SkillRequirementSchema(Schema):
     id =            fields.Integer()

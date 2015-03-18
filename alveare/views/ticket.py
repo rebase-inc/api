@@ -2,7 +2,7 @@ from marshmallow import fields, Schema
 from alveare.models.ticket import Ticket
 from alveare.views.skill_requirement import SkillRequirementSchema
 from flask.ext.restful import abort
-from alveare.common.database import get_or_make_object, update_object
+from alveare.common.database import get_or_make_object
 
 class TicketSchema(Schema):
     id =            fields.Integer()

@@ -21,4 +21,4 @@ class RemoteWorkHistory(DB.Model):
         return value
 
     def __repr__(self):
-        return '<RemoteWorkHistory[{}] >'.format(self.contractor_id)
+        return '<RemoteWorkHistory[{}] >'.format(self.id)

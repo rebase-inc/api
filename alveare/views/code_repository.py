@@ -1,6 +1,6 @@
 from marshmallow import fields, Schema
 from alveare.models.code_repository import CodeRepository
-from alveare.common.database import get_or_make_object, update_object
+from alveare.common.database import get_or_make_object
 
 class CodeRepositorySchema(Schema):
     id = fields.Integer()

@@ -4,7 +4,7 @@ from marshmallow import fields, Schema
 
 from alveare.views import NamespacedSchema
 from alveare.views.comment import CommentSchema
-from alveare.common.database import get_or_make_object, update_object
+from alveare.common.database import get_or_make_object
 
 class ArbitrationSchema(Schema):
     id = fields.Integer()

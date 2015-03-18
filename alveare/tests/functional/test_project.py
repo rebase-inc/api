@@ -32,12 +32,11 @@ class TestProjectResource(AlveareRestTestCase):
         project = self.project_resource.get_any()
         t = AlveareResource(self, 'InternalTicket')
         ticket = dict(
-            title='Superb title',
             description='Lame description',
             project = dict(id=project['id'])
         )
         for i in range(50):
-            ticket['title'] += ' #{}'.format(i)
+            ticket['title'] = 'Superb title #{}'.format(i)
             t.create(**ticket)
         queried_project = self.get_resource('projects/{id}'.format(**project))['project']
         self.assertTrue(queried_project)

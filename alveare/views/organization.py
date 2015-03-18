@@ -4,7 +4,7 @@ from alveare.views.manager import ManagerSchema
 from alveare.views.project import ProjectSchema
 from alveare.views.bank_account import BankAccountSchema
 from alveare.views.user import UserSchema
-from alveare.common.database import get_or_make_object, update_object
+from alveare.common.database import get_or_make_object
 
 class OrganizationSchema(Schema):
     id =            fields.Integer()
