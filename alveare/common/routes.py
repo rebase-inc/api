@@ -4,12 +4,14 @@ def register_routes(api):
     def add_resource(resour):
         api.add_resource(collection, collection.url)
    
-    from alveare.resources import user, github_ticket
+    from alveare.resources import user, github_ticket, internal_ticket
     all_resources = [
             user.UserCollection,
             user.UserResource,
             github_ticket.GithubTicketCollection,
-            github_ticket.GithubTicketResource
+            github_ticket.GithubTicketResource,
+            internal_ticket.InternalTicketResource,
+            internal_ticket.InternalTicketCollection,
     ]
 
     for resource in all_resources:
@@ -137,19 +139,6 @@ def register_routes(api):
         skill_requirement_view.serializer,
         skill_requirement_view.deserializer,
         skill_requirement_view.update_deserializer
-    )
-
-    from alveare.models.internal_ticket import InternalTicket
-    import alveare.views.internal_ticket as internal_ticket_view
-    add_alveare_resource(
-        api,
-        InternalTicket,
-        'internal_ticket',
-        'internal_tickets',
-        '/<int:id>',
-        internal_ticket_view.serializer,
-        internal_ticket_view.deserializer,
-        internal_ticket_view.update_deserializer
     )
 
     from alveare.models.remote_ticket import RemoteTicket
