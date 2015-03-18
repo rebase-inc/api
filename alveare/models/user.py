@@ -13,6 +13,12 @@ class User(DB.Model):
     last_seen =         DB.Column(DB.DateTime,  nullable=False)
     roles =             DB.relationship('Role', backref='user', cascade='all, delete-orphan')
 
+    # flask login helper functions
+    def is_authenticated(self): return True
+    def is_active(self): return True
+    def is_anonymous(self): return False
+    def get_id(self): return str(self.id)
+
     def __init__(self, first_name, last_name, email, password):
         self.first_name = first_name
         self.last_name = last_name

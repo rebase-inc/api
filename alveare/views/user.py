@@ -19,4 +19,4 @@ serializer = UserSchema(only=('id','first_name','last_name','email','last_seen')
 deserializer = UserSchema(only=('first_name','last_name','email','password'), strict=True)
 
 update_deserializer = UserSchema(only=('first_name','last_name','email','password'))
-update_deserializer.make_object = lambda data: data 
+update_deserializer.make_object = lambda data: data

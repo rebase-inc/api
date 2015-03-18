@@ -1,55 +1,46 @@
+
 from flask.ext.restful import Resource
+from flask.ext.login import login_required
 from flask import jsonify, make_response, request
 
 from marshmallow.exceptions import UnmarshallingError
 
-from alveare import models
-from alveare.views import auction, auction
+from alveare.models import Auction
+from alveare.views import auction
 from alveare.common.database import DB
 from alveare.common.state import ManagedState
+from alveare.common.rest import get_collection, add_to_collection, get_resource, update_resource, delete_resource
 
 class AuctionCollection(Resource):
+    model = Auction
+    serializer = auction.serializer
+    deserializer = auction.deserializer
+    url = '/{}'.format(model.__pluralname__)
 
+    @login_required
     def get(self):
-        all_auctions = models.Auction.query.limit(100).all()
-        return jsonify(auctions = auction.serializer.dump(all_auctions, many=True).data)
-
+        return get_collection(self.model, self.serializer)
     def post(self):
-        new_auction = auction.deserializer.load(request.form or request.json).data
-
-        DB.session.add(new_auction)
-        DB.session.commit()
-
-        response = jsonify(auction = auction.serializer.dump(new_auction).data)
-        response.status_code = 201
-        return response
+        return add_to_collection(self.model, self.deserializer, self.serializer)
 
 class AuctionResource(Resource):
+    model = Auction
+    serializer = auction.serializer
+    deserializer = auction.deserializer
+    update_deserializer = auction.update_deserializer
+    url = '/{}/<int:id>'.format(model.__pluralname__)
+
     def get(self, id):
-        single_auction = models.Auction.query.get_or_404(id)
-        return jsonify(auction = auction.serializer.dump(single_auction).data)
-
-    def delete(self, id):
-        auction = models.Auction.query.get_or_404(id)
-        DB.session.delete(auction)
-        DB.session.commit()
-        response = jsonify(message = 'auction succesfully deleted')
-        response.status_code = 200
-        return response
-
+        return get_resource(self.model, id, self.serializer)
     def put(self, id):
-        single_auction = models.Auction.query.get_or_404(id)
-
-        for field, value in user.updater.load(request.form).data.items():
-            setattr(single_user, field, value)
-        DB.session.commit()
-
-        return jsonify(users = user.serializer.dump(single_user).data)
+        return update_resource(self.model, id, self.update_deserializer, self.serializer)
+    def delete(self, id):
+        return delete_resource(self.model, id)
 
 class AuctionBidEvents(Resource):
 
     def post(self, id):
-        single_auction = models.Auction.query.get_or_404(id)
+        single_auction = Auction.query.get_or_404(id)
         auction_event = auction.bid_event_deserializer.load(request.form or request.json).data
 
         with ManagedState():
@@ -64,7 +55,7 @@ class AuctionBidEvents(Resource):
 class AuctionEndEvents(Resource):
 
     def post(self, id):
-        single_auction = models.Auction.query.get_or_404(id)
+        single_auction = Auction.query.get_or_404(id)
         auction_event = auction.end_event_deserializer.load(request.form or request.json).data
 
         with ManagedState():
@@ -79,7 +70,7 @@ class AuctionEndEvents(Resource):
 class AuctionFailEvents(Resource):
 
     def post(self, id):
-        single_auction = models.Auction.query.get_or_404(id)
+        single_auction = Auction.query.get_or_404(id)
         auction_event = auction.fail_event_deserializer.load(request.form or request.json).data
 
         with ManagedState():

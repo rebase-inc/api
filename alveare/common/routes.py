@@ -1,10 +1,11 @@
 from alveare.resources import add_alveare_resource
 
+
 def register_routes(api):
     def add_resource(resour):
         api.add_resource(collection, collection.url)
-   
-    from alveare.resources import user, github_ticket, internal_ticket
+
+    from alveare.resources import user, github_ticket, internal_ticket, auth
     all_resources = [
             user.UserCollection,
             user.UserResource,
@@ -12,6 +13,7 @@ def register_routes(api):
             github_ticket.GithubTicketResource,
             internal_ticket.InternalTicketResource,
             internal_ticket.InternalTicketCollection,
+            auth.AuthCollection,
     ]
 
     for resource in all_resources:

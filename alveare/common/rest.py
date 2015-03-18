@@ -20,7 +20,7 @@ def get_resource(model, instance_id, serializer):
     return jsonify(**{model.__tablename__: serializer.dump(instance).data})
 
 def update_resource(model, instance_id, deserializer, serializer):
-    instance = model.query.get_or_404(instance_id)    
+    instance = model.query.get_or_404(instance_id)
     fields_to_update = deserializer.load(request.form or request.json).data
     for field, value in fields_to_update.items():
         if getattr(instance, field) != value:
