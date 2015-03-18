@@ -1,9 +1,14 @@
 from flask import jsonify, make_response, request
+from flask.ext.login import current_user
 
 from alveare.common.database import DB
 
-def get_collection(model, serializer):
-    all_instances = model.query.limit(100).all()
+def get_collection(model, serializer, query_filters=None):
+    query = model.query
+    query_filters = query_filters or []
+    for query_filter in query_filters:
+        query = query.filter(query_filter)
+    all_instances = query.limit(100).all()
     return jsonify(**{model.__pluralname__: serializer.dump(all_instances, many=True).data})
 
 def add_to_collection(model, deserializer, serializer):
@@ -37,3 +42,13 @@ def delete_resource(model, instance_id):
     response = jsonify(message = '{} succesfully deleted'.format(model.__tablename__))
     response.status_code = 200
     return response
+
+def admin_required():
+    def wrapper(rest_method):
+        @wraps(rest_method)
+        def admin_rest_method(*args, **kwargs):
+            if not current_user.is_admin():
+                return current_app.login_manager.unauthorized()
+            return rest_method(*args, **kwargs)
+        return admin_rest_method
+    return wrapper

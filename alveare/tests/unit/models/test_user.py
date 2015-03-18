@@ -21,8 +21,8 @@ class TestUserModel(AlveareModelTestCase):
         self.assertIsInstance(user.email, str)
         self.assertIsInstance(user.hashed_password, str)
         self.assertIsInstance(user.last_seen, datetime.datetime)
-        self.assertIsInstance(user.roles, list)
-        self.assertIsInstance(user.roles.pop(), models.Contractor)
+        self.assertIsInstance(user.roles.all(), list)
+        self.assertIsInstance(user.roles.all().pop(), models.Contractor)
 
     def test_delete_contract(self):
         user = mock.create_one_user(self.db)
@@ -31,7 +31,7 @@ class TestUserModel(AlveareModelTestCase):
         self.db.session.commit()
 
         user_id = user.id
-        role_id = user.roles.pop().id
+        role_id = user.roles.all().pop().id
 
         found_user = models.User.query.get(user_id)
         self.delete_instance(found_user)

@@ -10,6 +10,7 @@ class Organization(DB.Model):
     managers =      DB.relationship('Manager', backref=DB.backref('organization', lazy='joined', uselist=False), cascade='all, delete-orphan', passive_deletes=True, innerjoin=True)
     projects =      DB.relationship('Project', backref='organization', lazy='joined', cascade="all, delete-orphan", passive_deletes=True)
     bank_account =  DB.relationship('BankAccount', backref='organization', uselist=False, cascade='all, delete-orphan', passive_deletes=True)
+    auctions =      DB.relationship('Auction', backref='organization', cascade='all, delete-orphan', passive_deletes=True)
 
     def __init__(self, name, user):
         from alveare.models import Manager

@@ -29,6 +29,8 @@ class AlveareRestTestCase(unittest.TestCase):
         self.get_resource('auctions', expected_code=401)
         user = self.get_resource('users')['users'][0]
         response = self.post_resource('/auth', dict(user=user), 200)
+        models.User.query.get(user['id']).is_admin = True
+        self.db.session.commit()
 
     def cleanup(self):
         self.db.session.remove()

@@ -10,19 +10,19 @@ from alveare.models import BidLimit, Contract, Bid
 class Auction(DB.Model):
     __pluralname__ = 'auctions'
 
+    id =              DB.Column(DB.Integer,   primary_key=True)
+    duration =        DB.Column(DB.Integer,   nullable=False)
+    finish_work_by =  DB.Column(DB.DateTime,  nullable=False)
+    redundancy =      DB.Column(DB.Integer,   nullable=False)
+    term_sheet_id =   DB.Column(DB.Integer,   DB.ForeignKey('term_sheet.id', ondelete='CASCADE'), nullable=False)
+    state =           DB.Column(DB.String, nullable=False, default='created')
+    organization_id = DB.Column(DB.Integer,   DB.ForeignKey('organization.id', ondelete='CASCADE'), nullable=False)
 
-    id =             DB.Column(DB.Integer,   primary_key=True)
-    duration =       DB.Column(DB.Integer,   nullable=False)
-    finish_work_by = DB.Column(DB.DateTime,  nullable=False)
-    redundancy =     DB.Column(DB.Integer,   nullable=False)
-    term_sheet_id =  DB.Column(DB.Integer,   DB.ForeignKey('term_sheet.id', ondelete='CASCADE'), nullable=False)
-    state =          DB.Column(DB.String, nullable=False, default='created')
-
-    term_sheet =       DB.relationship('TermSheet', uselist=False)
-    ticket_set =       DB.relationship('TicketSet', backref='auction', cascade="all, delete-orphan", passive_deletes=True, uselist=False)
-    feedbacks =        DB.relationship('Feedback',  backref='auction', cascade='all, delete-orphan', passive_deletes=True)
-    bids =             DB.relationship('Bid',       backref='auction', cascade='all, delete-orphan', passive_deletes=True, lazy='dynamic')
-    approved_talents = DB.relationship('Candidate', backref='approved_for_auction') # both ends are conditional
+    term_sheet =       DB.relationship('TermSheet',    uselist=False)
+    ticket_set =       DB.relationship('TicketSet',    backref='auction', cascade="all, delete-orphan", passive_deletes=True, uselist=False)
+    feedbacks =        DB.relationship('Feedback',     backref='auction', cascade='all, delete-orphan', passive_deletes=True)
+    bids =             DB.relationship('Bid',          backref='auction', cascade='all, delete-orphan', passive_deletes=True, lazy='dynamic')
+    approved_talents = DB.relationship('Candidate',    backref='approved_for_auction') # both ends are conditional
 
     def __init__(self, ticket_set, term_sheet, duration=3, finish_work_by=datetime.now() + timedelta(days = 7), redundancy = 1):
         self.ticket_set = ticket_set
@@ -30,6 +30,9 @@ class Auction(DB.Model):
         self.duration = duration
         self.finish_work_by = finish_work_by
         self.redundancy = redundancy
+
+        #TODO: REMOVE THIS
+        self.organization = ticket_set.bid_limits[0].ticket_snapshot.ticket.project.organization
 
     def __repr__(self):
         return '<Auction[id:{}] finish_work_by={}>'.format(self.id, self.finish_work_by)
