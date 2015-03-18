@@ -9,7 +9,6 @@ class TestAuth(AlveareRestTestCase):
         response = self.post_resource('/auth', dict(), 200)
 
         self.get_resource('auctions', expected_code=401)
-        self.get_resource('auctions', expected_code=401)
         user = self.get_resource('users')['users'][0]
         response = self.post_resource('/auth', dict(user=user), 200)
         response = self.get_resource('auctions')

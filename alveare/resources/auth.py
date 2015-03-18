@@ -12,15 +12,15 @@ class AuthCollection(Resource):
     url = '/auth'
 
     def post(self):
-        try:
-            auth_data = auth.deserializer.load(request.form or request.json).data
-        except UnmarshallingError:
+        auth_data = auth.deserializer.load(request.form or request.json).data
+        if 'user' in auth_data:
+            authed_user = auth_data.get('user')
+            login_user(authed_user)
+            response = jsonify(message = '{} succesfully logged in'.format(authed_user.first_name))
+            response.status_code = 200
+            return response
+        else:
             logout_user()
             response = jsonify(message = 'Logged out')
             response.status_code = 200
             return response
-        authed_user = auth_data.get('user')
-        login_user(authed_user)
-        response = jsonify(message = '{} succesfully logged in'.format(authed_user.first_name))
-        response.status_code = 200
-        return response
