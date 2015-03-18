@@ -14,7 +14,7 @@ class AuctionSchema(Schema):
     state =            fields.String()
     #feedbacks =       fields.Nested('FeedbackSchema', only='id')
     bids =             fields.Nested('BidSchema', exclude=('auction',), many=True)
-    #approved_talents = fields.Nested('CandidateSchema', only='id')
+    #approved_talents = fields.Nested('NominationSchema', only='id')
 
     def make_object(self, data):
         from alveare.models import Auction

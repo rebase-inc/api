@@ -1,4 +1,3 @@
-
 from flask.ext.restful import Resource
 from flask.ext.login import login_required, current_user
 from flask import jsonify, make_response, request
@@ -20,34 +19,8 @@ class AuctionCollection(Resource):
 
     @login_required
     def get(self):
-        manager_roles = current_user.roles.filter(Role.type == 'manager').all()
-        manager_for_organizations = [manager.organization.id for manager in manager_roles]
-        contractor_roles = current_user.roles.filter(Role.type == 'contractor').all()
+        return get_collection(self.model, self.serializer, current_user.auction_query_filters)
 
-        auctions_approved_for = []
-        for contractor_role in contractor_roles:
-            for candidacy in contractor_role.candidates:
-                approved = candidacy.approved_for_auction
-                if approved: auctions_approved_for.append(approved.id)
-
-        # hacky...maybe we should probably restrict them to using one role at a time
-        if current_user.is_admin():
-            query_filters = []
-        elif auctions_approved_for and manager_for_organizations:
-            approved_auction_filter = Auction.id.in_(auctions_approved_for)
-            manager_for_filter = Auction.organization_id.in_(manager_for_organizations)
-            query_filters = [or_(approved_auction_filter, manager_for_filter)]
-        elif auctions_approved_for:
-            approved_auction_filter = Auction.id.in_(auctions_approved_for)
-            query_filters = [approved_auction_filter]
-        elif manager_for_organizations:
-            manager_for_filter = Auction.organization_id.in_(manager_for_organizations)
-            query_filters = [manager_for_filter]
-        else:
-            query_filters = [None]
-       
-        return get_collection(self.model, self.serializer, query_filters)
-    
     def post(self):
         return add_to_collection(self.model, self.deserializer, self.serializer)
 

@@ -180,22 +180,22 @@ def create_one_auction(db, duration=1000, finish_work_by=None, redundancy=1):
     db.session.add(auction)
     return auction
 
-def create_one_candidate(db):
-    from alveare.models import Candidate
+def create_one_nomination(db):
+    from alveare.models import Nomination
     auction = create_one_auction(db)
     contractor = create_one_contractor(db)
-    candidate = Candidate(contractor, auction.ticket_set)
-    db.session.add(candidate)
-    return candidate
+    nomination = Nomination(contractor, auction.ticket_set)
+    db.session.add(nomination)
+    return nomination
 
 def create_one_job_fit(db):
     from alveare.models import TicketMatch, JobFit
-    candidate = create_one_candidate(db)
-    skill_set = candidate.contractor.skill_set
+    nomination = create_one_nomination(db)
+    skill_set = nomination.contractor.skill_set
     ticket_matches = []
-    for bid_limit in candidate.ticket_set.bid_limits:
+    for bid_limit in nomination.ticket_set.bid_limits:
         ticket_matches.append(TicketMatch(skill_set, bid_limit.ticket_snapshot.ticket.skill_requirement, 100))
-    job_fit = JobFit(candidate, ticket_matches)
+    job_fit = JobFit(nomination, ticket_matches)
     db.session.add(job_fit)
     return job_fit
 

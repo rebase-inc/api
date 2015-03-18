@@ -1,4 +1,7 @@
 import datetime
+import itertools
+
+from sqlalchemy.ext.hybrid import hybrid_property
 
 from alveare.common.database import DB
 
@@ -15,12 +18,33 @@ class User(DB.Model):
     is_admin =          DB.Column(DB.Boolean,   nullable=False, default=False)
 
     # flask login helper functions
-    def is_admin(self): return self.is_admin 
+    def is_admin(self): return self.is_admin
     def is_authenticated(self): return True
     def is_active(self): return True
     def is_anonymous(self): return False
     def get_id(self): return str(self.id)
     def get_role(self): return
+
+    @hybrid_property
+    def auction_query_filters(self):
+        # if you're admin, you can see everything
+        if self.is_admin():
+            return []
+        manager_roles = self.roles.filter(Role.type == 'manager').all()
+        contractor_roles = self.roles.filter(Role.type == 'manager').all()
+
+        manager_for_organizations = [manager.organization.id for manager in manager_roles]
+
+        auctions_approved_for = []
+        for contractor in contractor_roles:
+            auctions_approved_for.extend(contractor.auctions_approved_for)
+
+        all_filters = []
+        if auctions_approved_for:
+            all_filters.append(Auction.id.in_(auctions_approved_for))
+        if manager_for_organization:
+            all_filters.append(Auction.organization_id.in_(manager_for_organization))
+        return or_(*all_filters)
 
     def __init__(self, first_name, last_name, email, password):
         self.first_name = first_name

@@ -1,4 +1,4 @@
-from sqlalchemy.orm import validates
+from sqlalchemy.ext.hybrid import hybrid_property
 
 from alveare.models.role import Role
 from alveare.models.user import User
@@ -13,7 +13,7 @@ class Contractor(Role):
     clearances =          DB.relationship('CodeClearance',     backref='contractor', cascade='all, delete-orphan', passive_deletes=True)
     skill_set =           DB.relationship('SkillSet',          uselist=False, backref='contractor', cascade='all, delete-orphan', passive_deletes=True)
     remote_work_history = DB.relationship('RemoteWorkHistory', uselist=False, backref='contractor', cascade='all, delete-orphan', passive_deletes=True)
-    candidates =          DB.relationship('Candidate',         backref=DB.backref('contractor', uselist=False), cascade='all, delete-orphan', passive_deletes=True)
+    auction_nominations = DB.relationship('Nomination',        backref=DB.backref('contractor', uselist=False), cascade='all, delete-orphan', passive_deletes=True)
     bank_account =        DB.relationship('BankAccount',       backref='contractor', uselist=False, cascade='all, delete-orphan', passive_deletes=True)
     work_offers =         DB.relationship('WorkOffer',         backref=DB.backref('contractor', uselist=False), cascade='all, delete-orphan', passive_deletes=True)
     bids =                DB.relationship('Bid',               backref=DB.backref('contractor', uselist=False), cascade='all, delete-orphan', passive_deletes=True)
@@ -26,6 +26,15 @@ class Contractor(Role):
             raise ValueError('{} field on {} must be {} not {}'.format('user', self.__tablename__, User, type(user)))
         self.user = user
         self.busyness = 1
+
+    @hybrid_property
+    def auctions_approved_for(self):
+        auctions_approved_for = []
+        for nomination in self.auction_nominations:
+            approved = nomination.approved_for_auction
+            if approved:
+                auctions_approved_for.append(approved.id)
+        return auctions_approved_for
 
     def __repr__(self):
         return '<Contractor[id:{}] busyness="{}">'.format(self.id, self.busyness)
