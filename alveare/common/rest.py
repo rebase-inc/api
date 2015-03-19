@@ -2,6 +2,7 @@ from flask import jsonify, make_response, request
 from flask.ext.login import current_user
 
 from alveare.common.database import DB
+from sqlalchemy import or_
 
 def get_collection(model, serializer, query_filter=None):
     query = model.query
@@ -51,3 +52,7 @@ def admin_required():
             return rest_method(*args, **kwargs)
         return admin_rest_method
     return wrapper
+
+def query_string_values(query_string_name):
+    values = [int(value) for value in request.args.get(query_string_name, '').split(',') if value]
+    return values

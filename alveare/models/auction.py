@@ -31,7 +31,7 @@ class Auction(DB.Model):
         self.finish_work_by = finish_work_by
         self.redundancy = redundancy
 
-        self.organization = organization 
+        self.organization = organization
 
     def __repr__(self):
         return '<Auction[id:{}] finish_work_by={}>'.format(self.id, self.finish_work_by)
