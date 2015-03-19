@@ -61,6 +61,19 @@ class AlveareResource(object):
             return self.url_format(resource)
         return self.url_format(*(map(lambda key: resource[key], self.primary_key)))
 
+    def just_ids(self, resource):
+        '''
+            Given a resource dict, return its sub-dict containing only its keys
+            For instance:
+            just_ids({
+                'contractor_id':    1,
+                'name':             'Joe'
+                })
+
+            returns {'contractor_id: 1}
+        '''
+        return dict( (key, resource[key]) for key in self.primary_key )
+
     def get(self, resource, expected_status=200):
         ''' helper function that returns the actual dictionary of fields for 'resource'/'resource_id'
         '''

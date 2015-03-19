@@ -10,6 +10,9 @@ class TestNominationResource(AlveareRestTestCase):
         self.ticket_set_resource = AlveareResource(self, 'TicketSet')
         super().setUp()
 
+    def test_get_all(self):
+        nominations = self.nomination_resource.get_all()
+
     def test_get_one(self):
         nomination = self.nomination_resource.get_any()
         self.assertTrue(nomination) # mock should have created at least one ticket and its related Nomination object
