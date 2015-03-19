@@ -10,7 +10,7 @@ class TestContractorResource(AlveareRestTestCase):
 
     def test_get_one(self):
         contractor = self.contractor_resource.get_any()
-        self.assertTrue(contractor) # mock should have created at least one account
+        self.assertTrue(contractor) # mock should have created at least one acode_clearance_resourceount
         self.assertTrue(contractor['id'])
 
     def test_remote_work_history(self):
@@ -26,8 +26,8 @@ class TestContractorResource(AlveareRestTestCase):
     def test_code_clearance(self):
         contractor = self.contractor_resource.get_any()
         project = AlveareResource(self, 'Project').get_any()
-        cc = AlveareResource(self, 'CodeClearance')
-        code_clearance = cc.create(
+        code_clearance_resource = AlveareResource(self, 'CodeClearance')
+        code_clearance = code_clearance_resource.create(
             pre_approved =   True,
             project = {'id': project['id']},
             contractor = {'id': contractor['id']}
@@ -39,7 +39,7 @@ class TestContractorResource(AlveareRestTestCase):
 
         # now delete all clearances
         for clearance in queried_contractor['clearances']:
-            cc.delete(clearance)
+            code_clearance_resource.delete(clearance)
         self.assertFalse(self.contractor_resource.get(contractor)['clearances'])
 
     def test_create(self):
