@@ -42,11 +42,9 @@ class TestContractorResource(AlveareRestTestCase):
             cc.delete(clearance)
         self.assertFalse(self.contractor_resource.get(contractor)['clearances'])
 
-    @skip('cant figure out what the fuck this is doing and cant get it to pass')
     def test_create(self):
-        user = AlveareResource(self, 'User').get_any()
-        user.pop('last_seen')
-        user.pop('email')
+        user_resource = AlveareResource(self, 'User')
+        user = user_resource.just_ids(user_resource.get_any())
         self.contractor_resource.create(user=user)
 
     def test_update(self):
