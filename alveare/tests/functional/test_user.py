@@ -14,6 +14,8 @@ class TestUserResource(AlveareRestTestCase):
         user = dict(first_name='Saul', last_name='Goodman', email='saulgoodman@alveare.io', password='foo')
 
         expected_response = copy.copy(user)
+        expected_response['admin'] = False
+        expected_response['roles'] = []
         expected_response.pop('password')
 
         response = self.post_resource('users', user)
@@ -39,6 +41,8 @@ class TestUserResource(AlveareRestTestCase):
         new_name = dict(first_name = 'Jesse', last_name = 'Pinkman')
         response = self.put_resource('users/{}'.format(user['id']), new_name)
         user.update(new_name)
+        user['admin'] = False
+        user['roles'] = []
         self.assertEqual(user, response['user'])
 
         new_email = dict(email = 'jessepinkman@alveare.io')

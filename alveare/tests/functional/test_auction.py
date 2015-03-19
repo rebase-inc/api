@@ -7,7 +7,7 @@ from . import AlveareRestTestCase
 
 class TestAuctionResource(AlveareRestTestCase):
 
-    def test_get_auctions_for_org(self):
+    def test_get_auctions_for_org_and_by_approval(self):
         self.post_resource('auth', dict(), 200) #logout
         self.get_resource('auctions', 401)
         user_data = dict(
@@ -45,6 +45,32 @@ class TestAuctionResource(AlveareRestTestCase):
         auctions = self.get_resource('auctions')['auctions']
         self.assertEqual(len(auctions), 1)
         self.assertEqual(auctions, [auction])
+
+        managers = self.get_resource('organizations/{id}'.format(**organization))['organization']['managers']
+        users_who_are_managers = [manager['user'] for manager in managers]
+
+        all_users = self.get_resource('users')['users']
+        users_that_arent_manager = filter(lambda user: user['id'] not in users_who_are_managers, all_users)
+        users_that_are_contractors = filter(lambda user: 'contractor' in [role['type'] for role in user['roles']], users_that_arent_manager)
+        users_that_arent_admin = filter(lambda user: not user['admin'], users_that_are_contractors)
+        our_user = next(users_that_arent_admin)
+        our_contractor = next(filter(lambda role: role['type'] == 'contractor', our_user['roles']))
+
+        auction_nominations = auction['ticket_set']['nominations']
+        self.assertEqual(auction_nominations, [])
+
+        nomination = self.post_resource('nominations', dict(ticket_set=auction['ticket_set'], contractor=our_contractor))['nomination']
+        contractor_id = nomination['contractor']['id']
+        ticket_set_id = nomination['ticket_set']['id']
+
+        self.post_resource('auth', dict(user=our_user), 200) #login
+        our_users_auctions = self.get_resource('auctions')['auctions']
+        self.assertNotIn(auction['id'], [a['id'] for a in our_users_auctions])
+
+        self.post_resource('auth', dict(user=user), 200) #login
+        self.put_resource('nominations/{}/{}'.format(contractor_id, ticket_set_id), dict(auction=auction))
+        our_users_auctions = self.get_resource('auctions')['auctions']
+        self.assertIn(auction['id'], [a['id'] for a in our_users_auctions])
 
     def test_get_all(self):
         response = self.get_resource('auctions')

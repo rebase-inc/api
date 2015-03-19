@@ -4,9 +4,10 @@ from alveare.views.bid_limit import BidLimitSchema
 from alveare.common.database import get_or_make_object
 
 class TicketSetSchema(Schema):
-    id =         fields.Integer()
-    bid_limits = fields.Nested(BidLimitSchema, exclude=('ticket_set',), many=True)
-    auction =    fields.Nested('AuctionSchema', only=('id',))
+    id =          fields.Integer()
+    bid_limits =  fields.Nested(BidLimitSchema, exclude=('ticket_set',), many=True)
+    auction =     fields.Nested('AuctionSchema', only=('id',))
+    nominations = fields.Nested('NominationSchema', only=('contractor', 'ticket_set'), many=True)
 
     def make_object(self, data):
         from alveare.models import TicketSet

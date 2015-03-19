@@ -128,7 +128,7 @@ class AlveareResource(object):
             raise ValueError('Trying to compare {} to {}'.format(type(first), type(second)))
         if isinstance(first, dict):
             for key, value in first.items():
-                self.test.assertEqual(value, second[key]) 
+                self.test.assertEqual(value, second[key])
         else:
             self.test.assertEqual(a, b)
 
