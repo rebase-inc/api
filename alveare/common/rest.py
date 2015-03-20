@@ -39,6 +39,8 @@ def update_resource(model, instance_id, update_deserializer, serializer):
 
 def delete_resource(model, instance_id):
     instance = model.query.get_or_404(instance_id)
+    if not current_user.allowed_to_delete(instance):
+        return current_app.login_manager.unauthorized()
     DB.session.delete(instance)
     DB.session.commit()
 

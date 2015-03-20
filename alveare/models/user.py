@@ -80,6 +80,8 @@ class User(DB.Model):
         else:
             return query.filter(sql.false())
 
+    def allowed_to_delete(self, instance):
+        return self.allowed_to_modify(instance)
 
     def allowed_to_modify(self, instance):
         if self.is_admin(): return True
