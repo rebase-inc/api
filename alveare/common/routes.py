@@ -6,21 +6,32 @@ def register_routes(api):
         api.add_resource(collection, collection.url)
 
     # TODO: Clean this up
-    from alveare.resources import user, github_ticket, internal_ticket, auth, ticket, bid_limit, ticket_set
+    from alveare.resources import (
+        user,
+        github_ticket,
+        internal_ticket,
+        auth,
+        ticket,
+        bid_limit,
+        ticket_set,
+        job_fit,
+    )
     all_resources = [
-            user.UserCollection,
-            user.UserResource,
-            github_ticket.GithubTicketCollection,
-            github_ticket.GithubTicketResource,
-            internal_ticket.InternalTicketResource,
-            internal_ticket.InternalTicketCollection,
-            auth.AuthCollection,
-            ticket.TicketResource,
-            ticket.TicketCollection,
-            bid_limit.BidLimitResource,
-            bid_limit.BidLimitCollection,
-            ticket_set.TicketSetResource,
-            ticket_set.TicketSetCollection,
+        user.UserCollection,
+        user.UserResource,
+        github_ticket.GithubTicketCollection,
+        github_ticket.GithubTicketResource,
+        internal_ticket.InternalTicketResource,
+        internal_ticket.InternalTicketCollection,
+        auth.AuthCollection,
+        ticket.TicketResource,
+        ticket.TicketCollection,
+        bid_limit.BidLimitResource,
+        bid_limit.BidLimitCollection,
+        ticket_set.TicketSetResource,
+        ticket_set.TicketSetCollection,
+        job_fit.JobFitResource,
+        job_fit.JobFitCollection,
     ]
 
     for resource in all_resources:

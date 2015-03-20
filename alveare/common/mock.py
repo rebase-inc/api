@@ -190,13 +190,15 @@ def create_one_nomination(db, auction=None, contractor=None):
     db.session.add(nomination)
     return nomination
 
-def create_one_job_fit(db):
+def create_one_job_fit(db, nomination=None, ticket_matches=None):
     from alveare.models import TicketMatch, JobFit
-    nomination = create_one_nomination(db)
+    if not nomination:
+        nomination = create_one_nomination(db)
     skill_set = nomination.contractor.skill_set
-    ticket_matches = []
-    for bid_limit in nomination.ticket_set.bid_limits:
-        ticket_matches.append(TicketMatch(skill_set, bid_limit.ticket_snapshot.ticket.skill_requirement, 100))
+    if not ticket_matches:
+        ticket_matches = []
+        for bid_limit in nomination.ticket_set.bid_limits:
+            ticket_matches.append(TicketMatch(skill_set, bid_limit.ticket_snapshot.ticket.skill_requirement, 100))
     job_fit = JobFit(nomination, ticket_matches)
     db.session.add(job_fit)
     return job_fit
@@ -271,8 +273,10 @@ def create_the_world(db):
     rapha_contractor = create_one_contractor(db, rapha)
     andrew_contractor = create_one_contractor(db, andrew)
     manhattan_ticket_matches = create_ticket_matches(db, manhattan_tickets, rapha_contractor)
-    auction = create_one_auction(db, manhattan_tickets)
-    create_one_nomination(db, auction, rapha_contractor)
+    manhattan_auction = create_one_auction(db, manhattan_tickets)
+    rapha_nomination = create_one_nomination(db, manhattan_auction, rapha_contractor)
+    andrew_nomination = create_one_nomination(db, manhattan_auction, andrew_contractor)
+    rapha_manhattan_job_fit = create_one_job_fit(db, rapha_nomination, manhattan_ticket_matches)
     create_one_code_clearance(db, manhattan_project, rapha_contractor, pre_approved=True)
     create_one_code_clearance(db, manhattan_project, andrew_contractor, pre_approved=False)
     create_one_bank_account(db, rapha_contractor)

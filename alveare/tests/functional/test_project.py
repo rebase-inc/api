@@ -8,6 +8,9 @@ class TestProjectResource(AlveareRestTestCase):
         self.project_resource = AlveareResource(self, 'Project')
         super().setUp()
 
+    def test_get_all(self):
+        projects = self.project_resource.get_all()
+
     def test_get_one(self):
         project = self.project_resource.get_any()
         self.assertTrue(project) # mock should have created at least one account
@@ -30,21 +33,22 @@ class TestProjectResource(AlveareRestTestCase):
 
     def test_add_and_remove_tickets(self):
         project = self.project_resource.get_any()
-        t = AlveareResource(self, 'InternalTicket')
+        internal_ticket_resource = AlveareResource(self, 'InternalTicket')
+        ticket_resource = AlveareResource(self, 'Ticket')
         ticket = dict(
             description='Lame description',
             project = dict(id=project['id'])
         )
         for i in range(50):
             ticket['title'] = 'Superb title #{}'.format(i)
-            t.create(**ticket)
+            internal_ticket_resource.create(**ticket)
         queried_project = self.get_resource('projects/{id}'.format(**project))['project']
         self.assertTrue(queried_project)
         self.assertGreaterEqual(len(queried_project['tickets']), 50)
 
         # remove all tickets now
         for one_ticket in queried_project['tickets']:
-            t.delete(one_ticket)
+            ticket_resource.delete(one_ticket)
 
     def test_add_and_remove_code_clearance(self):
         contractor = AlveareResource(self, 'Contractor').get_any()

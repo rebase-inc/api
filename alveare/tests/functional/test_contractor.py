@@ -10,7 +10,7 @@ class TestContractorResource(AlveareRestTestCase):
 
     def test_get_one(self):
         contractor = self.contractor_resource.get_any()
-        self.assertTrue(contractor) # mock should have created at least one account
+        self.assertTrue(contractor) # mock should have created at least one acode_clearance_resourceount
         self.assertTrue(contractor['id'])
 
     def test_remote_work_history(self):
@@ -26,8 +26,8 @@ class TestContractorResource(AlveareRestTestCase):
     def test_code_clearance(self):
         contractor = self.contractor_resource.get_any()
         project = AlveareResource(self, 'Project').get_any()
-        cc = AlveareResource(self, 'CodeClearance')
-        code_clearance = cc.create(
+        code_clearance_resource = AlveareResource(self, 'CodeClearance')
+        code_clearance = code_clearance_resource.create(
             pre_approved =   True,
             project = {'id': project['id']},
             contractor = {'id': contractor['id']}
@@ -39,14 +39,12 @@ class TestContractorResource(AlveareRestTestCase):
 
         # now delete all clearances
         for clearance in queried_contractor['clearances']:
-            cc.delete(clearance)
+            code_clearance_resource.delete(clearance)
         self.assertFalse(self.contractor_resource.get(contractor)['clearances'])
 
-    @skip('cant figure out what the fuck this is doing and cant get it to pass')
     def test_create(self):
-        user = AlveareResource(self, 'User').get_any()
-        user.pop('last_seen')
-        user.pop('email')
+        user_resource = AlveareResource(self, 'User')
+        user = user_resource.just_ids(user_resource.get_any())
         self.contractor_resource.create(user=user)
 
     def test_update(self):
