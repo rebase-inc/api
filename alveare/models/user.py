@@ -2,7 +2,7 @@ import datetime
 import itertools
 
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy import or_
+from sqlalchemy import or_, sql
 
 from alveare.common.database import DB
 from alveare.models import Auction
@@ -28,17 +28,24 @@ class User(DB.Model):
     def get_role(self): return
 
     @hybrid_property
-    def auction_query_filters(self):
+    def manager_roles(self):
+        return self.roles.filter_by(type = 'manager')
+
+    @hybrid_property
+    def contractor_roles(self):
+        return self.roles.filter_by(type = 'contractor')
+
+    @hybrid_property
+    def auction_query(self):
         # if you're admin, you can see everything
+        from alveare.models import Auction
+        query = Auction.query
         if self.is_admin():
-            return None
-        manager_roles = self.roles.filter_by(type = 'manager').all()
-        contractor_roles = self.roles.filter_by(type = 'contractor').all()
+            return query
 
-        manager_for_organization = [manager.organization.id for manager in manager_roles]
-
+        manager_for_organization = [manager.organization.id for manager in self.manager_roles]
         auctions_approved_for = []
-        for contractor in contractor_roles:
+        for contractor in self.contractor_roles.all():
             auctions_approved_for.extend(contractor.auctions_approved_for)
 
         all_filters = []
@@ -46,11 +53,32 @@ class User(DB.Model):
             all_filters.append(Auction.id.in_(auctions_approved_for))
         if manager_for_organization:
             all_filters.append(Auction.organization_id.in_(manager_for_organization))
-
         if not all_filters:
-            return or_(None) #not sure why I have to wrap this in or_
+            return query.filter(sql.false())
+        return query.filter(or_(*all_filters))
 
-        return or_(*all_filters)
+    @hybrid_property
+    def nomination_query(self):
+        ''' you should be able to see a nomination if you're a manager for the organization that owns the ticket_set '''
+        from alveare.models import Nomination, TicketSet, BidLimit, TicketSnapshot, Ticket, Organization, Project, Contractor
+        query = Nomination.query
+        if self.is_admin(): return query
+
+        # TODO: Make this part of the filter
+        manager_for_organization = [manager.organization.id for manager in self.manager_roles]
+
+        if manager_for_organization:
+            query = Nomination.query
+            query = query.join(Nomination.ticket_set)
+            query = query.join(TicketSet.bid_limits)
+            query = query.join(BidLimit.ticket_snapshot)
+            query = query.join(TicketSnapshot.ticket)
+            query = query.join(Ticket.project)
+            query = query.join(Project.organization)
+            query = query.filter(Organization.id.in_(manager_for_organization))
+            return query
+        else:
+            return query.filter(sql.false())
 
     def __init__(self, first_name, last_name, email, password):
         self.first_name = first_name
@@ -58,6 +86,8 @@ class User(DB.Model):
         self.email = email
         self.hashed_password = password #hash it!!!
         self.last_seen = datetime.datetime.now()
+        self._manager_roles = None
+        self._contractor_roles = None
 
     def __repr__(self):
         return '<User[id:{}] first_name={} last_name={} email={}>'.format(self.id, self.first_name, self.last_name, self.email)

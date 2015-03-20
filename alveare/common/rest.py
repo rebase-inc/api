@@ -1,13 +1,12 @@
 from flask import jsonify, make_response, request
-from flask.ext.login import current_user
+from flask.ext.login import current_user, current_app
 
 from alveare.common.database import DB
 from sqlalchemy import or_
 
-def get_collection(model, serializer, query_filter=None):
-    query = model.query
-    if query_filter is not None:
-        query = query.filter(query_filter)
+def get_collection(model, serializer, query=None):
+    if query is None:
+        query = model.query
     all_instances = query.limit(100).all()
     return jsonify(**{model.__pluralname__: serializer.dump(all_instances, many=True).data})
 
@@ -20,9 +19,12 @@ def add_to_collection(model, deserializer, serializer):
     response.status_code = 201
     return response
 
-def get_resource(model, instance_id, serializer):
+def get_resource(model, instance_id, serializer, is_allowed=lambda r: True):
     instance = model.query.get_or_404(instance_id)
-    return jsonify(**{model.__tablename__: serializer.dump(instance).data})
+    if is_allowed(instance) or current_user.admin:
+        return jsonify(**{model.__tablename__: serializer.dump(instance).data})
+    else:
+        return current_app.login_manager.unauthorized()
 
 def update_resource(model, instance_id, update_deserializer, serializer):
     instance = model.query.get_or_404(instance_id)

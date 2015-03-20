@@ -11,8 +11,8 @@ class TicketSet(DB.Model):
     bid_limits = DB.relationship(BidLimit, backref='ticket_set', cascade='all, delete-orphan', passive_deletes=True)
     nominations = DB.relationship('Nomination', backref='ticket_set', cascade='all, delete-orphan', passive_deletes=True)
 
-    def add_bid_limit(self, bid_limit):
-        self.bid_limits.append(bid_limit)
+    def __init__(self, bid_limits):
+        self.bid_limits = bid_limits
 
     def __repr__(self):
         return '<Ticketset[id:{}]>'.format(self.id)

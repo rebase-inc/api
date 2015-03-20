@@ -8,7 +8,7 @@ from . import AlveareRestTestCase
 class TestAuctionResource(AlveareRestTestCase):
 
     def test_get_auctions_for_org_and_by_approval(self):
-        self.post_resource('auth', dict(), 200) #logout
+        self.post_resource('auth', dict()) #logout
         self.get_resource('auctions', 401)
         user_data = dict(
             first_name = 'Andrew',
@@ -17,7 +17,7 @@ class TestAuctionResource(AlveareRestTestCase):
             password = 'foobar'
         )
         user = self.post_resource('users', user_data)['user']
-        self.post_resource('auth', dict(user=user), 200) #login
+        self.post_resource('auth', dict(user=user)) #login
 
         org_data = dict(name='Bitstrap', user=user)
         organization = self.post_resource('organizations', org_data)['organization']
@@ -63,11 +63,11 @@ class TestAuctionResource(AlveareRestTestCase):
         contractor_id = nomination['contractor']['id']
         ticket_set_id = nomination['ticket_set']['id']
 
-        self.post_resource('auth', dict(user=our_user), 200) #login
+        self.post_resource('auth', dict(user=our_user)) #login
         our_users_auctions = self.get_resource('auctions')['auctions']
         self.assertNotIn(auction['id'], [a['id'] for a in our_users_auctions])
 
-        self.post_resource('auth', dict(user=user), 200) #login
+        self.post_resource('auth', dict(user=user)) #login
         self.put_resource('nominations/{}/{}'.format(contractor_id, ticket_set_id), dict(auction=auction))
         our_users_auctions = self.get_resource('auctions')['auctions']
         self.assertIn(auction['id'], [a['id'] for a in our_users_auctions])

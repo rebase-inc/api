@@ -23,7 +23,7 @@ class TestNominationResource(AlveareRestTestCase):
     def test_update(self):
         nomination = self.nomination_resource.get_any()
         nomination['approved_for_auction_id'] = nomination['ticket_set_id']
-        self.nomination_resource.update(**nomination) 
+        self.nomination_resource.update(**nomination)
 
     def test_delete(self):
         self.nomination_resource.delete_any()
@@ -39,3 +39,26 @@ class TestNominationResource(AlveareRestTestCase):
         ticket_set = self.ticket_set_resource.get(nomination['ticket_set'])
         self.ticket_set_resource.delete(ticket_set)
         self.nomination_resource.get(nomination, 404)
+
+    def test_that_new_user_cant_see_any_nominations(self):
+        self.logout()
+        self.login_as_new_user()
+
+        from alveare.models.nomination import Nomination
+        nomination = Nomination.query.first()
+        self.get_resource('nominations/{}/{}'.format(nomination.contractor_id, nomination.ticket_set_id), 401)
+
+        nominations = self.get_resource('nominations')['nominations']
+        self.assertEqual(nominations, [])
+
+        user = nomination.ticket_set.bid_limits[0].ticket_snapshot.ticket.project.organization.managers[0].user
+
+        self.logout()
+        self.post_resource('auth', dict(user={'id': user.id}))
+        nominations = self.get_resource('nominations')['nominations']
+        #nomination_ids = [nom['id'] for nom in nominations]
+        nominations = [(nom['contractor']['id'], nom['ticket_set']['id']) for nom in nominations]
+        nomination = (nomination.contractor_id, nomination.ticket_set_id)
+        self.assertIn(nomination, nominations)
+
+

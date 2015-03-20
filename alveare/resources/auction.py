@@ -18,7 +18,7 @@ class AuctionCollection(Resource):
 
     @login_required
     def get(self):
-        return get_collection(self.model, self.serializer, current_user.auction_query_filters)
+        return get_collection(self.model, self.serializer, current_user.auction_query)
 
     def post(self):
         return add_to_collection(self.model, self.deserializer, self.serializer)

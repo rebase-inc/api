@@ -17,10 +17,10 @@ class AuthCollection(Resource):
             authed_user = auth_data.get('user')
             login_user(authed_user)
             response = jsonify(message = '{} succesfully logged in'.format(authed_user.first_name))
-            response.status_code = 200
+            response.status_code = 201
             return response
         else:
             logout_user()
             response = jsonify(message = 'Logged out')
-            response.status_code = 200
+            response.status_code = 201
             return response
