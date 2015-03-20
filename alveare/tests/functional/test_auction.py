@@ -140,3 +140,4 @@ class TestAuctionResource(AlveareRestTestCase):
         auction = self.post_resource('auctions/{}/fail_events'.format(auction['id']), dict())['auction']
         self.assertEqual(auction.pop('state'), 'failed')
 
+

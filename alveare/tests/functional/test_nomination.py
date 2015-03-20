@@ -1,7 +1,8 @@
-from . import AlveareRestTestCase
-from alveare.common.utils import AlveareResource
 from unittest import skip
 
+from . import AlveareRestTestCase
+from alveare.common.utils import AlveareResource
+from alveare.models.nomination import Nomination
 
 class TestNominationResource(AlveareRestTestCase):
     def setUp(self):
@@ -26,9 +27,20 @@ class TestNominationResource(AlveareRestTestCase):
         )
 
     def test_update(self):
-        nomination = self.nomination_resource.get_any()
-        nomination['approved_for_auction_id'] = nomination['ticket_set_id']
-        self.nomination_resource.update(**nomination)
+        self.logout()
+        self.login_as_new_user()
+
+        nomination = Nomination.query.first()
+        auction_id = nomination.ticket_set.auction_id
+
+        self.put_resource('nominations/{}/{}'.format(nomination.contractor_id, nomination.ticket_set_id), dict(auction={'id': auction_id}), 401)
+        user = nomination.ticket_set.bid_limits[0].ticket_snapshot.ticket.project.organization.managers[0].user
+
+        self.post_resource('auth', dict(user={'id': user.id}))
+        self.put_resource('nominations/{}/{}'.format(nomination.contractor_id, nomination.ticket_set_id), dict(auction={'id': auction_id}))
+
+        nomination = self.get_resource('nominations/{}/{}'.format(nomination.contractor_id, nomination.ticket_set_id))['nomination']
+        self.assertEqual(nomination['auction']['id'], auction_id)
 
     def test_delete(self):
         self.nomination_resource.delete_any()

@@ -36,8 +36,7 @@ class NominationResource(Resource):
         You can get a nomination if you're a manager for the organization which owns the ticket_set.
         Contractors can never see a nomination...there is no reason why they would want to.
         '''
-        is_allowed = lambda nomination: set(current_user.manager_roles) & set(nomination.ticket_set.bid_limits[0].ticket_snapshot.ticket.project.organization.managers)
-        return get_resource(self.model, (contractor_id, ticket_set_id), self.serializer, is_allowed)
+        return get_resource(self.model, (contractor_id, ticket_set_id), self.serializer)
 
     @login_required
     def put(self, contractor_id, ticket_set_id):

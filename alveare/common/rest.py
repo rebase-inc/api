@@ -19,15 +19,16 @@ def add_to_collection(model, deserializer, serializer):
     response.status_code = 201
     return response
 
-def get_resource(model, instance_id, serializer, is_allowed=lambda r: True):
+def get_resource(model, instance_id, serializer):
     instance = model.query.get_or_404(instance_id)
-    if is_allowed(instance) or current_user.admin:
-        return jsonify(**{model.__tablename__: serializer.dump(instance).data})
-    else:
+    if not current_user.allowed_to_get(instance):
         return current_app.login_manager.unauthorized()
+    return jsonify(**{model.__tablename__: serializer.dump(instance).data})
 
 def update_resource(model, instance_id, update_deserializer, serializer):
     instance = model.query.get_or_404(instance_id)
+    if not current_user.allowed_to_modify(instance):
+        return current_app.login_manager.unauthorized()
     fields_to_update = update_deserializer.load(request.form or request.json).data
     for field, value in fields_to_update.items():
         if getattr(instance, field) != value:

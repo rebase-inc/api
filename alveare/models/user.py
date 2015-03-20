@@ -80,6 +80,28 @@ class User(DB.Model):
         else:
             return query.filter(sql.false())
 
+
+    def allowed_to_modify(self, instance):
+        if self.is_admin(): return True
+
+        from alveare.models import Nomination
+        if isinstance(instance, Nomination):
+            # TODO: Optimize
+            manager_for_organization = [manager.organization.id for manager in self.manager_roles]
+            return (instance.ticket_set.bid_limits[0].ticket_snapshot.ticket.project.organization.id in manager_for_organization)
+        else:
+            return True
+
+    def allowed_to_get(self, instance):
+        if self.is_admin(): return True
+
+        from alveare.models import Nomination
+        if isinstance(instance, Nomination):
+            managers = instance.ticket_set.bid_limits[0].ticket_snapshot.ticket.project.organization.managers
+            return set(self.manager_roles) & set(managers)
+        else:
+            return True
+
     def __init__(self, first_name, last_name, email, password):
         self.first_name = first_name
         self.last_name = last_name
