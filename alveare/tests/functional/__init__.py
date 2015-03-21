@@ -21,7 +21,7 @@ class AlveareRestTestCase(unittest.TestCase):
         self.db.session.commit()
 
         create_the_world(self.db)
-        self.admin_user = create_admin_user(self.db)
+        self.admin_user = create_admin_user(self.db, password='admin')
         self.db.session.commit()
 
         self.addCleanup(self.cleanup)
@@ -29,14 +29,14 @@ class AlveareRestTestCase(unittest.TestCase):
         self.login_admin()
 
     def login_admin(self):
-        self.post_resource('/auth', { 'user': {'id': self.admin_user.id }})
+        self.post_resource('/auth', { 'user': {'id': self.admin_user.id}, 'password': 'admin'})
 
     def logout(self):
-        self.post_resource('/auth', dict())
+        self.post_resource('/auth', dict(), 401)
 
     def login_as_new_user(self):
         new_user = models.User.query.filter(~models.User.roles.any() & ~models.User.admin).first()
-        self.post_resource('/auth', {'user': {'id': new_user.id } })
+        self.post_resource('/auth', {'user': {'id': new_user.id}, 'password': 'foo' } )
 
     def cleanup(self):
         self.db.session.remove()

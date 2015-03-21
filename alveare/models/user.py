@@ -4,6 +4,10 @@ import itertools
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy import or_, sql
 
+from flask.ext.login import login_user, logout_user
+
+from werkzeug.security import generate_password_hash, check_password_hash
+
 from alveare.common.database import DB
 from alveare.models import Auction
 
@@ -18,6 +22,20 @@ class User(DB.Model):
     last_seen =         DB.Column(DB.DateTime,  nullable=False)
     roles =             DB.relationship('Role', backref='user', cascade='all, delete-orphan', lazy='dynamic')
     admin =             DB.Column(DB.Boolean,   nullable=False, default=False)
+
+    def __init__(self, first_name, last_name, email, password):
+        self.first_name = first_name
+        self.last_name = last_name
+        self.email = email
+        self.hashed_password = generate_password_hash(password)
+        self.last_seen = datetime.datetime.now()
+        self._manager_roles = None
+        self._contractor_roles = None
+
+    def check_password(self, password):
+        if not password:
+            return False
+        return check_password_hash(self.hashed_password, password)
 
     # flask login helper functions
     def is_admin(self): return self.admin
@@ -103,15 +121,6 @@ class User(DB.Model):
             return set(self.manager_roles) & set(managers)
         else:
             return True
-
-    def __init__(self, first_name, last_name, email, password):
-        self.first_name = first_name
-        self.last_name = last_name
-        self.email = email
-        self.hashed_password = password #hash it!!!
-        self.last_seen = datetime.datetime.now()
-        self._manager_roles = None
-        self._contractor_roles = None
 
     def __repr__(self):
         return '<User[id:{}] first_name={} last_name={} email={}>'.format(self.id, self.first_name, self.last_name, self.email)

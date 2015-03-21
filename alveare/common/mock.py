@@ -8,9 +8,9 @@ def create_one_organization(db, name='Alveare'):
     db.session.add(organization)
     return organization
 
-def create_one_user(db, first_name='Andrew', last_name='Millspaugh', email='andrew@alveare.io'):
+def create_one_user(db, first_name='Andrew', last_name='Millspaugh', email='andrew@alveare.io', password='foo'):
     from alveare.models import User
-    user = User(first_name, last_name, email, 'hashedpassword')
+    user = User(first_name, last_name, email, password)
     db.session.add(user)
     return user
 
@@ -256,8 +256,8 @@ def create_one_work_review(db, rating, comment):
     db.session.add(review)
     return review
 
-def create_admin_user(db):
-    god = create_one_user(db, 'Flying', 'SpaghettiMonster', 'fsm@alveare.io')
+def create_admin_user(db, password):
+    god = create_one_user(db, 'Flying', 'SpaghettiMonster', 'fsm@alveare.io', password)
     god.admin = True
     return god
 
