@@ -28,12 +28,21 @@ def create_app(sqlalchemy_object, database_type = 'sqlite', config_filename = 'c
     else:
         raise Exception('invalid database type!')
     #app.config.from_object(config_filename)
+    class AnonymousUser(object):
+        is_active = False
+        def is_authenticated(self): return False
+        def is_anonymous(self): return True
+        def get_id(self): return None
+        def allowed_to_get(self, instace): return False
+        def allowed_to_create(self, instance): return isinstance(instance, User)
+        def allowed_to_modify(self, instance): return False
+        def allowed_to_delete(self, instance): return False
     login_manager = LoginManager()
+    login_manager.anonymous_user = AnonymousUser
     login_manager.init_app(app)
     @login_manager.user_loader
     def load_user(user_id):
         return User.query.get(user_id)
-
 
     sqlalchemy_object.init_app(app)
     api = Api(app)

@@ -1,39 +1,41 @@
 from flask.ext.restful import Resource
+from flask.ext.login import login_required, current_user
 from flask import jsonify, make_response, request
 
-from alveare import models
+from alveare.models import Arbitration
 from alveare.views import arbitration
 from alveare.common.database import DB
+from alveare.common.rest import query_string_values, get_collection, add_to_collection, get_resource, update_resource, delete_resource
 
 class ArbitrationCollection(Resource):
+    model = Arbitration
+    serializer = arbitration.serializer
+    deserializer = arbitration.deserializer
+    url = '/{}'.format(model.__pluralname__)
 
+    @login_required
     def get(self):
-        all_arbitrations = models.Arbitration.query.limit(100).all()
-        response = jsonify(arbitrations = arbitration.serializer.dump(all_arbitrations, many=True).data)
-        return response
+        return get_collection(self.model, self.serializer)
 
+    @login_required
     def post(self):
-        ''' admin only '''
-        #raise Exception(request.form or request.json)
-        new_arbitration = arbitration.deserializer.load(request.form or request.json).data
-        DB.session.add(new_arbitration)
-        DB.session.commit()
-
-        response = jsonify(arbitration.serializer.dump(new_arbitration).data)
-        response.status_code = 201
-        return response
+        return add_to_collection(self.model, self.deserializer, self.serializer)
 
 class ArbitrationResource(Resource):
+    model = Arbitration
+    serializer = arbitration.serializer
+    deserializer = arbitration.deserializer
+    update_deserializer = arbitration.update_deserializer
+    url = '/{}/<int:id>'.format(model.__pluralname__)
 
+    @login_required
     def get(self, id):
-        single_arbitration = models.Arbitration.query.get_or_404(id)
-        return jsonify(arbitration = arbitration.serializer.dump(single_arbitration).data)
+        return get_resource(self.model, id, self.serializer)
 
-    #def put(self, id):
-        #single_mediation = models.Arbitration.query.get_or_404(id)
+    @login_required
+    def put(self, id):
+        return update_resource(self.model, id, self.update_deserializer, self.serializer)
 
-        #for field, value in mediation.updater.load(request.form or request.json).data.items():
-            #setattr(single_mediation, field, value)
-        #DB.session.commit()
-
-        #return jsonify(mediation = mediation.serializer.dump(single_mediation).data)
+    @login_required
+    def delete(self, id):
+        return delete_resource(self.model, id)

@@ -12,6 +12,8 @@ def get_collection(model, serializer, query=None):
 
 def add_to_collection(model, deserializer, serializer):
     new_instance = deserializer.load(request.form or request.json).data
+    if not current_user.allowed_to_create(new_instance):
+        return current_app.login_manager.unauthorized()
     DB.session.add(new_instance)
     DB.session.commit()
 

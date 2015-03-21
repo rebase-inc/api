@@ -27,10 +27,13 @@ class User(DB.Model):
         self.first_name = first_name
         self.last_name = last_name
         self.email = email
-        self.hashed_password = generate_password_hash(password)
         self.last_seen = datetime.datetime.now()
         self._manager_roles = None
         self._contractor_roles = None
+        self.set_password(password)
+
+    def set_password(self, password):
+        self.hashed_password = generate_password_hash(password)
 
     def check_password(self, password):
         if not password:
@@ -97,6 +100,9 @@ class User(DB.Model):
             return query
         else:
             return query.filter(sql.false())
+
+    def allowed_to_create(self, instance):
+        return self.allowed_to_modify(instance)
 
     def allowed_to_delete(self, instance):
         return self.allowed_to_modify(instance)

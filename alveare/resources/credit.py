@@ -1,47 +1,41 @@
 from flask.ext.restful import Resource
+from flask.ext.login import login_required, current_user
 from flask import jsonify, make_response, request
 
-from alveare import models
+from alveare.models import Credit
 from alveare.views import credit
 from alveare.common.database import DB
+from alveare.common.rest import query_string_values, get_collection, add_to_collection, get_resource, update_resource, delete_resource
 
 class CreditCollection(Resource):
+    model = Credit
+    serializer = credit.serializer
+    deserializer = credit.deserializer
+    url = '/{}'.format(model.__pluralname__)
 
+    @login_required
     def get(self):
-        all_credits = models.Credit.query.limit(100).all()
-        response = jsonify(credits = credit.serializer.dump(all_credits, many=True).data)
-        return response
+        return get_collection(self.model, self.serializer)
 
+    @login_required
     def post(self):
-        ''' admin only '''
-        #raise Exception(request.form or request.json)
-        new_credit = credit.deserializer.load(request.form or request.json).data
-        DB.session.add(new_credit)
-        DB.session.commit()
-
-        response = jsonify(credit = credit.serializer.dump(new_credit).data)
-        response.status_code = 201
-        return response
+        return add_to_collection(self.model, self.deserializer, self.serializer)
 
 class CreditResource(Resource):
+    model = Credit
+    serializer = credit.serializer
+    deserializer = credit.deserializer
+    update_deserializer = credit.update_deserializer
+    url = '/{}/<int:id>'.format(model.__pluralname__)
 
+    @login_required
     def get(self, id):
-        single_credit = models.Credit.query.get_or_404(id)
-        return jsonify(credit = credit.serializer.dump(single_credit).data)
+        return get_resource(self.model, id, self.serializer)
 
+    @login_required
     def put(self, id):
-        single_credit = models.Credit.query.get_or_404(id)
+        return update_resource(self.model, id, self.update_deserializer, self.serializer)
 
-        for field, value in credit.updater.load(request.form or request.json).data.items():
-            setattr(single_credit, field, value)
-        DB.session.commit()
-
-        return jsonify(credit = credit.serializer.dump(single_credit).data)
-
+    @login_required
     def delete(self, id):
-        single_credit = models.Credit.query.get(id)
-        DB.session.delete(single_credit)
-        DB.session.commit()
-        response = jsonify(message = 'Credit succesfully deleted')
-        response.status_code = 200
-        return response
+        return delete_resource(self.model, id)

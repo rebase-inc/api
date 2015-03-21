@@ -1,6 +1,6 @@
-
-
 from marshmallow import fields, Schema
+
+from alveare.common.database import get_or_make_object
 
 class DebitSchema(Schema):
     id = fields.Integer()
@@ -10,10 +10,10 @@ class DebitSchema(Schema):
 
     def make_object(self, data):
         from alveare.models import Debit
-        return Debit(**data)
+        return get_or_make_object(Debit, data)
 
 serializer = DebitSchema(only=('id','work','price','paid'))
 deserializer = DebitSchema(only=('work','price'))
 
-updater = DebitSchema(only=('work','price','paid'))
-updater.make_object = lambda data: data
+update_deserializer = DebitSchema(only=tuple(), strict=True)
+update_deserializer.make_object = lambda data: data

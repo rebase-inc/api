@@ -14,7 +14,7 @@ class TestGithubProjectResource(AlveareRestTestCase):
     def create_project(self):
         # make the request data
         org = self.get_org()
-        new_project = dict(organization_id=org['id'], name='Falcon9')
+        new_project = dict(organization=dict(id=org['id']), name='Falcon9')
 
         # create the resource
         response = self.post_resource('github_projects', new_project)
@@ -23,7 +23,7 @@ class TestGithubProjectResource(AlveareRestTestCase):
         self.assertIn('github_project', response)
         project = response['github_project']
         self.assertEqual(project['name'], new_project['name'])
-        self.assertEqual(project['organization_id'], org['id'])
+        self.assertEqual(project['organization']['id'], org['id'])
         return project
 
     def test_create(self):
@@ -35,15 +35,10 @@ class TestGithubProjectResource(AlveareRestTestCase):
         self.assertIn('github_project', response2)
         project2 = response2['github_project']
         self.assertEqual(project2['name'], new_project['name'])
-        self.assertEqual(project2['organization_id'], new_project['organization_id'])
-
-        # verify a related code repo has been created as well
-        code_repo_response = self.get_resource('code_repositories/{}'.format(project_id))
-        self.assertIn('code_repository', code_repo_response)
-        code_repo = code_repo_response['code_repository']
+        self.assertEqual(project2['organization'], new_project['organization'])
 
         # verify the created project is listed in the organization data
-        org_response = self.get_resource('organizations/{}'.format(new_project['organization_id']))
+        org_response = self.get_resource('organizations/{}'.format(new_project['organization']['id']))
         self.assertIn('organization', org_response)
         org = org_response['organization']
         self.assertTrue(any(map(lambda project: project['id']==project_id, org['projects'])))

@@ -1,3 +1,4 @@
+from flask.ext.login import login_required, current_user
 from flask.ext.restful import Resource
 from flask import jsonify, make_response, request
 
@@ -10,11 +11,14 @@ class BidCollection(Resource):
     model = Bid
     serializer = bid.serializer
     deserializer = bid.deserializer
-    url = '/{}'.format(model.__tablename__)
-    
-    def get(self): 
+    url = '/{}'.format(model.__pluralname__)
+
+    @login_required
+    def get(self):
         return get_collection(self.model, self.serializer)
-    def post(self): 
+
+    @login_required
+    def post(self):
         return add_to_collection(self.model, self.deserializer, self.serializer)
 
 class BidResource(Resource):
@@ -23,10 +27,15 @@ class BidResource(Resource):
     deserializer = bid.deserializer
     update_deserializer = bid.update_deserializer
     url = '/{}/<int:id>'.format(model.__tablename__)
-    
-    def get(self, id): 
+
+    @login_required
+    def get(self, id):
         return get_resource(self.model, id, self.serializer)
-    def put(self, id): 
-        return update_resource(self.model, id, self.deserializer, self.serializer) 
-    def delete(self, id): 
+
+    @login_required
+    def put(self, id):
+        return update_resource(self.model, id, self.deserializer, self.serializer)
+
+    @login_required
+    def delete(self, id):
         return delete_resource(self.model, id)

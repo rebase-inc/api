@@ -11,6 +11,7 @@ from alveare.common.rest import get_collection, add_to_collection, get_resource,
 class AuthCollection(Resource):
     url = '/auth'
 
+    # TODO: Refactor this to look like other REST endpoints
     def post(self):
         try:
             auth_data = auth.deserializer.load(request.form or request.json).data

@@ -1,47 +1,41 @@
 from flask.ext.restful import Resource
+from flask.ext.login import login_required, current_user
 from flask import jsonify, make_response, request
 
-from alveare import models
+from alveare.models import Debit
 from alveare.views import debit
 from alveare.common.database import DB
+from alveare.common.rest import query_string_values, get_collection, add_to_collection, get_resource, update_resource, delete_resource
 
 class DebitCollection(Resource):
+    model = Debit
+    serializer = debit.serializer
+    deserializer = debit.deserializer
+    url = '/{}'.format(model.__pluralname__)
 
+    @login_required
     def get(self):
-        all_debits = models.Debit.query.limit(100).all()
-        response = jsonify(debits = debit.serializer.dump(all_debits, many=True).data)
-        return response
+        return get_collection(self.model, self.serializer)
 
+    @login_required
     def post(self):
-        ''' admin only '''
-        #raise Exception(request.form or request.json)
-        new_debit = debit.deserializer.load(request.form or request.json).data
-        DB.session.add(new_debit)
-        DB.session.commit()
-
-        response = jsonify(debit = debit.serializer.dump(new_debit).data)
-        response.status_code = 201
-        return response
+        return add_to_collection(self.model, self.deserializer, self.serializer)
 
 class DebitResource(Resource):
+    model = Debit
+    serializer = debit.serializer
+    deserializer = debit.deserializer
+    update_deserializer = debit.update_deserializer
+    url = '/{}/<int:id>'.format(model.__pluralname__)
 
+    @login_required
     def get(self, id):
-        single_debit = models.Debit.query.get_or_404(id)
-        return jsonify(debit = debit.serializer.dump(single_debit).data)
+        return get_resource(self.model, id, self.serializer)
 
+    @login_required
     def put(self, id):
-        single_debit = models.Debit.query.get_or_404(id)
+        return update_resource(self.model, id, self.update_deserializer, self.serializer)
 
-        for field, value in debit.updater.load(request.form or request.json).data.items():
-            setattr(single_debit, field, value)
-        DB.session.commit()
-
-        return jsonify(debit = debit.serializer.dump(single_debit).data)
-
+    @login_required
     def delete(self, id):
-        single_debit = models.Debit.query.get(id)
-        DB.session.delete(single_debit)
-        DB.session.commit()
-        response = jsonify(message = 'Debit succesfully deleted')
-        response.status_code = 200
-        return response
+        return delete_resource(self.model, id)
