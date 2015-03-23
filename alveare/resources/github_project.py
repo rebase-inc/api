@@ -1,48 +1,40 @@
 
+from flask.ext.login import login_required, current_user
 from flask.ext.restful import Resource
 from flask import jsonify, request
 from alveare.models.github_project import GithubProject
-from alveare.views.github_project import deserializer, serializer, update_deserializer
+from alveare.views import github_project
 from alveare.common.database import DB
+from alveare.common.rest import query_string_values, get_collection, add_to_collection, get_resource, update_resource, delete_resource
 
 class GithubProjectCollection(Resource):
+    model = GithubProject
+    serializer = github_project.serializer
+    deserializer = github_project.deserializer
+    url = '/{}'.format(model.__pluralname__)
 
+    @login_required
     def get(self):
-        projects = GithubProject.query.all()
-        response = jsonify(github_projects = serializer.dump(projects, many=True).data)
-        return response
+        return get_collection(self.model, self.serializer)
 
     def post(self):
-        new_project = deserializer.load(request.form or request.json).data
-
-        DB.session.add(new_project)
-        DB.session.commit()
-
-        response = jsonify(github_project=serializer.dump(new_project).data)
-        response.status_code = 201
-        return response
+        return add_to_collection(self.model, self.deserializer, self.serializer)
 
 class GithubProjectResource(Resource):
+    model = GithubProject
+    serializer = github_project.serializer
+    deserializer = github_project.deserializer
+    update_deserializer = github_project.update_deserializer
+    url = '/{}/<int:id>'.format(model.__pluralname__)
 
+    @login_required
     def get(self, id):
-        project = GithubProject.query.get_or_404(id)
-        return jsonify(github_project = serializer.dump(project).data)
+        return get_resource(self.model, id, self.serializer)
 
-    def delete(self, id):
-        project = GithubProject.query.get_or_404(id)
-        DB.session.delete(project)
-        DB.session.commit()
-        response = jsonify(message = 'Github project succesfully deleted')
-        response.status_code = 200
-        return response
-
+    @login_required
     def put(self, id):
-        updated_project = update_deserializer.load(request.form or request.json).data
+        return update_resource(self.model, id, self.update_deserializer, self.serializer)
 
-        DB.session.add(updated_project)
-        DB.session.commit()
-
-        response = jsonify(github_project=serializer.dump(updated_project).data)
-        response.status_code = 200
-        return response
-
+    @login_required
+    def delete(self, id):
+        return delete_resource(self.model, id)

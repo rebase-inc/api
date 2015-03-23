@@ -3,25 +3,22 @@ from alveare.common.schema import AlveareSchema
 from alveare.models.organization import Organization
 from alveare.models.github_project import GithubProject
 from alveare.models.code_repository import CodeRepository
+from alveare.common.database import get_or_make_object
 
 class GithubProjectSchema(AlveareSchema):
 
-    id =                fields.Integer()
-    organization_id =   fields.Integer()
-    name =              fields.String()
+    id =              fields.Integer()
+    name =            fields.String()
+    organization =    fields.Nested('OrganizationSchema', only=('id',), required=True)
+    code_repository = fields.Nested('CodeRepositorySchema', only=('id',))
+    tickets =         fields.Nested('TicketSchema', only=('id',))
+    clearances =      fields.Nested('CodeClearanceSchema', only=('id',))
 
     def make_object(self, data):
-        if data.get('id'):
-            # an id is provided, so we're doing an update
-            project = GithubProject.query.get_or_404(data['id'])
-            project.name = data['name']
-            return project
-        organization = Organization.query.get_or_404(data['organization_id'])
-        project = GithubProject(organization, data['name'])
-        CodeRepository(project)
-        return project
+        from alveare.models import GithubProject
+        return get_or_make_object(GithubProject, data)
 
-serializer =            GithubProjectSchema(only=('id', 'organization_id', 'name'))
-deserializer =          GithubProjectSchema(only=('organization_id', 'name'))
-update_deserializer =   GithubProjectSchema(only=('id', 'organization_id', 'name'))
-
+serializer =            GithubProjectSchema(only=('id', 'organization', 'name'), skip_missing=True)
+deserializer =          GithubProjectSchema(only=('organization', 'name'), strict=True)
+update_deserializer =   GithubProjectSchema(only=tuple())
+update_deserializer.make_object = lambda data: data

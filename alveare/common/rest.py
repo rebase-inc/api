@@ -1,19 +1,20 @@
 from flask import jsonify, make_response, request
-from flask.ext.login import current_user
+from flask.ext.login import current_user, current_app
 from alveare.common.exceptions import ClientError
 from alveare.common.database import DB
+
 from sqlalchemy import or_
 
-def get_collection(model, serializer, query_filter=None):
-    query = model.query
-    if query_filter is not None:
-        query = query.filter(query_filter)
+def get_collection(model, serializer, query=None):
+    if query is None:
+        query = model.query
     all_instances = query.limit(100).all()
     return jsonify(**{model.__pluralname__: serializer.dump(all_instances, many=True).data})
 
 def add_to_collection(model, deserializer, serializer):
-    request_data = request.form or request.json
-    new_instance = deserializer.load(request_data).data
+    new_instance = deserializer.load(request.form or request.json).data
+    if not current_user.allowed_to_create(new_instance):
+        return current_app.login_manager.unauthorized()
     DB.session.add(new_instance)
     DB.session.commit()
     response = jsonify(**{model.__tablename__: serializer.dump(new_instance).data})
@@ -24,12 +25,16 @@ def get_resource(model, instance_id, serializer):
     instance = model.query.get(instance_id)
     if not instance:
         raise ClientError(404)
+    if not current_user.allowed_to_get(instance):
+        return current_app.login_manager.unauthorized()
     return jsonify(**{model.__tablename__: serializer.dump(instance).data})
 
 def update_resource(model, instance_id, update_deserializer, serializer):
     instance = model.query.get(instance_id)
     if not instance:
         raise ClientError(404)
+    if not current_user.allowed_to_modify(instance):
+        return current_app.login_manager.unauthorized()
     fields_to_update = update_deserializer.load(request.form or request.json).data
     for field, value in fields_to_update.items():
         if getattr(instance, field) != value:
@@ -39,9 +44,11 @@ def update_resource(model, instance_id, update_deserializer, serializer):
     return jsonify(**{model.__tablename__: serializer.dump(instance).data})
 
 def delete_resource(model, instance_id):
-    instance = model.query.get_or_404(instance_id)
+    instance = model.query.get(instance_id)
     if not instance:
         raise ClientError(404)
+    if not current_user.allowed_to_delete(instance):
+        return current_app.login_manager.unauthorized()
     DB.session.delete(instance)
     DB.session.commit()
 

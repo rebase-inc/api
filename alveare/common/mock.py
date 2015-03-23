@@ -8,9 +8,9 @@ def create_one_organization(db, name='Alveare'):
     db.session.add(organization)
     return organization
 
-def create_one_user(db, first_name='Andrew', last_name='Millspaugh', email='andrew@alveare.io'):
+def create_one_user(db, first_name='Andrew', last_name='Millspaugh', email='andrew@alveare.io', password='foo'):
     from alveare.models import User
-    user = User(first_name, last_name, email, 'hashedpassword')
+    user = User(first_name, last_name, email, password)
     db.session.add(user)
     return user
 
@@ -34,13 +34,13 @@ def create_one_contractor(db, user=None):
 
 def create_one_bank_account(db, owner):
     from alveare.models import BankAccount, Organization, Contractor
-    routing = 123456000+randint(0, 999) 
-    account = 1230000+randint(0, 9999) 
-    if isinstance(owner, Organization): 
+    routing = 123456000+randint(0, 999)
+    account = 1230000+randint(0, 9999)
+    if isinstance(owner, Organization):
         account = BankAccount('Main Account', routing, account, organization=owner)
-    elif isinstance(owner, Contractor): 
+    elif isinstance(owner, Contractor):
         account = BankAccount('Main Account', routing, account, contractor=owner)
-    else: 
+    else:
         raise ValueError('owner is of type "{}", should be Organization or Contractor'.format(type(owner)))
     db.session.add(account)
     return account
@@ -174,10 +174,8 @@ def create_one_auction(db, tickets=None, duration=1000, finish_work_by=None, red
     ticket_snaps = [TicketSnapshot(ticket) for ticket in tickets]
     bid_limits = [BidLimit(ticket_snap, 200) for ticket_snap in ticket_snaps]
     term_sheet = TermSheet('Some legal mumbo-jumbo')
-    ticket_set = TicketSet()
-    for bid_limit in bid_limits:
-        ticket_set.add_bid_limit(bid_limit)
-    organization = tickets[0].project.organization 
+    ticket_set = TicketSet(bid_limits)
+    organization = tickets[0].project.organization
     auction = Auction(organization, ticket_set, term_sheet, duration, finish_work_by, redundancy)
     db.session.add(auction)
     return auction
@@ -228,7 +226,7 @@ def create_one_contract(db):
     from alveare.models import Contract
     bid = create_one_bid(db)
     contract = Contract(bid)
-    db.session.add(bid) 
+    db.session.add(bid)
     return contract
 
 def create_some_work(db, review=True, debit_credit=True, mediation=True, arbitration=True):
@@ -258,6 +256,11 @@ def create_one_work_review(db, rating, comment):
     db.session.add(review)
     return review
 
+def create_admin_user(db, password):
+    god = create_one_user(db, 'Flying', 'SpaghettiMonster', 'fsm@alveare.io', password)
+    god.admin = True
+    return god
+
 def create_the_world(db):
     andrew = create_one_user(db, 'Andrew', 'Millspaugh', 'andrew@alveare.io')
     rapha = create_one_user(db, 'Raphael', 'Goyran', 'raphael@alveare.io')
@@ -280,8 +283,8 @@ def create_the_world(db):
     rapha_rwh = create_one_remote_work_history(db, rapha_contractor)
     create_one_github_account(db, rapha_rwh, 'rapha.opensource')
     create_one_github_account(db, rapha_rwh, 'joe-la-mitraille')
-    create_one_feedback(db) 
-    create_one_feedback(db) 
+    create_one_feedback(db)
+    create_one_feedback(db)
     create_one_contract(db)
     create_one_contract(db)
     create_some_work(db)

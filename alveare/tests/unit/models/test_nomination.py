@@ -13,7 +13,7 @@ class TestNomination(AlveareModelTestCase):
         self.assertNotEqual( nomination,              None )
         self.assertNotEqual( nomination.contractor,   None )
         self.assertNotEqual( nomination.ticket_set,   None )
-        self.assertEqual(    nomination.approved_for_auction, None)
+        self.assertEqual(    nomination.auction, None)
 
     def test_delete(self):
         nomination = create_one_nomination(self.db)
@@ -57,7 +57,7 @@ class TestNomination(AlveareModelTestCase):
         auction.approved_talents.append(nomination)
         self.db.session.commit()
 
-        self.assertEqual(nomination.approved_for_auction.id, auction.id)
+        self.assertEqual(nomination.auction.id, auction.id)
 
         # now disapprove talent
         auction.approved_talents.clear()
@@ -65,7 +65,7 @@ class TestNomination(AlveareModelTestCase):
         self.db.session.commit()
         queried_nomination = Nomination.query.get(nomination_id)
         self.assertTrue(queried_nomination)
-        self.assertFalse(queried_nomination.approved_for_auction)
+        self.assertFalse(queried_nomination.auction)
         self.assertTrue(queried_nomination.ticket_set)
 
     def test_create_bad_ticket_set(self):

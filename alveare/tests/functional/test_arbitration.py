@@ -29,7 +29,7 @@ class TestArbitrationResource(AlveareRestTestCase):
         response = self.get_resource('mediations')
         mediation = [m for m in response['mediations'] if 'arbitration' not in m][0]
         arbitration = dict(mediation={'id': mediation.get('id')})
-        response = self.post_resource('arbitrations', arbitration)
+        response = self.post_resource('arbitrations', arbitration)['arbitration']
 
         self.assertIsInstance(response.pop('id'), int)
         self.assertEqual(response.pop('mediation'), mediation.get('id'))

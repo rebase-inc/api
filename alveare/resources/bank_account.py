@@ -1,5 +1,6 @@
 
 from flask.ext.restful import Resource
+from flask.ext.login import login_required, current_user
 from flask import jsonify, make_response, request
 
 from alveare.models import BankAccount
@@ -13,10 +14,13 @@ class BankAccountCollection(Resource):
     serializer = bank_account.serializer
     deserializer = bank_account.deserializer
     url = '/{}'.format(model.__pluralname__)
-    
-    def get(self): 
+
+    @login_required
+    def get(self):
         return get_collection(self.model, self.serializer)
-    def post(self): 
+
+    @login_required
+    def post(self):
         return add_to_collection(self.model, self.deserializer, self.serializer)
 
 class BankAccountResource(Resource):
@@ -25,10 +29,15 @@ class BankAccountResource(Resource):
     deserializer = bank_account.deserializer
     update_deserializer = bank_account.update_deserializer
     url = '/{}/<int:id>'.format(model.__pluralname__)
-    
-    def get(self, id): 
+
+    @login_required
+    def get(self, id):
         return get_resource(self.model, id, self.serializer)
-    def put(self, id): 
-        return update_resource(self.model, id, self.update_deserializer, self.serializer) 
-    def delete(self, id): 
+
+    @login_required
+    def put(self, id):
+        return update_resource(self.model, id, self.update_deserializer, self.serializer)
+
+    @login_required
+    def delete(self, id):
         return delete_resource(self.model, id)

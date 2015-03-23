@@ -31,7 +31,7 @@ class Contractor(Role):
     def auctions_approved_for(self):
         auctions_approved_for = []
         for nomination in self.auction_nominations:
-            approved = nomination.approved_for_auction
+            approved = nomination.auction
             if approved:
                 auctions_approved_for.append(approved.id)
         return auctions_approved_for

@@ -4,7 +4,7 @@ import unittest
 
 from alveare import models, create_app
 from alveare.common.database import DB
-from alveare.common.mock import create_the_world
+from alveare.common.mock import create_the_world, create_admin_user
 
 class AlveareRestTestCase(unittest.TestCase):
 
@@ -21,16 +21,22 @@ class AlveareRestTestCase(unittest.TestCase):
         self.db.session.commit()
 
         create_the_world(self.db)
+        self.admin_user = create_admin_user(self.db, password='admin')
         self.db.session.commit()
 
         self.addCleanup(self.cleanup)
 
-        # hack to deal with auth for now
-        self.get_resource('auctions', expected_code=401)
-        user = self.get_resource('users')['users'][0]
-        models.User.query.get(user['id']).admin = True
-        response = self.post_resource('/auth', dict(user=user), 200)
-        self.db.session.commit()
+        self.login_admin()
+
+    def login_admin(self):
+        self.post_resource('/auth', { 'user': {'id': self.admin_user.id}, 'password': 'admin'})
+
+    def logout(self):
+        self.post_resource('/auth', dict(), 401)
+
+    def login_as_new_user(self):
+        new_user = models.User.query.filter(~models.User.roles.any() & ~models.User.admin).first()
+        self.post_resource('/auth', {'user': {'id': new_user.id}, 'password': 'foo' } )
 
     def cleanup(self):
         self.db.session.remove()

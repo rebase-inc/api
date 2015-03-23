@@ -8,11 +8,11 @@ class NominationSchema(AlveareSchema):
 
     contractor_id =             fields.Integer()
     ticket_set_id =             fields.Integer()
-    approved_for_auction_id =   fields.Integer()
 
-    job_fit =                   fields.Nested('JobFitSchema',       only=('contractor_id', 'ticket_set_id'), default=None)
-    contractor =                fields.Nested('ContractorSchema',   only=('id',), default=None)
-    ticket_set =                fields.Nested('TicketSetSchema',    only=('id',), default=None)
+    job_fit =    fields.Nested('JobFitSchema',       only=('contractor_id', 'ticket_set_id'), default=None)
+    contractor = fields.Nested('ContractorSchema',   only=('id',), default=None)
+    ticket_set = fields.Nested('TicketSetSchema',    only=('id',), default=None)
+    auction =    fields.Nested('AuctionSchema',    only=('id',), default=None)
 
     _primary_keys = primary_key(Nomination)
 
