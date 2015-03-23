@@ -2,7 +2,7 @@
 from flask.ext.restful import Resource
 from flask.ext.login import login_user, logout_user, current_app
 from flask import jsonify, make_response, request
-from marshmallow.exceptions import UnmarshallingError
+from alveare.common.exceptions import UnmarshallingError
 
 from alveare.views import auth
 from alveare.common.database import DB

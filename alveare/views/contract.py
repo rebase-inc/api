@@ -1,8 +1,9 @@
-from marshmallow import fields, Schema
+from marshmallow import fields
+from alveare.common.schema import AlveareSchema
 
 from alveare.views.ticket_set import TicketSetSchema
 
-class ContractSchema(Schema):
+class ContractSchema(AlveareSchema):
     id =  fields.Integer()
     bid = fields.Nested('BidSchema', only=('id',))
 

@@ -1,4 +1,5 @@
-from marshmallow import fields, Schema
+from marshmallow import fields
+from alveare.common.schema import AlveareSchema
 from alveare.common.database import DB
 from alveare.models.code_clearance import CodeClearance
 from alveare.models.project import Project
@@ -7,7 +8,7 @@ from alveare.views.project import ProjectSchema
 from alveare.views.contractor import ContractorSchema
 from alveare.common.database import get_or_make_object
 
-class CodeClearanceSchema(Schema):
+class CodeClearanceSchema(AlveareSchema):
     id =           fields.Integer()
     pre_approved = fields.Boolean()
     project =      fields.Nested('ProjectSchema', only=('id',), exclude=('code_clearance',), required=True)

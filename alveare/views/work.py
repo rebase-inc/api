@@ -1,4 +1,5 @@
-from marshmallow import fields, Schema
+from marshmallow import fields
+from alveare.common.schema import AlveareSchema
 
 from alveare.views.review import ReviewSchema
 from alveare.views.mediation import MediationSchema
@@ -6,7 +7,7 @@ from alveare.views.debit import DebitSchema
 from alveare.views.credit import CreditSchema
 from alveare.views.work_offer import WorkOfferSchema
 
-class WorkSchema(Schema):
+class WorkSchema(AlveareSchema):
     id = fields.Integer()
     state = fields.String()
     review = fields.Nested(ReviewSchema, exclude=['work'], default=None)

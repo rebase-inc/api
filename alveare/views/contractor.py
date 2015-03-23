@@ -1,8 +1,9 @@
-from marshmallow import fields, Schema
+from marshmallow import fields
+from alveare.common.schema import AlveareSchema
 from alveare.common.database import get_or_make_object
 from alveare.views.nomination import NominationSchema
 
-class ContractorSchema(Schema):
+class ContractorSchema(AlveareSchema):
     id =                    fields.Integer()
     busyness =              fields.Integer()
     user =                  fields.Nested('UserSchema',                 only=('id',))

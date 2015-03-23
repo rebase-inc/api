@@ -1,10 +1,11 @@
-from marshmallow import fields, Schema
+from marshmallow import fields
+from alveare.common.schema import AlveareSchema
 
 from alveare.views.ticket_set import TicketSetSchema
 from alveare.views.term_sheet import TermSheetSchema
 from alveare.common.database import get_or_make_object
 
-class AuctionSchema(Schema):
+class AuctionSchema(AlveareSchema):
     id =               fields.Integer()
     duration =         fields.Integer()
     finish_work_by =   fields.DateTime()
@@ -21,16 +22,16 @@ class AuctionSchema(Schema):
         from alveare.models import Auction
         return get_or_make_object(Auction, data)
 
-class BidEventSchema(Schema):
+class BidEventSchema(AlveareSchema):
     bid = fields.Nested('BidSchema')
     def make_object(self, data):
         return 'bid', data.pop('bid')
 
-class EndEventSchema(Schema):
+class EndEventSchema(AlveareSchema):
     def make_object(self, data):
         return 'end'
 
-class FailEventSchema(Schema):
+class FailEventSchema(AlveareSchema):
     def make_object(self, data):
         return 'fail'
 

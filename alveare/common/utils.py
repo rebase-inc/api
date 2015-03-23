@@ -33,6 +33,21 @@ def resource_url(model, use_flask_format=False):
             url_format += '/{}'
     return collection_url(model)+url_format
 
+composite_error_not_in='''
+While comparing first:
+{}
+to second:
+{}
+Key "{}" was not found in second'''
+
+composite_error_not_equal='''
+'While comparing first:
+{}
+to second:
+{}
+first[{key}] != second[{key}]
+{e}'''
+
 class AlveareResource(object):
 
     all_models = dict(getmembers(alveare.models, predicate=isclass))
@@ -127,8 +142,23 @@ class AlveareResource(object):
         if type(first) != type(second):
             raise ValueError('Trying to compare {} to {}'.format(type(first), type(second)))
         if isinstance(first, dict):
-            for key, value in first.items():
-                self.test.assertEqual(value, second[key])
+                for key, value in first.items():
+                    try:
+                        self.test.assertEqual(value, second[key])
+                    except KeyError as e:
+                        raise AssertionError(composite_error_not_in.format(
+                            first,
+                            second,
+                            key
+                        ))
+                    except AssertionError as e:
+                        raise AssertionError(composite_error_not_equal.format(
+                            first,
+                            second,
+                            key,
+                            key,
+                            e
+                        ))
         else:
             self.test.assertEqual(a, b)
 

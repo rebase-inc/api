@@ -1,4 +1,5 @@
-from marshmallow import fields, Schema
+from marshmallow import fields
+from alveare.common.schema import AlveareSchema
 from alveare.models.organization import Organization
 from alveare.views.manager import ManagerSchema
 from alveare.views.project import ProjectSchema
@@ -6,7 +7,7 @@ from alveare.views.bank_account import BankAccountSchema
 from alveare.views.user import UserSchema
 from alveare.common.database import get_or_make_object
 
-class OrganizationSchema(Schema):
+class OrganizationSchema(AlveareSchema):
     id =            fields.Integer()
     name =          fields.String()
     projects =      fields.Nested(ProjectSchema, only=('id',), many=True)

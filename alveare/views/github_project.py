@@ -1,10 +1,11 @@
-from marshmallow import fields, Schema
+from marshmallow import fields
+from alveare.common.schema import AlveareSchema
 from alveare.models.organization import Organization
 from alveare.models.github_project import GithubProject
 from alveare.models.code_repository import CodeRepository
 from alveare.common.database import get_or_make_object
 
-class GithubProjectSchema(Schema):
+class GithubProjectSchema(AlveareSchema):
 
     id =              fields.Integer()
     name =            fields.String()

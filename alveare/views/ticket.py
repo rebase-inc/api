@@ -1,10 +1,11 @@
-from marshmallow import fields, Schema
+from marshmallow import fields
+from alveare.common.schema import AlveareSchema
 from alveare.models.ticket import Ticket
 from alveare.views.skill_requirement import SkillRequirementSchema
 from flask.ext.restful import abort
 from alveare.common.database import get_or_make_object
 
-class TicketSchema(Schema):
+class TicketSchema(AlveareSchema):
     id =            fields.Integer()
     title =         fields.String()
     description =   fields.String()

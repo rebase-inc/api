@@ -1,4 +1,5 @@
-from marshmallow import fields, Schema
+from marshmallow import fields
+from alveare.common.schema import AlveareSchema
 from flask.ext.restful import abort
 
 from alveare.models.bank_account import BankAccount
@@ -6,7 +7,7 @@ from alveare.models.organization import Organization
 from alveare.models.contractor import Contractor
 from alveare.common.database import get_or_make_object
 
-class BankAccountSchema(Schema):
+class BankAccountSchema(AlveareSchema):
     id =             fields.Integer()
     name =           fields.String(required=True)
     routing_number = fields.Integer(required=True)

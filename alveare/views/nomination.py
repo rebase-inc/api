@@ -1,9 +1,10 @@
-from marshmallow import fields, Schema
+from marshmallow import fields
+from alveare.common.schema import AlveareSchema
 from alveare.common.database import get_or_make_object
 from alveare.common.utils import primary_key
 from alveare.models import Nomination
 
-class NominationSchema(Schema):
+class NominationSchema(AlveareSchema):
 
     contractor_id =             fields.Integer()
     ticket_set_id =             fields.Integer()

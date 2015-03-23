@@ -1,9 +1,10 @@
-from marshmallow import fields, Schema
+from marshmallow import fields
+from alveare.common.schema import AlveareSchema
 
 from alveare.views.bid_limit import BidLimitSchema
 from alveare.common.database import get_or_make_object
 
-class TicketSetSchema(Schema):
+class TicketSetSchema(AlveareSchema):
     id =          fields.Integer()
     bid_limits =  fields.Nested(BidLimitSchema, exclude=('ticket_set',), many=True)
     auction =     fields.Nested('AuctionSchema', only=('id',))

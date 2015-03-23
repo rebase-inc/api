@@ -1,12 +1,13 @@
 from flask.ext.restful import abort
-from marshmallow import fields, Schema
+from marshmallow import fields
+from alveare.common.schema import AlveareSchema
 
 from alveare.models.skill_set import SkillSet
 from alveare.models.contractor import Contractor
 from alveare.views.contractor import ContractorSchema
 from alveare.common.database import get_or_make_object
 
-class SkillSetSchema(Schema):
+class SkillSetSchema(AlveareSchema):
     id =            fields.Integer()
     contractor =    fields.Nested(ContractorSchema,  only=('id',))
 

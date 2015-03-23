@@ -1,8 +1,9 @@
-from marshmallow import fields, Schema
+from marshmallow import fields
+from alveare.common.schema import AlveareSchema
 
 from alveare.views import NamespacedSchema
 
-class CommentSchema(Schema):
+class CommentSchema(AlveareSchema):
     id =        fields.Integer()
     content =   fields.String()
 

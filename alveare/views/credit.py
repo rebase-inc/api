@@ -1,8 +1,10 @@
-from marshmallow import fields, Schema
 
+from marshmallow import fields
+from alveare.common.schema import AlveareSchema
 from alveare.common.database import get_or_make_object
 
-class CreditSchema(Schema):
+class CreditSchema(AlveareSchema):
+
     id = fields.Integer()
     work = fields.Nested('WorkSchema', only='id')
     price = fields.Integer()

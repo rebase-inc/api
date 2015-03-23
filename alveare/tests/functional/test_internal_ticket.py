@@ -15,9 +15,34 @@ class TestInternalTicketResource(AlveareRestTestCase):
         self.assertTrue(ticket['skill_requirement'])
         self.assertEqual(ticket['skill_requirement']['id'], ticket['id'])
 
+    def test_get_invalid_id(self):
+        ticket = self.internal_ticket_resource.get(dict(
+            id = 12341234
+        ), 404)
+
     def test_create(self):
         project = AlveareResource(self, 'Project').get_any()
-        self.internal_ticket_resource.create(title = 'Foo', description = 'Bar', project = dict(id=project['id']))
+        self.internal_ticket_resource.create(
+            title = 'Foo',
+            description = 'Bar',
+            project = dict(id=project['id'])
+        )
+
+    def test_bad_create(self):
+        '''
+            test marshmallow.exceptions.UnmarshallingError
+        '''
+
+        project = AlveareResource(self, 'Project').get_any()
+        ticket = dict(
+            title = 'Foo',
+            project = dict(id=project['id']),
+        )
+        error = self.post_resource(self.internal_ticket_resource.collection_url, ticket, 400)
+        self.assertIn('status', error)
+        self.assertEqual(error['status'], 400)
+        self.assertIn('message', error)
+        print(error['message'])
 
     def test_update(self):
         ticket = self.internal_ticket_resource.get_any()
