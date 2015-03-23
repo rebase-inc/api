@@ -79,6 +79,24 @@ class User(DB.Model):
         return query.filter(or_(*all_filters))
 
     @hybrid_property
+    def bid_query(self):
+        from alveare.models import Bid
+        query = Bid.query
+        if self.is_admin():
+            return query
+
+        manager_for_organization = [manager.organization.id for manager in self.manager_roles]
+        auctions_approved_for = []
+        for contractor in self.contractor_roles.all():
+            auctions_approved_for.extend(contractor.auctions_approved_for)
+
+        all_filters = []
+        if auctions_approved_for:
+            all_filters.append(Bid.auction.organization_id.in_(manager_for_organization))
+        all_filters.append(Bid.contractor.user.id == self.id)
+        return query.filter(or_(*all_filters))
+
+    @hybrid_property
     def nomination_query(self):
         ''' you should be able to see a nomination if you're a manager for the organization that owns the ticket_set '''
         from alveare.models import Nomination, TicketSet, BidLimit, TicketSnapshot, Ticket, Organization, Project, Contractor
@@ -110,16 +128,18 @@ class User(DB.Model):
     def allowed_to_modify(self, instance):
         if self.is_admin(): return True
 
-        from alveare.models import Nomination, Auction
+        from alveare.models import Nomination, Auction, Bid
         if isinstance(instance, Nomination):
             # TODO: Optimize
             manager_for_organization = [manager.organization.id for manager in self.manager_roles]
             organization_id = instance.ticket_set.bid_limits[0].ticket_snapshot.ticket.project.organization.id
             return bool(organization_id in manager_for_organization)
-        if isinstance(instance, Auction):
+        elif isinstance(instance, Auction):
             manager_for_organization = [manager.organization.id for manager in self.manager_roles]
             organization_id = instance.ticket_set.bid_limits[0].ticket_snapshot.ticket.project.organization.id
             return bool(organization_id in manager_for_organization)
+        elif isinstance(instance, Bid):
+            return bool(instance.contractor.user == self)
         else:
             return True
 
@@ -131,12 +151,16 @@ class User(DB.Model):
         # Until we find a counter example, I think this is reasonable.
         if self.allowed_to_modify(instance): return True
 
-        from alveare.models import Nomination
+        from alveare.models import Nomination, Auction, Bid
         if isinstance(instance, Auction):
             users_approved = [nomination.contractor.user.id for nomination in instance.approved_talents]
             return bool(self.id in users_approved)
         elif isinstance(instance, Nomination):
             return False # hack until we get to the point where we can remove the else: return True statement below
+        elif isinstance(instance, Bid):
+            organization = instance.auction.ticket_set.bid_limit.ticket_snapshot.ticket.project.organization
+            manager_for_organization = [manager.organization.id for manager in self.manager_roles]
+            return bool(organization.id in manager_for_organization)
         else:
             return True
 
