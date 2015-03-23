@@ -1,4 +1,5 @@
 from flask.ext.restful import Resource
+from flask.ext.login import login_required, current_user
 from flask import jsonify, make_response, request
 
 from alveare import models
@@ -7,11 +8,13 @@ from alveare.common.database import DB
 
 class ReviewCollection(Resource):
 
+    @login_required
     def get(self):
         all_reviews = models.Review.query.all()
         response = jsonify(reviews = review.serializer.dump(all_reviews, many=True).data)
         return response
 
+    @login_required
     def post(self):
         new_review = review.deserializer.load(request.form or request.json).data
 
@@ -24,10 +27,12 @@ class ReviewCollection(Resource):
 
 class ReviewResource(Resource):
 
+    @login_required
     def get(self, id):
         single_review = models.Review.query.get_or_404(id)
         return jsonify(review = review.serializer.dump(single_review).data)
 
+    @login_required
     def put(self, id):
         single_review = models.Review.query.get_or_404(id)
 

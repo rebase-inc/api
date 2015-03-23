@@ -1,4 +1,5 @@
 from flask.ext.restful import Resource
+from flask.ext.login import login_required, current_user
 from flask import jsonify, make_response, request
 
 from alveare import models
@@ -7,11 +8,13 @@ from alveare.common.database import DB
 
 class MediationCollection(Resource):
 
+    @login_required
     def get(self):
         all_mediations = models.Mediation.query.limit(100).all()
         response = jsonify(mediations = mediation.serializer.dump(all_mediations, many=True).data)
         return response
 
+    @login_required
     def post(self):
         ''' admin only '''
         new_mediation = mediation.deserializer.load(request.form or request.json).data
@@ -24,10 +27,12 @@ class MediationCollection(Resource):
 
 class MediationResource(Resource):
 
+    @login_required
     def get(self, id):
         single_mediation = models.Mediation.query.get_or_404(id)
         return jsonify(mediation = mediation.serializer.dump(single_mediation).data)
 
+    @login_required
     def put(self, id):
         single_mediation = models.Mediation.query.get_or_404(id)
 

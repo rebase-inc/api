@@ -1,6 +1,8 @@
 
 from flask.ext.login import login_required, current_user
+from flask.ext.login import login_required, current_user
 from flask.ext.restful import Resource
+from flask.ext.login import login_required, current_user
 from flask import jsonify, request
 from alveare.models.github_project import GithubProject
 from alveare.views import github_project
@@ -17,6 +19,7 @@ class GithubProjectCollection(Resource):
     def get(self):
         return get_collection(self.model, self.serializer)
 
+    @login_required
     def post(self):
         return add_to_collection(self.model, self.deserializer, self.serializer)
 

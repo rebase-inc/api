@@ -1,5 +1,6 @@
 
 from flask.ext.restful import Resource
+from flask.ext.login import login_required, current_user
 from flask import jsonify, make_response, request
 
 from alveare.models.manager import Manager
@@ -9,11 +10,13 @@ from alveare.common.database import DB
 
 class ManagerCollection(Resource):
 
+    @login_required
     def get(self):
         managers = Manager.query.all()
         response = jsonify(managers = serializer.dump(managers, many=True).data)
         return response
 
+    @login_required
     def post(self):
         new_mgr = deserializer.load(request.json).data
         DB.session.add(new_mgr)
@@ -25,10 +28,12 @@ class ManagerCollection(Resource):
 
 class ManagerResource(Resource):
 
+    @login_required
     def get(self, id):
         single_manager = Manager.query.get_or_404(id)
         return jsonify(manager = serializer.dump(single_manager).data)
 
+    @login_required
     def delete(self, id):
         DB.session.query(Manager).filter_by(id=id).delete()
         DB.session.commit()

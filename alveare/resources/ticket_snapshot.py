@@ -1,4 +1,5 @@
 from flask.ext.restful import Resource
+from flask.ext.login import login_required, current_user
 from flask import jsonify, make_response, request
 
 from alveare import models
@@ -7,11 +8,13 @@ from alveare.common.database import DB
 
 class TicketSnapshotCollection(Resource):
 
+    @login_required
     def get(self):
         all_snapshots = models.TicketSnapshot.query.limit(100).all()
         response = jsonify(ticket_snapshots = ticket_snapshot.serializer.dump(all_snapshots, many=True).data)
         return response
 
+    @login_required
     def post(self):
         new_ticket_snapshot = ticket_snapshot.deserializer.load(request.form or request.json).data
         DB.session.add(new_ticket_snapshot)
@@ -23,6 +26,7 @@ class TicketSnapshotCollection(Resource):
 
 class TicketSnapshotResource(Resource):
 
+    @login_required
     def get(self, id):
         single_ticket_snapshot = models.TicketSnapshot.query.get_or_404(id)
         return jsonify(ticket_snapshot = ticket_snapshot.serializer.dump(single_ticket_snapshot).data)
