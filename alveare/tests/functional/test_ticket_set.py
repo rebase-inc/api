@@ -8,6 +8,7 @@ class TestTicketSetResource(AlveareRestTestCase):
         super().setUp()
 
     def test_get_one(self):
+        self.login_admin()
         ticket_set = self.resource.get_any()
         self.assertTrue(ticket_set)
         self.assertTrue(ticket_set['id'])
@@ -16,12 +17,15 @@ class TestTicketSetResource(AlveareRestTestCase):
 
     @skip('ticket set doesnt have any updatable fields')
     def test_update(self):
+        self.login_admin()
         pass
 
     def test_delete(self):
+        self.login_admin()
         self.resource.delete_any()
 
     def test_delete_auction(self):
+        self.login_admin()
         ticket_set = self.resource.get_any()
         self.delete_resource('auctions/{id}'.format(**ticket_set['auction']))
         self.get_resource(self.resource.url(ticket_set), 404)

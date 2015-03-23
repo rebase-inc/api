@@ -5,6 +5,7 @@ from unittest import skip
 class TestAuth(AlveareRestTestCase):
 
     def test_login(self):
+        self.login_admin()
         user = self.get_resource('users')['users'][0]
         response = self.post_resource('/auth', dict(), 401)
 

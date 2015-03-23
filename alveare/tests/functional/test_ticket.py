@@ -12,6 +12,7 @@ class TestTicketResource(AlveareRestTestCase):
         super().setUp()
 
     def test_get_one(self):
+        self.login_admin()
         ticket = self.ticket_resource.get_any()
         self.assertTrue(ticket) # mock should have created at least one account
         self.assertTrue(ticket['id'])
@@ -19,6 +20,7 @@ class TestTicketResource(AlveareRestTestCase):
         self.assertEqual(ticket['skill_requirement']['id'], ticket['id'])
 
     def test_update(self):
+        self.login_admin()
         ticket = self.ticket_resource.get_any()
         self.ticket_resource.update(
             id =            ticket['id'],
@@ -27,9 +29,11 @@ class TestTicketResource(AlveareRestTestCase):
         )
 
     def test_delete(self):
+        self.login_admin()
         self.ticket_resource.delete_any()
 
     def test_delete_project(self):
+        self.login_admin()
         ticket = self.ticket_resource.get_any()
         AlveareResource(self, 'Project').delete(ticket['project'])
         self.ticket_resource.get(ticket, 404)

@@ -9,11 +9,13 @@ from . import AlveareRestTestCase
 class TestCreditResource(AlveareRestTestCase):
 
     def test_get_all(self):
+        self.login_admin()
         response = self.get_resource('credits')
         self.assertIn('credits', response)
         self.assertIsInstance(response['credits'], list)
 
     def test_get_one(self):
+        self.login_admin()
         response = self.get_resource('credits')
         credit_id = response['credits'][0]['id']
 
@@ -27,6 +29,7 @@ class TestCreditResource(AlveareRestTestCase):
         self.assertEqual(credit, {})
 
     def test_create_new(self):
+        self.login_admin()
         ''' admin only '''
         response = self.get_resource('work')
         work = [w for w in response['work'] if 'credit' not in w][0]
@@ -40,6 +43,7 @@ class TestCreditResource(AlveareRestTestCase):
         self.assertEqual(response, {})
 
     def test_update(self):
+        self.login_admin()
         response = self.get_resource('credits')
         credit_id = response['credits'][0]['id']
 
@@ -52,6 +56,7 @@ class TestCreditResource(AlveareRestTestCase):
         self.assertEqual(credit, response['credit'])
 
     def test_delete(self):
+        self.login_admin()
         pass
         user = dict(first_name='Hank', last_name='Schrader', email='hankschrader@alveare.io', password='theyreminerals')
         response = self.post_resource('users', user)

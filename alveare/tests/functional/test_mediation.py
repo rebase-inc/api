@@ -8,11 +8,13 @@ from . import AlveareRestTestCase
 class TestMediationResource(AlveareRestTestCase):
 
     def test_get_all(self):
+        self.login_admin()
         response = self.get_resource('mediations')
         self.assertIn('mediations', response)
         self.assertIsInstance(response['mediations'], list)
 
     def test_get_one(self):
+        self.login_admin()
         response = self.get_resource('mediations')
         mediation_id = response['mediations'][0]['id']
 
@@ -29,6 +31,7 @@ class TestMediationResource(AlveareRestTestCase):
         self.assertEqual(mediation, {})
 
     def test_create_new(self):
+        self.login_admin()
         ''' admin only '''
         response = self.get_resource('work')
 
@@ -45,6 +48,7 @@ class TestMediationResource(AlveareRestTestCase):
         self.assertEqual(mediation, {})
 
     def test_update(self):
+        self.login_admin()
         ''' admin only '''
         response = self.get_resource('mediations')
         mediation_id = response['mediations'][0]['id']

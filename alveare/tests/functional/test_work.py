@@ -7,11 +7,13 @@ from . import AlveareRestTestCase
 class TestWorkResource(AlveareRestTestCase):
 
     def test_get_all(self):
+        self.login_admin()
         response = self.get_resource('work')
         self.assertIn('work', response)
         self.assertIsInstance(response['work'], list)
 
     def test_get_one(self):
+        self.login_admin()
         response = self.get_resource('work')
         work_id = response['work'][0]['id']
 

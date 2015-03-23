@@ -9,11 +9,13 @@ from . import AlveareRestTestCase
 class TestDebitResource(AlveareRestTestCase):
 
     def test_get_all(self):
+        self.login_admin()
         response = self.get_resource('debits')
         self.assertIn('debits', response)
         self.assertIsInstance(response['debits'], list)
 
     def test_get_one(self):
+        self.login_admin()
         response = self.get_resource('debits')
         debit_id = response['debits'][0]['id']
 
@@ -27,6 +29,7 @@ class TestDebitResource(AlveareRestTestCase):
         self.assertEqual(debit, {})
 
     def test_create_new(self):
+        self.login_admin()
         ''' admin only '''
         response = self.get_resource('work')
         work = [w for w in response['work'] if 'debit' not in w][0]
@@ -40,6 +43,7 @@ class TestDebitResource(AlveareRestTestCase):
         self.assertEqual(response, {})
 
     def test_update(self):
+        self.login_admin()
         response = self.get_resource('debits')
         debit_id = response['debits'][0]['id']
 
@@ -52,6 +56,7 @@ class TestDebitResource(AlveareRestTestCase):
         self.assertEqual(debit, response['debit'])
 
     def test_delete(self):
+        self.login_admin()
         pass
         user = dict(first_name='Hank', last_name='Schrader', email='hankschrader@alveare.io', password='theyreminerals')
         response = self.post_resource('users', user)

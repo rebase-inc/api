@@ -16,12 +16,14 @@ class TestJobFitResource(AlveareRestTestCase):
         super().setUp()
 
     def test_get_one(self):
+        self.login_admin()
         job_fit = self.job_fit_resource.get_any()
         self.assertTrue(job_fit) # mock should have created at least one ticket and its related JobFit object
         self.assertTrue(self.ticket_match_resource.get(job_fit['ticket_matches'][0]))
         self.assertTrue(self.nomination_resource.get(job_fit['nomination']))
 
     def test_create(self):
+        self.login_admin()
         # find a nomination that does not have a JobFit yet (should find Andrew's nomination, as setup in the mock)
         nomination = next(filter(lambda _nomination: 'job_fit' not in _nomination, self.nomination_resource.get_all()))
         contractor_id = self.contractor_resource.get_any()['id']
@@ -49,26 +51,31 @@ class TestJobFitResource(AlveareRestTestCase):
         )
 
     def test_update(self):
+        self.login_admin()
         job_fit = self.job_fit_resource.get_any()
         job_fit['score'] = job_fit['score'] + 10
         self.job_fit_resource.update(**job_fit) 
 
     def test_delete(self):
+        self.login_admin()
         self.job_fit_resource.delete_any()
 
     def test_delete_nomination(self):
+        self.login_admin()
         job_fit = self.job_fit_resource.get_any()
         self.nomination_resource.delete(job_fit['nomination'])
         self.job_fit_resource.get(job_fit, 404)
 
     @skip('constraint is not enforced in the model')
     def test_delete_ticket_set(self):
+        self.login_admin()
         job_fit = self.job_fit_resource.get_any()
         for ticket_match in job_fit['ticket_matches']:
             self.ticket_match_resource.delete(ticket_match)
         self.job_fit_resource.get(job_fit, 404)
 
     def test_delete_organization(self):
+        self.login_admin()
         job_fit = self.job_fit_resource.get_any()
         nomination = self.nomination_resource.get(job_fit['nomination'])
         ticket_set = self.ticket_set_resource.get(nomination['ticket_set'])

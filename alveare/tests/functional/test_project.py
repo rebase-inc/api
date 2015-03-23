@@ -9,29 +9,35 @@ class TestProjectResource(AlveareRestTestCase):
         super().setUp()
 
     def test_get_all(self):
+        self.login_admin()
         projects = self.project_resource.get_all()
 
     def test_get_one(self):
+        self.login_admin()
         project = self.project_resource.get_any()
         self.assertTrue(project) # mock should have created at least one account
         self.assertTrue(project['id'])
         self.assertNotEqual(project['code_repository'], 0)
 
     def test_delete(self):
+        self.login_admin()
         project = self.project_resource.delete_any()
         AlveareResource(self, 'CodeRepository').get(project['code_repository'], 404)
 
     def test_delete_organization(self):
+        self.login_admin()
         project = self.project_resource.get_any()
         self.delete_resource('organizations/{}'.format(project['organization']['id']))
         self.get_resource(self.project_resource.url(project), 404)
 
     def test_update(self):
+        self.login_admin()
         project = self.project_resource.get_any()
         project['name'] = 'a better project name'
         self.project_resource.update(**project)
 
     def test_add_and_remove_tickets(self):
+        self.login_admin()
         project = self.project_resource.get_any()
         internal_ticket_resource = AlveareResource(self, 'InternalTicket')
         ticket_resource = AlveareResource(self, 'Ticket')
@@ -51,6 +57,7 @@ class TestProjectResource(AlveareRestTestCase):
             ticket_resource.delete(one_ticket)
 
     def test_add_and_remove_code_clearance(self):
+        self.login_admin()
         contractor = AlveareResource(self, 'Contractor').get_any()
         project = self.project_resource.get_any()
         code_clearance = dict(pre_approved=True, project={'id': project['id']}, contractor={'id': contractor['id']})

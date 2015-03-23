@@ -7,10 +7,12 @@ from . import AlveareRestTestCase
 class TestUserResource(AlveareRestTestCase):
 
     def test_get_all(self):
+        self.login_admin()
         response = self.get_resource('users', expected_code = 200)
         self.assertIn('users', response)
 
     def test_create_new(self):
+        self.login_admin()
         user = dict(first_name='Saul', last_name='Goodman', email='saulgoodman@alveare.io', password='foo')
 
         expected_response = copy.copy(user)
@@ -32,6 +34,7 @@ class TestUserResource(AlveareRestTestCase):
         self.assertEqual(response['user'], expected_response)
 
     def test_update(self):
+        self.login_admin()
         user = dict(first_name='Walter', last_name='White', email='walterwhite@alveare.io', password='heisenberg')
         response = self.post_resource('users', user)
         user['id'] = response['user']['id']
@@ -51,6 +54,7 @@ class TestUserResource(AlveareRestTestCase):
         self.assertEqual(user, response['user'])
 
     def test_delete(self):
+        self.login_admin()
         user = dict(first_name='Hank', last_name='Schrader', email='hankschrader@alveare.io', password='theyreminerals')
         response = self.post_resource('users', user)
         user_id = response['user']['id']

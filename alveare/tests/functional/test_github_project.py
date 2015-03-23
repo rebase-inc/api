@@ -27,6 +27,7 @@ class TestGithubProjectResource(AlveareRestTestCase):
         return project
 
     def test_create(self):
+        self.login_admin()
         new_project = self.create_project()
 
         # verify by query
@@ -44,6 +45,7 @@ class TestGithubProjectResource(AlveareRestTestCase):
         self.assertTrue(any(map(lambda project: project['id']==project_id, org['projects'])))
 
     def test_delete(self):
+        self.login_admin()
         project = self.create_project()
         project_id = project['id']
         project_url = url(project_id)
@@ -52,6 +54,7 @@ class TestGithubProjectResource(AlveareRestTestCase):
         self.get_resource('code_repositories/{}'.format(project_id), 404)
 
     def test_put(self):
+        self.login_admin()
         project = self.create_project()
         project_url = url(project['id'])
         project['name'] = 'Awesome Project Name!'
@@ -68,6 +71,7 @@ class TestGithubProjectResource(AlveareRestTestCase):
         self.assertEqual(project2['name'], project['name'])
 
     def test_get_all(self):
+        self.login_admin()
         project = self.create_project()
         project_id = project['id']
 

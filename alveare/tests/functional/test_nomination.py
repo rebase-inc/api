@@ -12,21 +12,25 @@ class TestNominationResource(AlveareRestTestCase):
         super().setUp()
 
     def test_get_all(self):
+        self.login_admin()
         nominations = self.nomination_resource.get_all()
 
     def test_get_one(self):
+        self.login_admin()
         nomination = self.nomination_resource.get_any()
         self.assertTrue(nomination) # mock should have created at least one ticket and its related Nomination object
         self.assertTrue(self.contractor_resource.get(nomination['contractor']))
         self.assertTrue(self.ticket_set_resource.get(nomination['ticket_set']))
 
     def test_create(self):
+        self.login_admin()
         self.nomination_resource.create(
             contractor = {'id': self.contractor_resource.get_any()['id']},
             ticket_set = {'id': self.ticket_set_resource.get_any()['id']},
         )
 
     def test_update(self):
+        self.login_admin()
         self.logout()
         self.login_as_new_user()
 
@@ -43,19 +47,23 @@ class TestNominationResource(AlveareRestTestCase):
         self.assertEqual(nomination['auction']['id'], auction_id)
 
     def test_delete(self):
+        self.login_admin()
         self.nomination_resource.delete_any()
 
     def test_delete_contractor(self):
+        self.login_admin()
         nomination = self.nomination_resource.get_any()
         self.contractor_resource.delete(nomination['contractor'])
         self.nomination_resource.get(nomination, 404)
 
     def test_delete_ticket_set(self):
+        self.login_admin()
         nomination = self.nomination_resource.get_any()
         self.ticket_set_resource.delete(nomination['ticket_set'])
         self.nomination_resource.get(nomination, 404)
 
     def test_delete_organization(self):
+        self.login_admin()
         nomination = self.nomination_resource.get_any()
         ticket_set = self.ticket_set_resource.get(nomination['ticket_set'])
         bid_limit =         AlveareResource(self, 'BidLimit').get(ticket_set['bid_limits'][0])
@@ -69,6 +77,7 @@ class TestNominationResource(AlveareRestTestCase):
         self.nomination_resource.get(nomination, 404)
 
     def test_that_new_user_cant_see_any_nominations(self):
+        self.login_admin()
         self.logout()
         self.login_as_new_user()
 

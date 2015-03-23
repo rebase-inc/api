@@ -9,11 +9,13 @@ from . import AlveareRestTestCase
 class TestArbitrationResource(AlveareRestTestCase):
 
     def test_get_all(self):
+        self.login_admin()
         response = self.get_resource('arbitrations')
         self.assertIn('arbitrations', response)
         self.assertIsInstance(response['arbitrations'], list)
 
     def test_get_one(self):
+        self.login_admin()
         response = self.get_resource('arbitrations')
         arbitration_id = response['arbitrations'][0]['id']
 
@@ -25,6 +27,7 @@ class TestArbitrationResource(AlveareRestTestCase):
         self.assertEqual(arbitration, {})
 
     def test_create_new(self):
+        self.login_admin()
         ''' admin only '''
         response = self.get_resource('mediations')
         mediation = [m for m in response['mediations'] if 'arbitration' not in m][0]
@@ -37,6 +40,7 @@ class TestArbitrationResource(AlveareRestTestCase):
 
     @unittest.skip('arbitration has no updatable fields right now')
     def test_update(self):
+        self.login_admin()
         ''' admin only '''
         pass
 

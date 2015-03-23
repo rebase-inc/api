@@ -13,6 +13,7 @@ class TestPerformance(AlveareRestTestCase):
 
     @unittest.skip('I just use this for back of the envelope benchmarking')
     def test_repeated_get(self):
+        self.login_admin()
         count = 40
         responses = []
         start = time.time()

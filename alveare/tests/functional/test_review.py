@@ -7,11 +7,13 @@ from . import AlveareRestTestCase
 class TestReviewResource(AlveareRestTestCase):
 
     def test_get_all(self):
+        self.login_admin()
         response = self.get_resource('reviews')
         self.assertIn('reviews', response)
         self.assertIsInstance(response['reviews'], list)
 
     def test_get_one(self):
+        self.login_admin()
         response = self.get_resource('reviews')
         review_id = response['reviews'][0]['id']
 
@@ -23,6 +25,7 @@ class TestReviewResource(AlveareRestTestCase):
         self.assertIsInstance(review.pop('work'), int)
 
     def test_create_new(self):
+        self.login_admin()
         response = self.get_resource('work')
 
         #find a work object without a review
@@ -37,6 +40,7 @@ class TestReviewResource(AlveareRestTestCase):
         self.assertEqual(response.pop('work'), work['id'])
 
     def test_update(self):
+        self.login_admin()
         response = self.get_resource('reviews')
         review_id = response['reviews'][0]['id']
 

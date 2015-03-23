@@ -9,6 +9,7 @@ class TestCodeClearanceResource(AlveareRestTestCase):
         super().setUp()
 
     def test_get_one(self):
+        self.login_admin()
         code_clearance = self.code_clearance_resource.get_any()
         self.assertTrue(code_clearance) # mock should have created at least one account
         self.assertTrue(code_clearance['id'])
@@ -16,6 +17,7 @@ class TestCodeClearanceResource(AlveareRestTestCase):
         self.assertTrue(code_clearance['project'])
 
     def test_create(self):
+        self.login_admin()
         contractor =    AlveareResource(self, 'Contractor').get_any()
         project =       AlveareResource(self, 'Project').get_any()
         code_clearance = dict(
@@ -26,19 +28,23 @@ class TestCodeClearanceResource(AlveareRestTestCase):
         self.code_clearance_resource.create(**code_clearance)
 
     def test_update(self):
+        self.login_admin()
         code_clearance = self.code_clearance_resource.get_any()
         code_clearance['pre_approved'] = not code_clearance['pre_approved']
         self.code_clearance_resource.update(**code_clearance)
 
     def test_delete(self):
+        self.login_admin()
         self.code_clearance_resource.delete_any()
 
     def test_delete_project(self):
+        self.login_admin()
         code_clearance = self.code_clearance_resource.get_any()
         self.delete_resource('projects/{}'.format(code_clearance['project']['id']))
         self.get_resource(self.code_clearance_resource.url(code_clearance), 404)
 
     def test_delete_contractor(self):
+        self.login_admin()
         code_clearance = self.code_clearance_resource.get_any()
         self.delete_resource('contractors/{}'.format(code_clearance['contractor']['id']))
         self.get_resource(self.code_clearance_resource.url(code_clearance), 404)

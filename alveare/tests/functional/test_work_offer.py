@@ -7,12 +7,14 @@ from . import AlveareRestTestCase
 class TestWorkOfferResource(AlveareRestTestCase):
 
     def test_get_all(self):
+        self.login_admin()
         response = self.get_resource('work_offers')
         self.assertIn('work_offers', response)
         self.assertIsInstance(response['work_offers'], list)
         self.assertIsInstance(response['work_offers'][0]['ticket_snapshot'], int)
 
     def test_get_one(self):
+        self.login_admin()
         response = self.get_resource('work_offers')
         work_offer_id = response['work_offers'][0]['id']
 
@@ -26,6 +28,7 @@ class TestWorkOfferResource(AlveareRestTestCase):
         self.assertEqual(work_offer, {})
 
     def test_create_new(self):
+        self.login_admin()
         snapshot = self.get_resource('ticket_snapshots')['ticket_snapshots'][0]
         contractor = self.get_resource('contractors')['contractors'][0]
 
@@ -39,6 +42,7 @@ class TestWorkOfferResource(AlveareRestTestCase):
         self.assertEqual(work_offer, {})
 
     def test_update(self):
+        self.login_admin()
         response = self.get_resource('work_offers')
         work_offer_id = response['work_offers'][0]['id']
 
@@ -51,6 +55,7 @@ class TestWorkOfferResource(AlveareRestTestCase):
         self.assertEqual(work_offer, response['work_offer'])
 
     def test_delete(self):
+        self.login_admin()
         response = self.get_resource('work_offers')
         work_offer_id = response['work_offers'][0]['id']
 

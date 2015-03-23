@@ -5,12 +5,14 @@ from . import AlveareRestTestCase
 class TestBidResource(AlveareRestTestCase):
 
     def test_get_all(self):
+        self.login_admin()
         response = self.get_resource('bids')
         self.assertIn('bids', response)
         self.assertIsInstance(response['bids'], list)
         self.assertIn('work_offers', response['bids'][0])
 
     def test_get_one(self):
+        self.login_admin()
         response = self.get_resource('bids')
         bid_id = response['bids'][0]['id']
 
@@ -24,6 +26,7 @@ class TestBidResource(AlveareRestTestCase):
         self.assertEqual(bid, {})
 
     def test_create_new(self):
+        self.login_admin()
         ''' admin only '''
         user_data = dict(first_name='foo', last_name='bar', email='foo@bar.com', password='baz')
         user = self.post_resource('users', user_data)['user']
@@ -46,6 +49,7 @@ class TestBidResource(AlveareRestTestCase):
 
     @unittest.skip('skipping this test for now')
     def test_update(self):
+        self.login_admin()
         ''' admin only '''
         pass
 

@@ -9,15 +9,18 @@ class TestGithubAccountResource(AlveareRestTestCase):
         super().setUp()
 
     def test_get_one(self):
+        self.login_admin()
         account = self.github_account_resource.get_any()
         self.assertTrue(account) # mock should have created at least one account
         self.assertTrue(account['user_name'])
         self.assertTrue(account['remote_work_history'])
 
     def test_delete(self):
+        self.login_admin()
         self.github_account_resource.delete_any()
 
     def test_delete_remote_work_history(self):
+        self.login_admin()
         account = self.github_account_resource.get_any()
         account_url = self.github_account_resource.url(account)
         rwh_id = account['remote_work_history']['id']
@@ -25,12 +28,14 @@ class TestGithubAccountResource(AlveareRestTestCase):
         self.get_resource(account_url, 404)
 
     def test_delete_contractor(self):
+        self.login_admin()
         account = self.github_account_resource.get_any()
         account_url = self.github_account_resource.url(account)
         self.delete_resource('contractors/{id}'.format(**account['remote_work_history']))
         self.get_resource(account_url, 404)
 
     def test_create(self):
+        self.login_admin()
         account = self.github_account_resource.get_any()
         rwh_id = account['remote_work_history']['id']
         new_account = self.github_account_resource.create(
@@ -40,6 +45,7 @@ class TestGithubAccountResource(AlveareRestTestCase):
         ) 
 
     def test_update(self):
+        self.login_admin()
         account = self.github_account_resource.get_any()
         account['user_name'] = 'XXXXX'
         account['auth_token'] = 'ZZZZZ'

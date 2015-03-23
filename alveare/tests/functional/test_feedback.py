@@ -5,6 +5,7 @@ from . import AlveareRestTestCase
 class TestFeedbackResource(AlveareRestTestCase):
 
     def test_get_all(self):
+        self.login_admin()
         response = self.get_resource('feedbacks')
         self.assertIn('feedbacks', response)
         self.assertIsInstance(response['feedbacks'], list)
@@ -14,6 +15,7 @@ class TestFeedbackResource(AlveareRestTestCase):
         self.assertIn('auction', response['feedbacks'][0])
 
     def test_get_one(self):
+        self.login_admin()
         response = self.get_resource('feedbacks')
         feedback_id = response['feedbacks'][0]['id']
 
@@ -27,6 +29,7 @@ class TestFeedbackResource(AlveareRestTestCase):
         self.assertEqual(feedback, {})
 
     def test_create_new(self):
+        self.login_admin()
         ''' admin only '''
         user_data = dict(first_name='foo', last_name='bar', email='foo@bar.com', password='baz')
         user = self.post_resource('users', user_data)['user']
@@ -43,6 +46,7 @@ class TestFeedbackResource(AlveareRestTestCase):
         self.assertEqual(feedback, {})
 
     def test_update(self):
+        self.login_admin()
         user_data = dict(first_name='foo', last_name='bar', email='foo@bar.com', password='baz')
         user = self.post_resource('users', user_data)['user']
         contractor = self.post_resource('contractors', dict(user=user))['contractor']

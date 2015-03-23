@@ -9,10 +9,12 @@ def mgr_url(id):
 class TestManagerResource(AlveareRestTestCase):
 
     def test_get_all(self):
+        self.login_admin()
         response = self.get_resource('managers')
         self.assertIn('managers', response)
 
     def test_get_one(self):
+        self.login_admin()
         all_managers = self.get_resource('managers')
         self.assertIsInstance(all_managers['managers'], list)
         manager = all_managers['managers'][0]
@@ -42,9 +44,11 @@ class TestManagerResource(AlveareRestTestCase):
         return response['manager']
 
     def test_post(self):
+        self.login_admin()
         new_mgr = self.create_new_manager()
 
     def test_delete(self):
+        self.login_admin()
         new_mgr = self.create_new_manager()
         id = new_mgr['id']
         org = new_mgr['organization']

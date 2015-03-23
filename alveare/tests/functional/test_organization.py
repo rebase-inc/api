@@ -7,6 +7,7 @@ url = 'organizations/{}'.format
 class TestOrganizationResource(AlveareRestTestCase):
 
     def test_get_all(self):
+        self.login_admin()
         response = self.get_resource('organizations')
         self.assertIn('organizations', response)
         orgs = response['organizations']
@@ -24,10 +25,12 @@ class TestOrganizationResource(AlveareRestTestCase):
         return  org_response['organization']
 
     def test_get_one(self):
+        self.login_admin()
         org = self.get_one()
         self.assertEqual(org['name'], 'Alveare')
 
     def test_post(self):
+        self.login_admin()
         organization_data = dict(name='SpaceX', user={'id':1})
         response = self.post_resource('organizations', organization_data)
         self.assertIn('organization', response)
@@ -42,6 +45,7 @@ class TestOrganizationResource(AlveareRestTestCase):
 
 
     def test_put(self):
+        self.login_admin()
         org = self.get_one()
         org['name'] = 'SpaceY'
         response = self.put_resource(url(org['id']), org)
@@ -55,6 +59,7 @@ class TestOrganizationResource(AlveareRestTestCase):
         self.assertEqual(org2['name'], org['name'])
 
     def test_delete_one(self):
+        self.login_admin()
         org = self.get_one()
         self.delete_resource(url(org['id']))
         self.get_resource(url(org['id']), 404)

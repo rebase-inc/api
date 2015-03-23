@@ -8,7 +8,6 @@ from . import AlveareRestTestCase
 class TestAuctionResource(AlveareRestTestCase):
 
     def test_get_auctions_for_org_and_by_approval(self):
-        self.post_resource('auth', dict(), 401) #logout
         self.get_resource('auctions', 401)
         user_data = dict(
             first_name = 'Andrew',
@@ -74,11 +73,13 @@ class TestAuctionResource(AlveareRestTestCase):
         self.assertIn(auction['id'], [a['id'] for a in our_users_auctions])
 
     def test_get_all(self):
+        self.login_admin()
         response = self.get_resource('auctions')
         self.assertIn('auctions', response)
         self.assertIsInstance(response['auctions'], list)
 
     def test_get_one(self):
+        self.login_admin()
         response = self.get_resource('auctions')
         auction_id = response['auctions'][0]['id']
 
@@ -94,6 +95,7 @@ class TestAuctionResource(AlveareRestTestCase):
         self.assertIsInstance(auction.pop('bids'), list)
 
     def test_create_new(self):
+        self.login_admin()
         ticket = self.get_resource('tickets')['tickets'][0]
         project = self.get_resource('projects/{id}'.format(**ticket['project']))['project']
         ticket_snapshot = self.post_resource('ticket_snapshots', dict(ticket=ticket))['ticket_snapshot']
@@ -136,6 +138,7 @@ class TestAuctionResource(AlveareRestTestCase):
         self.assertEqual(auction, {})
 
     def test_update(self):
+        self.login_admin()
         auction = next(filter(lambda a: a['state'] == 'created', self.get_resource('auctions')['auctions']))
 
         auction = self.post_resource('auctions/{}/fail_events'.format(auction['id']), dict())['auction']

@@ -9,6 +9,7 @@ class TestRemoteWorkHistoryResource(AlveareRestTestCase):
         super().setUp()
 
     def test_get_one(self):
+        self.login_admin()
         rwh = self.remote_work_history_resource.get_any()
         self.assertTrue(rwh) # mock should have created at least one account
         self.assertTrue(rwh['id'])
@@ -17,20 +18,24 @@ class TestRemoteWorkHistoryResource(AlveareRestTestCase):
         self.assertEqual(contractor['remote_work_history']['id'], contractor['id'])
 
     def test_create(self):
+        self.login_admin()
         contractor = AlveareResource(self, 'Contractor').get_any()
         new_rwh = self.remote_work_history_resource.create(
             id=contractor['id']
         )
 
     def test_delete(self):
+        self.login_admin()
         self.remote_work_history_resource.delete_any()
 
     def test_delete_contractor(self):
+        self.login_admin()
         rwh = self.remote_work_history_resource.get_any()
         self.delete_resource('contractors/{}'.format(rwh['id']))
         self.get_resource(self.remote_work_history_resource.url(rwh), 404)
 
     def test_add_and_remove_accounts(self):
+        self.login_admin()
         rwh = self.remote_work_history_resource.get_any()
         rwh_id = rwh['id']
         new_account = AlveareResource(self, 'GithubAccount').create(
