@@ -110,21 +110,33 @@ class User(DB.Model):
     def allowed_to_modify(self, instance):
         if self.is_admin(): return True
 
-        from alveare.models import Nomination
+        from alveare.models import Nomination, Auction
         if isinstance(instance, Nomination):
             # TODO: Optimize
             manager_for_organization = [manager.organization.id for manager in self.manager_roles]
-            return (instance.ticket_set.bid_limits[0].ticket_snapshot.ticket.project.organization.id in manager_for_organization)
+            organization_id = instance.ticket_set.bid_limits[0].ticket_snapshot.ticket.project.organization.id
+            return bool(organization_id in manager_for_organization)
+        if isinstance(instance, Auction):
+            manager_for_organization = [manager.organization.id for manager in self.manager_roles]
+            organization_id = instance.ticket_set.bid_limits[0].ticket_snapshot.ticket.project.organization.id
+            return bool(organization_id in manager_for_organization)
         else:
             return True
 
     def allowed_to_get(self, instance):
         if self.is_admin(): return True
 
+        # If you're allowed to modify, you must be allowed to get.
+        # The inverse is not true, however.
+        # Until we find a counter example, I think this is reasonable.
+        if self.allowed_to_modify(instance): return True
+
         from alveare.models import Nomination
-        if isinstance(instance, Nomination):
-            managers = instance.ticket_set.bid_limits[0].ticket_snapshot.ticket.project.organization.managers
-            return set(self.manager_roles) & set(managers)
+        if isinstance(instance, Auction):
+            users_approved = [nomination.contractor.user.id for nomination in instance.approved_talents]
+            return bool(self.id in users_approved)
+        elif isinstance(instance, Nomination):
+            return False # hack until we get to the point where we can remove the else: return True statement below
         else:
             return True
 
