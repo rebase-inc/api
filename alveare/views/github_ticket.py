@@ -1,11 +1,12 @@
-from marshmallow import fields, Schema
+from marshmallow import fields
+from alveare.common.schema import AlveareSchema
 from alveare.models.github_ticket import GithubTicket
 from alveare.models.project import Project
 from alveare.views.skill_requirement import SkillRequirementSchema
 from flask.ext.restful import abort
 from alveare.common.database import get_or_make_object
 
-class GithubTicketSchema(Schema):
+class GithubTicketSchema(AlveareSchema):
     id =          fields.Integer()
     title =       fields.String()
     description = fields.String()

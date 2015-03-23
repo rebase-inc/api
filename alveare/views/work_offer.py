@@ -1,6 +1,7 @@
-from marshmallow import fields, Schema
+from marshmallow import fields
+from alveare.common.schema import AlveareSchema
 
-class WorkOfferSchema(Schema):
+class WorkOfferSchema(AlveareSchema):
     #bid = fields.Nested('BidSchema', only='id', required=True)
     id = fields.Integer()
     price = fields.Integer()

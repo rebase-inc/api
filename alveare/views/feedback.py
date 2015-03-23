@@ -1,7 +1,8 @@
-from marshmallow import fields, Schema
+from marshmallow import fields
+from alveare.common.schema import AlveareSchema
 from alveare.common.database import get_or_make_object
 
-class FeedbackSchema(Schema):
+class FeedbackSchema(AlveareSchema):
     id =         fields.Integer()
     auction =    fields.Nested('AuctionSchema', only=('id',))
     contractor = fields.Nested('ContractorSchema', only=('id',), required=True)

@@ -1,8 +1,9 @@
-from marshmallow import fields, Schema
+from marshmallow import fields
+from alveare.common.schema import AlveareSchema
 from alveare.models.code_repository import CodeRepository
 from alveare.common.database import get_or_make_object
 
-class CodeRepositorySchema(Schema):
+class CodeRepositorySchema(AlveareSchema):
     id = fields.Integer()
 
     def make_object(self, data):

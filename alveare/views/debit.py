@@ -1,8 +1,9 @@
 
 
-from marshmallow import fields, Schema
+from marshmallow import fields
+from alveare.common.schema import AlveareSchema
 
-class DebitSchema(Schema):
+class DebitSchema(AlveareSchema):
     id = fields.Integer()
     work = fields.Nested('WorkSchema', only='id')
     price = fields.Integer()

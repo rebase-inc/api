@@ -1,10 +1,11 @@
-from marshmallow import fields, Schema
+from marshmallow import fields
+from alveare.common.schema import AlveareSchema
 from alveare.common.database import get_or_make_object
 from alveare.common.utils import primary_key
 from alveare.models import TicketMatch
 from alveare.views.job_fit import JobFitSchema
 
-class TicketMatchSchema(Schema):
+class TicketMatchSchema(AlveareSchema):
     skill_requirement_id =  fields.Integer()
     skill_set_id =          fields.Integer()
     score =                 fields.Integer()

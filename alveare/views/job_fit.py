@@ -1,10 +1,11 @@
-from marshmallow import fields, Schema
+from marshmallow import fields
+from alveare.common.schema import AlveareSchema
 from alveare.common.database import get_or_make_object
 from alveare.common.utils import primary_key
 from alveare.models import JobFit
 from alveare.views.nomination import NominationSchema
 
-class JobFitSchema(Schema):
+class JobFitSchema(AlveareSchema):
 
     contractor_id =  fields.Integer()
     ticket_set_id =  fields.Integer()

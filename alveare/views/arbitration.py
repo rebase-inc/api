@@ -1,12 +1,13 @@
 import datetime
 
-from marshmallow import fields, Schema
+from marshmallow import fields
+from alveare.common.schema import AlveareSchema
 
 from alveare.views import NamespacedSchema
 from alveare.views.comment import CommentSchema
 from alveare.common.database import get_or_make_object
 
-class ArbitrationSchema(Schema):
+class ArbitrationSchema(AlveareSchema):
     id = fields.Integer()
     mediation = fields.Nested('MediationSchema', only='id', required=True)
 

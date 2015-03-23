@@ -1,7 +1,8 @@
-from marshmallow import fields, Schema
+from marshmallow import fields
+from alveare.common.schema import AlveareSchema
 from alveare.common.database import get_or_make_object
 
-class TicketSnapshotSchema(Schema):
+class TicketSnapshotSchema(AlveareSchema):
     id =          fields.Integer()
     title =       fields.String()
     description = fields.String()

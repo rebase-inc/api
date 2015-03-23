@@ -1,10 +1,11 @@
 from flask.ext.restful import abort
-from marshmallow import fields, Schema
+from marshmallow import fields
+from alveare.common.schema import AlveareSchema
 
 from alveare.models.skill_requirement import SkillRequirement
 from alveare.common.database import get_or_make_object
 
-class SkillRequirementSchema(Schema):
+class SkillRequirementSchema(AlveareSchema):
     id =            fields.Integer()
 
     def make_object(self, data):

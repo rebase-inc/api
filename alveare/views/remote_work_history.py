@@ -1,9 +1,10 @@
-from marshmallow import fields, Schema
+from marshmallow import fields
+from alveare.common.schema import AlveareSchema
 from alveare.models.remote_work_history import RemoteWorkHistory
 from alveare.models.contractor import Contractor
 from flask.ext.restful import abort
 
-class RemoteWorkHistorySchema(Schema):
+class RemoteWorkHistorySchema(AlveareSchema):
     id =                fields.Integer()
     github_accounts =   fields.Nested('GithubAccountSchema', only=('id', 'user_name'), many=True)
 

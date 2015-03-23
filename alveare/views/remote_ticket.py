@@ -1,10 +1,11 @@
-from marshmallow import fields, Schema
+from marshmallow import fields
+from alveare.common.schema import AlveareSchema
 from alveare.models.remote_ticket import RemoteTicket
 from alveare.models.project import Project
 from alveare.views.skill_requirement import SkillRequirementSchema
 from flask.ext.restful import abort
 
-class RemoteTicketSchema(Schema):
+class RemoteTicketSchema(AlveareSchema):
     id =          fields.Integer(required=True)
     title =       fields.String()
     description = fields.String()

@@ -1,12 +1,13 @@
 
-from marshmallow import fields, Schema, ValidationError
+from marshmallow import fields
 
+from alveare.common.schema import AlveareSchema
 from alveare.views import NamespacedSchema
 from alveare.views.comment import CommentSchema
 
 #from alveare.views.work import WorkSchema
 
-class ReviewSchema(Schema):
+class ReviewSchema(AlveareSchema):
     id = fields.Integer()
     rating = fields.Integer(required = True)
     work = fields.Nested('WorkSchema', only='id')

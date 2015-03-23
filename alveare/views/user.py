@@ -1,9 +1,10 @@
-from marshmallow import fields, Schema
+from marshmallow import fields
+from alveare.common.schema import AlveareSchema
 
 from alveare.common.database import get_or_make_object
 from alveare.views.role import RoleSchema
 
-class UserSchema(Schema):
+class UserSchema(AlveareSchema):
     id = fields.Integer()
     first_name = fields.String(required=True)
     last_name = fields.String(required=True)

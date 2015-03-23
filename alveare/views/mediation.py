@@ -1,11 +1,12 @@
 import datetime
 
-from marshmallow import fields, Schema
+from marshmallow import fields
+from alveare.common.schema import AlveareSchema
 
 from alveare.views import NamespacedSchema
 from alveare.views.comment import CommentSchema
 
-class MediationSchema(Schema):
+class MediationSchema(AlveareSchema):
     id = fields.Integer()
     dev_answer = fields.String()
     client_answer = fields.String()

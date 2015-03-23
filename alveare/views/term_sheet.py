@@ -1,9 +1,10 @@
-from marshmallow import fields, Schema
+from marshmallow import fields
+from alveare.common.schema import AlveareSchema
 
 from alveare.views.ticket_set import TicketSetSchema
 from alveare.common.database import get_or_make_object
 
-class TermSheetSchema(Schema):
+class TermSheetSchema(AlveareSchema):
     id =      fields.Integer()
     legalese = fields.String(required=True)
 
