@@ -26,8 +26,6 @@ class AlveareRestTestCase(unittest.TestCase):
 
         self.addCleanup(self.cleanup)
 
-        self.login_admin()
-
     def login_admin(self):
         self.post_resource('/auth', { 'user': {'id': self.admin_user.id}, 'password': 'admin'})
 
