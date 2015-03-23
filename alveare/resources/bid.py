@@ -15,7 +15,7 @@ class BidCollection(Resource):
 
     @login_required
     def get(self):
-        return get_collection(self.model, self.serializer)
+        return get_collection(self.model, self.serializer, current_user.bid_query)
 
     @login_required
     def post(self):
