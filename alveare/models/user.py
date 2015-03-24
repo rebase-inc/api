@@ -57,6 +57,10 @@ class User(DB.Model):
         return self.roles.filter_by(type = 'contractor')
 
     @hybrid_property
+    def manager_for_organizations(self):
+        return [manager.organization.id for manager in self.manager_roles]
+
+    @hybrid_property
     def auction_query(self):
         # if you're admin, you can see everything
         from alveare.models import Auction
@@ -64,7 +68,6 @@ class User(DB.Model):
         if self.is_admin():
             return query
 
-        manager_for_organization = [manager.organization.id for manager in self.manager_roles]
         auctions_approved_for = []
         for contractor in self.contractor_roles.all():
             auctions_approved_for.extend(contractor.auctions_approved_for)
@@ -72,8 +75,8 @@ class User(DB.Model):
         all_filters = []
         if auctions_approved_for:
             all_filters.append(Auction.id.in_(auctions_approved_for))
-        if manager_for_organization:
-            all_filters.append(Auction.organization_id.in_(manager_for_organization))
+        if self.manager_for_organizations:
+            all_filters.append(Auction.organization_id.in_(self.manager_for_organizations))
         if not all_filters:
             return query.filter(sql.false())
         return query.filter(or_(*all_filters))
@@ -85,14 +88,13 @@ class User(DB.Model):
         if self.is_admin():
             return query
 
-        manager_for_organization = [manager.organization.id for manager in self.manager_roles]
         auctions_approved_for = []
         for contractor in self.contractor_roles.all():
             auctions_approved_for.extend(contractor.auctions_approved_for)
 
         all_filters = []
         if auctions_approved_for:
-            all_filters.append(Bid.auction.organization_id.in_(manager_for_organization))
+            all_filters.append(Bid.auction.organization_id.in_(self.manager_for_organizations))
         all_filters.append(Bid.contractor.user.id == self.id)
         return query.filter(or_(*all_filters))
 
@@ -104,9 +106,8 @@ class User(DB.Model):
         if self.is_admin(): return query
 
         # TODO: Make this part of the filter
-        manager_for_organization = [manager.organization.id for manager in self.manager_roles]
 
-        if manager_for_organization:
+        if self.manager_for_organizations:
             query = Nomination.query
             query = query.join(Nomination.ticket_set)
             query = query.join(TicketSet.bid_limits)
@@ -114,7 +115,7 @@ class User(DB.Model):
             query = query.join(TicketSnapshot.ticket)
             query = query.join(Ticket.project)
             query = query.join(Project.organization)
-            query = query.filter(Organization.id.in_(manager_for_organization))
+            query = query.filter(Organization.id.in_(self.manager_for_organizations))
             return query
         else:
             return query.filter(sql.false())
@@ -128,18 +129,22 @@ class User(DB.Model):
     def allowed_to_modify(self, instance):
         if self.is_admin(): return True
 
-        from alveare.models import Nomination, Auction, Bid
+        from alveare.models import (
+            Nomination,
+            Auction,
+            Bid,
+        )
         if isinstance(instance, Nomination):
             # TODO: Optimize
-            manager_for_organization = [manager.organization.id for manager in self.manager_roles]
             organization_id = instance.ticket_set.bid_limits[0].ticket_snapshot.ticket.project.organization.id
-            return bool(organization_id in manager_for_organization)
+            return bool(organization_id in self.manager_for_organizations)
         elif isinstance(instance, Auction):
-            manager_for_organization = [manager.organization.id for manager in self.manager_roles]
             organization_id = instance.ticket_set.bid_limits[0].ticket_snapshot.ticket.project.organization.id
-            return bool(organization_id in manager_for_organization)
+            return bool(organization_id in self.manager_for_organizations)
         elif isinstance(instance, Bid):
             return bool(instance.contractor.user == self)
+        #elif isinstance(instance, Project):
+            #return bool(instance.k
         else:
             return True
 
@@ -159,8 +164,7 @@ class User(DB.Model):
             return False # hack until we get to the point where we can remove the else: return True statement below
         elif isinstance(instance, Bid):
             organization = instance.auction.ticket_set.bid_limit.ticket_snapshot.ticket.project.organization
-            manager_for_organization = [manager.organization.id for manager in self.manager_roles]
-            return bool(organization.id in manager_for_organization)
+            return bool(organization.id in self.manager_for_organizations)
         else:
             return True
 
