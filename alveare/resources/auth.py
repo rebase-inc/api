@@ -1,12 +1,23 @@
 
 from flask.ext.restful import Resource
-from flask.ext.login import login_user, logout_user, current_app
+from flask.ext.login import (
+    login_required,
+    login_user,
+    logout_user,
+    current_app
+)
 from flask import jsonify, make_response, request
 from alveare.common.exceptions import UnmarshallingError
 
 from alveare.views import auth
 from alveare.common.database import DB
-from alveare.common.rest import get_collection, add_to_collection, get_resource, update_resource, delete_resource
+from alveare.common.rest import (
+    get_collection,
+    add_to_collection,
+    get_resource,
+    update_resource,
+    delete_resource
+)
 
 class AuthCollection(Resource):
     url = '/auth'
@@ -32,3 +43,12 @@ class AuthCollection(Resource):
             response = jsonify(message = 'No credentials provided!')
             response.status_code = 401
             return response
+
+    @login_required
+    def get(self):
+        ''' logout '''
+        logout_user()
+        response = jsonify(message = 'Logged out')
+        response.status_code = 200
+        return response
+

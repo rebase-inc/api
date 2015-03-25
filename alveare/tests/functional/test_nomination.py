@@ -40,7 +40,7 @@ class TestNominationResource(AlveareRestTestCase):
         self.put_resource('nominations/{}/{}'.format(nomination.contractor_id, nomination.ticket_set_id), dict(auction={'id': auction_id}), 401)
         user = nomination.ticket_set.bid_limits[0].ticket_snapshot.ticket.project.organization.managers[0].user
 
-        self.post_resource('auth', dict(user={'id': user.id}, password= 'foo'))
+        self.login(user.email, 'foo')
         self.put_resource('nominations/{}/{}'.format(nomination.contractor_id, nomination.ticket_set_id), dict(auction={'id': auction_id}))
 
         nomination = self.get_resource('nominations/{}/{}'.format(nomination.contractor_id, nomination.ticket_set_id))['nomination']
@@ -91,7 +91,8 @@ class TestNominationResource(AlveareRestTestCase):
         user = nomination.ticket_set.bid_limits[0].ticket_snapshot.ticket.project.organization.managers[0].user
 
         self.logout()
-        self.post_resource('auth', dict(user={'id': user.id}, password='foo'))
+        self.login(user.email, 'foo')
+
         nominations = self.get_resource('nominations')['nominations']
         #nomination_ids = [nom['id'] for nom in nominations]
         nominations = [(nom['contractor']['id'], nom['ticket_set']['id']) for nom in nominations]

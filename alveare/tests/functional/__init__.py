@@ -27,14 +27,17 @@ class AlveareRestTestCase(unittest.TestCase):
         self.addCleanup(self.cleanup)
 
     def login_admin(self):
-        self.post_resource('/auth', { 'user': {'id': self.admin_user.id}, 'password': 'admin'})
+        self.post_resource('/auth', { 'user': {'email': self.admin_user.email}, 'password': 'admin'})
+
+    def login(self, email, password):
+        return self.post_resource('/auth', { 'user': {'email': email}, 'password': password})
 
     def logout(self):
-        self.post_resource('/auth', dict(), 401)
+        self.get_resource('/auth')
 
     def login_as_new_user(self):
         new_user = models.User.query.filter(~models.User.roles.any() & ~models.User.admin).first()
-        self.post_resource('/auth', {'user': {'id': new_user.id}, 'password': 'foo' } )
+        self.post_resource('/auth', {'user': {'id': new_user.id, 'email': new_user.email}, 'password': 'foo' } )
 
     def cleanup(self):
         self.db.session.remove()
@@ -79,7 +82,11 @@ class AlveareRestTestCase(unittest.TestCase):
         error_msg = 'Expected {}, got {}. Data: {}'
         response = self.client.delete(url, headers={'X-Requested-With': 'XMLHttpRequest'})
         self.assertEqual(response.status_code, expected_code,
-            error_msg.format(expected_code, response.status_code, 'DELETE to {} failed: {}'.format(url, response.data)))
+                         error_msg.format(expected_code,
+                                          response.status_code,
+                                          '\nWhile doing DELETE to {}.\nGot response:\n{}'.format(
+                                              url,
+                                              response.data)))
         self.assertEqual(response.headers['Content-Type'], 'application/json',
             error_msg.format('application/json', response.headers['Content-Type'], response.data))
         return json.loads(response.data.decode('utf-8'))

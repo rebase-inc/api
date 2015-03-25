@@ -17,7 +17,7 @@ class User(DB.Model):
     id =                DB.Column(DB.Integer,   primary_key=True)
     first_name =        DB.Column(DB.String,    nullable=False)
     last_name =         DB.Column(DB.String,    nullable=False)
-    email =             DB.Column(DB.String,    nullable=False)
+    email =             DB.Column(DB.String,    nullable=False, unique=True)
     hashed_password =   DB.Column(DB.String,    nullable=False)
     last_seen =         DB.Column(DB.DateTime,  nullable=False)
     roles =             DB.relationship('Role', backref='user', cascade='all, delete-orphan', lazy='dynamic')
@@ -101,7 +101,16 @@ class User(DB.Model):
     @hybrid_property
     def nomination_query(self):
         ''' you should be able to see a nomination if you're a manager for the organization that owns the ticket_set '''
-        from alveare.models import Nomination, TicketSet, BidLimit, TicketSnapshot, Ticket, Organization, Project, Contractor
+        from alveare.models import (
+            Nomination,
+            TicketSet,
+            BidLimit,
+            TicketSnapshot,
+            Ticket,
+            Organization,
+            Project,
+            Contractor,
+        )
         query = Nomination.query
         if self.is_admin(): return query
 
@@ -133,6 +142,7 @@ class User(DB.Model):
             Nomination,
             Auction,
             Bid,
+            Project,
         )
         if isinstance(instance, Nomination):
             # TODO: Optimize
@@ -143,8 +153,9 @@ class User(DB.Model):
             return bool(organization_id in self.manager_for_organizations)
         elif isinstance(instance, Bid):
             return bool(instance.contractor.user == self)
-        #elif isinstance(instance, Project):
-            #return bool(instance.k
+        elif isinstance(instance, Project):
+            from alveare.models import Manager
+            return bool(self.manager_roles.filter(Manager.organization_id == instance.organization.id).all())
         else:
             return True
 
@@ -156,7 +167,11 @@ class User(DB.Model):
         # Until we find a counter example, I think this is reasonable.
         if self.allowed_to_modify(instance): return True
 
-        from alveare.models import Nomination, Auction, Bid
+        from alveare.models import (Nomination,
+                                    Auction,
+                                    Bid,
+                                    Project,
+                                    )
         if isinstance(instance, Auction):
             users_approved = [nomination.contractor.user.id for nomination in instance.approved_talents]
             return bool(self.id in users_approved)
@@ -165,6 +180,8 @@ class User(DB.Model):
         elif isinstance(instance, Bid):
             organization = instance.auction.ticket_set.bid_limit.ticket_snapshot.ticket.project.organization
             return bool(organization.id in self.manager_for_organizations)
+        elif isinstance(instance, Project):
+            return bool(instance.organization_id in self.manager_for_organizations)
         else:
             return True
 

@@ -18,6 +18,8 @@ class UserSchema(AlveareSchema):
 
     def make_object(self, data):
         from alveare.models import User
+        if tuple(data.keys()) == ('email',):
+            return User.query.filter(User.email == data.get('email')).one()
         return get_or_make_object(User, data)
 
 serializer = UserSchema(only=('id','admin','first_name','last_name','email','last_seen','roles'))
