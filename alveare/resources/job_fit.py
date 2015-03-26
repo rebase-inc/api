@@ -15,7 +15,6 @@ class JobFitCollection(Resource):
     deserializer = job_fit.deserializer
     url = collection_url(model)
 
-
     @login_required
     def get(self):
         return get_collection(self.model, self.serializer)

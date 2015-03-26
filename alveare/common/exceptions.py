@@ -26,6 +26,26 @@ class ClientError(AlveareError):
     def __init__(self, code=None, message=None, more_data=None):
         super().__init__(code if code else self.code, message, more_data)
 
+class InstanceNotFound(AlveareError):
+    code = 404
+
+    def __init__(self, code=None, __name=None, id=None, more_data=None):
+        super().__init__(
+            code if code else self.code,
+            'No {__name} with id {id}'.format(__name, id),
+            more_data
+        )
+
+class NoDataOrMissingIds(AlveareError):
+    code = 400
+
+    def __init__(self, code=None, model=None, more_data=None):
+        super().__init__(
+            code if code else self.code,
+            'No data or valid ids provided to get/make {}!'.format(model),
+            more_data
+        )
+
 class MarshmallowWrapperException(AlveareError):
     code = 500
 

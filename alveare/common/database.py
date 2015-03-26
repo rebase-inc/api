@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 from flask.ext.sqlalchemy import SQLAlchemy
+from alveare.common.exceptions import NoDataOrMissingIds, InstanceNotFound
 DB = SQLAlchemy()
 
 def get_or_make_object(model, data, id_fields=None):
@@ -9,8 +10,8 @@ def get_or_make_object(model, data, id_fields=None):
         instance = model.query.get(instance_id)
         if not instance:
             data['__name'] = model.__tablename__
-            raise ValueError('No {__name} with id {id}'.format(**data))
+            raise InstanceNotFound(**data)
         return instance
     elif not data:
-        raise ValueError('No data or valid ids provided to get/make {}!'.format(model.__tablename__))
+        raise NoDataOrMissingIds(model=model.__tablename__)
     return model(**data)

@@ -1,5 +1,6 @@
 
 from flask.ext.restful import Resource
+from flask.ext.login import login_required, current_user
 from flask import jsonify, make_response, request
 from alveare.common.database import DB
 from alveare.models.ticket_match import TicketMatch
@@ -12,8 +13,10 @@ class TicketMatchCollection(Resource):
     deserializer = ticket_match.deserializer
     url = '/{}'.format(model.__pluralname__)
 
+    @login_required
     def get(self):
         return get_collection(self.model, self.serializer)
+    @login_required
     def post(self):
         return add_to_collection(self.model, self.deserializer, self.serializer)
 
@@ -24,14 +27,17 @@ class TicketMatchResource(Resource):
     update_deserializer = ticket_match.update_deserializer
     url = '/{}/<int:skill_requirement_id>/<int:skill_set_id>'.format(model.__pluralname__)
 
+    @login_required
     def get(self, skill_requirement_id, skill_set_id):
         composite_id = (skill_requirement_id, skill_set_id)
         return get_resource(self.model, composite_id, self.serializer)
 
+    @login_required
     def put(self, skill_requirement_id, skill_set_id):
         composite_id = (skill_requirement_id, skill_set_id)
         return update_resource(self.model, composite_id, self.update_deserializer, self.serializer)
 
+    @login_required
     def delete(self, skill_requirement_id, skill_set_id):
         composite_id = (skill_requirement_id, skill_set_id)
         return delete_resource(self.model, composite_id)

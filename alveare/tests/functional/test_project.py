@@ -12,6 +12,9 @@ class TestProjectResource(AlveareRestTestCase):
         self.login_admin()
         projects = self.project_resource.get_all()
 
+    def test_get_all_anonymous(self):
+        self.get_resource('projects', 401)
+
     def test_get_one(self):
         self.login_admin()
         project = self.project_resource.get_any()
@@ -19,10 +22,29 @@ class TestProjectResource(AlveareRestTestCase):
         self.assertTrue(project['id'])
         self.assertNotEqual(project['code_repository'], 0)
 
+        project['id'] += 123123423445
+        self.project_resource.get(project, 404)
+
+    def test_get_one_unauthorized(self):
+        self.login_admin()
+        project = self.project_resource.get_any()
+        self.logout()
+        self.login_as_new_user()
+        self.project_resource.get(project, 401)
+
     def test_delete(self):
         self.login_admin()
         project = self.project_resource.delete_any()
         AlveareResource(self, 'CodeRepository').get(project['code_repository'], 404)
+
+    def test_delete_unauthorized(self):
+        self.login_admin()
+        project = self.project_resource.get_any()
+        self.logout()
+        self.login_as_new_user()
+        self.project_resource.delete(project, 401)
+        self.login_admin()
+        self.project_resource.delete(project)
 
     def test_delete_organization(self):
         self.login_admin()
@@ -35,6 +57,14 @@ class TestProjectResource(AlveareRestTestCase):
         project = self.project_resource.get_any()
         project['name'] = 'a better project name'
         self.project_resource.update(**project)
+
+    def test_update_unauthorized(self):
+        self.login_admin()
+        project = self.project_resource.get_any()
+        self.logout()
+        self.login_as_new_user()
+        project['name'] = 'a better project name'
+        self.project_resource.update(401, **project)
 
     def test_add_and_remove_tickets(self):
         self.login_admin()

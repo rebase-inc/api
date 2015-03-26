@@ -17,6 +17,7 @@ class TicketSnapshotCollection(Resource):
     def get(self):
         return get_collection(self.model, self.serializer)
 
+    @login_required
     def post(self):
         return add_to_collection(self.model, self.deserializer, self.serializer)
 

@@ -1,4 +1,5 @@
 import datetime
+import uuid
 from random import randint
 
 def create_one_organization(db, name='Alveare'):
@@ -8,8 +9,9 @@ def create_one_organization(db, name='Alveare'):
     db.session.add(organization)
     return organization
 
-def create_one_user(db, first_name='Andrew', last_name='Millspaugh', email='andrew@alveare.io', password='foo'):
+def create_one_user(db, first_name='Andrew', last_name='Millspaugh', email=None, password='foo'):
     from alveare.models import User
+    email = email or 'user-{}@alveare.io'.format(uuid.uuid4())
     user = User(first_name, last_name, email, password)
     db.session.add(user)
     return user

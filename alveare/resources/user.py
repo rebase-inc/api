@@ -6,7 +6,14 @@ from flask import jsonify, make_response, request
 from alveare.models import User, Manager
 from alveare.views import user
 from alveare.common.database import DB
-from alveare.common.rest import query_string_values, get_collection, add_to_collection, get_resource, update_resource, delete_resource
+from alveare.common.rest import (
+    query_string_values,
+    get_collection,
+    add_to_collection,
+    get_resource,
+    update_resource,
+    delete_resource
+)
 
 class UserCollection(Resource):
     model = User

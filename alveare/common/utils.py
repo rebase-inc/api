@@ -101,13 +101,15 @@ class AlveareResource(object):
         ''' helper function that returns the actual dictionary of fields for 'resource'/'resource_id'
         '''
         response = self.test.get_resource(self.url(resource), expected_status)
-        if expected_status == 404:
+        if expected_status in [401, 404]:
             return None
         self.test.assertIn(self.resource, response)
         return response[self.resource]
 
-    def delete(self, resource):
-        self.test.delete_resource(self.url(resource))
+    def delete(self, resource, expected_status=200):
+        self.test.delete_resource(self.url(resource), expected_status)
+        if expected_status in [401, 404]:
+            return None
         self.test.get_resource(self.url(resource), 404)
 
     def get_all(self):
@@ -170,8 +172,10 @@ class AlveareResource(object):
         else:
             self.test.assertEqual(a, b)
 
-    def modify_or_create(self, rest_method, resource_url, **resource):
-        response = rest_method(resource_url, resource)
+    def modify_or_create(self, rest_method, resource_url, expected_status=200, **resource):
+        response = rest_method(resource_url, resource, expected_status)
+        if expected_status in [401, 404]:
+            return None
         self.test.assertIn(self.resource, response)
         new_res = response[self.resource]
         self.assertComposite(resource, new_res)
@@ -185,8 +189,8 @@ class AlveareResource(object):
         self.assertComposite(resource, queried_resource)
         return queried_resource
 
-    def create(self, **resource):
-        return self.modify_or_create(self.test.post_resource, self.collection_url, **resource)
+    def create(self, expected_status=201, **resource):
+        return self.modify_or_create(self.test.post_resource, self.collection_url, expected_status, **resource)
 
-    def update(self, **resource):
-        return self.modify_or_create(self.test.put_resource, self.url(resource), **resource)
+    def update(self, expected_status=200, **resource):
+        return self.modify_or_create(self.test.put_resource, self.url(resource), expected_status, **resource)

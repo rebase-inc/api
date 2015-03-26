@@ -12,11 +12,14 @@ class TestAuctionResource(AlveareRestTestCase):
         user_data = dict(
             first_name = 'Andrew',
             last_name = 'Millspaugh',
-            email = 'andrew@alveare.io',
+            email = 'andrew@auction.alveare.io',
             password = 'foobar'
         )
         user = self.post_resource('users', user_data)['user']
         self.post_resource('auth', dict(user=user, password='foobar')) #login
+
+        self.logout()
+        self.login(user_data['email'], user_data['password'])
 
         org_data = dict(name='Bitstrap', user=user)
         organization = self.post_resource('organizations', org_data)['organization']
@@ -142,5 +145,3 @@ class TestAuctionResource(AlveareRestTestCase):
 
         auction = self.post_resource('auctions/{}/fail_events'.format(auction['id']), dict())['auction']
         self.assertEqual(auction.pop('state'), 'failed')
-
-

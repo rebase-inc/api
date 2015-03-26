@@ -1,5 +1,6 @@
 
 from flask.ext.restful import Resource
+from flask.ext.login import login_required, current_user
 from flask import jsonify, make_response, request
 from alveare.common.database import DB
 from alveare.common.rest import get_collection, add_to_collection, get_resource, update_resource, delete_resource
@@ -12,16 +13,21 @@ def make_collection_and_resource_classes(
     update_deserializer
 ):
     class AlveareCollection(Resource):
+        @login_required
         def get(self):
             return get_collection(Model, serializer)
+        @login_required
         def post(self):
             return add_to_collection(Model, deserializer, serializer)
 
     class AlveareResource(Resource):
+        @login_required
         def get(self, id):
             return get_resource(Model, id, serializer)
+        @login_required
         def put(self, id):
             return update_resource(Model, id, update_deserializer, serializer)
+        @login_required
         def delete(self, id):
             return delete_resource(Model, id)
     
