@@ -176,7 +176,7 @@ def create_one_auction(db, tickets=None, duration=1000, finish_work_by=None, red
     term_sheet = TermSheet('Some legal mumbo-jumbo')
     ticket_set = TicketSet(bid_limits)
     organization = tickets[0].project.organization
-    auction = Auction(organization, ticket_set, term_sheet, duration, finish_work_by, redundancy)
+    auction = Auction(ticket_set, term_sheet, duration, finish_work_by, redundancy)
     db.session.add(auction)
     return auction
 

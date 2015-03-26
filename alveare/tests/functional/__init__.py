@@ -37,6 +37,10 @@ class AlveareRestTestCase(unittest.TestCase):
         self.post_resource('/auth', {'user': {'id': new_user.id}, 'password': 'foo' } )
 
     def cleanup(self):
+        try:
+            self.logout()
+        except:
+            pass
         self.db.session.remove()
         self.db.drop_all()
         self.db.get_engine(self.app).dispose()

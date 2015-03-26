@@ -30,7 +30,7 @@ class TestTicketSnapshotModel(AlveareModelTestCase):
         self.db.session.commit()
 
         self.assertFalse(Ticket.query.get(ticket_id))
-        self.assertTrue(TicketSnapshot.query.get(snap_id))
+        self.assertFalse(TicketSnapshot.query.get(snap_id))
 
     def test_delete_project(self):
         snap = create_one_snapshot(self.db)

@@ -33,7 +33,6 @@ class TestAuctionResource(AlveareRestTestCase):
         ticket_set = self.post_resource('ticket_sets', dict(bid_limits=[bid_limit]))['ticket_set']
         term_sheet = self.post_resource('term_sheets', dict(legalese='piss off'))['term_sheet']
         auction_data = dict(
-            organization = organization,
             ticket_set = ticket_set,
             finish_work_by = '2015-03-20T01:58:51.593347+00:00',
             duration = 123423, # no clue what this number means

@@ -122,7 +122,6 @@ class TestAuctionModel(AlveareModelTestCase):
 
         self.assertEqual( TicketSet.query.all(),        [])
         self.assertEqual( BidLimit.query.all(),         [])
-        self.assertEqual( TicketSnapshot.query.all(),   [])
 
         # verify that the original tickets have not been deleted
         for ticket in tickets:

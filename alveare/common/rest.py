@@ -9,7 +9,11 @@ def get_collection(model, serializer, query=None):
     if query is None:
         query = model.query
     all_instances = query.limit(100).all()
-    return jsonify(**{model.__pluralname__: serializer.dump(all_instances, many=True).data})
+    try:
+        return jsonify(**{model.__pluralname__: serializer.dump(all_instances, many=True).data})
+    except Exception as e:
+        print(all_instances)
+        raise e
 
 def add_to_collection(model, deserializer, serializer):
     new_instance = deserializer.load(request.form or request.json).data

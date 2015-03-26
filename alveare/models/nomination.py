@@ -6,9 +6,13 @@ class Nomination(DB.Model):
 
     contractor_id = DB.Column(DB.Integer, DB.ForeignKey('contractor.id', ondelete='CASCADE'), primary_key=True)
     ticket_set_id = DB.Column(DB.Integer, DB.ForeignKey('ticket_set.id', ondelete='CASCADE'), primary_key=True)
-    auction_id =    DB.Column(DB.Integer, DB.ForeignKey('auction.id'), nullable=True)
+    auction_id =    DB.Column(DB.Integer, DB.ForeignKey('auction.id', ondelete='CASCADE'), nullable=True)
 
     job_fit = DB.relationship('JobFit', backref=DB.backref('nomination', uselist=False), uselist=False, cascade='all, delete-orphan', passive_deletes=True)
+
+    @property
+    def organization(self):
+        return self.ticket_set.bid_limits[0].ticket_snapshot.ticket.organization
 
     def __init__(self, contractor, ticket_set):
         from alveare.models import Contractor, TicketSet

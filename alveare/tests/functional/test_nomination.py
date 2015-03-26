@@ -74,7 +74,15 @@ class TestNominationResource(AlveareRestTestCase):
 
         organization = org_resource.get(project['organization'])
         org_resource.delete(organization)
-        self.nomination_resource.get(nomination, 404)
+
+        # testing all the way down because this seems to be a problem
+        # fairly regularly
+        self.get_resource('projects/{}'.format(project['id']), 404)
+        self.get_resource('tickets/{}'.format(ticket['id']), 404)
+        self.get_resource('ticket_snapshots/{}'.format(ticket_snapshot['id']), 404)
+        self.get_resource('bid_limits/{}'.format(bid_limit['id']), 404)
+        self.get_resource('ticket_sets/{}'.format(bid_limit['ticket_set']['id']), 404)
+        self.get_resource('nominations/{contractor_id}/{ticket_set_id}'.format(**nomination), 404)
 
     def test_that_new_user_cant_see_any_nominations(self):
         self.login_admin()

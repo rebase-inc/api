@@ -9,15 +9,20 @@ class BidLimit(DB.Model):
     id =            DB.Column(DB.Integer, primary_key=True)
     price =         DB.Column(DB.Integer, nullable=False)
     ticket_set_id = DB.Column(DB.Integer, DB.ForeignKey('ticket_set.id', ondelete='CASCADE'), nullable=True)
-
-    ticket_snapshot = DB.relationship(TicketSnapshot, uselist=False, cascade='all, delete-orphan', passive_deletes=True)
+    ticket_snapshot_id = DB.Column(DB.Integer, DB.ForeignKey('ticket_snapshot.id', ondelete='CASCADE'), nullable=False)
 
     def __init__(self, ticket_snapshot, price):
-        self.price = price
+        if not isinstance(ticket_snapshot, TicketSnapshot):
+            raise ValueError('ticket_snapshot parameter must be of type TicketSnapshot')
         self.ticket_snapshot = ticket_snapshot
+        self.price = price
+
+    @property
+    def organization(self):
+        return self.ticket_snapshot.ticket.organization
 
     def __repr__(self):
-        return '<BidLimit for snapshot: {} on ticket_set:{}, price:{} {}>'.format(self.ticket_snapshot.id, self.ticket_set_id, self.price, 'dollars')
+        return '<BidLimit for snapshot: {} on ticket_set:{}, price:{} {}>'.format(self.ticket_snapshot_id, self.ticket_set_id, self.price, 'dollars')
 
     @validates('price')
     def validate_price(self, field, value):
