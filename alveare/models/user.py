@@ -73,8 +73,8 @@ class User(DB.Model):
         all_filters = []
         if auctions_approved_for:
             all_filters.append(Organization.id.in_(auctions_approved_for))
-        if self.manager_for_organization:
-            all_filters.append(Organization.id.in_(manager_for_organization))
+        if self.manager_for_organizations:
+            all_filters.append(Organization.id.in_(self.manager_for_organizations))
         if not all_filters:
             return query.filter(sql.false())
         query = query.join(Auction.ticket_set)
@@ -101,7 +101,7 @@ class User(DB.Model):
         all_filters = []
         if auctions_approved_for:
             all_filters.append(Bid.auction.organization_id.in_(self.manager_for_organizations))
-        all_filters.append(Bid.contractor.user.id == self.id)
+        all_filters.append(User.id == self.id)
         return query.filter(or_(*all_filters))
 
     @hybrid_property
@@ -140,13 +140,11 @@ class User(DB.Model):
         if self.is_admin(): return True
 
         if isinstance(instance, Nomination):
-            manager_for_organization = [manager.organization.id for manager in self.manager_roles]
             organization_id = instance.ticket_set.bid_limits[0].ticket_snapshot.ticket.organization.id
-            return bool(organization_id in manager_for_organization)
+            return bool(organization_id in self.manager_for_organizations)
         elif isinstance(instance, Auction):
-            manager_for_organization = [manager.organization.id for manager in self.manager_roles]
             organization_id = instance.ticket_set.bid_limits[0].ticket_snapshot.ticket.organization.id
-            return bool(organization_id in manager_for_organization)
+            return bool(organization_id in self.manager_for_organizations)
         elif isinstance(instance, Bid):
             return bool(instance.contractor.user == self)
         else:
@@ -198,8 +196,7 @@ class User(DB.Model):
         elif isinstance(instance, Nomination):
             return False # hack until we get to the point where we can remove the else: return True statement below
         elif isinstance(instance, Bid):
-            organization = instance.auction.ticket_set.bid_limit.ticket_snapshot.ticket.project.organization
-            return bool(organization.id in self.manager_for_organizations)
+            return bool(instance.auction.organization.id in self.manager_for_organizations)
         elif isinstance(instance, Project):
             return bool(instance.organization_id in self.manager_for_organizations)
         else:

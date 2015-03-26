@@ -54,21 +54,21 @@ class TestBidResource(AlveareRestTestCase):
         creator_user = bid.contractor.user
 
         self.get_resource('bids/{}'.format(bid.id), 401)
-        self.post_resource('auth', dict(user={'id': creator_user.id}, password='foo'))
+        self.post_resource('auth', dict(user=dict(email=creator_user.email), password='foo'))
         self.get_resource('bids/{}'.format(bid.id))
 
     def test_that_bid_auction_owner_can_see(self):
         bid = Bid.query.first()
-        manager_user = bid.auction.ticket_set.bid_limits[0].ticket_snapshot.ticket.project.organization.managers[0]
+        manager_user = bid.auction.ticket_set.bid_limits[0].ticket_snapshot.ticket.project.organization.managers[0].user
 
-        self.post_resource('auth', dict(user={'id': manager_user.id}, password='foo'))
+        self.post_resource('auth', dict(user=dict(email=manager_user.email), password='foo'))
         self.get_resource('bids/{}'.format(bid.id))
 
     def test_that_creator_only_sees_bids_that_they_made(self):
         random_contractor = Contractor.query.first()
         all_owned_bid_ids = [bid.id for bid in random_contractor.bids]
 
-        self.post_resource('auth', dict(user=dict(id=random_contractor.user.id), password='foo'))
+        self.post_resource('auth', dict(user=dict(email=random_contractor.user.email), password='foo'))
         bids = self.get_resource('bids')['bids']
         response_bid_ids = [bid['id'] for bid in bids]
         self.assertEqual(set(all_owned_bid_ids), set(response_bid_ids))
