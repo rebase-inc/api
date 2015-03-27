@@ -2,7 +2,7 @@ import unittest
 
 from . import AlveareRestTestCase
 
-from alveare.models import Bid, Contractor
+from alveare.models import Bid, Contractor, Manager
 
 class TestBidResource(AlveareRestTestCase):
 
@@ -73,10 +73,17 @@ class TestBidResource(AlveareRestTestCase):
         response_bid_ids = [bid['id'] for bid in bids]
         self.assertEqual(set(all_owned_bid_ids), set(response_bid_ids))
 
-    #def test_that_manager_only_sees_bids_that_they_own(self):
-        #random_manager = Manager.query.first()
-        #all_auctions = random_manager.organizatio
-        #all_owned_bid_ids = [bid.id for bid in random_
+    def test_that_manager_only_sees_bids_that_they_own(self):
+        random_manager = Manager.query.first()
+        all_auctions = random_manager.organization.auctions
+        all_owned_bid_ids = []
+        for auction in all_auctions:
+            for bid in auction.bids:
+                all_owned_bid_ids.append(bid.id)
+        self.post_resource('auth', dict(user=dict(email=random_manager.user.email), password='foo'))
+        bids = self.get_resource('bids')['bids']
+        response_bid_ids = [bid['id'] for bid in bids]
+        self.assertEqual(set(all_owned_bid_ids), set(response_bid_ids))
 
     @unittest.skip('skipping this test for now')
     def test_update(self):
