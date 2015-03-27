@@ -59,10 +59,12 @@ class TestBidResource(AlveareRestTestCase):
 
     def test_that_bid_auction_owner_can_see(self):
         bid = Bid.query.first()
-        manager_user = bid.auction.ticket_set.bid_limits[0].ticket_snapshot.ticket.project.organization.managers[0].user
+        manager_user = bid.auction.organization.managers[0].user
 
         self.post_resource('auth', dict(user=dict(email=manager_user.email), password='foo'))
         self.get_resource('bids/{}'.format(bid.id))
+        self.login_as_new_user()
+        self.get_resource('bids/{}'.format(bid.id), 401)
 
     def test_that_creator_only_sees_bids_that_they_made(self):
         random_contractor = Contractor.query.first()

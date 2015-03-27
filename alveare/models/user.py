@@ -185,12 +185,7 @@ class User(DB.Model):
     def allowed_to_modify(self, instance):
         if self.is_admin(): return True
 
-        from alveare.models import (
-            Nomination,
-            Auction,
-            Bid,
-            Project,
-        )
+        from alveare.models import Nomination, Auction, Bid, Project, Feedback
         if isinstance(instance, Nomination):
             organization_id = instance.ticket_set.bid_limits[0].ticket_snapshot.ticket.project.organization.id
             return bool(organization_id in self.manager_for_organizations)
@@ -198,6 +193,8 @@ class User(DB.Model):
             organization_id = instance.ticket_set.bid_limits[0].ticket_snapshot.ticket.project.organization.id
             return bool(organization_id in self.manager_for_organizations)
         elif isinstance(instance, Bid):
+            return bool(instance.contractor.user == self)
+        elif isinstance(instance, Feedback):
             return bool(instance.contractor.user == self)
         elif isinstance(instance, Project):
             from alveare.models import Manager
@@ -213,17 +210,15 @@ class User(DB.Model):
         # Until we find a counter example, I think this is reasonable.
         if self.allowed_to_modify(instance): return True
 
-        from alveare.models import (Nomination,
-                                    Auction,
-                                    Bid,
-                                    Project,
-                                    )
+        from alveare.models import Nomination, Auction, Bid, Project, Feedback
         if isinstance(instance, Auction):
             users_approved = [nomination.contractor.user.id for nomination in instance.approved_talents]
             return bool(self.id in users_approved)
         elif isinstance(instance, Nomination):
             return False # hack until we get to the point where we can remove the else: return True statement below
         elif isinstance(instance, Bid):
+            return bool(instance.auction.organization.id in self.manager_for_organizations)
+        elif isinstance(instance, Feedback):
             return bool(instance.auction.organization.id in self.manager_for_organizations)
         elif isinstance(instance, Project):
             return bool(instance.organization_id in self.manager_for_organizations)
