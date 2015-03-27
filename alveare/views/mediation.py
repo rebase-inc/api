@@ -5,6 +5,7 @@ from alveare.common.schema import AlveareSchema
 
 from alveare.views import NamespacedSchema
 from alveare.views.comment import CommentSchema
+from alveare.common.database import get_or_make_object
 
 class MediationSchema(AlveareSchema):
     id = fields.Integer()
@@ -18,21 +19,12 @@ class MediationSchema(AlveareSchema):
 
     def make_object(self, data):
         ''' This is an admin only procedure '''
-        from alveare.models import Mediation, Work
-        if data.get('id'):
-            mediation = Mediation.query.get(data.get('id'))
-            if not mediation:
-                raise ValueError('No mediation with id {id}'.format(**data))
-            return mediation
-        mediation = Mediation(data.get('work'), data.get('timeout', datetime.datetime.now()))
-        mediation.state = data.get('state', mediation.state)
-        mediation.dev_answer = data.get('dev_answer', mediation.dev_answer)
-        mediation.client_answer = data.get('client_answer', mediation.client_answer)
-        return mediation
+        from alveare.models import Mediation
+        return get_or_make_object(Mediation, data)
 
 serializer = MediationSchema(only=('id','work','dev_answer','client_answer','timeout','state','arbitration'), skip_missing=True)
 deserializer = MediationSchema(only=('work','state','timeout','dev_answer','client_answer'))
 
-updater = MediationSchema(only=('state','timeout','dev_answer','client_answer'))
-updater.make_object = lambda data: data
+update_deserializer = MediationSchema(only=('state','timeout','dev_answer','client_answer'))
+update_deserializer.make_object = lambda data: data
 

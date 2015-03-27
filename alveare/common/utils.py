@@ -14,11 +14,17 @@ def plural(text):
     else:
         return text+'s'
 
-def primary_key(model):
+def get_model_primary_keys(model):
     return tuple(map(lambda key: key.name, inspect(model).primary_key))
 
-def collection_url(model):
-    return '/'+plural(model.__tablename__)
+def make_collection_url(model):
+    return '/'+ model.__pluralname__
+
+def make_resource_url(model):
+    keyspace_format = ''
+    for primary_key in get_model_primary_keys(model):
+        keyspace_format += '/<int:{}>'.format(primary_key)
+    return make_collection_url(model) + keyspace_format
 
 def resource_url(model, use_flask_format=False):
     '''
@@ -31,12 +37,12 @@ def resource_url(model, use_flask_format=False):
         marshmallow schema for a particular object
     '''
     url_format = ''
-    for key in primary_key(model):
+    for key in get_model_primary_keys(model):
         if use_flask_format:
             url_format += '/<int:'+key+'>'
         else:
             url_format += '/{}'
-    return collection_url(model)+url_format
+    return make_collection_url(model)+url_format
 
 composite_error_not_in='''
 While comparing first:
@@ -69,7 +75,7 @@ class AlveareResource(object):
         self.resource = model.__tablename__
 
         self.collection_url = plural(self.resource)
-        self.primary_key = primary_key(model)
+        self.primary_key = get_model_primary_keys(model)
         self.url_format = resource_url(model).format
 
     def url(self, resource):

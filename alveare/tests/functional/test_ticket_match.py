@@ -29,7 +29,7 @@ class TestTicketMatchResource(AlveareRestTestCase):
         self.login_admin()
         ticket_match = self.ticket_match_resource.get_any()
         ticket_match['score'] = 123
-        self.ticket_match_resource.update(**ticket_match) 
+        self.ticket_match_resource.update(**ticket_match)
 
     def test_delete(self):
         self.login_admin()

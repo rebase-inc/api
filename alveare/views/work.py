@@ -6,11 +6,12 @@ from alveare.views.mediation import MediationSchema
 from alveare.views.debit import DebitSchema
 from alveare.views.credit import CreditSchema
 from alveare.views.work_offer import WorkOfferSchema
+from alveare.common.database import get_or_make_object
 
 class WorkSchema(AlveareSchema):
     id = fields.Integer()
     state = fields.String()
-    review = fields.Nested(ReviewSchema, exclude=['work'], default=None)
+    review = fields.Nested(ReviewSchema, exclude=('work',), default=None)
     mediation = fields.Nested(MediationSchema, only=('id','state'), attribute='mediation_rounds', many=True)
     debit = fields.Nested(DebitSchema, only='id', default=None)
     credit = fields.Nested(CreditSchema, only='id', default=None)
@@ -18,11 +19,9 @@ class WorkSchema(AlveareSchema):
 
     def make_object(self, data):
         from alveare.models import Work
-        if data.get('id'):
-            work = Work.query.get(data.get('id'))
-            if not work:
-                raise ValueError('No work with id {id}'.format(**data))
-            return work
-        return Work(**data)
+        return get_or_make_object(Work, data)
 
 serializer = WorkSchema(only=('id','state','mediation','review','debit','credit','offer'), skip_missing=True)
+deserializer = WorkSchema(only=tuple())
+update_deserializer = WorkSchema(only=tuple())
+update_deserializer.make_object = lambda data: data

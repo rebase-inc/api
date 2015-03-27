@@ -48,6 +48,19 @@ class User(DB.Model):
     def get_id(self): return str(self.id)
     def get_role(self): return
 
+    def query_for(self, model):
+        queries = dict(
+            auction = self.auction_query,
+            nomination = self.nomination_query,
+            bid = self.bid_query,
+            feedback = self.feedback_query
+        )
+        if model.__tablename__ not in queries:
+            print('WARNING: All instances of {} are being returned unfiltered!\n'.format(model.__tablename__))
+            return model.query
+        else:
+            return queries[model.__tablename__]()
+
     @hybrid_property
     def manager_roles(self):
         return self.roles.filter_by(type = 'manager')
@@ -60,7 +73,6 @@ class User(DB.Model):
     def manager_for_organizations(self):
         return [manager.organization.id for manager in self.manager_roles]
 
-    @hybrid_property
     def auction_query(self):
         from alveare.models import Auction, Organization, TicketSet, BidLimit, TicketSnapshot, Ticket, Project
         query = Auction.query
@@ -85,7 +97,6 @@ class User(DB.Model):
         query = query.join(Project.organization)
         return query.filter(or_(*all_filters))
 
-    @hybrid_property
     def bid_query(self):
         from alveare.models import Bid, Contractor, User
         query = Bid.query
@@ -104,7 +115,24 @@ class User(DB.Model):
         all_filters.append(User.id == self.id)
         return query.filter(or_(*all_filters))
 
-    @hybrid_property
+    def feedback_query(self):
+        from alveare.models import Feedback, Contractor, User
+        query = Feedback.query
+        if self.is_admin():
+            return query
+        query = query.join(Feedback.contractor)
+        query = query.join(Contractor.user)
+
+        auctions_approved_for = []
+        for contractor in self.contractor_roles.all():
+            auctions_approved_for.extend(contractor.auctions_approved_for)
+
+        all_filters = []
+        if auctions_approved_for:
+            all_filters.append(Feedback.auction.organization_id.in_(self.manager_for_organizations))
+        all_filters.append(User.id == self.id)
+        return query.filter(or_(*all_filters))
+
     def nomination_query(self):
         ''' you should be able to see a nomination if you're a manager for the organization that owns the ticket_set '''
         from alveare.models import (

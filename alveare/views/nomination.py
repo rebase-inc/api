@@ -1,7 +1,7 @@
 from marshmallow import fields
 from alveare.common.schema import AlveareSchema
 from alveare.common.database import get_or_make_object
-from alveare.common.utils import primary_key
+from alveare.common.utils import get_model_primary_keys
 from alveare.models import Nomination
 
 class NominationSchema(AlveareSchema):
@@ -14,7 +14,7 @@ class NominationSchema(AlveareSchema):
     ticket_set = fields.Nested('TicketSetSchema',    only=('id',), default=None)
     auction =    fields.Nested('AuctionSchema',    only=('id',), default=None)
 
-    _primary_keys = primary_key(Nomination)
+    _primary_keys = get_model_primary_keys(Nomination)
 
     def make_object(self, data):
         return get_or_make_object(Nomination, data, self._primary_keys)
