@@ -1,6 +1,6 @@
 from flask import jsonify, make_response, request
 from flask.ext.login import current_user, current_app
-from alveare.common.exceptions import ClientError
+from alveare.common.exceptions import ClientError, NotFoundError
 from alveare.common.database import DB
 
 from sqlalchemy import or_
@@ -23,7 +23,7 @@ def add_to_collection(model, deserializer, serializer):
 def get_resource(model, instance_id, serializer):
     instance = model.query.get(instance_id)
     if not instance:
-        raise ClientError(404)
+        raise NotFoundError(model.__tablename__, instance_id)
     if not current_user.allowed_to_get(instance):
         return current_app.login_manager.unauthorized()
     return jsonify(**{model.__tablename__: serializer.dump(instance).data})
@@ -31,7 +31,7 @@ def get_resource(model, instance_id, serializer):
 def update_resource(model, instance_id, update_deserializer, serializer):
     instance = model.query.get(instance_id)
     if not instance:
-        raise ClientError(404)
+        raise NotFoundError(model.__tablename__, instance_id)
     if not current_user.allowed_to_modify(instance):
         return current_app.login_manager.unauthorized()
     fields_to_update = update_deserializer.load(request.form or request.json).data
@@ -45,7 +45,7 @@ def update_resource(model, instance_id, update_deserializer, serializer):
 def delete_resource(model, instance_id):
     instance = model.query.get(instance_id)
     if not instance:
-        raise ClientError(404)
+        raise NotFoundError(model.__tablename__, instance_id)
     if not current_user.allowed_to_delete(instance):
         return current_app.login_manager.unauthorized()
     DB.session.delete(instance)

@@ -18,9 +18,9 @@ class TestContractorResource(AlveareRestTestCase):
         self.login_admin()
         contractor = self.contractor_resource.get_any()
         rwh_res = AlveareResource(self, 'RemoteWorkHistory')
-        new_rwh = rwh_res.create(
-            id=contractor['id']
-        )
+        response = self.post_resource('remote_work_histories', dict(contractor=contractor))
+        new_rwh = response['remote_work_history']
+        self.assertEqual(new_rwh['id'], contractor['id'])
         queried_contractor = self.contractor_resource.get(contractor)
         self.contractor_resource.assertComposite(queried_contractor['remote_work_history'], new_rwh)
         rwh_res.delete(new_rwh)

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from flask.ext.sqlalchemy import SQLAlchemy
-from alveare.common.exceptions import NoDataOrMissingIds, InstanceNotFound
+from alveare.common.exceptions import BadDataError, NotFoundError
 DB = SQLAlchemy()
 
 def get_or_make_object(model, data, id_fields=None):
@@ -9,9 +9,8 @@ def get_or_make_object(model, data, id_fields=None):
     if all(instance_id):
         instance = model.query.get(instance_id)
         if not instance:
-            data['__name'] = model.__tablename__
-            raise InstanceNotFound(**data)
+            raise NotFoundError(model.__tablename__, instance_id)
         return instance
     elif not data:
-        raise NoDataOrMissingIds(model=model.__tablename__)
+        raise BadDataError(model_name=model.__tablename__)
     return model(**data)

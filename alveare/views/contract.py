@@ -2,6 +2,7 @@ from marshmallow import fields
 from alveare.common.schema import AlveareSchema
 
 from alveare.views.ticket_set import TicketSetSchema
+from alveare.common.database import get_or_make_object
 
 class ContractSchema(AlveareSchema):
     id =  fields.Integer()
@@ -9,12 +10,7 @@ class ContractSchema(AlveareSchema):
 
     def make_object(self, data):
         from alveare.models import Contract
-        if data.get('id'):
-            contract = Contract.query.get(data.get('id'))
-            if not contract:
-                raise ValueError('No contract with id {id}'.format(**data))
-            return contract
-        return Contract(**data)
+        return get_or_make_object(Contract, data)
 
 serializer = ContractSchema(only=('id',), skip_missing=True)
 deserializer = ContractSchema(only=('bid',), strict=True)
