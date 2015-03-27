@@ -3,6 +3,7 @@ import time
 import copy
 
 from . import AlveareRestTestCase
+from alveare.models import Contractor, TicketSnapshot, WorkOffer
 
 class TestWorkOfferResource(AlveareRestTestCase):
 
@@ -62,3 +63,41 @@ class TestWorkOfferResource(AlveareRestTestCase):
         self.delete_resource('work_offers/{}'.format(work_offer_id))
         self.get_resource('work_offers/{}'.format(work_offer_id), expected_code=404)
 
+    def test_contractor_can_get_their_own(self):
+        contractor = Contractor.query.first()
+        snapshot = TicketSnapshot.query.first()
+        work_offer_data = dict(
+            ticket_snapshot= dict(id = snapshot.id),
+            contractor = dict(id = contractor.id),
+            price = 9999
+        )
+        self.post_resource('auth', dict(user=dict(email=contractor.user.email), password='foo'))
+        new_work_offer = self.post_resource('work_offers', work_offer_data)['work_offer']
+        self.get_resource('work_offers/{id}'.format(**new_work_offer))
+
+        work_offers = self.get_resource('work_offers')['work_offers']
+        work_offer_ids = [wo['id'] for wo in work_offers]
+        self.assertIn(new_work_offer['id'], work_offer_ids)
+
+        self.login_as_new_user()
+        self.get_resource('work_offers/{id}'.format(**new_work_offer), 401)
+
+        work_offers = self.get_resource('work_offers')['work_offers']
+        work_offer_ids = [wo['id'] for wo in work_offers]
+        self.assertNotIn(new_work_offer['id'], work_offer_ids)
+
+    def test_manager_of_auction_can_see_them(self):
+        work_offer = WorkOffer.query.filter(WorkOffer.bid != None).first()
+        manager = work_offer.bid.auction.organization.managers[0]
+
+        self.post_resource('auth', dict(user=dict(email=manager.user.email), password='foo'))
+        self.get_resource('work_offers/{}'.format(work_offer.id))
+        work_offers = self.get_resource('work_offers')['work_offers']
+        work_offer_ids = [wo['id'] for wo in work_offers]
+        self.assertIn(work_offer.id, work_offer_ids)
+
+        self.login_as_new_user()
+        self.get_resource('work_offers/{}'.format(work_offer.id), 401)
+        work_offers = self.get_resource('work_offers')['work_offers']
+        work_offer_ids = [wo['id'] for wo in work_offers]
+        self.assertNotIn(work_offer.id, work_offer_ids)
