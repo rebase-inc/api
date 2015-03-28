@@ -71,7 +71,7 @@ class TestWorkOfferResource(AlveareRestTestCase):
             contractor = dict(id = contractor.id),
             price = 9999
         )
-        self.post_resource('auth', dict(user=dict(email=contractor.user.email), password='foo'))
+        self.login(contractor.user.email, 'foo')
         new_work_offer = self.post_resource('work_offers', work_offer_data)['work_offer']
         self.get_resource('work_offers/{id}'.format(**new_work_offer))
 
@@ -90,7 +90,7 @@ class TestWorkOfferResource(AlveareRestTestCase):
         work_offer = WorkOffer.query.filter(WorkOffer.bid != None).first()
         manager = work_offer.bid.auction.organization.managers[0]
 
-        self.post_resource('auth', dict(user=dict(email=manager.user.email), password='foo'))
+        self.login(manager.user.email, 'foo')
         self.get_resource('work_offers/{}'.format(work_offer.id))
         work_offers = self.get_resource('work_offers')['work_offers']
         work_offer_ids = [wo['id'] for wo in work_offers]
