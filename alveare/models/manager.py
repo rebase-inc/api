@@ -23,4 +23,7 @@ class Manager(Role):
         self.organization = organization
 
     def __repr__(self):
-        return '<Manager[{}]>'.format(self.id)
+        return '<Manager[{} "{}"]>'.format(
+            self.id,
+            self.user.first_name+' '+self.user.last_name
+        )

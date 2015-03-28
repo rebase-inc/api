@@ -5,13 +5,13 @@ from alveare.common.database import get_or_make_object
 from alveare.views.role import RoleSchema
 
 class UserSchema(AlveareSchema):
-    id = fields.Integer()
-    first_name = fields.String(required=True)
-    last_name = fields.String(required=True)
-    email = fields.Email(required=True)
-    password = fields.String(required=True)
-    last_seen = fields.DateTime(required=True)
-    admin = fields.Boolean(default=False)
+    id =            fields.Integer()
+    first_name =    fields.String(required=True)
+    last_name =     fields.String(required=True)
+    email =         fields.Email(required=True)
+    password =      fields.String(required=True)
+    last_seen =     fields.DateTime(required=True)
+    admin =         fields.Boolean(default=False)
 
     roles = fields.Nested('RoleSchema', only=('id','type'), many=True)
 

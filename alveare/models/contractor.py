@@ -37,4 +37,8 @@ class Contractor(Role):
         return auctions_approved_for
 
     def __repr__(self):
-        return '<Contractor[id:{}] busyness="{}">'.format(self.id, self.busyness)
+        return '<Contractor[id:{} "{}"] busyness="{}">'.format(
+            self.id,
+            self.user.first_name+' '+self.user.last_name,
+            self.busyness
+        )

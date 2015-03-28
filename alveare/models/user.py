@@ -138,6 +138,9 @@ class User(DB.Model):
     def allowed_to_modify(self, instance):
         if self.is_admin(): return True
 
+        if getattr(instance, 'allows_modify', None):
+            return instance.allows_modify(self)
+
         from alveare.models import (
             Nomination,
             Auction,
@@ -162,6 +165,10 @@ class User(DB.Model):
     def allowed_to_get(self, instance):
         if self.is_admin(): return True
 
+        # note: the getattr line would go away if all models provided the 
+        # a permission interface { allows_get, allows_modify, etc. }
+        if getattr(instance, 'allows_get', None):
+            return instance.allows_get(self)
         # If you're allowed to modify, you must be allowed to get.
         # The inverse is not true, however.
         # Until we find a counter example, I think this is reasonable.

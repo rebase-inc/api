@@ -16,6 +16,14 @@ class TestCodeClearanceResource(AlveareRestTestCase):
         self.assertTrue(code_clearance['contractor'])
         self.assertTrue(code_clearance['project'])
 
+    def test_get_one_unauthorized(self):
+        self.login_admin()
+        code_clearance = self.code_clearance_resource.get_any()
+        self.login_as_new_user()
+        self.code_clearance_resource.get(code_clearance, 401)
+        self.login_admin()
+        self.code_clearance_resource.get(code_clearance)
+
     def test_create(self):
         self.login_admin()
         contractor =    AlveareResource(self, 'Contractor').get_any()
@@ -32,6 +40,12 @@ class TestCodeClearanceResource(AlveareRestTestCase):
         code_clearance = self.code_clearance_resource.get_any()
         code_clearance['pre_approved'] = not code_clearance['pre_approved']
         self.code_clearance_resource.update(**code_clearance)
+
+    def test_update_unauthorized(self):
+        self.login('steve@alveare.io', 'foo')
+        code_clearance = self.code_clearance_resource.get_any()
+        code_clearance['pre_approved'] = not code_clearance['pre_approved']
+        self.code_clearance_resource.update(401, **code_clearance)
 
     def test_delete(self):
         self.login_admin()

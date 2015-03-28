@@ -6,9 +6,12 @@ from alveare.common.database import DB
 from sqlalchemy import or_
 
 def get_collection(model, serializer, query=None):
-    if query is None:
-        query = model.query
-    all_instances = query.limit(100).all()
+    if getattr(model, 'get_all', None):
+        all_instances = model.get_all(current_user).limit(100).all()
+    else:
+        if query is None:
+            query = model.query
+        all_instances = query.limit(100).all()
     return jsonify(**{model.__pluralname__: serializer.dump(all_instances, many=True).data})
 
 def add_to_collection(model, deserializer, serializer):

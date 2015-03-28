@@ -15,5 +15,5 @@ class GithubProject(RemoteProject):
         self.name = name
 
     def __repr__(self):
-        return '<GithubProject[id:{}]>'.format(self.id)
+        return '<GithubProject[id:{} "{}"]>'.format(self.id, self.name)
 

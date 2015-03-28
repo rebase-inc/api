@@ -146,7 +146,7 @@ class AlveareResource(object):
         if isinstance(first, dict):
                 for key, value in first.items():
                     try:
-                        self.test.assertEqual(value, second[key])
+                        self.assertComposite(value, second[key])
                     except KeyError as e:
                         raise AssertionError(composite_error_not_in.format(
                             first,
@@ -157,12 +157,11 @@ class AlveareResource(object):
                         raise AssertionError(composite_error_not_equal.format(
                             first,
                             second,
-                            key,
-                            key,
-                            e
+                            key=key,
+                            e=e
                         ))
         else:
-            self.test.assertEqual(a, b)
+            self.test.assertEqual(first, second)
 
     def modify_or_create(self, rest_method, resource_url, expected_status=200, **resource):
         response = rest_method(resource_url, resource, expected_status)

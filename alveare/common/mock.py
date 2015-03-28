@@ -264,23 +264,27 @@ def create_admin_user(db, password):
     return god
 
 def create_the_world(db):
-    andrew = create_one_user(db, 'Andrew', 'Millspaugh', 'andrew@alveare.io')
+    andrew = create_one_user(db, 'Andrew', 'Millspaugh', 'andrew@manager.alveare.io')
     rapha = create_one_user(db, 'Raphael', 'Goyran', 'raphael@alveare.io')
+    joe = create_one_user(db, 'joe', 'Pesci', 'joe@alveare.io')
     create_one_snapshot(db)
     create_one_snapshot(db)
-    create_one_user(db, 'Steve', 'Gildred', 'steve@alveare.io')
+    steve = create_one_user(db, 'Steve', 'Gildred', 'steve@alveare.io')
     manager_andrew = create_one_manager(db, andrew) # also creates an organization
+    manager_rapha = create_one_manager(db, rapha)
+    bigdough_project = create_one_github_project(db, manager_rapha.organization, 'Big Dough')
     manhattan_project = create_one_github_project(db, manager_andrew.organization, 'Manhattan')
     manhattan_tickets = [ create_one_github_ticket(db, ticket_number, manhattan_project) for ticket_number in range(10) ]
     rapha_contractor = create_one_contractor(db, rapha)
-    andrew_contractor = create_one_contractor(db, andrew)
+    steve_contractor = create_one_contractor(db, steve)
     manhattan_ticket_matches = create_ticket_matches(db, manhattan_tickets, rapha_contractor)
     manhattan_auction = create_one_auction(db, manhattan_tickets)
     rapha_nomination = create_one_nomination(db, manhattan_auction, rapha_contractor)
-    andrew_nomination = create_one_nomination(db, manhattan_auction, andrew_contractor)
+    steve_nomination = create_one_nomination(db, manhattan_auction, steve_contractor)
     rapha_manhattan_job_fit = create_one_job_fit(db, rapha_nomination, manhattan_ticket_matches)
     create_one_code_clearance(db, manhattan_project, rapha_contractor, pre_approved=True)
-    create_one_code_clearance(db, manhattan_project, andrew_contractor, pre_approved=False)
+    create_one_code_clearance(db, manhattan_project, steve_contractor, pre_approved=False)
+    create_one_code_clearance(db, bigdough_project, steve_contractor, pre_approved=True)
     create_one_bank_account(db, rapha_contractor)
     rapha_rwh = create_one_remote_work_history(db, rapha_contractor)
     create_one_github_account(db, rapha_rwh, 'rapha.opensource')
