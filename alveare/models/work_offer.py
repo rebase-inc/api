@@ -29,7 +29,7 @@ class WorkOffer(DB.Model, PermissionMixin):
     def query_by_user(cls, user):
         from alveare.models import Contractor, Bid, Auction, TicketSet, User
         from alveare.models import BidLimit, TicketSnapshot, Ticket , Organization
-        query = WorkOffer.query
+        query = cls.query
 
         if user.is_admin(): return query
 
