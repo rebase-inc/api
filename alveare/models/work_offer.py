@@ -33,22 +33,22 @@ class WorkOffer(DB.Model, PermissionMixin):
 
         if user.is_admin(): return query
 
-        query = query.join(cls.contractor)
-        query = query.join(Contractor.user)
+        query_contractor = query.join(cls.contractor)
+        query_contractor = query_contractor.join(Contractor.user)
+        query_contractor = query_contractor.filter(User.id == user.id)
 
-        all_filters = []
         if user.manager_for_organizations:
-            query = query.join(cls.bid)
-            query = query.join(Bid.auction)
-            query = query.join(Auction.ticket_set)
-            query = query.join(TicketSet.bid_limits)
-            query = query.join(BidLimit.ticket_snapshot)
-            query = query.join(TicketSnapshot.ticket)
-            query = query.join(Ticket.organization)
-            all_filters.append(Organization.id.in_(user.manager_for_organizations))
+            query_manager = query.join(cls.bid)
+            query_manager = query_manager.join(Bid.auction)
+            query_manager = query_manager.join(Auction.ticket_set)
+            query_manager = query_manager.join(TicketSet.bid_limits)
+            query_manager = query_manager.join(BidLimit.ticket_snapshot)
+            query_manager = query_manager.join(TicketSnapshot.ticket)
+            query_manager = query_manager.join(Ticket.organization)
+            query_manager = query_manager.filter(Organization.id.in_(user.manager_for_organizations))
+            query_contractor = query_contractor.union(query_manager)
 
-        all_filters.append(User.id == user.id)
-        return query.filter(or_(*all_filters))
+        return query_contractor
 
     def allowed_to_be_created_by(self, user):
         if user.is_admin():
