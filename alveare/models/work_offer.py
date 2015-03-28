@@ -1,18 +1,19 @@
 from sqlalchemy.orm import validates
+from sqlalchemy import or_, sql
 
 import alveare
 
-from alveare.common.database import DB
+from alveare.common.database import DB, PermissionMixin
 
-class WorkOffer(DB.Model):
+class WorkOffer(DB.Model, PermissionMixin):
     __pluralname__ = 'work_offers'
 
     id =                    DB.Column(DB.Integer, primary_key = True)
     price =                 DB.Column(DB.Integer, nullable=False)
-    work_id =               DB.Column(DB.Integer, DB.ForeignKey('work.id',              ondelete='CASCADE'), nullable=True)
-    bid_id =                DB.Column(DB.Integer, DB.ForeignKey('bid.id'), nullable=True)
-    contractor_id =         DB.Column(DB.Integer, DB.ForeignKey('contractor.id',        ondelete='CASCADE'), nullable=False)
-    ticket_snapshot_id =    DB.Column(DB.Integer, DB.ForeignKey('ticket_snapshot.id',   ondelete='CASCADE'), nullable=False)
+    work_id =               DB.Column(DB.Integer, DB.ForeignKey('work.id',            ondelete='CASCADE'), nullable=True)
+    bid_id =                DB.Column(DB.Integer, DB.ForeignKey('bid.id',             ondelete='CASCADE'), nullable=True)
+    contractor_id =         DB.Column(DB.Integer, DB.ForeignKey('contractor.id',      ondelete='CASCADE'), nullable=False)
+    ticket_snapshot_id =    DB.Column(DB.Integer, DB.ForeignKey('ticket_snapshot.id', ondelete='CASCADE'), nullable=False)
 
     ticket_snapshot =       DB.relationship('TicketSnapshot', uselist=False)
 
@@ -23,6 +24,47 @@ class WorkOffer(DB.Model):
         self.contractor = contractor
         self.ticket_snapshot = ticket_snapshot
         self.price = price
+
+    @classmethod
+    def query_by_user(cls, user):
+        from alveare.models import Contractor, Bid, Auction, TicketSet, User
+        from alveare.models import BidLimit, TicketSnapshot, Ticket , Organization
+        query = WorkOffer.query
+
+        if user.is_admin(): return query
+
+        query = query.join(cls.contractor)
+        query = query.join(Contractor.user)
+
+        all_filters = []
+        if user.manager_for_organizations:
+            query = query.join(cls.bid)
+            query = query.join(Bid.auction)
+            query = query.join(Auction.ticket_set)
+            query = query.join(TicketSet.bid_limits)
+            query = query.join(BidLimit.ticket_snapshot)
+            query = query.join(TicketSnapshot.ticket)
+            query = query.join(Ticket.organization)
+            all_filters.append(Organization.id.in_(user.manager_for_organizations))
+
+        all_filters.append(User.id == user.id)
+        return query.filter(or_(*all_filters))
+
+    def allowed_to_be_created_by(self, user):
+        if user.is_admin():
+            return True
+        return bool(self.contractor.user == user)
+
+    def allowed_to_be_modified_by(self, user):
+        return self.allowed_to_be_created_by(user)
+
+    def allowed_to_be_deleted_by(self, user):
+        return self.allowed_to_be_created_by(user)
+
+    def allowed_to_be_viewed_by(self, user):
+        if user.is_admin():
+            return True
+        return (self.bid and self.bid.auction.organization.id in user.manager_for_organizations) or (self.contractor.user == user)
 
     def __repr__(self):
         return '<WorkOffer[{id}] for snapshot {ticket_snapshot_id} on bid {bid_id} at {price} dollars>'.format(**self.__dict__)

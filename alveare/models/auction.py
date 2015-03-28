@@ -2,12 +2,13 @@ from datetime import datetime, timedelta
 
 from sqlalchemy.orm import validates
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy import or_, sql
 
-from alveare.common.database import DB
+from alveare.common.database import DB, PermissionMixin
 from alveare.common.state import StateMachine
 from alveare.models import BidLimit, Contract, Bid
 
-class Auction(DB.Model):
+class Auction(DB.Model, PermissionMixin):
     __pluralname__ = 'auctions'
 
     id =              DB.Column(DB.Integer,   primary_key=True)
@@ -16,7 +17,6 @@ class Auction(DB.Model):
     redundancy =      DB.Column(DB.Integer,   nullable=False)
     term_sheet_id =   DB.Column(DB.Integer,   DB.ForeignKey('term_sheet.id', ondelete='CASCADE'), nullable=False)
     state =           DB.Column(DB.String, nullable=False, default='created')
-    organization_id = DB.Column(DB.Integer,   DB.ForeignKey('organization.id', ondelete='CASCADE'), nullable=False)
 
     term_sheet =       DB.relationship('TermSheet',    uselist=False)
     ticket_set =       DB.relationship('TicketSet',    backref='auction', cascade="all, delete-orphan", passive_deletes=True, uselist=False)
@@ -24,17 +24,61 @@ class Auction(DB.Model):
     bids =             DB.relationship('Bid',          backref='auction', cascade='all, delete-orphan', passive_deletes=True, lazy='dynamic')
     approved_talents = DB.relationship('Nomination',    backref='auction') # both ends are conditional
 
-    def __init__(self, organization, ticket_set, term_sheet, duration=3, finish_work_by=datetime.now() + timedelta(days = 7), redundancy = 1):
+    def __init__(self, ticket_set, term_sheet, duration=3, finish_work_by=datetime.now() + timedelta(days = 7), redundancy = 1):
         self.ticket_set = ticket_set
         self.term_sheet = term_sheet
         self.duration = duration
         self.finish_work_by = finish_work_by
         self.redundancy = redundancy
 
-        self.organization = organization
-
     def __repr__(self):
         return '<Auction[id:{}] finish_work_by={}>'.format(self.id, self.finish_work_by)
+
+    @classmethod
+    def query_by_user(cls, user):
+        from alveare.models import Organization, TicketSet, BidLimit, TicketSnapshot, Ticket, Project
+        query = cls.query
+        all_filters = []
+        if user.is_admin():
+            return query
+
+        auctions_approved_for = []
+        for contractor in user.contractor_roles.all():
+            auctions_approved_for.extend(contractor.auctions_approved_for)
+
+        all_filters = []
+        if auctions_approved_for:
+            all_filters.append(Organization.id.in_(auctions_approved_for))
+        if user.manager_for_organizations:
+            all_filters.append(Organization.id.in_(user.manager_for_organizations))
+        if not all_filters:
+            return query.filter(sql.false())
+        query = query.join(cls.ticket_set)
+        query = query.join(TicketSet.bid_limits)
+        query = query.join(BidLimit.ticket_snapshot)
+        query = query.join(TicketSnapshot.ticket)
+        query = query.join(Ticket.project)
+        query = query.join(Project.organization)
+        return query.filter(or_(*all_filters))
+
+    def allowed_to_be_created_by(self, user):
+        if user.is_admin():
+            return True
+        organization_id = self.organization.id
+        return bool(organization_id in user.manager_for_organizations)
+
+    def allowed_to_be_modified_by(self, user):
+        return self.allowed_to_be_created_by(user)
+
+    def allowed_to_be_deleted_by(self, user):
+        return self.allowed_to_be_created_by(user)
+
+    def allowed_to_be_viewed_by(self, user):
+        return self.allowed_to_be_created_by(user)
+
+    @property
+    def organization(self):
+        return self.ticket_set.bid_limits[0].ticket_snapshot.ticket.organization
 
     @hybrid_property
     def machine(self):

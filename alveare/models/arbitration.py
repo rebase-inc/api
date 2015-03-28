@@ -2,9 +2,9 @@ from sqlalchemy.orm import validates
 
 from .mediation import Mediation
 
-from alveare.common.database import DB
+from alveare.common.database import DB, PermissionMixin
 
-class Arbitration(DB.Model):
+class Arbitration(DB.Model, PermissionMixin):
     __pluralname__ = 'arbitrations'
 
     id =            DB.Column(DB.Integer, primary_key=True)
@@ -15,6 +15,22 @@ class Arbitration(DB.Model):
 
     def __repr__(self):
         return '<Arbitration[id:{}] for {}>'.format(self.id, self.mediation)
+
+    @classmethod
+    def query_by_user(cls, user):
+        return cls.query
+
+    def allowed_to_be_created_by(self, user):
+        return True
+
+    def allowed_to_be_modified_by(self, user):
+        return self.allowed_to_be_created_by(user)
+
+    def allowed_to_be_deleted_by(self, user):
+        return self.allowed_to_be_created_by(user)
+
+    def allowed_to_be_viewed_by(self, user):
+        return self.allowed_to_be_created_by(user)
 
     @validates('mediation')
     def validate_work_offer(self, field, value):

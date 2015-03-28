@@ -22,5 +22,5 @@ class ReviewSchema(AlveareSchema):
 serializer = ReviewSchema()
 deserializer = ReviewSchema(only=('rating','work','comments'))
 
-updater = ReviewSchema(only=('rating',))
-updater.make_object = lambda data: data
+update_deserializer = ReviewSchema(only=('rating',))
+update_deserializer.make_object = lambda data: data

@@ -5,7 +5,7 @@ from alveare.models.user import User
 from alveare.models.contractor import Contractor
 from alveare.models.organization import Organization
 
-from alveare.common.database import DB
+from alveare.common.database import DB, PermissionMixin
 
 class Manager(Role):
     __pluralname__ = 'managers'
@@ -27,3 +27,19 @@ class Manager(Role):
             self.id,
             self.user.first_name+' '+self.user.last_name
         )
+
+    @classmethod
+    def query_by_user(cls, user):
+        return cls.query
+
+    def allowed_to_be_created_by(self, user):
+        return True
+
+    def allowed_to_be_modified_by(self, user):
+        return self.allowed_to_be_created_by(user)
+
+    def allowed_to_be_deleted_by(self, user):
+        return self.allowed_to_be_created_by(user)
+
+    def allowed_to_be_viewed_by(self, user):
+        return self.allowed_to_be_created_by(user)

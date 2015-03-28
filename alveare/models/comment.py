@@ -1,12 +1,12 @@
-from alveare.common.database import DB
+from alveare.common.database import DB, PermissionMixin
 
 from .review import Review
 from .mediation import Mediation
 from .ticket import Ticket
 
-class Comment(DB.Model):
+class Comment(DB.Model, PermissionMixin):
     __pluralname__ = 'comments'
-    
+
     id =        DB.Column(DB.Integer, primary_key=True)
     content =   DB.Column(DB.String,  nullable=False)
 
@@ -24,6 +24,22 @@ class Comment(DB.Model):
         else:
             raise Exception('Unknown parent type for comment')
         self.content = content
+
+    @classmethod
+    def query_by_user(cls, user):
+        return cls.query
+
+    def allowed_to_be_created_by(self, user):
+        return True
+
+    def allowed_to_be_modified_by(self, user):
+        return self.allowed_to_be_created_by(user)
+
+    def allowed_to_be_deleted_by(self, user):
+        return self.allowed_to_be_created_by(user)
+
+    def allowed_to_be_viewed_by(self, user):
+        return self.allowed_to_be_created_by(user)
 
     def __repr__(self):
         abbreviated_content = self.content[0:15]

@@ -1,7 +1,7 @@
 
-from alveare.common.database import DB
+from alveare.common.database import DB, PermissionMixin
 
-class Project(DB.Model):
+class Project(DB.Model, PermissionMixin):
     __pluralname__ = 'projects'
 
     id =                DB.Column(DB.Integer, primary_key=True)
@@ -25,3 +25,23 @@ class Project(DB.Model):
     def __repr__(self):
         return '<Project[{}] "{}" for "{}" >'.format(self.id, self.name, self.organization)
 
+    @classmethod
+    def query_by_user(cls, user):
+        return cls.query
+
+    def allowed_to_be_created_by(self, user):
+        from alveare.models import Manager
+        if user.is_admin():
+            return True
+        return (user.manager_roles.filter(Manager.organization_id == self.organization.id).all())
+
+    def allowed_to_be_modified_by(self, user):
+        return self.allowed_to_be_created_by(user)
+
+    def allowed_to_be_deleted_by(self, user):
+        return self.allowed_to_be_created_by(user)
+
+    def allowed_to_be_viewed_by(self, user):
+        if user.is_admin():
+            return True
+        return bool(self.organization_id in user.manager_for_organizations)

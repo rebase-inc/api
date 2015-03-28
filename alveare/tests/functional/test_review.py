@@ -32,12 +32,12 @@ class TestReviewResource(AlveareRestTestCase):
         work = [work for work in response['work'] if 'review' not in work][0]
 
         review = dict(rating=4, work={'id': work['id']})
-        response = self.post_resource('reviews', review)
+        review = self.post_resource('reviews', review)['review']
 
-        self.assertIsInstance(response.pop('id'), int)
-        self.assertEqual(response.pop('comments'), [])
-        self.assertEqual(response.pop('rating'), 4)
-        self.assertEqual(response.pop('work'), work['id'])
+        self.assertIsInstance(review.pop('id'), int)
+        self.assertEqual(review.pop('comments'), [])
+        self.assertEqual(review.pop('rating'), 4)
+        self.assertEqual(review.pop('work'), work['id'])
 
     def test_update(self):
         self.login_admin()

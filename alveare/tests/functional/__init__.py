@@ -40,25 +40,27 @@ class AlveareRestTestCase(unittest.TestCase):
         self.login(new_user.email, 'foo')
 
     def cleanup(self):
+        try:
+            self.logout()
+        except:
+            pass
         self.db.session.remove()
         self.db.drop_all()
         self.db.get_engine(self.app).dispose()
         self.app_context.pop()
 
     def get_resource(self, url, expected_code=200):
-        error_msg = 'Expected {}, got {}. Data: {}'
+        error_msg_fmt = 'Expected {}, got {}. Data: {}'
         # the header is required because of flask jsonify
         # see http://stackoverflow.com/questions/16908943/flask-display-json-in-a-neat-way
         response = self.client.get(url, headers={'X-Requested-With': 'XMLHttpRequest'})
-        self.assertEqual(response.status_code,
-                         expected_code,
-                         error_msg.format(
-                             expected_code,
-                             response.status_code,
-                             'GET to {} failed: {}'.format(url, response.data))
-                         )
-        self.assertEqual(response.headers['Content-Type'], 'application/json',
-            error_msg.format('application/json', response.headers['Content-Type'], response.data))
+        error_msg = error_msg_fmt.format(
+            expected_code,
+            response.status_code,
+            'GET to {} failed: {}'.format(url, response.data))
+        self.assertEqual(response.status_code, expected_code, error_msg)
+        error_msg = error_msg_fmt.format('application/json', response.headers['Content-Type'], response.data)
+        self.assertEqual(response.headers['Content-Type'], 'application/json', error_msg)
         return json.loads(response.data.decode('utf-8'))
 
     def post_resource(self, url, data, expected_code = 201):

@@ -1,9 +1,5 @@
 
-from sqlalchemy import and_, or_
-
-from functools import reduce, partial
-
-from alveare.common.database import DB
+from alveare.common.database import DB, PermissionMixin
 
 from .project import Project
 from .contractor import Contractor
@@ -11,14 +7,13 @@ from .role import Role
 from .manager import Manager
 from .organization import Organization
 
-class CodeClearance(DB.Model):
+class CodeClearance(DB.Model, PermissionMixin):
     __pluralname__ = 'code_clearances'
 
     id =            DB.Column(DB.Integer, primary_key=True)
     pre_approved =  DB.Column(DB.Boolean, nullable=False)
     project_id =    DB.Column(DB.Integer, DB.ForeignKey('project.id', ondelete='CASCADE'), nullable=False)
     contractor_id = DB.Column(DB.Integer, DB.ForeignKey('contractor.id', ondelete='CASCADE'), nullable=False)
-
 
     def __init__(self, project, contractor, pre_approved=False):
         if not isinstance(project, Project):
@@ -28,6 +23,26 @@ class CodeClearance(DB.Model):
         self.project = project
         self.contractor = contractor
         self.pre_approved = pre_approved
+
+    @classmethod
+    def query_by_user(cls, user):
+        return cls.query
+
+    def allowed_to_be_created_by(self, user):
+        return self.allowed_to_be_modified_by(user)
+
+    def allowed_to_be_modified_by(self, user):
+        if user.is_admin():
+            return True
+        return self.in_managers(user.id).limit(100).all()
+
+    def allowed_to_be_deleted_by(self, user):
+        return self.allowed_to_be_created_by(user)
+
+    def allowed_to_be_viewed_by(self, user):
+        if user.is_admin():
+            return True
+        return self.is_contractor(user.id).union(self.in_managers(user.id)).limit(100).all()
 
     def __repr__(self):
         return '<CodeClearance[id:{} project:"{}" contractor:"{}" pre_approved:{}>'.format(

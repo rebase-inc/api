@@ -9,6 +9,7 @@ class TicketSetSchema(AlveareSchema):
     bid_limits =  fields.Nested(BidLimitSchema, exclude=('ticket_set',), many=True)
     auction =     fields.Nested('AuctionSchema', only=('id',))
     nominations = fields.Nested('NominationSchema', only=('contractor', 'ticket_set'), many=True)
+    #organization = fields.Nested('OrganizationSchema', only=('id',))
 
     def make_object(self, data):
         from alveare.models import TicketSet

@@ -2,6 +2,8 @@ import unittest
 
 from . import AlveareRestTestCase
 
+from alveare.models import Feedback, Contractor, Manager
+
 class TestFeedbackResource(AlveareRestTestCase):
 
     def test_get_all(self):
@@ -60,3 +62,32 @@ class TestFeedbackResource(AlveareRestTestCase):
 
         self.assertEqual(updated_feedback.pop('message'), feedback['message'])
 
+    def test_that_feedback_auction_owner_can_see(self):
+        feedback = Feedback.query.first()
+        manager_user = feedback.auction.organization.managers[0].user
+
+        self.post_resource('auth', dict(user=dict(email=manager_user.email), password='foo'))
+        self.get_resource('feedbacks/{}'.format(feedback.id))
+        self.login_as_new_user()
+        self.get_resource('feedbacks/{}'.format(feedback.id), 401)
+
+    def test_that_creator_only_sees_feedbacks_that_they_made(self):
+        random_contractor = Contractor.query.first()
+        all_owned_feedback_ids = [feedback.id for feedback in random_contractor.feedbacks]
+
+        self.post_resource('auth', dict(user=dict(email=random_contractor.user.email), password='foo'))
+        feedbacks = self.get_resource('feedbacks')['feedbacks']
+        response_feedback_ids = [feedback['id'] for feedback in feedbacks]
+        self.assertEqual(set(all_owned_feedback_ids), set(response_feedback_ids))
+
+    def test_that_manager_only_sees_feedbacks_that_they_own(self):
+        random_manager = Manager.query.first()
+        all_auctions = random_manager.organization.auctions
+        all_owned_feedback_ids = []
+        for auction in all_auctions:
+            for feedback in auction.feedbacks:
+                all_owned_feedback_ids.append(feedback.id)
+        self.post_resource('auth', dict(user=dict(email=random_manager.user.email), password='foo'))
+        feedbacks = self.get_resource('feedbacks')['feedbacks']
+        response_feedback_ids = [feedback['id'] for feedback in feedbacks]
+        self.assertEqual(set(all_owned_feedback_ids), set(response_feedback_ids))

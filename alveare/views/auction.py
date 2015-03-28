@@ -36,7 +36,7 @@ class FailEventSchema(AlveareSchema):
         return 'fail'
 
 serializer = AuctionSchema(only=('id', 'duration', 'finish_work_by', 'ticket_set', 'bids', 'term_sheet', 'redundancy', 'state'), skip_missing=True)
-deserializer = AuctionSchema(only=('organization', 'duration', 'finish_work_by', 'redundancy', 'ticket_set', 'term_sheet'), strict=True)
+deserializer = AuctionSchema(only=('duration', 'finish_work_by', 'redundancy', 'ticket_set', 'term_sheet'), strict=True)
 deserializer.declared_fields['term_sheet'].only = None
 deserializer.declared_fields['ticket_set'].only = None
 

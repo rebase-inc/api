@@ -2,7 +2,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 
 from alveare.models.role import Role
 from alveare.models.user import User
-from alveare.common.database import DB
+from alveare.common.database import DB, PermissionMixin
 
 class Contractor(Role):
     __pluralname__ = 'contractors'
@@ -35,6 +35,22 @@ class Contractor(Role):
             if approved:
                 auctions_approved_for.append(approved.id)
         return auctions_approved_for
+
+    @classmethod
+    def query_by_user(cls, user):
+        return cls.query
+
+    def allowed_to_be_created_by(self, user):
+        return True
+
+    def allowed_to_be_modified_by(self, user):
+        return self.allowed_to_be_created_by(user)
+
+    def allowed_to_be_deleted_by(self, user):
+        return self.allowed_to_be_created_by(user)
+
+    def allowed_to_be_viewed_by(self, user):
+        return self.allowed_to_be_created_by(user)
 
     def __repr__(self):
         return '<Contractor[id:{} "{}"] busyness="{}">'.format(

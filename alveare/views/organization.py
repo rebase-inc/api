@@ -22,6 +22,5 @@ class OrganizationSchema(AlveareSchema):
 serializer = OrganizationSchema(exclude=('user',), skip_missing=True)
 deserializer = OrganizationSchema(only=('name','user'))
 
-update_deserializer = OrganizationSchema(exclude=('name', 'projects'))
-update_deserializer = OrganizationSchema()
+update_deserializer = OrganizationSchema(only=('name',))
 update_deserializer.make_object = lambda data: data

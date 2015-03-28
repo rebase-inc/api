@@ -1,121 +1,71 @@
 from flask import jsonify
 from contextlib import contextmanager
-import marshmallow.exceptions
-import alveare.common.exception_messages as messages
+import marshmallow.exceptions as marsh_exc
+from werkzeug.http import HTTP_STATUS_CODES
 
-class AlveareError(Exception):
-    code = 500
-
-    def __init__(self, code, message=None, more_data=None):
+class ClientError(Exception):
+    def __init__(self, code=400, message=None, more_data=None):
         more_data = more_data or {}
-        Exception.__init__(self)
-        if code is not None:
-            self.code = code
-            self.data = {
-                'status': code,
-                'message': message or messages.HTTP_STATUS_CODES.get(code, '')
-            }
+        self.code = code
+        self.data = {
+            'status': code,
+            'message': message or HTTP_STATUS_CODES.get(code, 'Client Error')
+        }
         if isinstance(more_data, dict):
             self.data.update(more_data)
-        else:
-            raise Exception('Invalid data type: {}'.format(type(more_data)))
+        super().__init__(self)
 
-class ClientError(AlveareError):
-    code = 400
+class NotFoundError(ClientError):
+    def __init__(self, name, id, more_data=None):
+        message = 'No {} with id {}'.format(name, id)
+        super().__init__(code=404, message=message, more_data=more_data)
 
-    def __init__(self, code=None, message=None, more_data=None):
-        super().__init__(code if code else self.code, message, more_data)
+class BadDataError(ClientError):
+    def __init__(self, code=400, model_name=None, more_data=None):
+        message = 'No data or valid ids provided to get/make {}!'.format(model_name),
+        super().__init__(code, message, more_data)
 
-class InstanceNotFound(AlveareError):
-    code = 404
-
-    def __init__(self, code=None, __name=None, id=None, more_data=None):
-        super().__init__(
-            code if code else self.code,
-            'No {__name} with id {id}'.format(__name, id),
-            more_data
-        )
-
-class NoDataOrMissingIds(AlveareError):
-    code = 400
-
-    def __init__(self, code=None, model=None, more_data=None):
-        super().__init__(
-            code if code else self.code,
-            'No data or valid ids provided to get/make {}!'.format(model),
-            more_data
-        )
-
-class MarshmallowWrapperException(AlveareError):
-    code = 500
-
-    def __init__(self, exception_type, error_message, fields, error, data):
-        if not isinstance(error, exception_type):
-            raise ValueError(messages.expected_type.format(exception_type))
-        msg_vars = [getattr(error, attribute) for attribute in fields] + [data]
-        super().__init__(self.code, error_message.format(*msg_vars))
-
-class MarshallingError(MarshmallowWrapperException):
-    code = 400
-
+class MarshallingError(ClientError):
     def __init__(self, error, data):
-        super().__init__(
-            marshmallow.exceptions.MarshallingError,
-            messages.marshalling_error,
-            ['field_name'],
-            error,
-            data
-        )
+        if not isinstance(error, marsh_exc.MarshallingError):
+            raise ValueError('error parameter must be of type {}'.format(marsh_exc.MarshallingError))
+        error_message = 'Missing field: "{}" while serializing: {}'
+        error_message.format(error.field_name, data)
+        super().__init__(400, error_message)
 
-class UnmarshallingError(MarshmallowWrapperException):
-    code = 400
-
+class UnmarshallingError(ClientError):
     def __init__(self, error, data):
-        super().__init__(
-            marshmallow.exceptions.UnmarshallingError,
-            messages.unmarshalling_error,
-            ['field_name'],
-            error,
-            data
-        )
+        if not isinstance(error, marsh_exc.UnmarshallingError):
+            raise ValueError('error parameter must be of type {}'.format(marsh_exc.UnmarshallingError))
+        error_message = 'Missing field: "{}" while deserializing: {}'
+        error_message.format(error.field_name, data)
+        super().__init__(400, error_message)
 
-class ValidationError(MarshmallowWrapperException):
-    code = 400
-
+class ValidationError(ClientError):
     def __init__(self, error, data):
-        super().__init__(
-            marshmallow.exceptions.ValidationError,
-            messages.validation_error,
-            ['field'],
-            error,
-            data
-        )
+        if not isinstance(error, marsh_exc.ValidationError):
+            raise ValueError('error parameter must be of type {}'.format(marsh_exc.ValidationError))
+        error_message = 'Validation error: "{}" while validating: {}'
+        error_message.format(error.field, data)
+        super().__init__(400, error_message)
 
-class ForcedError(MarshmallowWrapperException):
-    code = 400
-
+class ForcedError(ClientError):
     def __init__(self, error, data):
-        super().__init__(
-            marshmallow.exceptions.ForcedError,
-            messages.forced_error,
-            ['field'],
-            error,
-            data
-        )
+        if not isinstance(error, marsh_exc.ForcedError):
+            raise ValueError('error parameter must be of type {}'.format(marsh_exc.ForcedError))
+        error_message = 'Forced error: "{}" while validating: {}'
+        error_message.format(error.field_name, data)
+        super().__init__(400, error_message)
 
 @contextmanager
 def marshmallow_exceptions(data=None):
     try:
         yield
-
-    except marshmallow.exceptions.MarshallingError as error:
+    except marsh_exc.MarshallingError as error:
         raise MarshallingError(error, data)
-
-    except marshmallow.exceptions.UnmarshallingError as error:
+    except marsh_exc.UnmarshallingError as error:
         raise UnmarshallingError(error, data)
-
-    except marshmallow.exceptions.ValidationError as error:
+    except marsh_exc.ValidationError as error:
         raise ValidationError(error, data)
-
-    except marshmallow.exceptions.ForcedError as error:
+    except marsh_exc.ForcedError as error:
         raise ForcedError(error, data)

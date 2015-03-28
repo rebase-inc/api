@@ -4,58 +4,39 @@ from flask.ext.login import login_required, current_user
 from flask import jsonify, make_response, request
 from alveare.common.database import DB
 from alveare.common.rest import get_collection, add_to_collection, get_resource, update_resource, delete_resource
-from alveare.common.utils import collection_url, resource_url
+from alveare.common.utils import make_collection_url, make_resource_url, get_model_primary_keys
 
-def make_collection_and_resource_classes(
-    Model,
-    serializer,
-    deserializer,
-    update_deserializer
-):
-    class AlveareCollection(Resource):
+def RestfulCollection(model, serializer, deserializer):
+    ''' Couldn't get metaclass to work for this, so we're cheating and using a func '''
+    class CustomRestfulCollection(Resource):
         @login_required
         def get(self):
-            return get_collection(Model, serializer)
+            return get_collection(model, serializer)
         @login_required
         def post(self):
-            return add_to_collection(Model, deserializer, serializer)
+            return add_to_collection(model, deserializer, serializer)
 
-    class AlveareResource(Resource):
+    return CustomRestfulCollection
+
+def RestfulResource(model, serializer, deserializer, update_deserializer):
+    class CustomRestfulResource(Resource):
         @login_required
-        def get(self, id):
-            return get_resource(Model, id, serializer)
+        def get(self, **id_args):
+            id_values = tuple(id_args[pk] for pk in get_model_primary_keys(model))
+            return get_resource(model, id_values, serializer)
         @login_required
-        def put(self, id):
-            return update_resource(Model, id, update_deserializer, serializer)
+        def put(self, **id_args):
+            id_values = tuple(id_args[pk] for pk in get_model_primary_keys(model))
+            return update_resource(model, id_values, update_deserializer, serializer)
         @login_required
-        def delete(self, id):
-            return delete_resource(Model, id)
-    
-    return AlveareCollection, AlveareResource
+        def delete(self, **id_args):
+            id_values = tuple(id_args[pk] for pk in get_model_primary_keys(model))
+            return delete_resource(model, id_values)
 
-def add_alveare_resource(
-    api,
-    Model,
-    serializer,
-    deserializer,
-    update_deserializer
-):
-    '''
-    Declares a new resource for the Model, and adds 2 paths: one for a collection,
-    the other for a single resource.
+    return CustomRestfulResource
 
-    api is a Flask api object.
-    Model is a SqlAlchemy Model class.
-    serializer, deserializer, update_serializer map to GET, POST, PUT respectively.
-
-    TODO: this could be abstracted more using 2 maps of HTTP verbs (one for the collection, one for a single resource)
-    '''
-
-    ModelCollection, ModelResource = make_collection_and_resource_classes(
-        Model,
-        serializer,
-        deserializer,
-        update_deserializer
-    )
-    api.add_resource(ModelCollection, collection_url(Model), endpoint=Model.__pluralname__)
-    api.add_resource(ModelResource, resource_url(Model, use_flask_format=True), endpoint=Model.__tablename__)
+def add_restful_endpoint(api, model, serializer, deserializer, update_deserializer, foo=None):
+    restful_collection = RestfulCollection(model, serializer, deserializer)
+    restful_resource = RestfulResource(model, serializer, deserializer, update_deserializer)
+    api.add_resource(restful_collection, make_collection_url(model), endpoint = model.__pluralname__)
+    api.add_resource(restful_resource, make_resource_url(model), endpoint = model.__pluralname__ + '_resource')

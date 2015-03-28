@@ -14,24 +14,35 @@ def plural(text):
     else:
         return text+'s'
 
-def primary_key(model):
+def get_model_primary_keys(model):
     return tuple(map(lambda key: key.name, inspect(model).primary_key))
 
-def collection_url(model):
-    return '/'+plural(model.__tablename__)
+def make_collection_url(model):
+    return '/'+ model.__pluralname__
+
+def make_resource_url(model):
+    keyspace_format = ''
+    for primary_key in get_model_primary_keys(model):
+        keyspace_format += '/<int:{}>'.format(primary_key)
+    return make_collection_url(model) + keyspace_format
 
 def resource_url(model, use_flask_format=False):
     '''
         Given a model, return the URL format string for a single resource
         if use_flask_format is True, return the URL format for Flask routes
+
+        NOTE: This makes a huge assumption that the names of the parameters
+        returned are the exact same as the names of the fields on the db model.
+        So, this will not work if you ever use the attribute parameter on a
+        marshmallow schema for a particular object
     '''
     url_format = ''
-    for key in primary_key(model):
+    for key in get_model_primary_keys(model):
         if use_flask_format:
             url_format += '/<int:'+key+'>'
         else:
             url_format += '/{}'
-    return collection_url(model)+url_format
+    return make_collection_url(model)+url_format
 
 composite_error_not_in='''
 While comparing first:
@@ -64,7 +75,7 @@ class AlveareResource(object):
         self.resource = model.__tablename__
 
         self.collection_url = plural(self.resource)
-        self.primary_key = primary_key(model)
+        self.primary_key = get_model_primary_keys(model)
         self.url_format = resource_url(model).format
 
     def url(self, resource):
@@ -74,7 +85,10 @@ class AlveareResource(object):
         '''
         if isinstance(resource, int):
             return self.url_format(resource)
-        return self.url_format(*(map(lambda key: resource[key], self.primary_key)))
+        try:
+            return self.url_format(*(map(lambda key: resource[key], self.primary_key)))
+        except KeyError as e:
+            raise ValueError('Cant format {} with {}'.format(resource_url(model), resource))
 
     def just_ids(self, resource):
         '''

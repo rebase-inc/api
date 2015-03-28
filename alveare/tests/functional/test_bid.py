@@ -2,6 +2,8 @@ import unittest
 
 from . import AlveareRestTestCase
 
+from alveare.models import Bid, Contractor, Manager
+
 class TestBidResource(AlveareRestTestCase):
 
     def test_get_all(self):
@@ -46,6 +48,44 @@ class TestBidResource(AlveareRestTestCase):
         self.assertEqual(bid.pop('contractor'), contractor['id'])
         self.assertEqual(bid.pop('work_offers'), work_offer_ids)
         self.assertEqual(bid, {})
+
+    def test_that_bid_creator_can_see(self):
+        bid = Bid.query.first()
+        creator_user = bid.contractor.user
+
+        self.get_resource('bids/{}'.format(bid.id), 401)
+        self.post_resource('auth', dict(user=dict(email=creator_user.email), password='foo'))
+        self.get_resource('bids/{}'.format(bid.id))
+
+    def test_that_bid_auction_owner_can_see(self):
+        bid = Bid.query.first()
+        manager_user = bid.auction.organization.managers[0].user
+
+        self.post_resource('auth', dict(user=dict(email=manager_user.email), password='foo'))
+        self.get_resource('bids/{}'.format(bid.id))
+        self.login_as_new_user()
+        self.get_resource('bids/{}'.format(bid.id), 401)
+
+    def test_that_creator_only_sees_bids_that_they_made(self):
+        random_contractor = Contractor.query.first()
+        all_owned_bid_ids = [bid.id for bid in random_contractor.bids]
+
+        self.post_resource('auth', dict(user=dict(email=random_contractor.user.email), password='foo'))
+        bids = self.get_resource('bids')['bids']
+        response_bid_ids = [bid['id'] for bid in bids]
+        self.assertEqual(set(all_owned_bid_ids), set(response_bid_ids))
+
+    def test_that_manager_only_sees_bids_that_they_own(self):
+        random_manager = Manager.query.first()
+        all_auctions = random_manager.organization.auctions
+        all_owned_bid_ids = []
+        for auction in all_auctions:
+            for bid in auction.bids:
+                all_owned_bid_ids.append(bid.id)
+        self.post_resource('auth', dict(user=dict(email=random_manager.user.email), password='foo'))
+        bids = self.get_resource('bids')['bids']
+        response_bid_ids = [bid['id'] for bid in bids]
+        self.assertEqual(set(all_owned_bid_ids), set(response_bid_ids))
 
     @unittest.skip('skipping this test for now')
     def test_update(self):

@@ -20,9 +20,9 @@ class TestRemoteWorkHistoryResource(AlveareRestTestCase):
     def test_create(self):
         self.login_admin()
         contractor = AlveareResource(self, 'Contractor').get_any()
-        new_rwh = self.remote_work_history_resource.create(
-            id=contractor['id']
-        )
+        response = self.post_resource('remote_work_histories', dict(contractor=contractor))
+        new_rwh = response['remote_work_history']
+        self.assertEqual(new_rwh['id'], contractor['id'])
 
     def test_delete(self):
         self.login_admin()

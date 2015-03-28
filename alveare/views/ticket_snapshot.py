@@ -17,5 +17,5 @@ class TicketSnapshotSchema(AlveareSchema):
 serializer = TicketSnapshotSchema(skip_missing=True)
 
 deserializer = TicketSnapshotSchema(only=('ticket',), strict=True)
-#deserializer.declared_fields['ticket'].only = None
-#deserializer.declared_fields['bid_limit'].only = None
+update_deserializer = TicketSnapshotSchema()
+update_deserializer.make_object = lambda data: data

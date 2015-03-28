@@ -2,16 +2,15 @@ import datetime
 import itertools
 
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy import or_, sql
 
 from flask.ext.login import login_user, logout_user
 
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from alveare.common.database import DB
+from alveare.common.database import DB, PermissionMixin
 from alveare.models import Auction
 
-class User(DB.Model):
+class User(DB.Model, PermissionMixin):
     __pluralname__ = 'users'
 
     id =                DB.Column(DB.Integer,   primary_key=True)
@@ -36,9 +35,23 @@ class User(DB.Model):
         self.hashed_password = generate_password_hash(password)
 
     def check_password(self, password):
-        if not password:
-            return False
         return check_password_hash(self.hashed_password, password)
+
+    @classmethod
+    def query_by_user(cls, user):
+        return cls.query
+
+    def allowed_to_be_created_by(self, user):
+        return True
+
+    def allowed_to_be_modified_by(self, user):
+        return self.allowed_to_be_created_by(user)
+
+    def allowed_to_be_deleted_by(self, user):
+        return self.allowed_to_be_created_by(user)
+
+    def allowed_to_be_viewed_by(self, user):
+        return self.allowed_to_be_created_by(user)
 
     # flask login helper functions
     def is_admin(self): return self.admin
@@ -46,151 +59,19 @@ class User(DB.Model):
     def is_active(self): return True
     def is_anonymous(self): return False
     def get_id(self): return str(self.id)
-    def get_role(self): return
+    def get_role(self): return False
 
-    @hybrid_property
+    @property
     def manager_roles(self):
         return self.roles.filter_by(type = 'manager')
 
-    @hybrid_property
+    @property
     def contractor_roles(self):
         return self.roles.filter_by(type = 'contractor')
 
-    @hybrid_property
+    @property
     def manager_for_organizations(self):
         return [manager.organization.id for manager in self.manager_roles]
-
-    @hybrid_property
-    def auction_query(self):
-        # if you're admin, you can see everything
-        from alveare.models import Auction
-        query = Auction.query
-        if self.is_admin():
-            return query
-
-        auctions_approved_for = []
-        for contractor in self.contractor_roles.all():
-            auctions_approved_for.extend(contractor.auctions_approved_for)
-
-        all_filters = []
-        if auctions_approved_for:
-            all_filters.append(Auction.id.in_(auctions_approved_for))
-        if self.manager_for_organizations:
-            all_filters.append(Auction.organization_id.in_(self.manager_for_organizations))
-        if not all_filters:
-            return query.filter(sql.false())
-        return query.filter(or_(*all_filters))
-
-    @hybrid_property
-    def bid_query(self):
-        from alveare.models import Bid
-        query = Bid.query
-        if self.is_admin():
-            return query
-
-        auctions_approved_for = []
-        for contractor in self.contractor_roles.all():
-            auctions_approved_for.extend(contractor.auctions_approved_for)
-
-        all_filters = []
-        if auctions_approved_for:
-            all_filters.append(Bid.auction.organization_id.in_(self.manager_for_organizations))
-        all_filters.append(Bid.contractor.user.id == self.id)
-        return query.filter(or_(*all_filters))
-
-    @hybrid_property
-    def nomination_query(self):
-        ''' you should be able to see a nomination if you're a manager for the organization that owns the ticket_set '''
-        from alveare.models import (
-            Nomination,
-            TicketSet,
-            BidLimit,
-            TicketSnapshot,
-            Ticket,
-            Organization,
-            Project,
-            Contractor,
-        )
-        query = Nomination.query
-        if self.is_admin(): return query
-
-        # TODO: Make this part of the filter
-
-        if self.manager_for_organizations:
-            query = Nomination.query
-            query = query.join(Nomination.ticket_set)
-            query = query.join(TicketSet.bid_limits)
-            query = query.join(BidLimit.ticket_snapshot)
-            query = query.join(TicketSnapshot.ticket)
-            query = query.join(Ticket.project)
-            query = query.join(Project.organization)
-            query = query.filter(Organization.id.in_(self.manager_for_organizations))
-            return query
-        else:
-            return query.filter(sql.false())
-
-    def allowed_to_create(self, instance):
-        return self.allowed_to_modify(instance)
-
-    def allowed_to_delete(self, instance):
-        return self.allowed_to_modify(instance)
-
-    def allowed_to_modify(self, instance):
-        if self.is_admin(): return True
-
-        if getattr(instance, 'allows_modify', None):
-            return instance.allows_modify(self)
-
-        from alveare.models import (
-            Nomination,
-            Auction,
-            Bid,
-            Project,
-        )
-        if isinstance(instance, Nomination):
-            # TODO: Optimize
-            organization_id = instance.ticket_set.bid_limits[0].ticket_snapshot.ticket.project.organization.id
-            return bool(organization_id in self.manager_for_organizations)
-        elif isinstance(instance, Auction):
-            organization_id = instance.ticket_set.bid_limits[0].ticket_snapshot.ticket.project.organization.id
-            return bool(organization_id in self.manager_for_organizations)
-        elif isinstance(instance, Bid):
-            return bool(instance.contractor.user == self)
-        elif isinstance(instance, Project):
-            from alveare.models import Manager
-            return bool(self.manager_roles.filter(Manager.organization_id == instance.organization.id).all())
-        else:
-            return True
-
-    def allowed_to_get(self, instance):
-        if self.is_admin(): return True
-
-        # note: the getattr line would go away if all models provided the 
-        # a permission interface { allows_get, allows_modify, etc. }
-        if getattr(instance, 'allows_get', None):
-            return instance.allows_get(self)
-        # If you're allowed to modify, you must be allowed to get.
-        # The inverse is not true, however.
-        # Until we find a counter example, I think this is reasonable.
-        if self.allowed_to_modify(instance): return True
-
-        from alveare.models import (Nomination,
-                                    Auction,
-                                    Bid,
-                                    Project,
-                                    )
-        if isinstance(instance, Auction):
-            users_approved = [nomination.contractor.user.id for nomination in instance.approved_talents]
-            return bool(self.id in users_approved)
-        elif isinstance(instance, Nomination):
-            return False # hack until we get to the point where we can remove the else: return True statement below
-        elif isinstance(instance, Bid):
-            organization = instance.auction.ticket_set.bid_limit.ticket_snapshot.ticket.project.organization
-            return bool(organization.id in self.manager_for_organizations)
-        elif isinstance(instance, Project):
-            return bool(instance.organization_id in self.manager_for_organizations)
-        else:
-            return True
 
     def __repr__(self):
         return '<User[id:{}] first_name={} last_name={} email={}>'.format(self.id, self.first_name, self.last_name, self.email)
