@@ -1,7 +1,7 @@
-from alveare.common.database import DB
+from alveare.common.database import DB, PermissionMixin
 from alveare.models.bid_limit import BidLimit
 
-class TicketSet(DB.Model):
+class TicketSet(DB.Model, PermissionMixin):
     __pluralname__ = 'ticket_sets'
 
     id =         DB.Column(DB.Integer, primary_key=True)
@@ -18,6 +18,22 @@ class TicketSet(DB.Model):
     @property
     def organization(self):
         return self.bid_limits[0].ticket_snapshot.ticket.organization
+
+    @classmethod
+    def query_by_user(cls, user):
+        return cls.query
+
+    def allowed_to_be_created_by(self, user):
+        return True
+
+    def allowed_to_be_modified_by(self, user):
+        return self.allowed_to_be_created_by(user)
+
+    def allowed_to_be_deleted_by(self, user):
+        return self.allowed_to_be_created_by(user)
+
+    def allowed_to_be_viewed_by(self, user):
+        return self.allowed_to_be_created_by(user)
 
     def __repr__(self):
         return '<Ticketset[id:{}]>'.format(self.id)

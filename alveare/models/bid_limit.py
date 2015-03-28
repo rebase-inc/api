@@ -1,9 +1,9 @@
 from sqlalchemy.orm import validates
 
-from alveare.common.database import DB
+from alveare.common.database import DB, PermissionMixin
 from alveare.models.ticket_snapshot import TicketSnapshot
 
-class BidLimit(DB.Model):
+class BidLimit(DB.Model, PermissionMixin):
     __pluralname__ = 'bid_limits'
 
     id =            DB.Column(DB.Integer, primary_key=True)
@@ -16,6 +16,22 @@ class BidLimit(DB.Model):
             raise ValueError('ticket_snapshot parameter must be of type TicketSnapshot')
         self.ticket_snapshot = ticket_snapshot
         self.price = price
+
+    @classmethod
+    def query_by_user(cls, user):
+        return cls.query
+
+    def allowed_to_be_created_by(self, user):
+        return True
+
+    def allowed_to_be_modified_by(self, user):
+        return self.allowed_to_be_created_by(user)
+
+    def allowed_to_be_deleted_by(self, user):
+        return self.allowed_to_be_created_by(user)
+
+    def allowed_to_be_viewed_by(self, user):
+        return self.allowed_to_be_created_by(user)
 
     @property
     def organization(self):

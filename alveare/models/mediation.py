@@ -4,10 +4,10 @@ from sqlalchemy.ext.hybrid import hybrid_property
 import sys
 import datetime
 
-from alveare.common.database import DB
+from alveare.common.database import DB, PermissionMixin
 from alveare.common.state import StateMachine
 
-class Mediation(DB.Model):
+class Mediation(DB.Model, PermissionMixin):
     __pluralname__ = 'mediations'
 
     id =            DB.Column(DB.Integer, primary_key=True)
@@ -19,6 +19,10 @@ class Mediation(DB.Model):
 
     arbitration =   DB.relationship('Arbitration', backref='mediation', uselist=False, cascade='all, delete-orphan', passive_deletes=True)
 
+    def __init__(self, work, timeout = datetime.datetime.now() + datetime.timedelta(days=3)):
+        self.work = work
+        self.timeout = timeout
+
     @hybrid_property
     def machine(self):
         if hasattr(self, '_machine'):
@@ -26,9 +30,21 @@ class Mediation(DB.Model):
         self._machine = MediationStateMachine(self, initial_state=self.state)
         return self._machine
 
-    def __init__(self, work, timeout = datetime.datetime.now() + datetime.timedelta(days=3)):
-        self.work = work
-        self.timeout = timeout
+    @classmethod
+    def query_by_user(cls, user):
+        return cls.query
+
+    def allowed_to_be_created_by(self, user):
+        return True
+
+    def allowed_to_be_modified_by(self, user):
+        return self.allowed_to_be_created_by(user)
+
+    def allowed_to_be_deleted_by(self, user):
+        return self.allowed_to_be_created_by(user)
+
+    def allowed_to_be_viewed_by(self, user):
+        return self.allowed_to_be_created_by(user)
 
     def __repr__(self):
         return '<Mediation[id:{}] >'.format(self.id)

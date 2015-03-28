@@ -1,6 +1,6 @@
-from alveare.common.database import DB
+from alveare.common.database import DB, PermissionMixin
 
-class Organization(DB.Model):
+class Organization(DB.Model, PermissionMixin):
     __pluralname__ = 'organizations'
 
     id =   DB.Column(DB.Integer, primary_key=True)
@@ -56,6 +56,22 @@ class Organization(DB.Model):
         from alveare.models import Manager
         self.name = name
         self.managers.append(Manager(user, self)) # you must have at least one manager
+
+    @classmethod
+    def query_by_user(cls, user):
+        return cls.query
+
+    def allowed_to_be_created_by(self, user):
+        return True
+
+    def allowed_to_be_modified_by(self, user):
+        return self.allowed_to_be_created_by(user)
+
+    def allowed_to_be_deleted_by(self, user):
+        return self.allowed_to_be_created_by(user)
+
+    def allowed_to_be_viewed_by(self, user):
+        return self.allowed_to_be_created_by(user)
 
     def __repr__(self):
         return '<Organization[{}] "{}" >'.format(self.id, self.name)

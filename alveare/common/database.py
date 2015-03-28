@@ -14,3 +14,25 @@ def get_or_make_object(model, data, id_fields=None):
     elif not data:
         raise BadDataError(model_name=model.__tablename__)
     return model(**data)
+
+class PermissionMixin(object):
+    @classmethod
+    def query_by_user(cls, user):
+        msg = 'query_by_user not implemented for {}'.format(cls.__name__)
+        raise NotImplementedError(msg.format(cls.__name__))
+
+    def allowed_to_be_created_by(self, user):
+        msg = 'allowed_to_be_created_by not implemented for {}'
+        raise NotImplementedError(msg.format(type(self).__name__))
+
+    def allowed_to_be_modified_by(self, user):
+        msg = 'allowed_to_be_modified_by not implemented for {}'
+        raise NotImplementedError(msg.format(type(self).__name__))
+
+    def allowed_to_be_deleted_by(self, user):
+        msg = 'allowed_to_be_deleted_by not implemented for {}'
+        raise NotImplementedError(msg.format(type(self).__name__))
+
+    def allowed_to_be_viewed_by(self, user):
+        msg = 'allowed_to_be_viewed_by not implemented for {}'
+        raise NotImplementedError(msg.format(type(self).__name__))

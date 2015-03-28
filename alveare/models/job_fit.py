@@ -1,8 +1,8 @@
 
-from alveare.common.database import DB
+from alveare.common.database import DB, PermissionMixin
 from alveare.models import Nomination
 
-class JobFit(DB.Model):
+class JobFit(DB.Model, PermissionMixin):
     __pluralname__ = 'job_fits'
 
     contractor_id = DB.Column(DB.Integer,  primary_key=True)
@@ -29,3 +29,21 @@ class JobFit(DB.Model):
     def __repr__(self):
         return '<JobFit[contractor({}), auction({})] score={}>'.format(self.contractor_id, self.nomination.auction, self.score)
 
+    @classmethod
+    def query_by_user(cls, user):
+        return cls.query
+
+    def allowed_to_be_created_by(self, user):
+        return True
+
+    def allowed_to_be_modified_by(self, user):
+        return self.allowed_to_be_created_by(user)
+
+    def allowed_to_be_deleted_by(self, user):
+        return self.allowed_to_be_created_by(user)
+
+    def allowed_to_be_viewed_by(self, user):
+        return self.allowed_to_be_created_by(user)
+
+    def __repr__(self):
+        return '<Ticket[{}] title="{}">'.format(self.id, self.title)

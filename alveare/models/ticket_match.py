@@ -1,8 +1,8 @@
 
-from alveare.common.database import DB
+from alveare.common.database import DB, PermissionMixin
 from alveare.models.job_fit import JobFit
 
-class TicketMatch(DB.Model):
+class TicketMatch(DB.Model, PermissionMixin):
     __pluralname__ = 'ticket_matches'
 
     skill_requirement_id =  DB.Column(DB.Integer, DB.ForeignKey('skill_requirement.id', ondelete='CASCADE'), primary_key=True)
@@ -22,6 +22,22 @@ class TicketMatch(DB.Model):
         self.skill_set = skill_set
         self.skill_requirement = skill_requirement
         self.score = score
+
+    @classmethod
+    def query_by_user(cls, user):
+        return cls.query
+
+    def allowed_to_be_created_by(self, user):
+        return True
+
+    def allowed_to_be_modified_by(self, user):
+        return self.allowed_to_be_created_by(user)
+
+    def allowed_to_be_deleted_by(self, user):
+        return self.allowed_to_be_created_by(user)
+
+    def allowed_to_be_viewed_by(self, user):
+        return self.allowed_to_be_created_by(user)
 
     def __repr__(self):
         return '<TicketMatch[SkillSet({}), SkillRequirement({})] score={}>'.format(

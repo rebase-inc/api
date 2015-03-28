@@ -1,8 +1,8 @@
 from sqlalchemy.orm import validates
 
-from alveare.common.database import DB
+from alveare.common.database import DB, PermissionMixin
 
-class BankAccount(DB.Model):
+class BankAccount(DB.Model, PermissionMixin):
     __pluralname__ = 'bank_accounts'
 
     id =                DB.Column(DB.Integer, primary_key=True)
@@ -19,6 +19,22 @@ class BankAccount(DB.Model):
 
         self.organization = organization
         self.contractor = contractor
+
+    @classmethod
+    def query_by_user(cls, user):
+        return cls.query
+
+    def allowed_to_be_created_by(self, user):
+        return True
+
+    def allowed_to_be_modified_by(self, user):
+        return self.allowed_to_be_created_by(user)
+
+    def allowed_to_be_deleted_by(self, user):
+        return self.allowed_to_be_created_by(user)
+
+    def allowed_to_be_viewed_by(self, user):
+        return self.allowed_to_be_created_by(user)
 
     def __repr__(self):
         return '<BankAccount[{}] name="{}" routing={} account={}>'.format(self.id, self.name, self.routing_number, self.account_number)
