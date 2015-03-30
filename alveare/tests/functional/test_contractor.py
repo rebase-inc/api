@@ -23,7 +23,7 @@ class TestContractorResource(AlveareRestTestCase):
         self.assertEqual(new_rwh['id'], contractor['id'])
         queried_contractor = self.contractor_resource.get(contractor)
         self.contractor_resource.assertComposite(queried_contractor['remote_work_history'], new_rwh)
-        rwh_res.delete(new_rwh)
+        rwh_res.delete(**new_rwh)
 
     def test_code_clearance(self):
         self.login_admin()
@@ -42,7 +42,7 @@ class TestContractorResource(AlveareRestTestCase):
 
         # now delete all clearances
         for clearance in queried_contractor['clearances']:
-            code_clearance_resource.delete(clearance)
+            code_clearance_resource.delete(**clearance)
         self.assertFalse(self.contractor_resource.get(contractor)['clearances'])
 
     def test_create(self):

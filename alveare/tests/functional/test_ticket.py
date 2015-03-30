@@ -35,5 +35,5 @@ class TestTicketResource(AlveareRestTestCase):
     def test_delete_project(self):
         self.login_admin()
         ticket = self.ticket_resource.get_any()
-        AlveareResource(self, 'Project').delete(ticket['project'])
+        AlveareResource(self, 'Project').delete(**ticket['project'])
         self.ticket_resource.get(ticket, 404)

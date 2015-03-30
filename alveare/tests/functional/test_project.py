@@ -1,5 +1,10 @@
 from . import AlveareRestTestCase
 from alveare.common.utils import AlveareResource
+from alveare.models import (
+    Project,
+    Manager,
+    User,
+)
 from unittest import skip
 
 
@@ -42,9 +47,9 @@ class TestProjectResource(AlveareRestTestCase):
         project = self.project_resource.get_any()
         self.logout()
         self.login_as_new_user()
-        self.project_resource.delete(project, 401)
+        self.project_resource.delete(401, **project)
         self.login_admin()
-        self.project_resource.delete(project)
+        self.project_resource.delete(**project)
 
     def test_delete_organization(self):
         self.login_admin()
@@ -59,12 +64,13 @@ class TestProjectResource(AlveareRestTestCase):
         self.project_resource.update(**project)
 
     def test_update_unauthorized(self):
-        self.login_admin()
-        project = self.project_resource.get_any()
-        self.logout()
-        self.login_as_new_user()
-        project['name'] = 'a better project name'
-        self.project_resource.update(401, **project)
+        project = Project.query.first()
+        unauthorized_user = User.query\
+            .join(Manager)\
+            .filter(Manager.organization != project.organization)\
+            .filter(~User.admin)\
+            .first()
+        self.project_resource.update(401, id=project.id, name=project.name+' Bombed!')
 
     def test_add_and_remove_tickets(self):
         self.login_admin()
@@ -84,7 +90,7 @@ class TestProjectResource(AlveareRestTestCase):
 
         # remove all tickets now
         for one_ticket in queried_project['tickets']:
-            ticket_resource.delete(one_ticket)
+            ticket_resource.delete(**one_ticket)
 
     def test_add_and_remove_code_clearance(self):
         self.login_admin()
@@ -102,7 +108,7 @@ class TestProjectResource(AlveareRestTestCase):
 
         # now delete all code clearances
         for code_clearance in code_clearances:
-            cc.delete(code_clearance)
+            cc.delete(**code_clearance)
 
         self.assertTrue(self.project_resource.get(project['id']))
 
