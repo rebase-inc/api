@@ -65,23 +65,19 @@ class TestOrganizationResource(AlveareRestTestCase):
 
     def test_get_one_as_user_only(self):
         user = self.login_as_no_role_user()
-        print(user.roles.all())
         any_org = Organization.query.first()
         self.org_resource.get(dict(id=any_org.id), 401)
 
     def test_post(self):
         user = self.login_as_no_role_user()
         organization_data = dict(name='SpaceX', user={'id':1})
-        response = self.post_resource('organizations', organization_data)
-        self.assertIn('organization', response)
-
-        organization = response['organization']
-        self.assertEqual(organization['name'], organization_data['name'])
-        id = organization['id']
-
-        # verify
-        response2 = self.get_resource(url(id))
-        self.assertEqual(response2['organization']['name'], organization_data['name'])
+        new_org = self.org_resource.create(
+            validate = None,
+            name='SpaceX',
+            user={'id':user.id}
+        )
+        self.assertEqual(new_org['name'], 'SpaceX')
+        self.assertEqual(new_org['managers'][0]['user']['id'], user.id)
 
     def test_modify_as_manager(self):
         org = Organization.query.first()

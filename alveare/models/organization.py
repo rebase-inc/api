@@ -70,7 +70,7 @@ class Organization(DB.Model, PermissionMixin):
         return True
     
     def in_managers(self, user):
-        return get_all_as_manager(user).filter(Organization.id == self.id)
+        return Organization.get_all_as_manager(user).filter(Organization.id == self.id)
 
     def allowed_to_be_modified_by(self, user):
         if user.admin:
