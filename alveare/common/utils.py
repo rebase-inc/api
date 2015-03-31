@@ -118,10 +118,12 @@ class AlveareResource(object):
             return None
         self.test.get_resource(self.url(resource), 404)
 
-    def get_all(self):
+    def get_all(self, expected_status_code=200):
         ''' returns all the instances of this resource
         '''
-        response = self.test.get_resource(self.collection_url)
+        response = self.test.get_resource(self.collection_url, expected_code=expected_status_code)
+        if expected_status_code in [401, 404]:
+            return None
         self.test.assertIn(self.collection_url, response)
         all_resources = response[self.collection_url]
         self.test.assertTrue(all_resources)

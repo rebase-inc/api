@@ -288,7 +288,7 @@ def create_the_world(db):
     create_one_bank_account(db, rapha_contractor)
     rapha_rwh = create_one_remote_work_history(db, rapha_contractor)
     create_one_github_account(db, rapha_rwh, 'rapha.opensource')
-    create_one_github_account(db, rapha_rwh, 'joe-la-mitraille')
+    create_one_github_account(db, rapha_rwh, 'rapha-la-mitraille')
     create_one_feedback(db)
     create_one_feedback(db)
     create_one_contract(db)
