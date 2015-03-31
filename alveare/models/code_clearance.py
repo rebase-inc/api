@@ -27,11 +27,11 @@ class CodeClearance(DB.Model, PermissionMixin):
     @classmethod
     def query_by_user(cls, user):
         if user.is_admin():
-            return CodeClearance.query
+            return cls.query
         return\
-            CodeClearance.all_clearances_as_manager(user)\
+            cls.all_clearances_as_manager(user)\
             .union(\
-            CodeClearance.all_clearances_as_contractor(user))
+            cls.all_clearances_as_contractor(user))
 
     def allowed_to_be_created_by(self, user):
         return self.allowed_to_be_modified_by(user)
