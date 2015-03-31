@@ -31,11 +31,11 @@ class TestProjectResource(AlveareRestTestCase):
         self.project_resource.get(project, 404)
 
     def test_get_one_unauthorized(self):
-        self.login_admin()
-        project = self.project_resource.get_any()
-        self.logout()
-        self.login_as_new_user()
-        self.project_resource.get(project, 401)
+        project = Project.query.first()
+        managers = project.organization.managers
+        user = User.query.filter(~User.id.in_([manager.user.id for manager in managers])).first()
+        self.login(user.email, 'foo')
+        self.project_resource.get(dict(id=project.id), 401)
 
     def test_delete(self):
         self.login_admin()
