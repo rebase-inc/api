@@ -25,7 +25,9 @@ class RemoteWorkHistory(DB.Model, PermissionMixin):
         return cls.query
 
     def allowed_to_be_created_by(self, user):
-        return True
+        if user.is_admin():
+            return True
+        return self.contractor.user == user
 
     def allowed_to_be_modified_by(self, user):
         return self.allowed_to_be_created_by(user)
