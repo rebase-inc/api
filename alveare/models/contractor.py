@@ -44,7 +44,7 @@ class Contractor(Role):
         return user.is_admin() or self.user == user
 
     def allowed_to_be_modified_by(self, user):
-        return self.allowed_to_be_created_by(user)
+        return user.is_admin()
 
     def allowed_to_be_deleted_by(self, user):
         return self.allowed_to_be_created_by(user)
