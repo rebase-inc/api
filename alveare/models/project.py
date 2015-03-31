@@ -33,8 +33,8 @@ class Project(DB.Model, PermissionMixin):
         from alveare.models import Manager
         if user.is_admin():
             return True
-        user_is_manager_for_org = bool(user.manager_roles.filter(Manager.organization_id == self.organization.id).scalar())
-        return user_is_manager_for_org
+        organizations = user.manager_for_organizations
+        return self.organization_id in organizations
 
     def allowed_to_be_modified_by(self, user):
         return self.allowed_to_be_created_by(user)

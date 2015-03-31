@@ -27,8 +27,6 @@ class User(DB.Model, PermissionMixin):
         self.last_name = last_name
         self.email = email
         self.last_seen = datetime.datetime.now()
-        self._manager_roles = None
-        self._contractor_roles = None
         self.set_password(password)
 
     def set_password(self, password):

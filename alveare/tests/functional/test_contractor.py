@@ -1,5 +1,6 @@
 from . import AlveareRestTestCase
 from alveare.common.utils import AlveareResource
+from alveare.models import User
 from unittest import skip
 
 
@@ -68,3 +69,15 @@ class TestContractorResource(AlveareRestTestCase):
         contractor = self.contractor_resource.get_any()
         self.delete_resource('users/{}'.format(contractor['user']['id']))
         self.get_resource(self.contractor_resource.url(contractor), 404)
+
+    def test_that_only_the_user_can_delete(self):
+        user = User('foo', 'bar', 'foo@bar.com', 'foo')
+        self.db.session.add(user)
+        self.db.session.commit()
+        self.login(user.email, 'foo')
+        contractor = self.post_resource('contractors', dict(user={'id': user.id}))['contractor']
+        self.logout()
+        self.login_as_new_user()
+        self.delete_resource('contractors/{id}'.format(**contractor), 401)
+        self.login(user.email, 'foo')
+        self.delete_resource('contractors/{id}'.format(**contractor))

@@ -1,5 +1,6 @@
 from . import AlveareRestTestCase
 from alveare.common.utils import AlveareResource
+from alveare.models import Contractor
 from unittest import skip
 
 
@@ -53,3 +54,26 @@ class TestRemoteWorkHistoryResource(AlveareRestTestCase):
             self.delete_resource('github_accounts/{}'.format(account_id))
         queried_rwh = self.remote_work_history_resource.get(rwh_id)
         self.assertFalse(queried_rwh['github_accounts']) # verify all accounts have been deleted
+
+    def test_allowed_to_be_created_by_contractor_user(self):
+        contractor = Contractor.query.filter(~Contractor.remote_work_history.has()).first()
+        self.post_resource('remote_work_histories', dict(contractor=dict(id=contractor.id)), 401)
+        self.login(contractor.user.email, 'foo')
+        self.post_resource('remote_work_histories', dict(contractor=dict(id=contractor.id)))
+
+    def test_allowed_to_be_deleted_by_contractor_user(self):
+        contractor = Contractor.query.filter(~Contractor.remote_work_history.has()).first()
+        self.login(contractor.user.email, 'foo')
+        self.post_resource('remote_work_histories', dict(contractor=dict(id=contractor.id)))
+        self.logout()
+        self.delete_resource('remote_work_histories/{}'.format(contractor.id), 401)
+        self.login(contractor.user.email, 'foo')
+        self.delete_resource('remote_work_histories/{}'.format(contractor.id))
+
+    def test_that_contractor_only_sees_their_rwh(self):
+        contractor = Contractor.query.filter(Contractor.remote_work_history.has()).first()
+        self.login(contractor.user.email, 'foo')
+        rwhs = self.get_resource('remote_work_histories')['remote_work_histories']
+        rwh_ids = [rwh['id'] for rwh in rwhs]
+        self.assertEqual([contractor.remote_work_history.id], rwh_ids)
+
