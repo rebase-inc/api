@@ -53,13 +53,13 @@ class TestNominationResource(AlveareRestTestCase):
     def test_delete_contractor(self):
         self.login_admin()
         nomination = self.nomination_resource.get_any()
-        self.contractor_resource.delete(nomination['contractor'])
+        self.contractor_resource.delete(**nomination['contractor'])
         self.nomination_resource.get(nomination, 404)
 
     def test_delete_ticket_set(self):
         self.login_admin()
         nomination = self.nomination_resource.get_any()
-        self.ticket_set_resource.delete(nomination['ticket_set'])
+        self.ticket_set_resource.delete(**nomination['ticket_set'])
         self.nomination_resource.get(nomination, 404)
 
     def test_delete_organization(self):
@@ -73,7 +73,7 @@ class TestNominationResource(AlveareRestTestCase):
         org_resource =      AlveareResource(self, 'Organization')
 
         organization = org_resource.get(project['organization'])
-        org_resource.delete(organization)
+        org_resource.delete(**organization)
 
         # testing all the way down because this seems to be a problem
         # fairly regularly

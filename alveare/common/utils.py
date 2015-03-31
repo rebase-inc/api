@@ -112,7 +112,7 @@ class AlveareResource(object):
         self.test.assertIn(self.resource, response)
         return response[self.resource]
 
-    def delete(self, resource, expected_status=200):
+    def delete(self, expected_status=200, **resource):
         self.test.delete_resource(self.url(resource), expected_status)
         if expected_status in [401, 404]:
             return None

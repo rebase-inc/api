@@ -63,7 +63,7 @@ class TestJobFitResource(AlveareRestTestCase):
     def test_delete_nomination(self):
         self.login_admin()
         job_fit = self.job_fit_resource.get_any()
-        self.nomination_resource.delete(job_fit['nomination'])
+        self.nomination_resource.delete(**job_fit['nomination'])
         self.job_fit_resource.get(job_fit, 404)
 
     @skip('constraint is not enforced in the model')
@@ -71,7 +71,7 @@ class TestJobFitResource(AlveareRestTestCase):
         self.login_admin()
         job_fit = self.job_fit_resource.get_any()
         for ticket_match in job_fit['ticket_matches']:
-            self.ticket_match_resource.delete(ticket_match)
+            self.ticket_match_resource.delete(**ticket_match)
         self.job_fit_resource.get(job_fit, 404)
 
     def test_delete_organization(self):
@@ -87,5 +87,5 @@ class TestJobFitResource(AlveareRestTestCase):
         org_resource =      AlveareResource(self, 'Organization')
 
         organization = org_resource.get(project['organization'])
-        org_resource.delete(organization)
+        org_resource.delete(**organization)
         self.job_fit_resource.get(job_fit, 404)

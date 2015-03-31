@@ -1,7 +1,13 @@
 from . import AlveareRestTestCase
 from alveare.common.utils import AlveareResource
+from alveare.models import (
+    Contractor,
+    Project,
+    User,
+    Manager,
+    CodeClearance,
+)
 from unittest import skip
-
 
 class TestCodeClearanceResource(AlveareRestTestCase):
     def setUp(self):
@@ -30,10 +36,25 @@ class TestCodeClearanceResource(AlveareRestTestCase):
         project =       AlveareResource(self, 'Project').get_any()
         code_clearance = dict(
             pre_approved=   True,
-            project = dict(id=project['id']),
-            contractor=  dict(id=contractor['id'])
+            project =       dict(id=project['id']),
+            contractor=     dict(id=contractor['id'])
         )
         self.code_clearance_resource.create(**code_clearance)
+
+    def test_create_unauthorized(self):
+        project = Project.query.first()
+        contractor = Contractor.query\
+            .join(User)\
+            .join(Manager)\
+            .filter(Manager.organization != project.organization).first()
+
+        self.login(contractor.user.email, 'foo')
+        code_clearance = dict(
+            pre_approved=   True,
+            project =       dict(id=project.id),
+            contractor=     dict(id=contractor.id)
+        )
+        self.code_clearance_resource.create(401, **code_clearance)
 
     def test_update(self):
         self.login_admin()
@@ -50,6 +71,16 @@ class TestCodeClearanceResource(AlveareRestTestCase):
     def test_delete(self):
         self.login_admin()
         self.code_clearance_resource.delete_any()
+
+    def test_delete_unauthorized(self):
+        code_clearance = CodeClearance.query.first()
+        unauthorized_user = User.query\
+            .join(Manager)\
+            .filter(Manager.organization != code_clearance.project.organization)\
+            .filter(~User.admin)\
+            .first()
+
+        self.code_clearance_resource.delete(401, id=code_clearance.id)
 
     def test_delete_project(self):
         self.login_admin()
