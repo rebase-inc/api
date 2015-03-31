@@ -22,7 +22,11 @@ class RemoteWorkHistory(DB.Model, PermissionMixin):
 
     @classmethod
     def query_by_user(cls, user):
-        return cls.query
+        from alveare.models import Contractor
+        if user.is_admin():
+            return cls.query
+        else:
+            return cls.query.join(cls.contractor).filter(Contractor.user == user)
 
     def allowed_to_be_created_by(self, user):
         if user.is_admin():

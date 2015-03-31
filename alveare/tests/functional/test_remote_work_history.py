@@ -70,4 +70,10 @@ class TestRemoteWorkHistoryResource(AlveareRestTestCase):
         self.login(contractor.user.email, 'foo')
         self.delete_resource('remote_work_histories/{}'.format(contractor.id))
 
+    def test_that_contractor_only_sees_their_rwh(self):
+        contractor = Contractor.query.filter(Contractor.remote_work_history.has()).first()
+        self.login(contractor.user.email, 'foo')
+        rwhs = self.get_resource('remote_work_histories')['remote_work_histories']
+        rwh_ids = [rwh['id'] for rwh in rwhs]
+        self.assertEqual([contractor.remote_work_history.id], rwh_ids)
 
