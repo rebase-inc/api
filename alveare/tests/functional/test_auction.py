@@ -36,7 +36,7 @@ class TestAuctionResource(AlveareRestTestCase):
         bid_limit = self.post_resource('bid_limits', dict(ticket_snapshot=ticket_snapshot, price=999))['bid_limit']
 
         ticket_set = self.post_resource('ticket_sets', dict(bid_limits=[bid_limit]))['ticket_set']
-        term_sheet = self.post_resource('term_sheets', dict(legalese='piss off'))['term_sheet']
+        term_sheet = self.get_resource('term_sheets')['term_sheets'][0]
         auction_data = dict(
             ticket_set = ticket_set,
             finish_work_by = '2015-03-20T01:58:51.593347+00:00',
