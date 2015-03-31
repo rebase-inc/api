@@ -17,44 +17,44 @@ class ClientError(Exception):
 
 class NotFoundError(ClientError):
     def __init__(self, name, id, more_data=None):
-        message = 'No {} with id {}'.format(name, id)
+        message = "No {} with id {}".format(name, id)
         super().__init__(code=404, message=message, more_data=more_data)
 
 class BadDataError(ClientError):
     def __init__(self, code=400, model_name=None, more_data=None):
-        message = 'No data or valid ids provided to get/make {}!'.format(model_name),
+        message = "No data or valid ids provided to get/make {}!".format(model_name),
         super().__init__(code, message, more_data)
 
 class MarshallingError(ClientError):
     def __init__(self, error, data):
         if not isinstance(error, marsh_exc.MarshallingError):
             raise ValueError('error parameter must be of type {}'.format(marsh_exc.MarshallingError))
-        error_message = 'Missing field: "{}" while serializing: {}'
-        error_message.format(error.field_name, data)
+        error_message = "Missing field '{}' while serializing: {}"
+        error_message = error_message.format(error.field_name, data)
         super().__init__(400, error_message)
 
 class UnmarshallingError(ClientError):
     def __init__(self, error, data):
         if not isinstance(error, marsh_exc.UnmarshallingError):
             raise ValueError('error parameter must be of type {}'.format(marsh_exc.UnmarshallingError))
-        error_message = 'Missing field: "{}" while deserializing: {}'
-        error_message.format(error.field_name, data)
+        error_message = "Missing field: '{}' while deserializing: {}"
+        error_message = error_message.format(error.field_name, data)
         super().__init__(400, error_message)
 
 class ValidationError(ClientError):
     def __init__(self, error, data):
         if not isinstance(error, marsh_exc.ValidationError):
             raise ValueError('error parameter must be of type {}'.format(marsh_exc.ValidationError))
-        error_message = 'Validation error: "{}" while validating: {}'
-        error_message.format(error.field, data)
+        error_message = "Validation error: '{}' while validating: {}"
+        error_message = error_message.format(error.field, data)
         super().__init__(400, error_message)
 
 class ForcedError(ClientError):
     def __init__(self, error, data):
         if not isinstance(error, marsh_exc.ForcedError):
             raise ValueError('error parameter must be of type {}'.format(marsh_exc.ForcedError))
-        error_message = 'Forced error: "{}" while validating: {}'
-        error_message.format(error.field_name, data)
+        error_message = "Forced error: '{}' while validating: {}"
+        error_message = error_message.format(error.field_name, data)
         super().__init__(400, error_message)
 
 @contextmanager

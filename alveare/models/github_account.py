@@ -16,10 +16,14 @@ class GithubAccount(DB.Model, PermissionMixin):
 
     @classmethod
     def query_by_user(cls, user):
-        return cls.query
+        from alveare.models import RemoteWorkHistory, Contractor
+        if user.is_admin():
+            return cls.query
+        else:
+            return cls.query.join(cls.remote_work_history).join(RemoteWorkHistory.contractor).filter(Contractor.user == user)
 
     def allowed_to_be_created_by(self, user):
-        return True
+        return user.is_admin() or self.remote_work_history.contractor.user == user
 
     def allowed_to_be_modified_by(self, user):
         return self.allowed_to_be_created_by(user)
@@ -30,6 +34,5 @@ class GithubAccount(DB.Model, PermissionMixin):
     def allowed_to_be_viewed_by(self, user):
         return self.allowed_to_be_created_by(user)
 
-
     def __repr__(self):
-        return '<GithubAccount[{}] user_name={}>'.format(self.contractor_id, self.user_name)
+        return '<GithubAccount[{}] user_name={}>'.format(self.id, self.user_name)
