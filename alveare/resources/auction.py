@@ -2,8 +2,6 @@ from flask.ext.restful import Resource
 from flask.ext.login import login_required, current_user
 from flask import jsonify, make_response, request
 
-from marshmallow.exceptions import UnmarshallingError
-
 from alveare.models import Auction, Role
 from alveare.views import auction
 from alveare.common.database import DB
