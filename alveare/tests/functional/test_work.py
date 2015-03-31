@@ -4,6 +4,8 @@ import copy
 
 from . import AlveareRestTestCase
 
+from alveare.models import Work
+
 class TestWorkResource(AlveareRestTestCase):
 
     def test_get_all(self):
@@ -23,4 +25,36 @@ class TestWorkResource(AlveareRestTestCase):
         self.assertIsInstance(work.pop('state'), str)
         self.assertIsInstance(work.pop('review'), dict)
         #self.assertIn('state', work.pop('mediation')[0])
+
+    def test_contractor_can_get_their_own(self):
+        work = Work.query.first()
+        contractor = work.offer.contractor
+        self.get_resource('work/{}'.format(work.id), 401)
+        self.login(contractor.user.email, 'foo')
+        self.get_resource('work/{}'.format(work.id))
+
+        returned_works = self.get_resource('work')['work']
+        returned_work_ids = [w['id'] for w in returned_works]
+        actual_work_ids = [wo.work.id for wo in contractor.work_offers if wo.work]
+        self.assertEqual(set(returned_work_ids), set(actual_work_ids))
+
+        self.login_as_new_user()
+        works = self.get_resource('work')['work']
+        work_ids = [w['id'] for w in works]
+        self.assertNotIn(work.id, work_ids)
+
+    def test_manager_of_auction_can_see_them(self):
+        work = Work.query.first()
+        manager = work.offer.bid.auction.organization.managers[0]
+        self.login(manager.user.email, 'foo')
+        self.get_resource('work/{}'.format(work.id))
+        works = self.get_resource('work')['work']
+        work_ids = [w['id'] for w in works]
+        self.assertIn(work.id, work_ids)
+
+        self.login_as_new_user()
+        self.get_resource('work/{}'.format(work.id), 401)
+        works = self.get_resource('work')['work']
+        work_ids = [w['id'] for w in works]
+        self.assertNotIn(work.id, work_ids)
 
