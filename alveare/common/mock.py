@@ -266,7 +266,7 @@ def create_admin_user(db, password):
 def create_the_world(db):
     andrew = create_one_user(db, 'Andrew', 'Millspaugh', 'andrew@manager.alveare.io')
     rapha = create_one_user(db, 'Raphael', 'Goyran', 'raphael@alveare.io')
-    joe = create_one_user(db, 'joe', 'Pesci', 'joe@alveare.io')
+    joe = create_one_user(db, 'Joe', 'Pesci', 'joe@alveare.io')
     create_one_snapshot(db)
     create_one_snapshot(db)
     steve = create_one_user(db, 'Steve', 'Gildred', 'steve@alveare.io')

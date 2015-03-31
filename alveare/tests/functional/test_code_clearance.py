@@ -1,4 +1,5 @@
 from . import AlveareRestTestCase
+from sqlalchemy import and_
 from alveare.common.utils import AlveareResource
 from alveare.models import (
     Contractor,
@@ -6,13 +7,44 @@ from alveare.models import (
     User,
     Manager,
     CodeClearance,
+    Organization,
+    Role,
 )
 from unittest import skip
 
 class TestCodeClearanceResource(AlveareRestTestCase):
     def setUp(self):
         self.code_clearance_resource = AlveareResource(self, 'CodeClearance')
+        self.contractor_resource = AlveareResource(self, 'Contractor')
         super().setUp()
+
+    def test_get_all_as_admin(self):
+        self.login_admin()
+        clearances = self.code_clearance_resource.get_all()
+        self.assertTrue(clearances)
+
+    def test_get_all_as_contractor(self):
+        user = User.query\
+            .join(User.roles)\
+            .filter(~User.roles.any(type='manager'))\
+            .filter(~User.admin)\
+            .first()
+
+        self.login(user.email, 'foo')
+        clearances = self.code_clearance_resource.get_all()
+        for clearance in clearances:
+            contractor = self.contractor_resource.get(clearance['contractor'])
+            with self.subTest(clearance_id=clearance['id']):
+                self.assertEqual(contractor['user']['id'], user.id)
+
+    def test_get_all_as_manager(self):
+        manhattan_project = Project.query.filter(Project.name=='Manhattan').first()
+        user = manhattan_project.organization.managers[0].user
+        self.login(user.email, 'foo')
+        clearances = self.code_clearance_resource.get_all()
+        for clearance in clearances:
+            contractor = self.contractor_resource.get(clearance['contractor'])
+            self.assertNotEqual(contractor['user']['id'], user.id)
 
     def test_get_one(self):
         self.login_admin()

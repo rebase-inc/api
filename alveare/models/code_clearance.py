@@ -26,7 +26,12 @@ class CodeClearance(DB.Model, PermissionMixin):
 
     @classmethod
     def query_by_user(cls, user):
-        return cls.query
+        if user.is_admin():
+            return CodeClearance.query
+        return\
+            CodeClearance.all_clearances_as_manager(user)\
+            .union(\
+            CodeClearance.all_clearances_as_contractor(user))
 
     def allowed_to_be_created_by(self, user):
         return self.allowed_to_be_modified_by(user)
@@ -61,17 +66,10 @@ class CodeClearance(DB.Model, PermissionMixin):
     def is_contractor(self, user_id):
         return CodeClearance.query.join(Contractor, Contractor.user_id == user_id)
 
-    def allows_get(self, user):
-        return self.is_contractor(user.id).union(self.in_managers(user.id)).limit(100).all()
-
-    def allows_modify(self, user):
-        return self.in_managers(user.id).limit(100).all()
-
     def all_clearances_as_contractor(current_user):
         return CodeClearance.query\
             .join(Contractor)\
             .filter(Contractor.user == current_user)
-
 
     def all_clearances_as_manager(current_user):
         return CodeClearance.query\
@@ -79,11 +77,3 @@ class CodeClearance(DB.Model, PermissionMixin):
             .join(Organization)\
             .join(Manager)\
             .filter(Manager.user == current_user)
-
-    def get_all(current_user):
-        if current_user.is_admin():
-            return CodeClearance.query
-        return\
-            CodeClearance.all_clearances_as_manager(current_user)\
-            .union(\
-            CodeClearance.all_clearances_as_contractor(current_user))
