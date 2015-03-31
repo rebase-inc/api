@@ -1,13 +1,13 @@
 from marshmallow import fields
 from alveare.common.schema import AlveareSchema
 
-from alveare.common.database import get_or_make_object
+from alveare.common.database import get_or_make_object, SecureNestedField
 
 class RoleSchema(AlveareSchema):
     id = fields.Integer()
     type = fields.String(required=True)
 
-    user = fields.Nested('UserSchema', only=('id',), required=True)
+    user = SecureNestedField('UserSchema', only=('id',), required=True)
 
     def make_object(self, data):
         from alveare.models import Role

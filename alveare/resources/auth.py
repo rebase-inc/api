@@ -35,7 +35,7 @@ class AuthCollection(Resource):
                 return response
             else:
                 login_user(user)
-                response = jsonify(message = '{} {} succesfully logged in'.format(user.first_name, user.last_name))
+                response = jsonify(message = '{} {} ({}) succesfully logged in'.format(user.first_name, user.last_name, user.id))
                 response.status_code = 201
                 return response
         except UnmarshallingError as e:

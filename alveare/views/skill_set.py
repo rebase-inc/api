@@ -5,11 +5,11 @@ from alveare.common.schema import AlveareSchema
 from alveare.models.skill_set import SkillSet
 from alveare.models.contractor import Contractor
 from alveare.views.contractor import ContractorSchema
-from alveare.common.database import get_or_make_object
+from alveare.common.database import get_or_make_object, SecureNestedField
 
 class SkillSetSchema(AlveareSchema):
     id =            fields.Integer()
-    contractor =    fields.Nested(ContractorSchema,  only=('id',))
+    contractor =    SecureNestedField(ContractorSchema,  only=('id',))
 
     def make_object(self, data):
         from alveare.models import SkillSet

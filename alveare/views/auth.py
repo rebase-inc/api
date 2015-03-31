@@ -1,8 +1,9 @@
 from marshmallow import fields
 from alveare.common.schema import AlveareSchema
+from alveare.common.database import SecureNestedField
 
 class AuthSchema(AlveareSchema):
-    user = fields.Nested('UserSchema', only=('id', 'email',), required=True)
+    user = SecureNestedField('UserSchema', only=('id', 'email',), required=True)
     password = fields.String(required=True)
 
 serializer = AuthSchema(skip_missing=True)

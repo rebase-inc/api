@@ -1,7 +1,7 @@
 from marshmallow import fields
 from alveare.common.schema import AlveareSchema
 
-from alveare.common.database import get_or_make_object
+from alveare.common.database import get_or_make_object, SecureNestedField
 from alveare.views.role import RoleSchema
 
 class UserSchema(AlveareSchema):
@@ -13,7 +13,7 @@ class UserSchema(AlveareSchema):
     last_seen =     fields.DateTime(required=True)
     admin =         fields.Boolean(default=False)
 
-    roles = fields.Nested('RoleSchema', only=('id','type'), many=True)
+    roles = SecureNestedField('RoleSchema', only=('id','type'), many=True)
 
 
     def make_object(self, data):

@@ -2,14 +2,14 @@ from marshmallow import fields
 from alveare.common.schema import AlveareSchema
 
 from alveare.views.bid_limit import BidLimitSchema
-from alveare.common.database import get_or_make_object
+from alveare.common.database import get_or_make_object, SecureNestedField
 
 class TicketSetSchema(AlveareSchema):
     id =          fields.Integer()
-    bid_limits =  fields.Nested(BidLimitSchema, exclude=('ticket_set',), many=True)
-    auction =     fields.Nested('AuctionSchema', only=('id',))
-    nominations = fields.Nested('NominationSchema', only=('contractor', 'ticket_set'), many=True)
-    #organization = fields.Nested('OrganizationSchema', only=('id',))
+    bid_limits =  SecureNestedField(BidLimitSchema, exclude=('ticket_set',), many=True)
+    auction =     SecureNestedField('AuctionSchema', only=('id',))
+    nominations = SecureNestedField('NominationSchema', only=('contractor', 'ticket_set'), many=True)
+    #organization = SecureNestedField('OrganizationSchema', only=('id',))
 
     def make_object(self, data):
         from alveare.models import TicketSet

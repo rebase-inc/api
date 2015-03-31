@@ -3,27 +3,27 @@ from alveare.common.schema import AlveareSchema
 
 from alveare.views.ticket_set import TicketSetSchema
 from alveare.views.term_sheet import TermSheetSchema
-from alveare.common.database import get_or_make_object
+from alveare.common.database import get_or_make_object, SecureNestedField
 
 class AuctionSchema(AlveareSchema):
     id =               fields.Integer()
     duration =         fields.Integer()
     finish_work_by =   fields.DateTime()
     redundancy =       fields.Integer()
-    term_sheet =       fields.Nested('TermSheetSchema', exclude=('auction',), required=True)
-    ticket_set =       fields.Nested(TicketSetSchema, exclude=('auction',), required=True)
     state =            fields.String()
-    #feedbacks =       fields.Nested('FeedbackSchema', only='id')
-    bids =             fields.Nested('BidSchema', only=('id',), many=True)
-    organization =     fields.Nested('OrganizationSchema', only=('id',), required=True)
-    #approved_talents = fields.Nested('NominationSchema', only='id')
+    term_sheet =       SecureNestedField('TermSheetSchema', exclude=('auction',), required=True)
+    ticket_set =       SecureNestedField(TicketSetSchema, exclude=('auction',), required=True)
+    feedbacks =        SecureNestedField('FeedbackSchema', only='id')
+    bids =             SecureNestedField('BidSchema', only=('id',), many=True)
+    organization =     SecureNestedField('OrganizationSchema', only=('id',), required=True)
+    #approved_talents = SecureNestedField('NominationSchema', only='id')
 
     def make_object(self, data):
         from alveare.models import Auction
         return get_or_make_object(Auction, data)
 
 class BidEventSchema(AlveareSchema):
-    bid = fields.Nested('BidSchema')
+    bid = SecureNestedField('BidSchema')
     def make_object(self, data):
         return 'bid', data.pop('bid')
 

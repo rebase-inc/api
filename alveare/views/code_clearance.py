@@ -6,13 +6,13 @@ from alveare.models.project import Project
 from alveare.models.contractor import Contractor
 from alveare.views.project import ProjectSchema
 from alveare.views.contractor import ContractorSchema
-from alveare.common.database import get_or_make_object
+from alveare.common.database import get_or_make_object, SecureNestedField
 
 class CodeClearanceSchema(AlveareSchema):
     id =           fields.Integer()
     pre_approved = fields.Boolean()
-    project =      fields.Nested('ProjectSchema', only=('id',), exclude=('code_clearance',), required=True)
-    contractor =   fields.Nested('ContractorSchema', only=('id',), exclude=('code_clearance',), required=True)
+    project =      SecureNestedField('ProjectSchema', only=('id',), exclude=('code_clearance',), required=True)
+    contractor =   SecureNestedField('ContractorSchema', only=('id',), exclude=('code_clearance',), required=True)
 
     def make_object(self, data):
         from alveare.models import CodeClearance

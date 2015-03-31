@@ -1,14 +1,14 @@
 
 from marshmallow import fields
 from alveare.common.schema import AlveareSchema
-from alveare.common.database import get_or_make_object
+from alveare.common.database import get_or_make_object, SecureNestedField
 
 class DebitSchema(AlveareSchema):
 
     id = fields.Integer()
-    work = fields.Nested('WorkSchema', only='id')
     price = fields.Integer()
     paid = fields.Boolean()
+    work = SecureNestedField('WorkSchema', only='id')
 
     def make_object(self, data):
         from alveare.models import Debit

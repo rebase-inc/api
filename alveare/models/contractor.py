@@ -41,7 +41,7 @@ class Contractor(Role):
         return cls.query
 
     def allowed_to_be_created_by(self, user):
-        return True
+        return user.is_admin() or self.user == user
 
     def allowed_to_be_modified_by(self, user):
         return self.allowed_to_be_created_by(user)
@@ -50,7 +50,7 @@ class Contractor(Role):
         return self.allowed_to_be_created_by(user)
 
     def allowed_to_be_viewed_by(self, user):
-        return self.allowed_to_be_created_by(user)
+        return True
 
     def __repr__(self):
         return '<Contractor[id:{} "{}"] busyness="{}">'.format(

@@ -3,17 +3,17 @@ from alveare.common.schema import AlveareSchema
 from alveare.models.ticket import Ticket
 from alveare.views.skill_requirement import SkillRequirementSchema
 from flask.ext.restful import abort
-from alveare.common.database import get_or_make_object
+from alveare.common.database import get_or_make_object, SecureNestedField
 
 class TicketSchema(AlveareSchema):
     id =            fields.Integer()
     title =         fields.String()
     description =   fields.String()
 
-    project =           fields.Nested('ProjectSchema', only=('id',))
-    skill_requirement = fields.Nested(SkillRequirementSchema,   only=('id',))
-    snapshots =         fields.Nested('TicketSnapshotSchema',   only=('id',), many=True)
-    comments =          fields.Nested('CommentSchema',          only=('id',), many=True)
+    project =           SecureNestedField('ProjectSchema', only=('id',))
+    skill_requirement = SecureNestedField(SkillRequirementSchema,   only=('id',))
+    snapshots =         SecureNestedField('TicketSnapshotSchema',   only=('id',), many=True)
+    comments =          SecureNestedField('CommentSchema',          only=('id',), many=True)
 
     def make_object(self, data):
         from alveare.models import Ticket

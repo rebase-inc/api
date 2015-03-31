@@ -4,17 +4,17 @@ from alveare.common.database import DB
 from alveare.models.project import Project
 from alveare.models.user import User
 from alveare.models.organization import Organization
-from alveare.common.database import get_or_make_object
+from alveare.common.database import get_or_make_object, SecureNestedField
 from alveare.views.ticket import TicketSchema
 
 class ProjectSchema(AlveareSchema):
     id =                fields.Integer()
-    organization =      fields.Nested('OrganizationSchema', only=('id',))
     name =              fields.String()
     type =              fields.String()
-    clearances =        fields.Nested('CodeClearanceSchema', only=('id',), many=True)
-    tickets =           fields.Nested('TicketSchema', only=('id',), many=True)
-    code_repository =   fields.Nested('CodeRepositorySchema', only=('id',))
+    organization =      SecureNestedField('OrganizationSchema', only=('id',))
+    clearances =        SecureNestedField('CodeClearanceSchema', only=('id',), many=True)
+    tickets =           SecureNestedField('TicketSchema', only=('id',), many=True)
+    code_repository =   SecureNestedField('CodeRepositorySchema', only=('id',))
 
     def make_object(self, data):
         from alveare.models import Project

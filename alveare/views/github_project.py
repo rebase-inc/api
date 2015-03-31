@@ -3,16 +3,16 @@ from alveare.common.schema import AlveareSchema
 from alveare.models.organization import Organization
 from alveare.models.github_project import GithubProject
 from alveare.models.code_repository import CodeRepository
-from alveare.common.database import get_or_make_object
+from alveare.common.database import get_or_make_object, SecureNestedField
 
 class GithubProjectSchema(AlveareSchema):
 
     id =              fields.Integer()
     name =            fields.String()
-    organization =    fields.Nested('OrganizationSchema', only=('id',), required=True)
-    code_repository = fields.Nested('CodeRepositorySchema', only=('id',))
-    tickets =         fields.Nested('TicketSchema', only=('id',))
-    clearances =      fields.Nested('CodeClearanceSchema', only=('id',))
+    organization =    SecureNestedField('OrganizationSchema', only=('id',), required=True)
+    code_repository = SecureNestedField('CodeRepositorySchema', only=('id',))
+    tickets =         SecureNestedField('TicketSchema', only=('id',))
+    clearances =      SecureNestedField('CodeClearanceSchema', only=('id',))
 
     def make_object(self, data):
         from alveare.models import GithubProject
