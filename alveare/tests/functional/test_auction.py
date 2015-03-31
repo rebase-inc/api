@@ -19,10 +19,12 @@ class TestAuctionResource(AlveareRestTestCase):
         self.post_resource('auth', dict(user=user, password='foobar')) #login
 
         self.logout()
-        self.login(user_data['email'], user_data['password'])
+        foo = self.login(user_data['email'], user_data['password'])
+        print(foo)
 
         org_data = dict(name='Bitstrap', user=user)
         organization = self.post_resource('organizations', org_data)['organization']
+        print(organization)
 
         project_data = dict(organization=organization, name='Some stupid app')
         project = self.post_resource('projects', project_data)['project']

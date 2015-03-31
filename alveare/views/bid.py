@@ -1,14 +1,14 @@
 from marshmallow import fields
 from alveare.common.schema import AlveareSchema
 
-from alveare.common.database import get_or_make_object
+from alveare.common.database import get_or_make_object, SecureNestedField
 
 class BidSchema(AlveareSchema):
     id =          fields.Integer()
-    auction =     fields.Nested('AuctionSchema', only='id')
-    contractor =  fields.Nested('ContractorSchema', only='id', required=True)
-    work_offers = fields.Nested('WorkOfferSchema', only='id', many=True)
-    #contract =   fields.Nested('ContractSchema', only='id')
+    auction =     SecureNestedField('AuctionSchema', only='id')
+    contractor =  SecureNestedField('ContractorSchema', only='id', required=True)
+    work_offers = SecureNestedField('WorkOfferSchema', only='id', many=True)
+    #contract =   SecureNestedField('ContractSchema', only='id')
 
     def make_object(self, data):
         from alveare.models import Bid

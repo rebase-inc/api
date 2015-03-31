@@ -23,10 +23,7 @@ class Manager(Role):
         self.organization = organization
 
     def __repr__(self):
-        return '<Manager[{} "{}"]>'.format(
-            self.id,
-            self.user.first_name+' '+self.user.last_name
-        )
+        return '<Manager[{}] {} {} (org {})>'.format(self.id, self.user.first_name, self.user.last_name, self.organization_id)
 
     @classmethod
     def query_by_user(cls, user):

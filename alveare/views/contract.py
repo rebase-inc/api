@@ -2,11 +2,11 @@ from marshmallow import fields
 from alveare.common.schema import AlveareSchema
 
 from alveare.views.ticket_set import TicketSetSchema
-from alveare.common.database import get_or_make_object
+from alveare.common.database import get_or_make_object, SecureNestedField
 
 class ContractSchema(AlveareSchema):
     id =  fields.Integer()
-    bid = fields.Nested('BidSchema', only=('id',))
+    bid = SecureNestedField('BidSchema', only=('id',))
 
     def make_object(self, data):
         from alveare.models import Contract

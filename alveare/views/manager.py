@@ -4,12 +4,12 @@ from alveare.common.database import DB
 from alveare.models.manager import Manager
 from alveare.models.user import User
 from alveare.models.organization import Organization
-from alveare.common.database import get_or_make_object
+from alveare.common.database import get_or_make_object, SecureNestedField
 
 class ManagerSchema(AlveareSchema):
     id =           fields.Integer()
-    organization = fields.Nested('OrganizationSchema', only=('id',))
-    user =         fields.Nested('UserSchema', only=('id',))
+    organization = SecureNestedField('OrganizationSchema', only=('id',))
+    user =         SecureNestedField('UserSchema', only=('id',))
 
     def make_object(self, data):
         from alveare.models import Manager

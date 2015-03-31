@@ -6,6 +6,7 @@ from alveare.common.database import DB
 def get_collection(model, serializer):
     query = model.query_by_user(current_user)
     all_instances = query.limit(100).all()
+    serializer.context = dict(current_user = current_user)
     return jsonify(**{model.__pluralname__: serializer.dump(all_instances, many=True).data})
 
 def add_to_collection(model, deserializer, serializer):
@@ -14,6 +15,7 @@ def add_to_collection(model, deserializer, serializer):
         return current_app.login_manager.unauthorized()
     DB.session.add(new_instance)
     DB.session.commit()
+    serializer.context = dict(current_user = current_user)
     response = jsonify(**{model.__tablename__: serializer.dump(new_instance).data})
     response.status_code = 201
     return response
@@ -24,6 +26,7 @@ def get_resource(model, instance_id, serializer):
         raise NotFoundError(model.__tablename__, instance_id)
     if not instance.allowed_to_be_viewed_by(current_user):
         return current_app.login_manager.unauthorized()
+    serializer.context = dict(current_user = current_user)
     return jsonify(**{model.__tablename__: serializer.dump(instance).data})
 
 def update_resource(model, instance_id, update_deserializer, serializer):
@@ -38,6 +41,7 @@ def update_resource(model, instance_id, update_deserializer, serializer):
             setattr(instance, field, value)
     DB.session.add(instance)
     DB.session.commit()
+    serializer.context = dict(current_user = current_user)
     return jsonify(**{model.__tablename__: serializer.dump(instance).data})
 
 def delete_resource(model, instance_id):

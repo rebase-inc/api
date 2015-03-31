@@ -5,7 +5,7 @@ from alveare.common.schema import AlveareSchema
 
 from alveare.views import NamespacedSchema
 from alveare.views.comment import CommentSchema
-from alveare.common.database import get_or_make_object
+from alveare.common.database import get_or_make_object, SecureNestedField
 
 class MediationSchema(AlveareSchema):
     id = fields.Integer()
@@ -13,8 +13,8 @@ class MediationSchema(AlveareSchema):
     client_answer = fields.String()
     timeout = fields.DateTime()
     state = fields.String()
-    work = fields.Nested('WorkSchema', only='id', required=True)
-    arbitration = fields.Nested('ArbitrationSchema', only='id', default=None)
+    work = SecureNestedField('WorkSchema', only='id', required=True)
+    arbitration = SecureNestedField('ArbitrationSchema', only='id', default=None)
     foobar = fields.String(required=True)
 
     def make_object(self, data):

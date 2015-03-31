@@ -2,12 +2,12 @@ from marshmallow import fields
 from alveare.common.schema import AlveareSchema
 from alveare.models.contractor import Contractor
 from flask.ext.restful import abort
-from alveare.common.database import get_or_make_object
+from alveare.common.database import get_or_make_object, SecureNestedField
 
 class RemoteWorkHistorySchema(AlveareSchema):
     id =                fields.Integer()
-    contractor = fields.Nested('ContractorSchema', only=('id'))
-    github_accounts = fields.Nested('GithubAccountSchema', only=('id', 'user_name'), many=True)
+    contractor = SecureNestedField('ContractorSchema', only=('id'))
+    github_accounts = SecureNestedField('GithubAccountSchema', only=('id', 'user_name'), many=True)
 
     def make_object(self, data):
         from alveare.models import RemoteWorkHistory
