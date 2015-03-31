@@ -15,16 +15,16 @@ class TermSheet(DB.Model, PermissionMixin):
         return cls.query
 
     def allowed_to_be_created_by(self, user):
-        return True
+        return user.is_admin()
 
     def allowed_to_be_modified_by(self, user):
-        return self.allowed_to_be_created_by(user)
+        return user.is_admin()
 
     def allowed_to_be_deleted_by(self, user):
-        return self.allowed_to_be_created_by(user)
+        return user.is_admin()
 
     def allowed_to_be_viewed_by(self, user):
-        return self.allowed_to_be_created_by(user)
+        return True
 
     def __repr__(self):
         return '<TermSheet[id:{}]>'.format(self.id)
