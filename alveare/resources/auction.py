@@ -49,7 +49,7 @@ class AuctionBidEvents(Resource):
         auction_event = auction.bid_event_deserializer.load(request.form or request.json).data
 
         with ManagedState():
-            single_auction.machine.send(auction_event)
+            single_auction.machine.send(*auction_event)
 
         DB.session.commit()
 
