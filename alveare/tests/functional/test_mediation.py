@@ -5,6 +5,8 @@ import datetime
 
 from . import AlveareRestTestCase
 
+from alveare.models import Mediation
+
 class TestMediationResource(AlveareRestTestCase):
 
     def test_get_all(self):
@@ -62,4 +64,39 @@ class TestMediationResource(AlveareRestTestCase):
         mediation.update(new_state)
         self.assertEqual(mediation, response['mediation'])
 
+    def test_contractor_can_get_their_own(self):
+        mediation = Mediation.query.first()
+        contractor = mediation.work.offer.contractor
+        self.get_resource('mediations/{}'.format(mediation.id), 401)
+        self.login(contractor.user.email, 'foo')
+        self.get_resource('mediations/{}'.format(mediation.id))
+
+        returned_mediations = self.get_resource('mediations')['mediations']
+        returned_mediation_ids = [m['id'] for m in returned_mediations]
+        actual_mediation_ids = []
+        for work_offer in contractor.work_offers:
+            if work_offer.work and work_offer.work.mediation_rounds:
+                for mediation_round in work_offer.work.mediation_rounds:
+                    actual_mediation_ids.append(mediation_round.id)
+        self.assertEqual(set(returned_mediation_ids), set(actual_mediation_ids))
+
+        self.login_as_new_user()
+        mediations = self.get_resource('mediations')['mediations']
+        mediation_ids = [m['id'] for m in mediations]
+        self.assertNotIn(mediation.id, mediation_ids)
+
+    def test_manager_of_auction_can_see_them(self):
+        mediation = Mediation.query.first()
+        manager = mediation.work.offer.bid.auction.organization.managers[0]
+        self.login(manager.user.email, 'foo')
+        self.get_resource('mediations/{}'.format(mediation.id))
+        mediations = self.get_resource('mediations')['mediations']
+        mediation_ids = [m['id'] for m in mediations]
+        self.assertIn(mediation.id, mediation_ids)
+
+        self.login_as_new_user()
+        self.get_resource('mediations/{}'.format(mediation.id), 401)
+        mediations = self.get_resource('mediations')['mediations']
+        mediation_ids = [m['id'] for m in mediations]
+        self.assertNotIn(mediation.id, mediation_ids)
 
