@@ -22,7 +22,7 @@ class WorkSchema(AlveareSchema):
         return get_or_make_object(Work, data)
 
 class HaltEventSchema(AlveareSchema):
-    reason = fields.String()
+    reason = fields.String(required=True)
     def make_object(self, data):
         return 'halt_work', data.pop('reason')
 
@@ -51,7 +51,7 @@ deserializer = WorkSchema(only=tuple())
 update_deserializer = WorkSchema(only=tuple())
 update_deserializer.make_object = lambda data: data
 
-halt_event_deserializer = HaltEventSchema()
+halt_event_deserializer = HaltEventSchema(strict=True)
 review_event_deserializer = ReviewEventSchema()
 mediate_event_deserializer = MediateEventSchema()
 complete_event_deserializer = CompleteEventSchema()

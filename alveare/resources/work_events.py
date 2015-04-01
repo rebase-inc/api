@@ -2,7 +2,11 @@ from flask.ext.restful import Resource
 from flask.ext.login import login_required, current_user
 from flask import jsonify, make_response, request
 
+from alveare.common.state import ManagedState
 from alveare.common.exceptions import NotFoundError
+from alveare.common.database import DB
+from alveare.models import Work
+from alveare.views import work
 
 class WorkHaltEvents(Resource):
 
@@ -14,11 +18,11 @@ class WorkHaltEvents(Resource):
         halt_event = work.halt_event_deserializer.load(request.form or request.json).data
 
         with ManagedState():
-            work_instance.machine.send(halt_event)
+            work_instance.machine.send(*halt_event)
 
         DB.session.commit()
 
-        response = jsonify(auction = work.serializer.dump(work_instance).data)
+        response = jsonify(work = work.serializer.dump(work_instance).data)
         response.status_code = 201
         return response
 
@@ -36,7 +40,7 @@ class WorkReviewEvents(Resource):
 
         DB.session.commit()
 
-        response = jsonify(auction = work.serializer.dump(work_instance).data)
+        response = jsonify(work = work.serializer.dump(work_instance).data)
         response.status_code = 201
         return response
 
@@ -54,7 +58,7 @@ class WorkMediateEvents(Resource):
 
         DB.session.commit()
 
-        response = jsonify(auction = work.serializer.dump(work_instance).data)
+        response = jsonify(work = work.serializer.dump(work_instance).data)
         response.status_code = 201
         return response
 
@@ -72,7 +76,7 @@ class WorkCompleteEvents(Resource):
 
         DB.session.commit()
 
-        response = jsonify(auction = work.serializer.dump(work_instance).data)
+        response = jsonify(work = work.serializer.dump(work_instance).data)
         response.status_code = 201
         return response
 
@@ -90,7 +94,7 @@ class WorkResumeEvents(Resource):
 
         DB.session.commit()
 
-        response = jsonify(auction = work.serializer.dump(work_instance).data)
+        response = jsonify(work = work.serializer.dump(work_instance).data)
         response.status_code = 201
         return response
 
@@ -108,6 +112,6 @@ class WorkFailEvents(Resource):
 
         DB.session.commit()
 
-        response = jsonify(auction = work.serializer.dump(work_instance).data)
+        response = jsonify(work = work.serializer.dump(work_instance).data)
         response.status_code = 201
         return response

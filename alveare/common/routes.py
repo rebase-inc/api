@@ -19,12 +19,12 @@ def register_routes(api):
     api.add_resource(AuctionFailEvents, '/auctions/<int:id>/fail_events', endpoint='auction_fail_events')
 
     from alveare.resources.work_events import WorkHaltEvents, WorkReviewEvents, WorkMediateEvents, WorkCompleteEvents, WorkResumeEvents, WorkFailEvents
-    api.add_resource(WorkHaltEvents, '/auctions/<int:id>/halt_events')
-    api.add_resource(WorkReviewEvents, '/auctions/<int:id>/review_events')
-    api.add_resource(WorkMediateEvents, '/auctions/<int:id>/mediate_events')
-    api.add_resource(WorkCompleteEvents, '/auctions/<int:id>/complete_events')
-    api.add_resource(WorkResumeEvents, '/auctions/<int:id>/resume_events')
-    api.add_resource(WorkFailEvents, '/auctions/<int:id>/fail_events')
+    api.add_resource(WorkHaltEvents, '/work/<int:id>/halt_events')
+    api.add_resource(WorkReviewEvents, '/work/<int:id>/review_events')
+    api.add_resource(WorkMediateEvents, '/work/<int:id>/mediate_events')
+    api.add_resource(WorkCompleteEvents, '/work/<int:id>/complete_events')
+    api.add_resource(WorkResumeEvents, '/work/<int:id>/resume_events')
+    api.add_resource(WorkFailEvents, '/work/<int:id>/fail_events')
 
     from alveare.models.internal_ticket import InternalTicket
     import alveare.views.internal_ticket as it_view
