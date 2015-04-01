@@ -23,7 +23,7 @@ class AuctionSchema(AlveareSchema):
         return get_or_make_object(Auction, data)
 
 class BidEventSchema(AlveareSchema):
-    bid = SecureNestedField('BidSchema')
+    bid = SecureNestedField('BidSchema', required=True)
     def make_object(self, data):
         return 'bid', data.pop('bid')
 
@@ -43,7 +43,7 @@ deserializer.declared_fields['ticket_set'].only = None
 update_deserializer = AuctionSchema(only=tuple(), strict=True)
 update_deserializer.make_object = lambda data: data
 
-bid_event_deserializer = BidEventSchema()
+bid_event_deserializer = BidEventSchema(strict=True)
 end_event_deserializer = EndEventSchema()
 fail_event_deserializer = FailEventSchema()
 

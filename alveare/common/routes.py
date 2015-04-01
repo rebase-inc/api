@@ -18,6 +18,14 @@ def register_routes(api):
     api.add_resource(AuctionEndEvents, '/auctions/<int:id>/end_events', endpoint='auction_end_events')
     api.add_resource(AuctionFailEvents, '/auctions/<int:id>/fail_events', endpoint='auction_fail_events')
 
+    from alveare.resources.work_events import WorkHaltEvents, WorkReviewEvents, WorkMediateEvents, WorkCompleteEvents, WorkResumeEvents, WorkFailEvents
+    api.add_resource(WorkHaltEvents, '/work/<int:id>/halt_events')
+    api.add_resource(WorkReviewEvents, '/work/<int:id>/review_events')
+    api.add_resource(WorkMediateEvents, '/work/<int:id>/mediate_events')
+    api.add_resource(WorkCompleteEvents, '/work/<int:id>/complete_events')
+    api.add_resource(WorkResumeEvents, '/work/<int:id>/resume_events')
+    api.add_resource(WorkFailEvents, '/work/<int:id>/fail_events')
+
     from alveare.models.internal_ticket import InternalTicket
     import alveare.views.internal_ticket as it_view
     add_restful_endpoint(api, InternalTicket, it_view.serializer, it_view.deserializer, it_view.update_deserializer)

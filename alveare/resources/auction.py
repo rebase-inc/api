@@ -2,8 +2,6 @@ from flask.ext.restful import Resource
 from flask.ext.login import login_required, current_user
 from flask import jsonify, make_response, request
 
-from marshmallow.exceptions import UnmarshallingError
-
 from alveare.models import Auction, Role
 from alveare.views import auction
 from alveare.common.database import DB
@@ -51,7 +49,7 @@ class AuctionBidEvents(Resource):
         auction_event = auction.bid_event_deserializer.load(request.form or request.json).data
 
         with ManagedState():
-            single_auction.machine.send(auction_event)
+            single_auction.machine.send(*auction_event)
 
         DB.session.commit()
 

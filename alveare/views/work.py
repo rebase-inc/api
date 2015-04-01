@@ -21,7 +21,40 @@ class WorkSchema(AlveareSchema):
         from alveare.models import Work
         return get_or_make_object(Work, data)
 
+class HaltEventSchema(AlveareSchema):
+    reason = fields.String(required=True)
+    def make_object(self, data):
+        return 'halt_work', data.pop('reason')
+
+class ReviewEventSchema(AlveareSchema):
+    def make_object(self, data):
+        return 'review'
+
+class MediateEventSchema(AlveareSchema):
+    def make_object(self, data):
+        return 'mediate'
+
+class CompleteEventSchema(AlveareSchema):
+    def make_object(self, data):
+        return 'complete'
+
+class ResumeEventSchema(AlveareSchema):
+    def make_object(self, data):
+        return 'resume_work'
+
+class FailEventSchema(AlveareSchema):
+    def make_object(self, data):
+        return 'fail'
+
 serializer = WorkSchema(only=('id','state','mediation','review','debit','credit','offer'), skip_missing=True)
 deserializer = WorkSchema(only=tuple())
 update_deserializer = WorkSchema(only=tuple())
 update_deserializer.make_object = lambda data: data
+
+halt_event_deserializer = HaltEventSchema(strict=True)
+review_event_deserializer = ReviewEventSchema()
+mediate_event_deserializer = MediateEventSchema()
+complete_event_deserializer = CompleteEventSchema()
+resume_event_deserializer = ResumeEventSchema()
+fail_event_deserializer = FailEventSchema()
+

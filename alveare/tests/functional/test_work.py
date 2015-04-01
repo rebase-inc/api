@@ -58,3 +58,18 @@ class TestWorkResource(AlveareRestTestCase):
         work_ids = [w['id'] for w in works]
         self.assertNotIn(work.id, work_ids)
 
+    def test_update(self):
+        self.login_admin()
+        work = Work.query.filter(Work.state == 'in_progress').first()
+
+        state = self.post_resource('work/{}/halt_events'.format(work.id), dict(reason='you suck'))['work']['state']
+        self.assertEqual(state, 'blocked')
+
+        state = self.post_resource('work/{}/resume_events'.format(work.id))['work']['state']
+        self.assertEqual(state, 'in_progress')
+
+        state = self.post_resource('work/{}/review_events'.format(work.id))['work']['state']
+        self.assertEqual(state, 'in_review')
+
+        state = self.post_resource('work/{}/complete_events'.format(work.id))['work']['state']
+        self.assertEqual(state, 'complete')

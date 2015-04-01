@@ -108,7 +108,7 @@ class AlveareRestTestCase(unittest.TestCase):
         self.assertEqual(response.headers['Content-Type'], 'application/json', error_msg)
         return json.loads(response.data.decode('utf-8'))
 
-    def post_resource(self, url, data, expected_code = 201):
+    def post_resource(self, url, data=dict(), expected_code = 201):
         error_msg = 'Expected {}, got {}. Data: {}'
         response = self.client.post(url, data = json.dumps(data),
                 headers={'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json'})
