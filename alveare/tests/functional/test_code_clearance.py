@@ -19,18 +19,14 @@ class TestCodeClearanceResource(AlveareRestTestCase):
         super().setUp()
 
     def test_get_all_as_admin(self):
+        self.logout()
+        self.assertFalse(self.code_clearance_resource.get_all(401))
         self.login_admin()
         clearances = self.code_clearance_resource.get_all()
         self.assertTrue(clearances)
 
     def test_get_all_as_contractor(self):
-        user = User.query\
-            .join(User.roles)\
-            .filter(~User.roles.any(type='manager'))\
-            .filter(~User.admin)\
-            .first()
-
-        self.login(user.email, 'foo')
+        user = self.login_as_contractor_only()
         clearances = self.code_clearance_resource.get_all()
         for clearance in clearances:
             contractor = self.contractor_resource.get(clearance['contractor'])

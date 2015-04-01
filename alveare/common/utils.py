@@ -118,10 +118,12 @@ class AlveareResource(object):
             return None
         self.test.get_resource(self.url(resource), 404)
 
-    def get_all(self):
+    def get_all(self, expected_status_code=200):
         ''' returns all the instances of this resource
         '''
-        response = self.test.get_resource(self.collection_url)
+        response = self.test.get_resource(self.collection_url, expected_code=expected_status_code)
+        if expected_status_code in [401, 404]:
+            return None
         self.test.assertIn(self.collection_url, response)
         all_resources = response[self.collection_url]
         self.test.assertTrue(all_resources)
@@ -177,10 +179,10 @@ class AlveareResource(object):
         else:
             self.test.assertEqual(first, second)
 
-    def modify_or_create(self, rest_method, resource_url, expected_status=200, **resource):
-        response = rest_method(resource_url, resource, expected_status)
-        if expected_status in [401, 404]:
-            return None
+    def validate_response(self, resource, response):
+        '''
+        Performs a number of assertions on the response and returns the new resource
+        '''
         self.test.assertIn(self.resource, response)
         new_res = response[self.resource]
         self.assertComposite(resource, new_res)
@@ -194,8 +196,38 @@ class AlveareResource(object):
         self.assertComposite(resource, queried_resource)
         return queried_resource
 
+    def modify_or_create(
+        self,
+        rest_method,
+        resource_url,
+        validate=validate_response,
+        expected_status=200,
+        **resource
+    ):
+        '''
+        Executes the rest method and validates the response if desired.
+        validate must be a method bound to self with the same signature as validate_response
+        If validate is None, no validation is performed and the new resource is returned directly
+        '''
+        response = rest_method(resource_url, resource, expected_status)
+        if expected_status in [401, 404]:
+            return None
+        if validate:
+            return validate(self, resource, response)
+        return response[self.resource]
+
     def create(self, expected_status=201, **resource):
-        return self.modify_or_create(self.test.post_resource, self.collection_url, expected_status, **resource)
+        return self.modify_or_create(
+            self.test.post_resource,
+            self.collection_url,
+            expected_status=expected_status,
+            **resource
+        )
 
     def update(self, expected_status=200, **resource):
-        return self.modify_or_create(self.test.put_resource, self.url(resource), expected_status, **resource)
+        return self.modify_or_create(
+            self.test.put_resource,
+            self.url(resource),
+            expected_status=expected_status,
+            **resource
+        )

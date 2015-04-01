@@ -5,6 +5,9 @@ import unittest
 from alveare import models, create_app
 from alveare.common.database import DB
 from alveare.common.mock import create_the_world, create_admin_user
+from alveare.models import (
+    User,
+)
 
 class AlveareRestTestCase(unittest.TestCase):
 
@@ -38,6 +41,34 @@ class AlveareRestTestCase(unittest.TestCase):
     def login_as_new_user(self):
         new_user = models.User.query.filter(~models.User.roles.any() & ~models.User.admin).first()
         self.login(new_user.email, 'foo')
+
+    def login_as_contractor_only(self):
+        ''' login as and return a non-admin user whose only role is contractor '''
+        user = User.query\
+            .join(User.roles)\
+            .filter(~User.roles.any(type='manager'))\
+            .filter(~User.admin)\
+            .first()
+        self.login(user.email, 'foo')
+        return user
+
+    def login_as_manager_only(self):
+        ''' login as and return a non-admin user whose only role is manager '''
+        user = User.query\
+            .join(User.roles)\
+            .filter(~User.roles.any(type='contractor'))\
+            .filter(~User.admin)\
+            .first()
+        self.login(user.email, 'foo')
+        return user
+
+    def login_as_no_role_user(self):
+        ''' login as return non-admin user with role '''
+        user = User.query\
+            .filter(~User.roles.any())\
+            .first()
+        self.login(user.email, 'foo')
+        return user
 
     def cleanup(self):
         try:

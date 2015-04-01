@@ -1,4 +1,5 @@
 from alveare.common.database import DB, PermissionMixin
+import alveare.models.manager
 
 class Organization(DB.Model, PermissionMixin):
     __pluralname__ = 'organizations'
@@ -53,25 +54,34 @@ class Organization(DB.Model, PermissionMixin):
         return auctions
 
     def __init__(self, name, user):
-        from alveare.models import Manager
         self.name = name
-        self.managers.append(Manager(user, self)) # you must have at least one manager
+        self.managers.append(alveare.models.manager.Manager(user, self)) # you must have at least one manager
 
     @classmethod
     def query_by_user(cls, user):
-        return cls.query
+        if user.admin:
+            return cls.query
+        return cls.get_all_as_manager(user)
+
+    def get_all_as_manager(user):
+        return Organization.query.filter(Organization.managers.any(alveare.models.manager.Manager.user == user))
 
     def allowed_to_be_created_by(self, user):
         return True
+    
+    def in_managers(self, user):
+        return Organization.get_all_as_manager(user).filter(Organization.id == self.id)
 
     def allowed_to_be_modified_by(self, user):
-        return self.allowed_to_be_created_by(user)
+        if user.admin:
+            return True
+        return self.in_managers(user).limit(100).all()
 
     def allowed_to_be_deleted_by(self, user):
-        return self.allowed_to_be_created_by(user)
+        return self.allowed_to_be_modified_by(user)
 
     def allowed_to_be_viewed_by(self, user):
-        return self.allowed_to_be_created_by(user)
+        return self.allowed_to_be_modified_by(user)
 
     def __repr__(self):
         return '<Organization[{}] "{}" >'.format(self.id, self.name)

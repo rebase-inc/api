@@ -18,7 +18,7 @@ class Manager(Role):
         if not isinstance(user, User):
             raise ValueError('{} field on {} must be {} not {}'.format('user', self.__tablename__, User, type(user)))
         if not isinstance(organization, Organization):
-            raise ValueError('{} field on {} must be {} not {}'.format('organization', self.__tablename__, Organization, type(user)))
+            raise ValueError('{} field on {} must be {} not {}'.format('organization', self.__tablename__, Organization, type(organization)))
         self.user = user
         self.organization = organization
 

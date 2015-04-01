@@ -44,7 +44,6 @@ class AuthCollection(Resource):
             response.status_code = 401
             return response
 
-    @login_required
     def get(self):
         ''' logout '''
         logout_user()
