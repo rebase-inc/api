@@ -3,6 +3,7 @@ import time
 import copy
 
 from . import AlveareRestTestCase
+from alveare.models import Review
 
 class TestReviewResource(AlveareRestTestCase):
 
@@ -50,5 +51,40 @@ class TestReviewResource(AlveareRestTestCase):
         response = self.put_resource('reviews/{}'.format(review['id']), new_rating)
         review.update(new_rating)
         self.assertEqual(review, response['review'])
+
+    def test_contractor_can_get_their_own(self):
+        review = Review.query.first()
+        contractor = review.work.offer.contractor
+        self.get_resource('reviews/{}'.format(review.id), 401)
+        self.login(contractor.user.email, 'foo')
+        self.get_resource('reviews/{}'.format(review.id))
+
+        returned_reviews = self.get_resource('reviews')['reviews']
+        returned_review_ids = [r['id'] for r in returned_reviews]
+        actual_review_ids = []
+        for work_offer in contractor.work_offers:
+            if work_offer.work and work_offer.work.review:
+                actual_review_ids.append(work_offer.work.review.id)
+        self.assertEqual(set(returned_review_ids), set(actual_review_ids))
+
+        self.login_as_new_user()
+        reviews = self.get_resource('reviews')['reviews']
+        review_ids = [r['id'] for r in reviews]
+        self.assertNotIn(review.id, review_ids)
+
+    def test_manager_of_auction_can_see_them(self):
+        review = Review.query.first()
+        manager = review.work.offer.bid.auction.organization.managers[0]
+        self.login(manager.user.email, 'foo')
+        self.get_resource('reviews/{}'.format(review.id))
+        reviews = self.get_resource('reviews')['reviews']
+        review_ids = [r['id'] for r in reviews]
+        self.assertIn(review.id, review_ids)
+
+        self.login_as_new_user()
+        self.get_resource('reviews/{}'.format(review.id), 401)
+        reviews = self.get_resource('reviews')['reviews']
+        review_ids = [r['id'] for r in reviews]
+        self.assertNotIn(review.id, review_ids)
 
 
