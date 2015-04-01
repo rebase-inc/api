@@ -11,7 +11,7 @@ class ProjectSchema(AlveareSchema):
     id =                fields.Integer()
     name =              fields.String()
     type =              fields.String()
-    organization =      SecureNestedField('OrganizationSchema', only=('id',))
+    organization =      SecureNestedField('OrganizationSchema', only=('id',), allow_null=True)
     clearances =        SecureNestedField('CodeClearanceSchema', only=('id',), many=True)
     tickets =           SecureNestedField('TicketSchema', only=('id',), many=True)
     code_repository =   SecureNestedField('CodeRepositorySchema', only=('id',))
@@ -20,7 +20,7 @@ class ProjectSchema(AlveareSchema):
         from alveare.models import Project
         return get_or_make_object(Project, data)
 
-serializer = ProjectSchema()
+serializer = ProjectSchema(skip_missing=True)
 deserializer = ProjectSchema(only=('organization', 'name'))
 update_deserializer = ProjectSchema()
 update_deserializer.make_object = lambda data: data

@@ -125,9 +125,7 @@ class AlveareResource(object):
         if expected_status_code in [401, 404]:
             return None
         self.test.assertIn(self.collection_url, response)
-        all_resources = response[self.collection_url]
-        self.test.assertTrue(all_resources)
-        return all_resources
+        return response[self.collection_url]
 
     def get_any(self, seed_value=None):
         '''

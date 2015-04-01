@@ -3,7 +3,7 @@ from sqlalchemy.orm import validates
 from alveare.models.role import Role
 from alveare.models.user import User
 from alveare.models.contractor import Contractor
-from alveare.models.organization import Organization
+import alveare.models.organization
 
 from alveare.common.database import DB, PermissionMixin
 
@@ -16,14 +16,30 @@ class Manager(Role):
 
     def __init__(self, user, organization):
         if not isinstance(user, User):
-            raise ValueError('{} field on {} must be {} not {}'.format('user', self.__tablename__, User, type(user)))
-        if not isinstance(organization, Organization):
-            raise ValueError('{} field on {} must be {} not {}'.format('organization', self.__tablename__, Organization, type(organization)))
+            raise ValueError('{} field on {} must be {} not {}'.format(
+                'user',
+                self.__tablename__,
+                User,
+                type(user)
+            ))
+        if not isinstance(organization, alveare.models.organization.Organization):
+            raise ValueError(
+                '{} field on {} must be {} not {}'.format(
+                    'organization',
+                    self.__tablename__,
+                    alveare.models.organization.Organization,
+                    type(organization))
+            )
         self.user = user
         self.organization = organization
 
     def __repr__(self):
-        return '<Manager[{}] {} {} (org {})>'.format(self.id, self.user.first_name, self.user.last_name, self.organization_id)
+        return '<Manager[{}] {} {} (org {})>'.format(
+            self.id,
+            self.user.first_name,
+            self.user.last_name,
+            self.organization_id
+        )
 
     @classmethod
     def query_by_user(cls, user):

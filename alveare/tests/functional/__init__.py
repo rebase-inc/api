@@ -7,6 +7,8 @@ from alveare.common.database import DB
 from alveare.common.mock import create_the_world, create_admin_user
 from alveare.models import (
     User,
+    CodeClearance,
+    Contractor
 )
 
 class AlveareRestTestCase(unittest.TestCase):
@@ -46,6 +48,18 @@ class AlveareRestTestCase(unittest.TestCase):
         ''' login as and return a non-admin user whose only role is contractor '''
         user = User.query\
             .join(User.roles)\
+            .filter(~User.roles.any(type='manager'))\
+            .filter(~User.admin)\
+            .first()
+        self.login(user.email, 'foo')
+        return user
+
+    def login_as_contractor_only_with_clearance(self):
+        ''' login as and return a non-admin user whose only role is contractor with some clearances '''
+        user = User.query\
+            .join(User.roles)\
+            .join(Contractor)\
+            .join(CodeClearance)\
             .filter(~User.roles.any(type='manager'))\
             .filter(~User.admin)\
             .first()

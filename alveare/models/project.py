@@ -1,5 +1,8 @@
 
 from alveare.common.database import DB, PermissionMixin
+import alveare.models.manager
+import alveare.models.contractor
+import alveare.models.code_clearance
 
 class Project(DB.Model, PermissionMixin):
     __pluralname__ = 'projects'
@@ -27,14 +30,30 @@ class Project(DB.Model, PermissionMixin):
 
     @classmethod
     def query_by_user(cls, user):
-        return cls.query
+        if user.admin:
+            return cls.query
+        return cls.get_all_as_manager(user).union(cls.get_cleared_projects(user))
+
+    def get_all_as_manager(user):
+        return Project.query\
+            .join(alveare.models.organization.Organization)\
+            .join(alveare.models.manager.Manager)\
+            .filter(alveare.models.manager.Manager.user == user)
+
+    def get_cleared_projects(user):
+        ''' Return all projects for which user has a clearance '''
+        return Project.query\
+            .join(alveare.models.code_clearance.CodeClearance)\
+            .join(alveare.models.contractor.Contractor)\
+            .filter(alveare.models.contractor.Contractor.user == user)
 
     def allowed_to_be_created_by(self, user):
-        from alveare.models import Manager
         if user.is_admin():
             return True
-        organizations = user.manager_for_organizations
-        return self.organization_id in organizations
+        return alveare.models.organization.Organization.query\
+            .filter(alveare.models.organization.Organization.id == self.organization.id)\
+            .join(alveare.models.manager.Manager, alveare.models.manager.Manager.user == user)\
+            .limit(100).all()
 
     def allowed_to_be_modified_by(self, user):
         return self.allowed_to_be_created_by(user)
@@ -45,4 +64,7 @@ class Project(DB.Model, PermissionMixin):
     def allowed_to_be_viewed_by(self, user):
         if user.is_admin():
             return True
-        return bool(self.organization.id in user.manager_for_organizations)
+        return Project.get_all_as_manager(user)\
+            .filter(Project.id == self.id)\
+            .union(Project.get_cleared_projects(user).filter(Project.id == self.id))\
+            .limit(100).all()

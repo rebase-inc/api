@@ -267,6 +267,7 @@ def create_the_world(db):
     andrew = create_one_user(db, 'Andrew', 'Millspaugh', 'andrew@manager.alveare.io')
     rapha = create_one_user(db, 'Raphael', 'Goyran', 'raphael@alveare.io')
     joe = create_one_user(db, 'Joe', 'Pesci', 'joe@alveare.io')
+    tim = create_one_user(db, 'Tim', 'Pesci', 'tim@alveare.io')
     create_one_snapshot(db)
     create_one_snapshot(db)
     steve = create_one_user(db, 'Steve', 'Gildred', 'steve@alveare.io')
@@ -277,6 +278,7 @@ def create_the_world(db):
     manhattan_tickets = [ create_one_github_ticket(db, ticket_number, manhattan_project) for ticket_number in range(10) ]
     rapha_contractor = create_one_contractor(db, rapha)
     steve_contractor = create_one_contractor(db, steve)
+    tim_contractor = create_one_contractor(db, tim)
     manhattan_ticket_matches = create_ticket_matches(db, manhattan_tickets, rapha_contractor)
     manhattan_auction = create_one_auction(db, manhattan_tickets)
     rapha_nomination = create_one_nomination(db, manhattan_auction, rapha_contractor)
