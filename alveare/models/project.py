@@ -34,15 +34,17 @@ class Project(DB.Model, PermissionMixin):
             return cls.query
         return cls.get_all_as_manager(user).union(cls.get_cleared_projects(user))
 
-    def get_all_as_manager(user):
-        return Project.query\
+    @classmethod
+    def get_all_as_manager(cls, user):
+        return cls.query\
             .join(alveare.models.organization.Organization)\
             .join(alveare.models.manager.Manager)\
             .filter(alveare.models.manager.Manager.user == user)
 
-    def get_cleared_projects(user):
+    @classmethod
+    def get_cleared_projects(cls, user):
         ''' Return all projects for which user has a clearance '''
-        return Project.query\
+        return cls.query\
             .join(alveare.models.code_clearance.CodeClearance)\
             .join(alveare.models.contractor.Contractor)\
             .filter(alveare.models.contractor.Contractor.user == user)

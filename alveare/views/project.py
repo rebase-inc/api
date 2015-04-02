@@ -17,7 +17,7 @@ class ProjectSchema(AlveareSchema):
         return get_or_make_object(Project, data)
 
 serializer =            ProjectSchema(skip_missing=True)
-deserializer =          ProjectSchema(only=('organization', 'name'))
+deserializer =          ProjectSchema(only=('organization', 'name'), strict=True)
 update_deserializer =   ProjectSchema()
 update_deserializer.make_object = lambda data: data
 

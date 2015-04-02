@@ -3,8 +3,12 @@ from contextlib import contextmanager
 import marshmallow.exceptions as marsh_exc
 from werkzeug.http import HTTP_STATUS_CODES
 
+LAUNCH_DEBUGGER=False
+
 class ClientError(Exception):
     def __init__(self, code=400, message=None, more_data=None):
+        if LAUNCH_DEBUGGER:
+            import pdb; pdb.set_trace()
         more_data = more_data or {}
         self.code = code
         self.data = {

@@ -16,7 +16,7 @@ class GithubProject(RemoteProject):
 
     @classmethod
     def query_by_user(cls, user):
-        return super().query_by_user(user)
+        return super(cls, cls).query_by_user(user)
 
     def allowed_to_be_created_by(self, user):
         return super().allowed_to_be_created_by(user)

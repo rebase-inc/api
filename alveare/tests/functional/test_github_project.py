@@ -1,81 +1,91 @@
-from . import AlveareRestTestCase
+from .project import BaseProjectTestCase
+from alveare.common.utils import AlveareResource
+from alveare.models import (
+    Manager,
+    Organization,
+    Project,
+    RemoteProject,
+    GithubProject,
+)
 
-url = 'github_projects/{}'.format
+def with_at_least_one_github_project(query):
+    ''' add-on filter to make sure the queried manager has at least one project to manage
+    '''
+    return query\
+        .join(Manager)\
+        .join(Organization)\
+        .join(GithubProject)
 
-class TestGithubProjectResource(AlveareRestTestCase):
+class TestGithubProjectResource(BaseProjectTestCase):
+    def setUp(self):
+        super().setUp()
+        self.project_resource = AlveareResource(self, 'GithubProject')
 
-    def get_org(self):
-        response = self.get_resource('organizations')
-        self.assertIn('organizations', response)
-        orgs = response['organizations']
-        self.assertGreater(len(orgs), 1)
-        return orgs[0]
+    def test_get_all_as_admin(self):
+        self.get_all_as_admin()
 
-    def create_project(self):
-        # make the request data
-        org = self.get_org()
-        new_project = dict(organization=dict(id=org['id']), name='Falcon9')
+    def test_get_all_as_manager(self):
+        self.get_all_as_manager(with_at_least_one_github_project)
 
-        # create the resource
-        response = self.post_resource('github_projects', new_project)
+    def test_get_all_as_user_only(self):
+        self.get_all_as_user_only()
 
-        # verify response
-        self.assertIn('github_project', response)
-        project = response['github_project']
-        self.assertEqual(project['name'], new_project['name'])
-        self.assertEqual(project['organization']['id'], org['id'])
-        return project
+    def test_get_all_as_contractor_with_clearance(self):
+        self.get_all_as_contractor_with_clearance()
 
-    def test_create(self):
-        self.login_admin()
-        new_project = self.create_project()
+    def test_get_all_anonymous(self):
+        self.get_all_anonymous()
 
-        # verify by query
-        project_id = new_project['id']
-        response2 = self.get_resource(url(project_id))
-        self.assertIn('github_project', response2)
-        project2 = response2['github_project']
-        self.assertEqual(project2['name'], new_project['name'])
-        self.assertEqual(project2['organization'], new_project['organization'])
+    def test_get_one_as_admin(self):
+        self.get_one_as_admin()
 
-        # verify the created project is listed in the organization data
-        org_response = self.get_resource('organizations/{}'.format(new_project['organization']['id']))
-        self.assertIn('organization', org_response)
-        org = org_response['organization']
-        self.assertTrue(any(map(lambda project: project['id']==project_id, org['projects'])))
+    def test_get_one_as_contractor(self):
+        self.get_one_as_contractor()
 
-    def test_delete(self):
-        self.login_admin()
-        project = self.create_project()
-        project_id = project['id']
-        project_url = url(project_id)
-        response = self.delete_resource(project_url)
-        self.get_resource(project_url, 404)
-        self.get_resource('code_repositories/{}'.format(project_id), 404)
+    def test_create_anonymous(self):
+        self.create_anonymous()
 
-    def test_put(self):
-        self.login_admin()
-        project = self.create_project()
-        project_url = url(project['id'])
-        project['name'] = 'Awesome Project Name!'
+    def test_create_as_admin(self):
+        self.create_as_admin()
 
-        response = self.put_resource(project_url, project)
-        self.assertIn('github_project', response)
-        updated_project = response['github_project']
-        self.assertEqual(updated_project['name'], project['name'])
+    def test_create_as_manager(self):
+        self.create_as_manager()
 
-        # verify by query
-        response2 = self.get_resource(project_url)
-        self.assertIn('github_project', response2)
-        project2 = response2['github_project']
-        self.assertEqual(project2['name'], project['name'])
+    def test_create_as_contractor(self):
+        self.create_as_contractor()
 
-    def test_get_all(self):
-        self.login_admin()
-        project = self.create_project()
-        project_id = project['id']
+    def test_delete_one_as_contractor(self):
+        self.delete_one_as_contractor()
 
-        response = self.get_resource('github_projects')
-        self.assertIn('github_projects', response)
-        projects = response['github_projects']
-        self.assertTrue(any(map(lambda project: project['id']==project_id, projects)))
+    def test_get_one_as_manager(self):
+        self.get_one_as_manager(with_at_least_one_github_project)
+
+    def test_get_one_anonymous(self):
+        self.get_one_anonymous()
+
+    def test_delete_as_admin(self):
+        self.delete_as_admin()
+
+    def test_delete_unauthorized(self):
+        self.delete_unauthorized()
+
+    def test_delete_organization_as_admin(self):
+        self.delete_organization_as_admin()
+
+    def test_update_unauthorized(self):
+        self.update_unauthorized()
+
+    def test_update_as_admin(self):
+        self.update_as_admin()
+
+    def test_update_as_manager(self):
+        self.update_as_manager(with_at_least_one_github_project)
+
+    def test_update_as_contractor(self):
+        self.update_as_contractor()
+
+    def test_add_and_remove_tickets(self):
+        self.add_and_remove_tickets()
+
+    def test_add_and_remove_code_clearance(self):
+        self.add_and_remove_code_clearance()

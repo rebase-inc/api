@@ -66,13 +66,23 @@ class AlveareRestTestCase(unittest.TestCase):
         self.login(user.email, 'foo')
         return user
 
-    def login_as_manager_only(self):
-        ''' login as and return a non-admin user whose only role is manager '''
-        user = User.query\
+    def login_as_manager_only(self, filters=None):
+        '''
+            Login as and return a non-admin user whose only role is manager.
+            filters, optional, will be applied to the basic query
+            to further reduce the query results.
+
+            filters function must have the following signature:
+            def filters(query)
+                return new_query # new_query is any query
+        '''
+        query = User.query\
             .join(User.roles)\
             .filter(~User.roles.any(type='contractor'))\
-            .filter(~User.admin)\
-            .first()
+            .filter(~User.admin)
+        if filters:
+            query = filters(query)
+        user = query.first()
         self.login(user.email, 'foo')
         return user
 

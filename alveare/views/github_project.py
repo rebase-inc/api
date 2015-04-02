@@ -16,7 +16,7 @@ class GithubProjectSchema(AlveareSchema):
     def make_object(self, data):
         return get_or_make_object(GithubProject, data)
 
-serializer =            GithubProjectSchema(only=('id', 'organization', 'name'), skip_missing=True)
+serializer =            GithubProjectSchema(skip_missing=True)
 deserializer =          GithubProjectSchema(only=('organization', 'name'), strict=True)
 update_deserializer =   GithubProjectSchema()
 update_deserializer.make_object = lambda data: data
