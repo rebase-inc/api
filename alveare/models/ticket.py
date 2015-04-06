@@ -24,6 +24,9 @@ class Ticket(DB.Model, PermissionMixin):
 
     @classmethod
     def query_by_user(cls, user):
+        ''' a user can see all the tickets for the projects he can see '''
+        if user.admin:
+            return cls.query
         return cls.query
 
     def allowed_to_be_created_by(self, user):

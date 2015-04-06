@@ -28,6 +28,7 @@ class TestCodeClearanceResource(AlveareRestTestCase):
     def test_get_all_as_contractor(self):
         user = self.login_as_contractor_only()
         clearances = self.code_clearance_resource.get_all()
+        self.assertTrue(clearances)
         for clearance in clearances:
             contractor = self.contractor_resource.get(clearance['contractor'])
             with self.subTest(clearance_id=clearance['id']):
@@ -38,6 +39,7 @@ class TestCodeClearanceResource(AlveareRestTestCase):
         user = manhattan_project.organization.managers[0].user
         self.login(user.email, 'foo')
         clearances = self.code_clearance_resource.get_all()
+        self.assertTrue(clearances)
         for clearance in clearances:
             contractor = self.contractor_resource.get(clearance['contractor'])
             self.assertNotEqual(contractor['user']['id'], user.id)

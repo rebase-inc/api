@@ -1,4 +1,5 @@
 from random import choice, seed
+from collections import defaultdict
 import alveare.models
 from inspect import getmembers, isclass
 from sqlalchemy.inspection import inspect
@@ -229,3 +230,35 @@ class AlveareResource(object):
             expected_status=expected_status,
             **resource
         )
+
+dictionaries = defaultdict(list, {
+    '/usr/share/dict/words':        [],
+    '/usr/share/dict/propernames':  [],
+})
+
+def pick_a_word(min_size=0, max_size=100, dictionary='/usr/share/dict/words'):
+    # build a one-time cache, limit size of each dictionary to max_num_items
+    if not dictionaries[dictionary]:
+        max_num_items = 2000
+        words = []
+        for word in open(dictionary):
+            words.append(word.rstrip())
+        if len(words) > max_num_items:
+            this_dictionary = dictionaries[dictionary]
+            for i in range(max_num_items):
+                this_dictionary.append(choice(words))
+        else:
+            dictionaries[dictionary] = words
+            
+    if min_size > 0 or max_size != 100:
+        return choice(list(filter(lambda word: (min_size <= len(word)) and (len(word)<= max_size), dictionaries[dictionary])))
+    return choice(dictionaries[dictionary])
+
+def pick_a_first_name(min_size=0, max_size=100, dictionary='/usr/share/dict/propernames'):
+    return pick_a_word(min_size, max_size, dictionary)
+
+def pick_a_last_name(min_size=0, max_size=100):
+    return pick_a_first_name(min_size, max_size)[::-1].capitalize()
+
+def pick_an_organization_name(min_size=0, max_size=100):
+    return pick_a_word(min_size, max_size).capitalize()+' '+choice(['Inc.', 'LLC', 'Foundation', 'Corporation'])

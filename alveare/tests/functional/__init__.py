@@ -8,7 +8,8 @@ from alveare.common.mock import create_the_world, create_admin_user
 from alveare.models import (
     User,
     CodeClearance,
-    Contractor
+    Contractor,
+    Role,
 )
 
 class AlveareRestTestCase(unittest.TestCase):
@@ -44,31 +45,10 @@ class AlveareRestTestCase(unittest.TestCase):
         new_user = models.User.query.filter(~models.User.roles.any() & ~models.User.admin).first()
         self.login(new_user.email, 'foo')
 
-    def login_as_contractor_only(self):
-        ''' login as and return a non-admin user whose only role is contractor '''
-        user = User.query\
-            .join(User.roles)\
-            .filter(~User.roles.any(type='manager'))\
-            .filter(~User.admin)\
-            .first()
-        self.login(user.email, 'foo')
-        return user
-
-    def login_as_contractor_only_with_clearance(self):
-        ''' login as and return a non-admin user whose only role is contractor with some clearances '''
-        user = User.query\
-            .join(User.roles)\
-            .join(Contractor)\
-            .join(CodeClearance)\
-            .filter(~User.roles.any(type='manager'))\
-            .filter(~User.admin)\
-            .first()
-        self.login(user.email, 'foo')
-        return user
-
-    def login_as_manager_only(self, filters=None):
+    def login_as(self, exclude_roles=None, filters=None):
         '''
-            Login as and return a non-admin user whose only role is manager.
+            Login as and return a non-admin user whose only roles are not listed in exclude_roles
+
             filters, optional, will be applied to the basic query
             to further reduce the query results.
 
@@ -78,7 +58,7 @@ class AlveareRestTestCase(unittest.TestCase):
         '''
         query = User.query\
             .join(User.roles)\
-            .filter(~User.roles.any(type='contractor'))\
+            .filter(~User.roles.any(Role.type.in_(exclude_roles or [])))\
             .filter(~User.admin)
         if filters:
             query = filters(query)
@@ -86,10 +66,27 @@ class AlveareRestTestCase(unittest.TestCase):
         self.login(user.email, 'foo')
         return user
 
+    def login_as_contractor_only(self, filters=None):
+        ''' login as and return a non-admin user whose only role is contractor '''
+        return self.login_as(['manager'], filters)
+
+    def login_as_contractor_only_with_clearance(self):
+        ''' login as and return a non-admin user whose only role is contractor with some clearances '''
+        return self.login_as(['manager'], lambda query: query.join(Contractor).join(CodeClearance))
+
+    def login_as_manager_only(self, filters=None):
+        '''
+            Login as and return a non-admin user whose only role is manager.
+            filters is same as with login_as method
+        '''
+        return self.login_as(['contractor'], filters)
+
     def login_as_no_role_user(self):
         ''' login as return non-admin user with role '''
+        #return self.login_as(['contractor', 'manager'])
         user = User.query\
             .filter(~User.roles.any())\
+            .filter(~User.admin)\
             .first()
         self.login(user.email, 'foo')
         return user

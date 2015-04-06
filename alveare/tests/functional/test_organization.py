@@ -56,7 +56,6 @@ class TestOrganizationResource(AlveareRestTestCase):
     def test_get_one_as_admin(self):
         self.login_admin()
         org = self.get_one()
-        self.assertEqual(org['name'], 'Alveare')
 
     def test_get_one_as_manager(self):
         user = self.login_as_manager_only()

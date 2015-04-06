@@ -1,25 +1,35 @@
 import datetime
 import uuid
 from random import randint
+from .utils import (
+    pick_a_word,
+    pick_a_first_name,
+    pick_a_last_name,
+    pick_an_organization_name,
+)
 
-def create_one_organization(db, name='Alveare'):
+def create_one_organization(db, name=None, user=None):
     from alveare.models import Organization
-    user = create_one_user(db)
-    organization = Organization(name, user)
+    user = user or create_one_user(db)
+    organization = Organization(name or pick_an_organization_name(), user)
     db.session.add(organization)
     return organization
 
-def create_one_user(db, first_name='Andrew', last_name='Millspaugh', email=None, password='foo'):
+def create_one_user(db, first_name=None, last_name=None, email=None, password='foo'):
     from alveare.models import User
     email = email or 'user-{}@alveare.io'.format(uuid.uuid4())
-    user = User(first_name, last_name, email, password)
+    user = User(
+        first_name or pick_a_first_name(),
+        last_name or pick_a_last_name(),
+        email,
+        password
+    )
     db.session.add(user)
     return user
 
 def create_one_manager(db, user=None):
     from alveare.models import Manager
-    if not user:
-        user = create_one_user(db)
+    user = user or create_one_user(db)
     organization = create_one_organization(db)
     manager = Manager(user, organization)
     db.session.add(manager)
@@ -27,8 +37,7 @@ def create_one_manager(db, user=None):
 
 def create_one_contractor(db, user=None):
     from alveare.models import Contractor, SkillSet
-    if not user:
-        user = create_one_user(db)
+    user = user or create_one_user(db)
     contractor = Contractor(user)
     SkillSet(contractor)
     db.session.add(contractor)
@@ -49,34 +58,30 @@ def create_one_bank_account(db, owner):
 
 def create_one_code_clearance(db, project=None, contractor=None, pre_approved=False):
     from alveare.models import CodeClearance
-    if not contractor:
-        contractor = create_one_contractor(db)
-    if not project:
-        project = create_one_project(db)
+    contractor = contractor or create_one_contractor(db)
+    project = project or create_one_project(db)
     code_clearance = CodeClearance(project, contractor, pre_approved)
     db.session.add(code_clearance)
     return code_clearance
 
 def create_one_remote_work_history(db, contractor=None):
     from alveare.models import RemoteWorkHistory
-    if not contractor:
-        contractor = create_one_contractor(db)
+    contractor = contractor or create_one_contractor(db)
     remote_work_history = RemoteWorkHistory(contractor)
     db.session.add(remote_work_history)
     return remote_work_history
 
 def create_one_github_account(db, remote_work_history=None, user_name='ravioli'):
     from alveare.models import GithubAccount
-    if not remote_work_history:
-        remote_work_history = create_one_remote_work_history(db)
+    remote_work_history = remote_work_history or create_one_remote_work_history(db)
     github_account = GithubAccount(remote_work_history, user_name)
     db.session.add(github_account)
     return github_account
 
-def create_one_project(db, organization_name='Alveare', project_name='api'):
+def create_one_project(db, organization=None, project_name=None):
     from alveare.models import Organization, Project, CodeRepository
-    organization = create_one_organization(db)
-    project = Project(organization, project_name)
+    organization = organization or create_one_organization(db)
+    project = Project(organization, project_name or pick_a_word().capitalize()+' Project')
     code_repo = CodeRepository(project)
     db.session.add(organization)
     db.session.add(project)
@@ -95,29 +100,25 @@ def create_one_remote_project(db, organization_name='Alveare', project_name='api
 
 def create_one_github_project(db, organization=None, project_name='api'):
     from alveare.models import Organization, GithubProject, CodeRepository
-    if not organization:
-        organization = create_one_organization(db, 'Alveare')
+    organization = organization or create_one_organization(db, 'Alveare')
     github_project = GithubProject(organization, project_name)
     code_repo = CodeRepository(github_project)
     db.session.add(github_project)
     return github_project
 
 def create_one_internal_ticket(db, title, description=None, project=None):
-    from alveare.models import InternalTicket
-    if not project:
-        project = create_one_project(db)
-    if not description:
-        description = title + '-DESCRIPTION'
+    from alveare.models import InternalTicket, SkillRequirement
+    project = project or create_one_project(db)
+    description = description or ' '.join(pick_a_word() for i in range(5))
     ticket = InternalTicket(project, title, description)
+    SkillRequirement(ticket)
     db.session.add(ticket)
     return ticket
 
 def create_one_remote_ticket(db, title, description=None, project=None):
     from alveare.models import RemoteTicket, SkillRequirement
-    if not project:
-        project = create_one_project(db)
-    if not description:
-        description = title + '-DESCRIPTION'
+    project = project or create_one_project(db)
+    description = description or title + '-DESCRIPTION'
     ticket = RemoteTicket(project, title, description)
     SkillRequirement(ticket)
     db.session.add(ticket)
@@ -125,8 +126,7 @@ def create_one_remote_ticket(db, title, description=None, project=None):
 
 def create_one_github_ticket(db, number, project=None):
     from alveare.models import GithubTicket, SkillRequirement
-    if not project:
-        project = create_one_github_project(db)
+    project = project or create_one_github_project(db)
     ticket = GithubTicket(project, number)
     SkillRequirement(ticket)
     db.session.add(ticket)
@@ -135,8 +135,7 @@ def create_one_github_ticket(db, number, project=None):
 def create_some_tickets(db, ticket_titles=None):
     from alveare.models import InternalTicket, RemoteTicket, SkillRequirement
     project = create_one_project(db)
-    if not ticket_titles:
-        ticket_titles = ['Foo', 'Bar', 'Baz', 'Qux']
+    ticket_titles = ticket_titles or ['Foo', 'Bar', 'Baz', 'Qux']
     tickets = []
     for title in ticket_titles:
         ticket = InternalTicket(project, title)
@@ -147,10 +146,8 @@ def create_some_tickets(db, ticket_titles=None):
 
 def create_ticket_matches(db, tickets=None, contractor=None):
     from alveare.models import TicketMatch
-    if not tickets:
-        tickets = create_some_tickets(db)
-    if not contractor:
-        contractor = create_one_contractor(db)
+    tickets = tickets or create_some_tickets(db)
+    contractor = contractor or create_one_contractor(db)
     ticket_matches = []
     for ticket in tickets:
         ticket_matches.append(TicketMatch(contractor.skill_set, ticket.skill_requirement, 100))
@@ -168,11 +165,9 @@ def create_one_snapshot(db, ticket=None):
     return ts
 
 def create_one_auction(db, tickets=None, duration=1000, finish_work_by=None, redundancy=1):
-    if not finish_work_by:
-        finish_work_by = datetime.datetime.now() + datetime.timedelta(days=2)
+    finish_work_by = finish_work_by or datetime.datetime.now() + datetime.timedelta(days=2)
     from alveare.models import Auction, TicketSet, BidLimit, TicketSnapshot, TermSheet
-    if not tickets:
-        tickets = create_some_tickets(db)
+    tickets = tickets or create_some_tickets(db)
     ticket_snaps = [TicketSnapshot(ticket) for ticket in tickets]
     bid_limits = [BidLimit(ticket_snap, 200) for ticket_snap in ticket_snaps]
     term_sheet = TermSheet('Some legal mumbo-jumbo')
@@ -184,18 +179,15 @@ def create_one_auction(db, tickets=None, duration=1000, finish_work_by=None, red
 
 def create_one_nomination(db, auction=None, contractor=None):
     from alveare.models import Nomination
-    if not auction:
-        auction = create_one_auction(db)
-    if not contractor:
-        contractor = create_one_contractor(db)
+    auction = auction or create_one_auction(db)
+    contractor = contractor or create_one_contractor(db)
     nomination = Nomination(contractor, auction.ticket_set)
     db.session.add(nomination)
     return nomination
 
 def create_one_job_fit(db, nomination=None, ticket_matches=None):
     from alveare.models import TicketMatch, JobFit
-    if not nomination:
-        nomination = create_one_nomination(db)
+    nomination = nomination or create_one_nomination(db)
     skill_set = nomination.contractor.skill_set
     if not ticket_matches:
         ticket_matches = []
@@ -274,6 +266,10 @@ def create_the_world(db):
     manager_andrew = create_one_manager(db, andrew) # also creates an organization
     manager_rapha = create_one_manager(db, rapha)
     bigdough_project = create_one_github_project(db, manager_rapha.organization, 'Big Dough')
+
+    internal_project = create_one_project(db, manager_rapha.organization)
+    internal_project_tickets = [create_one_internal_ticket(db, 'Issue #{}'.format(i), project=internal_project) for i in range(10)]
+
     manhattan_project = create_one_github_project(db, manager_andrew.organization, 'Manhattan')
     manhattan_tickets = [ create_one_github_ticket(db, ticket_number, manhattan_project) for ticket_number in range(10) ]
     rapha_contractor = create_one_contractor(db, rapha)
@@ -287,6 +283,7 @@ def create_the_world(db):
     create_one_code_clearance(db, manhattan_project, rapha_contractor, pre_approved=True)
     create_one_code_clearance(db, manhattan_project, steve_contractor, pre_approved=False)
     create_one_code_clearance(db, bigdough_project, steve_contractor, pre_approved=True)
+    create_one_code_clearance(db, internal_project, steve_contractor, pre_approved=True)
     create_one_bank_account(db, rapha_contractor)
     rapha_rwh = create_one_remote_work_history(db, rapha_contractor)
     create_one_github_account(db, rapha_rwh, 'rapha.opensource')
