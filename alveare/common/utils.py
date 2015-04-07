@@ -135,6 +135,8 @@ class AlveareResource(object):
             If you need a deterministic behavior (while debugging for instance), always provide the same value.
         '''
         all_resources = self.get_all()
+        if not all_resources:
+            return None
         if seed_value:
             seed(seed_value)
         any_res = choice(all_resources)
@@ -146,6 +148,7 @@ class AlveareResource(object):
     def delete_any(self, seed_value=None):
         ''' deletes any object from this resource and returns the deleted object '''
         resource = self.get_any(seed_value)
+        self.test.assertTrue(resource)
         resource_url = self.url(resource)
         self.test.delete_resource(resource_url)
         self.test.get_resource(resource_url, 404)

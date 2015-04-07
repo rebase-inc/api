@@ -1,40 +1,76 @@
-from . import AlveareRestTestCase
 from alveare.common.utils import AlveareResource
 from unittest import skip
+from .ticket import BaseTestTicketResource
 
 
-class TestGithubTicketResource(AlveareRestTestCase):
+class TestGithubTicketResource(BaseTestTicketResource):
     def setUp(self):
-        self.github_ticket_resource = AlveareResource(self, 'GithubTicket')
         super().setUp()
+        self.ticket_resource = AlveareResource(self, 'GithubTicket')
+        self.project_resource = AlveareResource(self, 'GithubProject')
+        self.discriminator = 'github_ticket'
+        self.check_discriminator = True
+        self.allowed_project_types = ['github_project']
 
-    def test_get_one(self):
-        self.login_admin()
-        ticket = self.github_ticket_resource.get_any()
-        self.assertTrue(ticket) # mock should have created at least one account
-        self.assertTrue(ticket['id'])
-        self.assertTrue(ticket['skill_requirement'])
-        self.assertEqual(ticket['skill_requirement']['id'], ticket['id'])
+    def test_get_all_as_anonymous(self):
+        self.get_all_as_anonymous()
 
-    def test_create(self):
-        self.login_admin()
-        ticket = self.github_ticket_resource.get_any()
-        self.github_ticket_resource.create(project = ticket['project'], number = 1234)
+    def test_get_all_as_admin(self):
+        self.get_all_as_admin()
 
-    # TODO: should fail, but read-only remote tickets are not implemented yet
-    def test_update(self):
-        self.login_admin()
-        ticket = self.github_ticket_resource.get_any()
-        ticket['title'] = 'Compelling title'
-        ticket['description'] = 'Detailed description'
-        self.github_ticket_resource.update(**ticket) 
+    def test_get_all_as_manager(self):
+        self.get_all_as_manager()
 
-    def test_delete(self):
-        self.login_admin()
-        self.github_ticket_resource.delete_any()
+    def test_get_all_as_contractor(self):
+        self.get_all_as_contractor()
+
+    def test_get_one_as_admin(self):
+        self.get_one_as_admin()
+
+    def test_get_one_as_manager(self):
+        self.get_one_as_manager()
+
+    def test_get_one_as_contractor(self):
+        self.get_one_as_contractor()
+
+    def test_get_invalid_id(self):
+        self.get_invalid_id()
+
+    def _create(self, expected_status=201):
+        project = self.project_resource.get_any()
+        self.assertTrue(project)
+        self.ticket_resource.create(
+            expected_status,
+            project = dict(id=project['id']),
+            number = 13
+        )
+
+    def test_create_as_admin(self):
+        self.create_as_admin()
+
+    def test_create_as_manager(self):
+        self.create_as_manager()
+
+    def test_create_as_contractor(self):
+        self.create_as_contractor()
+
+    def test_update_as_admin(self):
+        self.update_as_admin()
+
+    def test_update_as_manager(self):
+        self.update_as_manager()
+
+    def test_update_as_contractor(self):
+        self.update_as_contractor()
+
+    def test_delete_as_admin(self):
+        self.delete_as_admin()
+
+    def test_delete_as_manager(self):
+        self.delete_as_manager()
+
+    def test_delete_as_contractor(self):
+        self.delete_as_contractor()
 
     def test_delete_project(self):
-        self.login_admin()
-        ticket = self.github_ticket_resource.get_any()
-        self.delete_resource('projects/{id}'.format(**ticket['project']))
-        self.get_resource(self.github_ticket_resource.url(ticket), 404)
+        self.delete_project()

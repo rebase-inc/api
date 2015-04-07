@@ -9,6 +9,7 @@ class InternalTicketSchema(AlveareSchema):
     description =   fields.String(required=True)
     discriminator = fields.String()
 
+
     project =           SecureNestedField('ProjectSchema',          only=('id',), allow_null=True)
     skill_requirement = SecureNestedField('SkillRequirementSchema', only=('id',), allow_null=True)
     snapshots =         SecureNestedField('TicketSnapshotSchema',   only=('id',), many=True)

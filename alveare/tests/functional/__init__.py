@@ -70,9 +70,15 @@ class AlveareRestTestCase(unittest.TestCase):
         ''' login as and return a non-admin user whose only role is contractor '''
         return self.login_as(['manager'], filters)
 
-    def login_as_contractor_only_with_clearance(self):
+    def login_as_contractor_only_with_clearance(self, filters=None):
         ''' login as and return a non-admin user whose only role is contractor with some clearances '''
-        return self.login_as(['manager'], lambda query: query.join(Contractor).join(CodeClearance))
+        def new_filters(query):
+            new_query = query.join(Contractor).join(CodeClearance)
+            if filters:
+                new_query = filters(new_query)
+            return new_query
+
+        return self.login_as(['manager'], new_filters)
 
     def login_as_manager_only(self, filters=None):
         '''
