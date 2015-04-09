@@ -43,10 +43,34 @@ class Manager(Role):
 
     @classmethod
     def query_by_user(cls, user):
-        return cls.query
+        if user.admin:
+            return cls.query
+        return cls.get_all_as_manager(user).union(cls.get_cleared_managers(user))
+
+    @classmethod
+    def get_all_as_manager(cls, user, manager_id=None):
+        query = cls.query
+        if manager_id:
+            query = query.filter_by(id=manager_id)
+        return query.filter(alveare.models.manager.Manager.user == user)
+
+    @classmethod
+    def get_cleared_managers(cls, user, manager_id=None):
+        ''' Return all managers for which user has a clearance '''
+        query = cls.query
+        if manager_id:
+            query = query.filter_by(id=manager_id)
+        return query\
+            .join(alveare.models.organization.Organization)\
+            .join(alveare.models.project.Project)\
+            .join(alveare.models.code_clearance.CodeClearance)\
+            .join(alveare.models.contractor.Contractor)\
+            .filter(alveare.models.contractor.Contractor.user == user)
 
     def allowed_to_be_created_by(self, user):
-        return True
+        if user.admin:
+            return True
+        return Manager.get_all_as_manager(user, self.id).limit(100).all()
 
     def allowed_to_be_modified_by(self, user):
         return self.allowed_to_be_created_by(user)
@@ -55,4 +79,9 @@ class Manager(Role):
         return self.allowed_to_be_created_by(user)
 
     def allowed_to_be_viewed_by(self, user):
-        return self.allowed_to_be_created_by(user)
+        if user.admin:
+            return True
+        return Manager.get_all_as_manager(user, self.id)\
+            .union(Manager.get_cleared_managers(user, self.id))\
+            .limit(100).all()
+

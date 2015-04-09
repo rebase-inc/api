@@ -8,8 +8,8 @@ from alveare.common.database import get_or_make_object, SecureNestedField
 
 class ManagerSchema(AlveareSchema):
     id =           fields.Integer()
-    organization = SecureNestedField('OrganizationSchema', only=('id',))
-    user =         SecureNestedField('UserSchema', only=('id',))
+    organization = SecureNestedField('OrganizationSchema',  only=('id',), allow_null=True)
+    user =         SecureNestedField('UserSchema',          only=('id',), allow_null=True)
 
     def make_object(self, data):
         from alveare.models import Manager

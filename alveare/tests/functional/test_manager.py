@@ -2,19 +2,38 @@ import json
 import time
 
 from . import AlveareRestTestCase
+from alveare.common.utils import AlveareResource
 
 def mgr_url(id):
     return '/managers/{}'.format(id)
 
 class TestManagerResource(AlveareRestTestCase):
+    def setUp(self):
+        self.manager_resource = AlveareResource(self, 'Manager')
+        super().setUp()
 
-    def test_get_all(self):
+    def test_get_all_as_admin(self):
         self.login_admin()
-        response = self.get_resource('managers')
-        self.assertIn('managers', response)
+        self.assertTrue(self.manager_resource.get_all())
 
-    def test_get_one(self):
-        self.login_admin()
+    def test_get_all_as_manager(self):
+        user = self.login_as_manager_only()
+        managers = self.manager_resource.get_all()
+        self.assertTrue(managers)
+        for manager in managers:
+            self.assertIn('user', manager)
+            self.assertIn('id', manager['user'])
+            self.assertEqual(manager['user']['id'], user.id)
+
+    def test_get_all_as_contractor(self):
+        user = self.login_as_contractor_only_with_clearance()
+        managers = self.manager_resource.get_all()
+        self.assertTrue(managers)
+        for manager in managers:
+            print(manager)
+            self.assertIn('organization', manager)
+
+    def _get_one(self):
         all_managers = self.get_resource('managers')
         self.assertIsInstance(all_managers['managers'], list)
         manager = all_managers['managers'][0]
@@ -26,6 +45,18 @@ class TestManagerResource(AlveareRestTestCase):
 
         self.assertEqual(manager['id'], same_manager['id'])
         self.assertEqual(manager['organization']['id'], same_manager['organization']['id'])
+
+    def test_get_one_as_admin(self):
+        self.login_admin()
+        self._get_one()
+
+    def test_get_one_as_manager(self):
+        self.login_as_manager_only()
+        self._get_one()
+
+    def test_get_one_as_contractor(self):
+        self.login_as_contractor_only_with_clearance()
+        self._get_one()
 
     def create_new_manager(self):
 

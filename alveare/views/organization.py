@@ -10,10 +10,10 @@ from alveare.common.database import get_or_make_object, SecureNestedField
 class OrganizationSchema(AlveareSchema):
     id =            fields.Integer()
     name =          fields.String()
-    projects =      SecureNestedField(ProjectSchema, only=('id',), many=True)
-    bank_account =  SecureNestedField(BankAccountSchema, only=('id',), default=None)
-    user =          SecureNestedField(UserSchema, only=('id',)) #only used for deserialize
-    managers =      SecureNestedField(ManagerSchema, only=('id','user'), many=True)
+    projects =      SecureNestedField(ProjectSchema,        only=('id',), many=True, allow_null=True)
+    bank_account =  SecureNestedField(BankAccountSchema,    only=('id',), allow_null=True)
+    user =          SecureNestedField(UserSchema,           only=('id',)) #only used for deserialize
+    managers =      SecureNestedField(ManagerSchema,        only=('id','user'), many=True)
 
     def make_object(self, data):
         from alveare.models import Organization

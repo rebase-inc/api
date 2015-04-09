@@ -12,7 +12,10 @@ url = 'organizations/{}'.format
 
 class TestOrganizationResource(AlveareRestTestCase):
     def setUp(self):
-        self.org_resource = AlveareResource(self, 'Organization')
+        self.org_resource =         AlveareResource(self, 'Organization')
+        self.project_resource =     AlveareResource(self, 'Project')
+        self.clearance_resource =   AlveareResource(self, 'CodeClearance')
+        self.contractor_resource =  AlveareResource(self, 'Contractor')
         super().setUp()
 
     def test_get_all_anonymous(self):
@@ -53,6 +56,34 @@ class TestOrganizationResource(AlveareRestTestCase):
             with self.subTest( org_name=org['name']):
                 self.assertTrue(any(map(lambda mgr: mgr['user']['id'] == user.id, org['managers'])))
 
+    def test_get_all_as_contractor(self):
+        user = self.login_as_contractor_only_with_clearance()
+        orgs = self.org_resource.get_all()
+        self.assertTrue(orgs)
+        for org in orgs:
+            with self.subTest( org_name=org['name']):
+                self.assertIn('projects', org)
+                projects = org['projects']
+                self.assertTrue(projects)
+                for prj in projects:
+                    project = self.project_resource.get(prj)
+                    self.assertIn('clearances', project)
+                    clearances = project['clearances']
+                    self.assertTrue(clearances)
+                    found_user = False
+                    for clr in clearances:
+                        clearance = self.clearance_resource.get(clr)
+                        self.assertTrue(clearance)
+                        self.assertIn('contractor', clearance)
+                        contractor = self.contractor_resource.get(clearance['contractor'])
+                        self.assertIn('user', contractor)
+                        contractor_user = contractor['user']
+                        self.assertIn('id', contractor_user)
+                        found_user = contractor_user['id'] == user.id
+                        if found_user:
+                            break
+                    self.assertTrue(found_user)
+
     def test_get_one_as_admin(self):
         self.login_admin()
         org = self.get_one()
@@ -66,6 +97,29 @@ class TestOrganizationResource(AlveareRestTestCase):
         user = self.login_as_no_role_user()
         any_org = Organization.query.first()
         self.org_resource.get(dict(id=any_org.id), 401)
+
+    def test_get_one_as_contractor(self):
+        user = self.login_as_contractor_only_with_clearance()
+        org = self.org_resource.get_any()
+        self.assertIn('projects', org)
+        projects = org['projects']
+        for prj in projects:
+            self.assertIn('id', prj)
+            project = self.project_resource.get(prj)
+            self.assertIn('clearances', project)
+            clearances = project['clearances']
+            found_in_clearances = False
+            for clr in clearances:
+                clearance = self.clearance_resource.get(clr)
+                self.assertIn('contractor', clearance)
+                contractor = self.contractor_resource.get(clearance['contractor'])
+                self.assertIn('user', contractor)
+                contractor_user = contractor['user']
+                self.assertIn('id', contractor_user)
+                found_in_clearances = contractor_user['id'] == user.id
+                if found_in_clearances:
+                    break
+        self.assertTrue(found_in_clearances)
 
     def test_post(self):
         user = self.login_as_no_role_user()
