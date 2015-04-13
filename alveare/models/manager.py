@@ -52,7 +52,10 @@ class Manager(Role):
         query = cls.query
         if manager_id:
             query = query.filter_by(id=manager_id)
-        return query.filter(alveare.models.manager.Manager.user == user)
+        return query\
+            .join(alveare.models.manager.Manager.organization)\
+            .join(alveare.models.organization.Organization.managers)\
+            .filter(alveare.models.manager.Manager.user == user)
 
     @classmethod
     def get_cleared_managers(cls, user, manager_id=None):

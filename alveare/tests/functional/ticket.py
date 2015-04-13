@@ -114,7 +114,7 @@ class BaseTestTicketResource(AlveareRestTestCase):
     def _create(self, expected_status=201):
         project = self.project_resource.get_any()
         self.ticket_resource.create(
-            expected_status,
+            expected_status = expected_status,
             title = 'Foo',
             description = 'Bar',
             project = dict(id=project['id'])
@@ -151,7 +151,7 @@ class BaseTestTicketResource(AlveareRestTestCase):
     def _update_one_ticket(self, expected_status=200):
         ticket = self.ticket_resource.get_any()
         self.ticket_resource.update(
-            expected_status,
+            expected_status=expected_status,
             id =            ticket['id'],
             title =         'Compelling title',
             description =   'Detailed description'

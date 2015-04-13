@@ -40,7 +40,7 @@ class TestGithubTicketResource(BaseTestTicketResource):
         project = self.project_resource.get_any()
         self.assertTrue(project)
         self.ticket_resource.create(
-            expected_status,
+            expected_status=expected_status,
             project = dict(id=project['id']),
             number = 13
         )

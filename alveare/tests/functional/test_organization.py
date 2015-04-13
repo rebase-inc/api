@@ -145,7 +145,7 @@ class TestOrganizationResource(AlveareRestTestCase):
         self.login_as_no_role_user()
         org = Organization.query.first()
         self.org_resource.update(
-            401,
+            expected_status = 401,
             id = org.id,
             name = org.name+' Bombed!'
         )

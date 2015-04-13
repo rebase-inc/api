@@ -19,7 +19,7 @@ class ManagerSchema(AlveareSchema):
         from alveare.models import Manager
         return update_object(Manager, data)
 
-serializer = ManagerSchema(only=('id','user', 'organization'), skip_missing=True)
-deserializer = ManagerSchema(only=('organization','user'))
-update_deserializer = ManagerSchema(only=tuple())
+serializer =            ManagerSchema(skip_missing=True)
+deserializer =          ManagerSchema(strict=True)
+update_deserializer =   ManagerSchema()
 update_deserializer.make_object = lambda data: data

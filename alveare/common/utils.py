@@ -154,7 +154,7 @@ class AlveareResource(object):
         self.test.get_resource(resource_url, 404)
         return resource
 
-    def assertComposite(self, first, second):
+    def assertComposite(self, first, second, recurse=False):
         '''
             Verify that first is found in second, if first and second are composites.
             If they are scalars, verify that they are equal.
@@ -164,7 +164,10 @@ class AlveareResource(object):
         if isinstance(first, dict):
                 for key, value in first.items():
                     try:
-                        self.assertComposite(value, second[key])
+                        if recurse:
+                            self.assertComposite(value, second[key])
+                        else:
+                            self.test.assertEqual(value, second[key])
                     except KeyError as e:
                         raise AssertionError(composite_error_not_in.format(
                             first,
@@ -218,18 +221,20 @@ class AlveareResource(object):
             return validate(self, resource, response)
         return response[self.resource]
 
-    def create(self, expected_status=201, **resource):
+    def create(self, validate=validate_response, expected_status=201, **resource):
         return self.modify_or_create(
             self.test.post_resource,
             self.collection_url,
+            validate=validate,
             expected_status=expected_status,
             **resource
         )
 
-    def update(self, expected_status=200, **resource):
+    def update(self, validate=validate_response, expected_status=200, **resource):
         return self.modify_or_create(
             self.test.put_resource,
             self.url(resource),
+            validate=validate,
             expected_status=expected_status,
             **resource
         )

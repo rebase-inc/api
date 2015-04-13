@@ -74,7 +74,7 @@ class BaseProjectTestCase(AlveareRestTestCase):
     def create_anonymous(self):
         org = Organization.query.first()
         self.project_resource.create(
-            401,
+            expected_status=401,
             name='fancy',
             organization= {'id': org.id}
         )
@@ -99,7 +99,7 @@ class BaseProjectTestCase(AlveareRestTestCase):
         user = self.login_as_contractor_only_with_clearance()
         org = user.roles[0].clearances[0].project.organization
         self.project_resource.create(
-            401,
+            expected_status=401,
             name='fancy',
             organization= {'id': org.id}
         )
@@ -109,7 +109,7 @@ class BaseProjectTestCase(AlveareRestTestCase):
         projects = self.project_resource.get_all()
         self.assertTrue(projects)
         for project in projects:
-            self.project_resource.delete(401, **project)
+            self.project_resource.delete(expected_status=401, **project)
 
     def get_one_as_manager(self, with_at_least_one_project):
         user = self.login_as_manager_only(with_at_least_one_project)
@@ -129,7 +129,7 @@ class BaseProjectTestCase(AlveareRestTestCase):
         project = self.project_resource.get_any()
         self.logout()
         self.login_as_new_user()
-        self.project_resource.delete(401, **project)
+        self.project_resource.delete(expected_status=401, **project)
         self.login_admin()
         self.project_resource.delete(**project)
 
@@ -146,14 +146,14 @@ class BaseProjectTestCase(AlveareRestTestCase):
             .filter(Manager.organization != project.organization)\
             .filter(~User.admin)\
             .first()
-        self.project_resource.update(401, id=project.id, name=project.name+' Bombed!')
+        self.project_resource.update(expected_status=401, id=project.id, name=project.name+' Bombed!')
 
     def _update_as_manager(self, expected_status):
         projects = self.project_resource.get_all()
         self.assertTrue(projects)
         for project in projects:
             project['name'] += ' tagged!'
-            self.project_resource.update(expected_status, **project)
+            self.project_resource.update(expected_status=expected_status, **project)
 
     def update_as_admin(self):
         self.login_admin()

@@ -84,7 +84,7 @@ class TestCodeClearanceResource(AlveareRestTestCase):
             project =       dict(id=project.id),
             contractor=     dict(id=contractor.id)
         )
-        self.code_clearance_resource.create(401, **code_clearance)
+        self.code_clearance_resource.create(expected_status=401, **code_clearance)
 
     def test_update(self):
         self.login_admin()
@@ -96,7 +96,7 @@ class TestCodeClearanceResource(AlveareRestTestCase):
         self.login('steve@alveare.io', 'foo')
         code_clearance = self.code_clearance_resource.get_any()
         code_clearance['pre_approved'] = not code_clearance['pre_approved']
-        self.code_clearance_resource.update(401, **code_clearance)
+        self.code_clearance_resource.update(expected_status=401, **code_clearance)
 
     def test_delete(self):
         self.login_admin()
