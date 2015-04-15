@@ -49,13 +49,13 @@ class Manager(Role):
 
     @classmethod
     def get_all_as_manager(cls, user, manager_id=None):
-        query = cls.query
+        query = cls.query.filter(Manager.user==user)
+        query = query\
+            .join(alveare.models.organization.Organization)\
+            .join(alveare.models.manager.Manager)
         if manager_id:
             query = query.filter_by(id=manager_id)
-        return query\
-            .join(alveare.models.manager.Manager.organization)\
-            .join(alveare.models.organization.Organization.managers)\
-            .filter(alveare.models.manager.Manager.user == user)
+        return query
 
     @classmethod
     def get_cleared_managers(cls, user, manager_id=None):

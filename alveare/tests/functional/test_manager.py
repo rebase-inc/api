@@ -2,19 +2,22 @@ import json
 import time
 
 from . import AlveareRestTestCase
+from alveare.common.mock import create_one_manager, create_one_organization
 from alveare.common.utils import AlveareResource
+from alveare.models.organization import Organization
+from alveare.models.manager import Manager
 
 def mgr_url(id):
     return '/managers/{}'.format(id)
 
 class TestManagerResource(AlveareRestTestCase):
     def setUp(self):
-        self.manager_resource = AlveareResource(self, 'Manager')
-        self.org_resource = AlveareResource(self, 'Organization')
-        self.project_resource = AlveareResource(self, 'Project')
-        self.clearance_resource = AlveareResource(self, 'CodeClearance')
-        self.contractor_resource = AlveareResource(self, 'Contractor')
-        self.user_resource = AlveareResource(self, 'User')
+        self.manager_resource =     AlveareResource(self, 'Manager')
+        self.org_resource =         AlveareResource(self, 'Organization')
+        self.project_resource =     AlveareResource(self, 'Project')
+        self.clearance_resource =   AlveareResource(self, 'CodeClearance')
+        self.contractor_resource =  AlveareResource(self, 'Contractor')
+        self.user_resource =        AlveareResource(self, 'User')
         super().setUp()
 
     def test_get_all_as_admin(self):
@@ -25,14 +28,30 @@ class TestManagerResource(AlveareRestTestCase):
         ''' validate the 'manager' object from the perspective of user-manager '''
         self.assertIn('user', manager)
         self.assertIn('id', manager['user'])
-        self.assertEqual(manager['user']['id'], user.id)
 
     def test_get_all_as_manager(self):
         user = self.login_as_manager_only()
+        # We need to add an extra manager to the organizations this user has.
+        # We also need to make sure this user has at least 2 orgs it manages.
+        # This will make it easier to verify the queries are properly designed.
+        orgs = Organization.query.join(Manager).filter(Manager.user==user).all()
+        self.assertTrue(orgs)
+        new_mgr = create_one_manager(self.db, org=orgs[0])
+        if len(orgs) < 2:
+            xxxx_org = create_one_organization(self.db, 'XXXX', user)
+            xxxx_mgr = create_one_manager(self.db, org=xxxx_org)
+        # at this point, user is a manager of at least 2 orgs, each with 2 mgrs at least.
+        orgs = Organization.query.join(Manager).filter(Manager.user==user).all()
+        total_managers = set()
+        for org in orgs:
+            total_managers |= set(org.managers)
         managers = self.manager_resource.get_all()
-        self.assertTrue(managers)
+        self.assertEqual(len(total_managers), len(managers))
+        total_managers_ids = {mgr.id for mgr in total_managers}
         for manager in managers:
             self._test_one_manager_object_for_manager(manager, user)
+            self.assertIn(manager['id'], total_managers_ids)
+
 
     def _test_one_manager_object_for_contractor(self, manager, user):
         self.assertIn('organization', manager)

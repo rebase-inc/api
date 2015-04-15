@@ -27,10 +27,10 @@ def create_one_user(db, first_name=None, last_name=None, email=None, password='f
     db.session.add(user)
     return user
 
-def create_one_manager(db, user=None):
+def create_one_manager(db, user=None, org=None):
     from alveare.models import Manager
     user = user or create_one_user(db)
-    organization = create_one_organization(db)
+    organization = org or create_one_organization(db)
     manager = Manager(user, organization)
     db.session.add(manager)
     return manager
