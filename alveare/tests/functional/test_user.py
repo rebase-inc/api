@@ -7,14 +7,14 @@ from alveare.common.utils import AlveareResource
 from alveare.models import (
     User,
 )
+from alveare.tests.common.user import (
+    case_nominated_users,
+    case_contractor_users,
+    case_manager_users,
+)
 
 class TestUserResource(AlveareRestTestCase):
     def setUp(self):
-        #self.manager_resource =     AlveareResource(self, 'Manager')
-        #self.org_resource =         AlveareResource(self, 'Organization')
-        #self.project_resource =     AlveareResource(self, 'Project')
-        #self.clearance_resource =   AlveareResource(self, 'CodeClearance')
-        #self.contractor_resource =  AlveareResource(self, 'Contractor')
         self.user_resource =        AlveareResource(self, 'User')
         super().setUp()
 
@@ -23,11 +23,23 @@ class TestUserResource(AlveareRestTestCase):
         response = self.get_resource('users', expected_code = 200)
         self.assertIn('users', response)
 
-    def test_get_all_as_manager(self):
-        user = self.login_as_manager_only()
+    def _test_get_all(self, mgr_user, role_1, role_2):
+        self.login(mgr_user.email, 'foo')
         users = self.user_resource.get_all()
-        for user in users:
-            print(user)
+        self.assertEqual(len(users), 3) # mgr_user + role_1 + role_2
+        user_ids = [user['id'] for user in users]
+        self.assertIn(mgr_user.id, user_ids)
+        self.assertIn(role_1.user.id, user_ids)
+        self.assertIn(role_2.user.id, user_ids)
+
+    def test_get_all_manager_users(self):
+        self._test_get_all(*case_manager_users(self.db))
+
+    def test_get_all_contractor_users(self):
+        self._test_get_all(*case_contractor_users(self.db))
+
+    def test_get_all_nominated_users(self):
+        self._test_get_all(*case_nominated_users(self.db))
 
     def test_create_new(self):
         self.login_admin()

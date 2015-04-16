@@ -5,6 +5,11 @@ from . import AlveareModelTestCase
 
 from alveare import models
 from alveare.common import mock
+from alveare.tests.common.user import (
+    case_nominated_users,
+    case_contractor_users,
+    case_manager_users,
+)
 
 class TestUserModel(AlveareModelTestCase):
 
@@ -69,76 +74,25 @@ class TestUserModel(AlveareModelTestCase):
         with self.assertRaises(ValueError):
             self.create_model(models.User, 1, 1, 1, 1)
 
-    def test_query_manager_users_while_logged_as_manager(self):
-        user = mock.create_one_user(self.db)
-        org = mock.create_one_organization(self.db, 'Foo Inc.', user)
-        mgr_1 = mock.create_one_manager(self.db, org=org)
-        mgr_2 = mock.create_one_manager(self.db, org=org)
-        self.db.session.commit()
-        manager_users = models.User.as_manager_get_other_managers(user).all()
-        self.assertEqual(len(manager_users), 3)
-        self.assertIn(mgr_1.user, manager_users)
-        self.assertIn(mgr_2.user, manager_users)
-        self.assertIn(user, manager_users)
+    def _test_users(self, users_query, expected_num, mgr_user, role_1, role_2):
+        users = users_query(mgr_user).all()
+        self.assertEqual(len(users), expected_num)
+        self.assertIn(role_1.user, users)
+        self.assertIn(role_2.user, users)
 
-        all_users = models.User.query_by_user(user).all()
-        for _user in manager_users:
+        all_users = models.User.query_by_user(mgr_user).all()
+        for _user in users:
             self.assertIn(_user, all_users)
 
-        found_users = models.User.as_manager_get_other_managers(user, mgr_1.user.id).all()
-        self.assertEqual(len(found_users), 1)
-        self.assertIn(mgr_1.user, found_users)
+        users = users_query(mgr_user, role_1.user.id).all()
+        self.assertEqual( len(users), 1)
+        self.assertIn( role_1.user, users )
 
-    def test_query_contractor_users_while_logged_as_manager(self):
-        user = mock.create_one_user(self.db)
-        org = mock.create_one_organization(self.db, 'Foo Inc.', user)
-        project = mock.create_one_project(self.db, org, 'Bar Project')
-        contractor_1 = mock.create_one_contractor(self.db)
-        clearance_1 = mock.create_one_code_clearance(self.db, project, contractor_1)
-        contractor_2 = mock.create_one_contractor(self.db)
-        clearance_2 = mock.create_one_code_clearance(self.db, project, contractor_2)
-        self.db.session.commit()
+    def test_manager_users(self):
+        self._test_users(models.User.as_manager_get_other_managers, 3, *case_manager_users(self.db))
 
-        found_users = models.User.as_manager_get_cleared_contractors(user).all()
-        self.assertEqual(len(found_users), 2)
-        self.assertIn(contractor_1.user, found_users)
-        self.assertIn(contractor_2.user, found_users)
-
-        all_users = models.User.query_by_user(user).all()
-        for _user in found_users:
-            self.assertIn(_user, all_users)
-
-        cleared_users = models.User.as_manager_get_cleared_contractors(user, contractor_2.user.id).all()
-        self.assertEqual(len(cleared_users), 1)
-        self.assertIn(contractor_2.user, cleared_users)
+    def test_contractor_users(self):
+        self._test_users(models.User.as_manager_get_cleared_contractors, 2, *case_contractor_users(self.db))
         
-    def test_query_nominated_users_while_logged_as_manager(self):
-        user = mock.create_one_user(self.db)
-        org = mock.create_one_organization(self.db, 'Foo Inc.', user)
-        project = mock.create_one_project(self.db, org, 'Bar Project')
-        project_tickets = [
-            mock.create_one_internal_ticket(
-                self.db,
-                'Issue #{}'.format(i),
-                project=project
-            ) for i in range(10)
-        ]
-        auction = mock.create_one_auction(self.db, project_tickets)
-        contractor_1 = mock.create_one_contractor(self.db)
-        nomination_1 = mock.create_one_nomination(self.db, auction, contractor_1)
-        contractor_2 = mock.create_one_contractor(self.db)
-        nomination_2 = mock.create_one_nomination(self.db, auction, contractor_2)
-        self.db.session.commit()
-
-        nominated_users = models.User.as_manager_get_nominated_users(user).all()
-        self.assertEqual(len(nominated_users), 2)
-        self.assertIn(contractor_1.user, nominated_users)
-        self.assertIn(contractor_2.user, nominated_users)
-
-        all_users = models.User.query_by_user(user).all()
-        for _user in nominated_users:
-            self.assertIn(_user, all_users)
-
-        nominated_users = models.User.as_manager_get_nominated_users(user, contractor_1.user.id).all()
-        self.assertEqual( len(nominated_users), 1)
-        self.assertIn( contractor_1.user, nominated_users )
+    def test_nominated_users(self):
+        self._test_users(models.User.as_manager_get_nominated_users, 2, *case_nominated_users(self.db))
