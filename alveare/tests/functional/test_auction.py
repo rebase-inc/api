@@ -2,10 +2,14 @@ import unittest
 from datetime import datetime, timedelta
 
 from alveare.common import mock
-
+from alveare.common.utils import AlveareResource
 from . import AlveareRestTestCase
 
 class TestAuctionResource(AlveareRestTestCase):
+    def setUp(self):
+        self.contractor_resource =  AlveareResource(self, 'Contractor')
+        self.user_resource =        AlveareResource(self, 'User')
+        super().setUp()
 
     def test_get_auctions_for_org_and_by_approval(self):
         self.get_resource('auctions', 401)
@@ -20,11 +24,9 @@ class TestAuctionResource(AlveareRestTestCase):
 
         self.logout()
         foo = self.login(user_data['email'], user_data['password'])
-        print(foo)
 
         org_data = dict(name='Bitstrap', user=user)
         organization = self.post_resource('organizations', org_data)['organization']
-        print(organization)
 
         project_data = dict(organization=organization, name='Some stupid app')
         project = self.post_resource('projects', project_data)['project']
@@ -56,8 +58,10 @@ class TestAuctionResource(AlveareRestTestCase):
         users_that_arent_manager = filter(lambda user: user['id'] not in users_who_are_managers, all_users)
         users_that_are_contractors = filter(lambda user: 'contractor' in [role['type'] for role in user['roles']], users_that_arent_manager)
         users_that_arent_admin = filter(lambda user: not user['admin'], users_that_are_contractors)
-        our_user = next(users_that_arent_admin)
-        our_contractor = next(filter(lambda role: role['type'] == 'contractor', our_user['roles']))
+        new_contractor = mock.create_one_contractor(self.db)
+        self.db.session.commit()
+        our_user = self.user_resource.get(new_contractor.user.id)
+        our_contractor = self.contractor_resource.get(new_contractor.id)
 
         auction_nominations = auction['ticket_set']['nominations']
         self.assertEqual(auction_nominations, [])

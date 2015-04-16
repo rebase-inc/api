@@ -3,13 +3,31 @@ import time
 import copy
 
 from . import AlveareRestTestCase
+from alveare.common.utils import AlveareResource
+from alveare.models import (
+    User,
+)
 
 class TestUserResource(AlveareRestTestCase):
+    def setUp(self):
+        #self.manager_resource =     AlveareResource(self, 'Manager')
+        #self.org_resource =         AlveareResource(self, 'Organization')
+        #self.project_resource =     AlveareResource(self, 'Project')
+        #self.clearance_resource =   AlveareResource(self, 'CodeClearance')
+        #self.contractor_resource =  AlveareResource(self, 'Contractor')
+        self.user_resource =        AlveareResource(self, 'User')
+        super().setUp()
 
-    def test_get_all(self):
+    def test_get_all_as_admin(self):
         self.login_admin()
         response = self.get_resource('users', expected_code = 200)
         self.assertIn('users', response)
+
+    def test_get_all_as_manager(self):
+        user = self.login_as_manager_only()
+        users = self.user_resource.get_all()
+        for user in users:
+            print(user)
 
     def test_create_new(self):
         self.login_admin()
