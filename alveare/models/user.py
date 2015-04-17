@@ -59,48 +59,51 @@ class User(DB.Model, PermissionMixin):
             .union(cls.as_manager_get_nominated_users(current_user, user_id))
 
     @classmethod
-    def as_manager_get_other_managers(cls, current_user, user_id=None):
+    def query_user(cls, path, current_user, user_id=None):
         query = cls.query.filter(cls.id==current_user.id)
-        query = query\
-            .join(alveare.models.manager.Manager)\
-            .join(alveare.models.organization.Organization)\
-            .join(alveare.models.manager.Manager)\
-            .join(alveare.models.user.User)
+        for klass in path:
+            query = query.join(klass)
         if user_id:
             query = query.filter(cls.id==user_id)
         return query
+
+    @classmethod
+    def as_manager_get_other_managers(cls, current_user, user_id=None):
+        path = [
+            alveare.models.manager.Manager,
+            alveare.models.organization.Organization,
+            alveare.models.manager.Manager,
+            cls
+        ]
+        return cls.query_user(path, current_user, user_id)
 
     @classmethod
     def as_manager_get_cleared_contractors(cls, current_user, user_id=None):
-        query = cls.query.filter(cls.id==current_user.id)
-        query = query\
-            .join(alveare.models.manager.Manager)\
-            .join(alveare.models.organization.Organization)\
-            .join(alveare.models.project.Project)\
-            .join(alveare.models.code_clearance.CodeClearance)\
-            .join(alveare.models.contractor.Contractor)\
-            .join(User)
-        if user_id:
-            query = query.filter(cls.id==user_id)
-        return query
+        path = [
+            alveare.models.manager.Manager,
+            alveare.models.organization.Organization,
+            alveare.models.project.Project,
+            alveare.models.code_clearance.CodeClearance,
+            alveare.models.contractor.Contractor,
+            cls
+        ]
+        return cls.query_user(path, current_user, user_id)
 
     @classmethod
     def as_manager_get_nominated_users(cls, current_user, user_id=None):
-        query = cls.query.filter(cls.id==current_user.id)
-        query = query\
-            .join(alveare.models.manager.Manager)\
-            .join(alveare.models.organization.Organization)\
-            .join(alveare.models.project.Project)\
-            .join(alveare.models.ticket.Ticket)\
-            .join(alveare.models.ticket_snapshot.TicketSnapshot)\
-            .join(alveare.models.bid_limit.BidLimit)\
-            .join(alveare.models.ticket_set.TicketSet)\
-            .join(alveare.models.nomination.Nomination)\
-            .join(alveare.models.contractor.Contractor)\
-            .join(cls)
-        if user_id:
-            query = query.filter(cls.id==user_id)
-        return query
+        path = [
+            alveare.models.manager.Manager,
+            alveare.models.organization.Organization,
+            alveare.models.project.Project,
+            alveare.models.ticket.Ticket,
+            alveare.models.ticket_snapshot.TicketSnapshot,
+            alveare.models.bid_limit.BidLimit,
+            alveare.models.ticket_set.TicketSet,
+            alveare.models.nomination.Nomination,
+            alveare.models.contractor.Contractor,
+            cls
+        ]
+        return cls.query_user(path, current_user, user_id)
 
     @classmethod
     def get_all_as_contractor(cls, current_user, user_id=None):
@@ -109,31 +112,27 @@ class User(DB.Model, PermissionMixin):
 
     @classmethod
     def as_contractor_get_managers(cls, current_user, user_id=None):
-        query = cls.query.filter(cls.id==current_user.id)
-        query = query\
-            .join(alveare.models.contractor.Contractor)\
-            .join(alveare.models.code_clearance.CodeClearance)\
-            .join(alveare.models.project.Project)\
-            .join(alveare.models.organization.Organization)\
-            .join(alveare.models.manager.Manager)\
-            .join(cls)
-        if user_id:
-            query = query.filter(cls.id==user_id)
-        return query
+        path = [
+            alveare.models.contractor.Contractor,
+            alveare.models.code_clearance.CodeClearance,
+            alveare.models.project.Project,
+            alveare.models.organization.Organization,
+            alveare.models.manager.Manager,
+            cls
+        ]
+        return cls.query_user(path, current_user, user_id)
 
     @classmethod
     def as_contractor_get_cleared_contractors(cls, current_user, user_id=None):
-        query = cls.query.filter(cls.id==current_user.id)
-        query = query\
-            .join(alveare.models.contractor.Contractor)\
-            .join(alveare.models.code_clearance.CodeClearance)\
-            .join(alveare.models.project.Project)\
-            .join(alveare.models.code_clearance.CodeClearance)\
-            .join(alveare.models.contractor.Contractor)\
-            .join(cls)
-        if user_id:
-            query = query.filter(cls.id==user_id)
-        return query
+        path = [
+            alveare.models.contractor.Contractor,
+            alveare.models.code_clearance.CodeClearance,
+            alveare.models.project.Project,
+            alveare.models.code_clearance.CodeClearance,
+            alveare.models.contractor.Contractor,
+            cls
+        ]
+        return cls.query_user(path, current_user, user_id)
 
     @classmethod
     def get_all_as_user(cls, current_user, user_id=None):
