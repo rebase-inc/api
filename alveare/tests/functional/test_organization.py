@@ -165,4 +165,4 @@ class TestOrganizationResource(AlveareRestTestCase):
     def test_delete_as_non_manager(self):
         self.login_as_no_role_user()
         org = Organization.query.first()
-        self.org_resource.delete(401, id = org.id)
+        self.org_resource.delete(expected_status=401, id = org.id)

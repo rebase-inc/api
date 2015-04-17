@@ -110,7 +110,7 @@ class TestCodeClearanceResource(AlveareRestTestCase):
             .filter(~User.admin)\
             .first()
 
-        self.code_clearance_resource.delete(401, id=code_clearance.id)
+        self.code_clearance_resource.delete(expected_status=401, id=code_clearance.id)
 
     def test_delete_project(self):
         self.login_admin()

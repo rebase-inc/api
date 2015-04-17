@@ -113,11 +113,13 @@ class AlveareResource(object):
         self.test.assertIn(self.resource, response)
         return response[self.resource]
 
-    def delete(self, expected_status=200, **resource):
+    def delete(self, validate=True, expected_status=200, **resource):
+        
         self.test.delete_resource(self.url(resource), expected_status)
         if expected_status in [401, 404]:
             return None
-        self.test.get_resource(self.url(resource), 404)
+        if validate:
+            self.test.get_resource(self.url(resource), 404)
 
     def get_all(self, expected_status_code=200):
         ''' returns all the instances of this resource

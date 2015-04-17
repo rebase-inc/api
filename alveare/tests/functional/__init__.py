@@ -13,6 +13,7 @@ from alveare.models import (
 )
 
 class AlveareRestTestCase(unittest.TestCase):
+    create_mock_data = True
 
     def setUp(self):
         self.app = create_app(DB)
@@ -26,7 +27,8 @@ class AlveareRestTestCase(unittest.TestCase):
         self.db.create_all()
         self.db.session.commit()
 
-        create_the_world(self.db)
+        if self.create_mock_data:
+            create_the_world(self.db)
         self.admin_user = create_admin_user(self.db, password='admin')
         self.db.session.commit()
 
@@ -160,3 +162,9 @@ class AlveareRestTestCase(unittest.TestCase):
         self.assertEqual(response.headers['Content-Type'], 'application/json',
             error_msg.format('application/json', response.headers['Content-Type'], response.data))
         return json.loads(response.data.decode('utf-8'))
+
+class AlveareNoMockRestTestCase(AlveareRestTestCase):
+    create_mock_data = False
+
+    def setUp(self):
+        super().setUp()

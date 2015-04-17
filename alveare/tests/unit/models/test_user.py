@@ -9,6 +9,8 @@ from alveare.tests.common.user import (
     case_nominated_users,
     case_contractor_users,
     case_manager_users,
+    case_managers_with_contractor,
+    case_contractors_with_contractor,
 )
 
 class TestUserModel(AlveareModelTestCase):
@@ -74,17 +76,18 @@ class TestUserModel(AlveareModelTestCase):
         with self.assertRaises(ValueError):
             self.create_model(models.User, 1, 1, 1, 1)
 
-    def _test_users(self, users_query, expected_num, mgr_user, role_1, role_2):
-        users = users_query(mgr_user).all()
+    def _test_users(self, users_query, expected_num, logged_in_user, role_1, role_2):
+        users = users_query(logged_in_user).all()
+        self.assertGreaterEqual(len(users), 2)
         self.assertEqual(len(users), expected_num)
         self.assertIn(role_1.user, users)
         self.assertIn(role_2.user, users)
 
-        all_users = models.User.query_by_user(mgr_user).all()
+        all_users = models.User.query_by_user(logged_in_user).all()
         for _user in users:
             self.assertIn(_user, all_users)
 
-        users = users_query(mgr_user, role_1.user.id).all()
+        users = users_query(logged_in_user, role_1.user.id).all()
         self.assertEqual( len(users), 1)
         self.assertIn( role_1.user, users )
 
@@ -96,3 +99,9 @@ class TestUserModel(AlveareModelTestCase):
         
     def test_nominated_users(self):
         self._test_users(models.User.as_manager_get_nominated_users, 2, *case_nominated_users(self.db))
+
+    def test_manager_users_from_contractor(self):
+        self._test_users(models.User.as_contractor_get_managers, 2, *case_managers_with_contractor(self.db))
+
+    def test_cleared_users_from_contractor(self):
+        self._test_users(models.User.as_contractor_get_cleared_contractors, 3, *case_contractors_with_contractor(self.db))

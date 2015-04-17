@@ -35,12 +35,16 @@ class User(DB.Model, PermissionMixin):
         return check_password_hash(self.hashed_password, password)
 
     @classmethod
-    def query_by_user(cls, user):
+    def query_by_user(cls, user, user_id=None):
         if user.admin:
-            return cls.query
-        return cls.get_all_as_manager(user)\
-            .union(cls.get_all_as_user(user))
-            #.union(cls.get_all_as_contractor(user))\
+            query = cls.query
+        else:
+            query = cls.get_all_as_manager(user)\
+                .union(cls.get_all_as_contractor(user))\
+                .union(cls.get_all_as_user(user))
+        if user_id:
+            query = query.filter(cls.id==user_id)
+        return query
 
     @classmethod
     def get_all_as_manager(cls, current_user, user_id=None):
@@ -101,7 +105,7 @@ class User(DB.Model, PermissionMixin):
     @classmethod
     def get_all_as_contractor(cls, current_user, user_id=None):
         return cls.as_contractor_get_managers(current_user, user_id)\
-            .join(cls.as_contractor_get_cleared_contractors(current_user, user_id))
+            .union(cls.as_contractor_get_cleared_contractors(current_user, user_id))
 
     @classmethod
     def as_contractor_get_managers(cls, current_user, user_id=None):
@@ -139,13 +143,15 @@ class User(DB.Model, PermissionMixin):
         return True
 
     def allowed_to_be_modified_by(self, user):
-        return self.allowed_to_be_created_by(user)
+        if user.admin:
+            return True
+        return self.id == user.id
 
     def allowed_to_be_deleted_by(self, user):
-        return self.allowed_to_be_created_by(user)
+        return self.allowed_to_be_modified_by(user)
 
     def allowed_to_be_viewed_by(self, user):
-        return self.allowed_to_be_created_by(user)
+        return self.query_by_user(user, self.id)
 
     # flask login helper functions
     def is_admin(self): return self.admin

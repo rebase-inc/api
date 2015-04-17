@@ -2,7 +2,7 @@ import json
 import time
 import copy
 
-from . import AlveareRestTestCase
+from . import AlveareRestTestCase, AlveareNoMockRestTestCase
 from alveare.common.utils import AlveareResource
 from alveare.models import (
     User,
@@ -11,6 +11,7 @@ from alveare.tests.common.user import (
     case_nominated_users,
     case_contractor_users,
     case_manager_users,
+    case_contractors_with_contractor,
 )
 
 class TestUserResource(AlveareRestTestCase):
@@ -23,25 +24,7 @@ class TestUserResource(AlveareRestTestCase):
         response = self.get_resource('users', expected_code = 200)
         self.assertIn('users', response)
 
-    def _test_get_all(self, mgr_user, role_1, role_2):
-        self.login(mgr_user.email, 'foo')
-        users = self.user_resource.get_all()
-        self.assertEqual(len(users), 3) # mgr_user + role_1 + role_2
-        user_ids = [user['id'] for user in users]
-        self.assertIn(mgr_user.id, user_ids)
-        self.assertIn(role_1.user.id, user_ids)
-        self.assertIn(role_2.user.id, user_ids)
-
-    def test_get_all_manager_users(self):
-        self._test_get_all(*case_manager_users(self.db))
-
-    def test_get_all_contractor_users(self):
-        self._test_get_all(*case_contractor_users(self.db))
-
-    def test_get_all_nominated_users(self):
-        self._test_get_all(*case_nominated_users(self.db))
-
-    def test_create_new(self):
+    def test_create_new_as_admin(self):
         self.login_admin()
         user = dict(first_name='Saul', last_name='Goodman', email='saulgoodman@alveare.io', password='foo')
 
@@ -63,7 +46,36 @@ class TestUserResource(AlveareRestTestCase):
 
         self.assertEqual(response['user'], expected_response)
 
+    def _create_user(self, validate=None):
+        return self.user_resource.create(
+            validate=validate,
+            expected_status=201,
+            first_name='Saul',
+            last_name='Goodman',
+            email='saulgoodman@alveare.io',
+            password='foo'
+        )
+
+    def test_create_anonymous(self):
+        def validate_user(test_resource, user_data, response):
+            del user_data['password']
+            self.login(user_data['email'], 'foo')
+            return test_resource.validate_response(user_data, response)
+
+        user = self._create_user(validate=validate_user)
+
+    def test_update_unauthorized(self):
+        user = self._create_user()
+        user['last_name'] = 'Badman'
+        self.user_resource.update(expected_status=401, **user)
+
     def test_update(self):
+        user = self._create_user()
+        self.login(user['email'], 'foo')
+        user['last_name'] = 'Badman'
+        self.user_resource.update(**user)
+
+    def test_update_as_admin(self):
         self.login_admin()
         user = dict(first_name='Walter', last_name='White', email='walterwhite@alveare.io', password='heisenberg')
         response = self.post_resource('users', user)
@@ -83,12 +95,48 @@ class TestUserResource(AlveareRestTestCase):
         user.update(new_email)
         self.assertEqual(user, response['user'])
 
-    def test_delete(self):
+    def test_delete_as_admin(self):
         self.login_admin()
         user = dict(first_name='Hank', last_name='Schrader', email='hankschrader@alveare.io', password='theyreminerals')
         response = self.post_resource('users', user)
         user_id = response['user']['id']
-
         response = self.delete_resource('users/{}'.format(user_id))
         response = self.get_resource('users/{}'.format(user_id), expected_code=404)
 
+    def test_delete_unauthorized(self):
+        user = self._create_user()
+        user['last_name'] = 'Badman'
+        self.user_resource.delete(expected_status=401, **user)
+
+    def test_delete(self):
+        user = self._create_user()
+        self.login(user['email'], 'foo')
+        user['last_name'] = 'Badman'
+        self.user_resource.delete(validate=False, **user)
+
+
+class TestUserResourceNoMock(AlveareNoMockRestTestCase):
+    def setUp(self):
+        super().setUp()
+        self.user_resource = AlveareResource(self, 'User')
+
+    def _test_get_all(self, expected_num_users, mgr_user, role_1, role_2):
+        self.login(mgr_user.email, 'foo')
+        users = self.user_resource.get_all()
+        self.assertEqual(len(users), expected_num_users) # mgr_user + role_1 + role_2
+        user_ids = [user['id'] for user in users]
+        self.assertIn(mgr_user.id, user_ids)
+        self.assertIn(role_1.user.id, user_ids)
+        self.assertIn(role_2.user.id, user_ids)
+
+    def test_get_all_manager_users(self):
+        self._test_get_all(3, *case_manager_users(self.db))
+
+    def test_get_all_contractor_users(self):
+        self._test_get_all(3, *case_contractor_users(self.db))
+
+    def test_get_all_nominated_users(self):
+        self._test_get_all(3, *case_nominated_users(self.db))
+
+    def test_get_all_other_contractor_users(self):
+        self._test_get_all(5, *case_contractors_with_contractor(self.db))

@@ -180,7 +180,7 @@ class BaseTestTicketResource(AlveareRestTestCase):
     def delete_as_contractor(self):
         self.login_as_contractor()
         ticket = self.ticket_resource.get_any()
-        self.ticket_resource.delete(401, **ticket)
+        self.ticket_resource.delete(expected_status=401, **ticket)
 
     def delete_project(self):
         self.login_admin()
