@@ -120,23 +120,27 @@ class TestUserResourceNoMock(AlveareNoMockRestTestCase):
         super().setUp()
         self.user_resource = AlveareResource(self, 'User')
 
-    def _test_get_all(self, expected_num_users, mgr_user, role_1, role_2):
-        self.login(mgr_user.email, 'foo')
+    def _test_get_all(self, logged_in_user, expected_users):
+        self.login(logged_in_user.email, 'foo')
         users = self.user_resource.get_all()
-        self.assertEqual(len(users), expected_num_users) # mgr_user + role_1 + role_2
+        self.assertEqual(len(users), len(expected_users))
         user_ids = [user['id'] for user in users]
-        self.assertIn(mgr_user.id, user_ids)
-        self.assertIn(role_1.user.id, user_ids)
-        self.assertIn(role_2.user.id, user_ids)
+        self.assertIn(logged_in_user.id, user_ids)
+        for _user in expected_users:
+            self.assertIn(_user.id, user_ids)
 
     def test_get_all_manager_users(self):
-        self._test_get_all(3, *case_manager_users(self.db))
+        self._test_get_all(*case_manager_users(self.db))
 
     def test_get_all_contractor_users(self):
-        self._test_get_all(3, *case_contractor_users(self.db))
+        logged_in_user, expected_contractor_users = case_contractor_users(self.db)
+        self._test_get_all(logged_in_user, expected_contractor_users+[logged_in_user])
 
     def test_get_all_nominated_users(self):
-        self._test_get_all(3, *case_nominated_users(self.db))
+        logged_in_user, expected_nominated_users = case_nominated_users(self.db)
+        self._test_get_all(logged_in_user, expected_nominated_users+[logged_in_user])
 
     def test_get_all_other_contractor_users(self):
-        self._test_get_all(5, *case_contractors_with_contractor(self.db))
+        logged_in_user, manager_users, expected_contractor_users = case_contractors_with_contractor(self.db)
+        expected_users = manager_users + expected_contractor_users
+        self._test_get_all(logged_in_user, expected_users)
