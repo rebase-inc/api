@@ -5,7 +5,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from flask.ext.login import login_user, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from alveare.common.database import DB, PermissionMixin
+from alveare.common.database import DB, PermissionMixin, query_by_user_or_id
 import alveare.models.organization
 import alveare.models.manager
 
@@ -36,15 +36,13 @@ class User(DB.Model, PermissionMixin):
 
     @classmethod
     def query_by_user(cls, user, user_id=None):
-        if user.admin:
-            query = cls.query
-        else:
-            query = cls.get_all_as_manager(user)\
-                .union(cls.get_all_as_contractor(user))\
-                .union(cls.get_all_as_user(user))
-        if user_id:
-            query = query.filter(cls.id==user_id)
-        return query
+        return query_by_user_or_id(cls, cls.get_all, user, user_id)
+
+    @classmethod
+    def get_all(cls, user):
+        return cls.get_all_as_manager(user)\
+            .union(cls.get_all_as_contractor(user))\
+            .union(cls.get_all_as_user(user))
 
     @classmethod
     def get_all_as_manager(cls, current_user, user_id=None):
@@ -59,7 +57,7 @@ class User(DB.Model, PermissionMixin):
             .union(cls.as_manager_get_nominated_users(current_user, user_id))
 
     @classmethod
-    def query_user(cls, path, current_user, user_id=None):
+    def query_path(cls, path, current_user, user_id=None):
         query = cls.query.filter(cls.id==current_user.id)
         for klass in path:
             query = query.join(klass)
@@ -75,7 +73,7 @@ class User(DB.Model, PermissionMixin):
             alveare.models.manager.Manager,
             cls
         ]
-        return cls.query_user(path, current_user, user_id)
+        return cls.query_path(path, current_user, user_id)
 
     @classmethod
     def as_manager_get_cleared_contractors(cls, current_user, user_id=None):
@@ -87,7 +85,7 @@ class User(DB.Model, PermissionMixin):
             alveare.models.contractor.Contractor,
             cls
         ]
-        return cls.query_user(path, current_user, user_id)
+        return cls.query_path(path, current_user, user_id)
 
     @classmethod
     def as_manager_get_nominated_users(cls, current_user, user_id=None):
@@ -103,7 +101,7 @@ class User(DB.Model, PermissionMixin):
             alveare.models.contractor.Contractor,
             cls
         ]
-        return cls.query_user(path, current_user, user_id)
+        return cls.query_path(path, current_user, user_id)
 
     @classmethod
     def get_all_as_contractor(cls, current_user, user_id=None):
@@ -120,7 +118,7 @@ class User(DB.Model, PermissionMixin):
             alveare.models.manager.Manager,
             cls
         ]
-        return cls.query_user(path, current_user, user_id)
+        return cls.query_path(path, current_user, user_id)
 
     @classmethod
     def as_contractor_get_cleared_contractors(cls, current_user, user_id=None):
@@ -132,7 +130,7 @@ class User(DB.Model, PermissionMixin):
             alveare.models.contractor.Contractor,
             cls
         ]
-        return cls.query_user(path, current_user, user_id)
+        return cls.query_path(path, current_user, user_id)
 
     @classmethod
     def get_all_as_user(cls, current_user, user_id=None):

@@ -5,6 +5,10 @@ from . import AlveareModelTestCase
 
 from alveare import models
 from alveare.common import mock
+from alveare.tests.common.contractor import (
+    case_cleared_contractors,
+    case_nominated_contractors,
+)
 
 class TestContractorModel(AlveareModelTestCase):
 
@@ -50,3 +54,26 @@ class TestContractorModel(AlveareModelTestCase):
             SkillSet(contractor)
             self.db.session.add(contractor)
 
+    def _test_as_mgr_get_contractors(self, query_fn, case_fn):
+        mgr_user, expected_contractors = case_fn(self.db)
+        case_fn(self.db) # more unrelated data, to make sure query_fn is selective enough
+        contractors = query_fn(mgr_user).all()
+        self.assertTrue(contractors)
+        self.assertEqual(len(contractors), len(expected_contractors))
+        for contractor in expected_contractors:
+            self.assertIn(contractor, contractors)
+            _contractors = query_fn(mgr_user, contractor.id).all()
+            self.assertTrue(_contractors)
+            self.assertEqual(_contractors[0], contractor)
+
+    def test_as_mgr_get_cleared_contractors(self):
+        self._test_as_mgr_get_contractors(
+            models.Contractor.as_manager_get_cleared_contractors,
+            case_cleared_contractors
+        )
+
+    def test_as_mgr_get_nominated_contractors(self):
+        self._test_as_mgr_get_contractors(
+            models.Contractor.as_manager_get_nominated_contractors,
+            case_nominated_contractors
+        )
