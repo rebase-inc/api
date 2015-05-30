@@ -38,10 +38,6 @@ class Contractor(Role):
         return auctions_approved_for
 
     @classmethod
-    def query_by_user(cls, user, contractor_id=None):
-        return query_by_user_or_id(cls, lambda user: cls.query, user, contractor_id)
-
-    @classmethod
     def as_manager_get_cleared_contractors(cls, current_user, contractor_id=None):
         query = cls.query\
             .join(alveare.models.code_clearance.CodeClearance)\
@@ -76,17 +72,39 @@ class Contractor(Role):
         query = query.filter(alveare.models.manager.Manager.user==current_user)
         return query
 
+    @classmethod
+    def as_contractor_get_cleared_contractors(cls, current_user, contractor_id=None):
+        query = cls.query.filter(alveare.models.contractor.Contractor.user==current_user)
+        path = [
+            alveare.models.code_clearance.CodeClearance,
+            alveare.models.project.Project,
+            alveare.models.code_clearance.CodeClearance,
+            cls
+        ]
+        for klass in path:
+            query = query.join(klass)
+        if contractor_id:
+            query = query.filter(cls.id==contractor_id)
+        return query
+
+    @classmethod
+    def get_all(cls, current_user, contractor_id=None):
+        return cls.as_manager_get_cleared_contractors(current_user, contractor_id)\
+            .union(cls.as_manager_get_nominated_contractors(current_user, contractor_id))\
+            .union(cls.as_contractor_get_cleared_contractors(current_user, contractor_id))
+
     def allowed_to_be_created_by(self, user):
         return user.is_admin() or self.user == user
 
-    def allowed_to_be_modified_by(self, user):
-        return user.is_admin()
-
-    def allowed_to_be_deleted_by(self, user):
-        return self.allowed_to_be_created_by(user)
+    allowed_to_be_modified_by = allowed_to_be_created_by
+    allowed_to_be_deleted_by = allowed_to_be_created_by
 
     def allowed_to_be_viewed_by(self, user):
         return True
+
+    @classmethod
+    def query_by_user(cls, user, user_id=None):
+        return query_by_user_or_id(cls, cls.get_all, user, user_id)
 
     def __repr__(self):
         return '<Contractor[id:{} "{}"] busyness="{}">'.format(

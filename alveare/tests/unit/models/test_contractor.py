@@ -54,26 +54,54 @@ class TestContractorModel(AlveareModelTestCase):
             SkillSet(contractor)
             self.db.session.add(contractor)
 
-    def _test_as_mgr_get_contractors(self, query_fn, case_fn):
-        mgr_user, expected_contractors = case_fn(self.db)
+    def _test_get_contractors(self, query_fn, case_fn):
+        user, expected_contractors = case_fn(self.db)
         case_fn(self.db) # more unrelated data, to make sure query_fn is selective enough
-        contractors = query_fn(mgr_user).all()
+        contractors = query_fn(user).all()
         self.assertTrue(contractors)
         self.assertEqual(len(contractors), len(expected_contractors))
         for contractor in expected_contractors:
             self.assertIn(contractor, contractors)
-            _contractors = query_fn(mgr_user, contractor.id).all()
+            _contractors = query_fn(user, contractor.id).all()
             self.assertTrue(_contractors)
             self.assertEqual(_contractors[0], contractor)
 
     def test_as_mgr_get_cleared_contractors(self):
-        self._test_as_mgr_get_contractors(
+        self._test_get_contractors(
             models.Contractor.as_manager_get_cleared_contractors,
+            case_cleared_contractors
+        )
+        self._test_get_contractors(
+            models.Contractor.get_all,
             case_cleared_contractors
         )
 
     def test_as_mgr_get_nominated_contractors(self):
-        self._test_as_mgr_get_contractors(
+        self._test_get_contractors(
             models.Contractor.as_manager_get_nominated_contractors,
             case_nominated_contractors
         )
+        self._test_get_contractors(
+            models.Contractor.get_all,
+            case_nominated_contractors
+        )
+
+    def test_as_contractor_get_cleared_contractors(self):
+        def case_cleared_contractors_as_contractor(db):
+            mgr, all_contractors = case_cleared_contractors(self.db)
+
+            contractor_0 = all_contractors[0]
+            expected_contractors = [contractor_0, all_contractors[1], all_contractors[3]]
+            return contractor_0, expected_contractors
+        self._test_get_contractors(
+            models.Contractor.as_contractor_get_cleared_contractors,
+            case_cleared_contractors_as_contractor
+        )
+        self._test_get_contractors(
+            models.Contractor.get_all,
+            case_cleared_contractors_as_contractor
+        )
+
+    def test_get_all(self):
+        pass
+
