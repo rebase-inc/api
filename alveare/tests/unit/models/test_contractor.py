@@ -7,6 +7,7 @@ from alveare import models
 from alveare.common import mock
 from alveare.tests.common.contractor import (
     case_cleared_contractors,
+    case_cleared_contractors_as_contractor,
     case_nominated_contractors,
 )
 
@@ -87,12 +88,6 @@ class TestContractorModel(AlveareModelTestCase):
         )
 
     def test_as_contractor_get_cleared_contractors(self):
-        def case_cleared_contractors_as_contractor(db):
-            mgr, all_contractors = case_cleared_contractors(self.db)
-
-            contractor_0 = all_contractors[0]
-            expected_contractors = [contractor_0, all_contractors[1], all_contractors[3]]
-            return contractor_0, expected_contractors
         self._test_get_contractors(
             models.Contractor.as_contractor_get_cleared_contractors,
             case_cleared_contractors_as_contractor

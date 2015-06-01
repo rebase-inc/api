@@ -1,5 +1,10 @@
-from . import AlveareRestTestCase
+from . import AlveareRestTestCase, AlveareNoMockRestTestCase
 from alveare.common.utils import AlveareResource
+from alveare.tests.common.contractor import (
+    case_cleared_contractors,
+    case_cleared_contractors_as_contractor,
+    case_nominated_contractors,
+)
 from alveare.models import User
 from unittest import skip
 
@@ -56,8 +61,6 @@ class TestContractorResource(AlveareRestTestCase):
         self.login_admin()
         contractor = self.contractor_resource.get_any()
         contractor['busyness'] = 123
-        #contractor = dict(id = contractor['id'], busyness = 4)
-        #raise Exception(contractor)
         self.contractor_resource.update(**contractor)
 
     def test_delete(self):
@@ -81,3 +84,62 @@ class TestContractorResource(AlveareRestTestCase):
         self.delete_resource('contractors/{id}'.format(**contractor), 401)
         self.login(user.email, 'foo')
         self.delete_resource('contractors/{id}'.format(**contractor))
+
+class TestContractorNoMock(AlveareNoMockRestTestCase):
+    def setUp(self):
+        super().setUp()
+        self.resource = AlveareResource(self, 'Contractor')
+
+    def _test_get_all(self, logged_in_user, expected_resources):
+        self.login(logged_in_user.email, 'foo')
+        resources = self.resource.get_all() # test GET collection
+        self.assertEqual(len(resources), len(expected_resources))
+        resources_ids = [res['id'] for res in resources]
+        self.assertIn(logged_in_user.id, resources_ids)
+        for _res in expected_resources:
+            self.assertIn(_res.id, resources_ids)
+            one_res = self.resource.get(_res.id) # test GET one resource
+            self.assertTrue(one_res)
+
+    def test_get_all_cleared_contractors_as_manager(self):
+        mgr_user, expected_resources = case_cleared_contractors(self.db)
+        self._test_get_all(mgr_user, expected_resources)
+
+    def test_get_all_nominated_contractors_as_manager(self):
+        mgr_user, expected_resources = case_nominated_contractors(self.db)
+        self._test_get_all(mgr_user, expected_resources)
+
+    def test_get_all_contractors_as_contractor(self):
+        contractor, expected_resources = case_cleared_contractors_as_contractor(self.db)
+        self._test_get_all(contractor.user, expected_resources)
+
+    def test_manager_cannot_modify_contractor(self):
+        mgr_user, expected_contractors = case_cleared_contractors(self.db)
+        self.login(mgr_user.email, 'foo')
+        contractor = expected_contractors[0]
+        contractor_blob = self.resource.get(contractor.id)
+        self.assertTrue(contractor_blob)
+        self.resource.delete(expected_status=401, **contractor_blob) # test DELETE 
+        self.resource.update(expected_status=401, **contractor_blob) # test PUT
+
+    def test_contractor_cannot_modify_another_contractor(self):
+        contractor, expected_resources = case_cleared_contractors_as_contractor(self.db)
+        self.login(contractor.user.email, 'foo')
+        other_contractor = self.resource.get(expected_resources[1].id)
+        self.resource.update(expected_status=401, **other_contractor)
+        self.resource.delete(expected_status=401, **other_contractor)
+
+    def test_contractor_can_modify_or_delete_self(self):
+        contractor, expected_resources = case_cleared_contractors_as_contractor(self.db)
+        self.login(contractor.user.email, 'foo')
+        contractor_blob = self.resource.get(contractor.id)
+        new_busyness = 123456
+        contractor_blob['busyness'] = new_busyness
+        self.assertEqual(self.resource.update(**contractor_blob)['busyness'], new_busyness)
+        self.resource.delete(**contractor_blob)
+
+    def test_anonymous_cannot_view_or_modify_contractor(self):
+        contractor, expected_resources = case_cleared_contractors_as_contractor(self.db)
+        self.logout()
+        contractor_blob = self.resource.get(contractor.id, 401)
+        self.resource.update(expected_status=401, **{'id': contractor.id})

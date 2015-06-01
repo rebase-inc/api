@@ -19,6 +19,13 @@ def case_cleared_contractors(db):
     db.session.commit()
     return (mgr_user, [contractor_1, contractor_2, contractor_3, contractor_4])
 
+def case_cleared_contractors_as_contractor(db):
+    mgr, all_contractors = case_cleared_contractors(db)
+
+    contractor_0 = all_contractors[0]
+    expected_contractors = [contractor_0, all_contractors[1], all_contractors[3]]
+    return contractor_0, expected_contractors
+
 def case_contractor_users(db):
     mgr_user = mock.create_one_user(db)
     org = mock.create_one_organization(db, 'Foo Inc.', mgr_user)
