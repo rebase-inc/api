@@ -1,6 +1,6 @@
 from sqlalchemy.orm import validates
 
-from alveare.common.database import DB, PermissionMixin
+from alveare.common.database import DB, PermissionMixin, query_by_user_or_id
 
 class BankAccount(DB.Model, PermissionMixin):
     __pluralname__ = 'bank_accounts'
@@ -22,19 +22,44 @@ class BankAccount(DB.Model, PermissionMixin):
 
     @classmethod
     def query_by_user(cls, user):
-        return cls.query
+        return query_by_user_or_id(cls, cls.get_all, user)
+
+    @classmethod
+    def get_all(cls, user, account=None):
+        return cls.as_contractor(user, account)\
+            .union(cls.as_manager(user, account))
+
+    @classmethod
+    def as_contractor(cls, user, bank_account_id=None):
+        import alveare.models.contractor
+        query = cls.query\
+            .join(alveare.models.contractor.Contractor)\
+            .filter(alveare.models.contractor.Contractor.user==user)
+        if bank_account_id:
+            query = query.filter(cls.id==bank_account_id)
+        return query
+
+    @classmethod
+    def as_manager(cls, user, bank_account_id=None):
+        import alveare.models.organization
+        query = cls.query\
+            .join(alveare.models.organization.Organization)\
+            .join(alveare.models.Manager)\
+            .filter(alveare.models.manager.Manager.user==user)
+        if bank_account_id:
+            query = query.filter(cls.id==bank_account_id)
+        return query
 
     def allowed_to_be_created_by(self, user):
-        return True
+        return user.admin or self.get_all(user, self.id).all()
 
-    def allowed_to_be_modified_by(self, user):
-        return self.allowed_to_be_created_by(user)
-
-    def allowed_to_be_deleted_by(self, user):
-        return self.allowed_to_be_created_by(user)
+    allowed_to_be_modified_by = allowed_to_be_created_by
+    allowed_to_be_deleted_by = allowed_to_be_created_by
 
     def allowed_to_be_viewed_by(self, user):
-        return self.allowed_to_be_created_by(user)
+        if user.admin:
+            return True
+        return self.get_all(user, self.id).all()
 
     def __repr__(self):
         return '<BankAccount[{}] name="{}" routing={} account={}>'.format(self.id, self.name, self.routing_number, self.account_number)

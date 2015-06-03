@@ -59,13 +59,11 @@ class Ticket(DB.Model, PermissionMixin):
             .filter(alveare.models.contractor.Contractor.user == user)
 
     def allowed_to_be_created_by(self, user):
-        import pdb; pdb.set_trace()
         if user.admin:
             return True
         return Ticket.get_all_as_manager(user, self.id).limit(100).all()
 
     def allowed_to_be_modified_by(self, user):
-        import pdb; pdb.set_trace()
         return self.allowed_to_be_created_by(user)
 
     def allowed_to_be_deleted_by(self, user):

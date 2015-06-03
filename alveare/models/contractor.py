@@ -103,8 +103,8 @@ class Contractor(Role):
         return True
 
     @classmethod
-    def query_by_user(cls, user, user_id=None):
-        return query_by_user_or_id(cls, cls.get_all, user, user_id)
+    def query_by_user(cls, user):
+        return query_by_user_or_id(cls, cls.get_all, user)
 
     def __repr__(self):
         return '<Contractor[id:{} "{}"] busyness="{}">'.format(

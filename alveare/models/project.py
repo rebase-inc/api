@@ -57,11 +57,8 @@ class Project(DB.Model, PermissionMixin):
             .join(alveare.models.manager.Manager, alveare.models.manager.Manager.user == user)\
             .limit(100).all()
 
-    def allowed_to_be_modified_by(self, user):
-        return self.allowed_to_be_created_by(user)
-
-    def allowed_to_be_deleted_by(self, user):
-        return self.allowed_to_be_created_by(user)
+    allowed_to_be_modified_by = allowed_to_be_created_by
+    allowed_to_be_deleted_by = allowed_to_be_created_by
 
     def allowed_to_be_viewed_by(self, user):
         if user.is_admin():

@@ -96,7 +96,3 @@ class TestContractorModel(AlveareModelTestCase):
             models.Contractor.get_all,
             case_cleared_contractors_as_contractor
         )
-
-    def test_get_all(self):
-        pass
-

@@ -1,8 +1,15 @@
-from . import AlveareRestTestCase
 from random import randint
 from unittest import skip
 from functools import partial
 from operator import eq, ne
+from copy import copy
+
+from . import AlveareRestTestCase, AlveareNoMockRestTestCase
+from alveare.tests.common.bank_account import (
+    case_org,
+    case_contractors,
+)
+from alveare.common.utils import AlveareResource
 
 url = 'bank_accounts/{}'.format
 
@@ -64,6 +71,7 @@ class TestBankAccountResource(AlveareRestTestCase):
         org = self.find_resource_without_bank_account('organizations')
         account = self.create_bank_account('organization', org['id'], 'Our Account')
         org_with_account = self.get_resource('organizations/{id}'.format(**org))['organization']
+        print(org_with_account)
         self.assertEqual(org_with_account['bank_account']['id'], account['id'])
 
     def test_create_bank_account_for_contractor(self):
@@ -114,3 +122,37 @@ class TestBankAccountResource(AlveareRestTestCase):
         updated_account = self.get_resource('bank_accounts/{id}'.format(**account))['bank_account']
         self.assertEqual(account, updated_account)
 
+class TestBankAccount(AlveareNoMockRestTestCase):
+    def setUp(self):
+        super().setUp()
+        self.resource = AlveareResource(self, 'BankAccount')
+
+    def _test_get_all(self, logged_in_user, expected_resources):
+        self.login(logged_in_user.email, 'foo')
+        resources = self.resource.get_all() # test GET collection
+        self.assertEqual(len(resources), len(expected_resources))
+        resources_ids = [res['id'] for res in resources]
+        for _res in expected_resources:
+            self.assertIn(_res.id, resources_ids)
+            one_res = self.resource.get(_res.id) # test GET one resource
+            self.assertTrue(one_res)
+
+    def test_get_all_as_manager(self):
+        mgr_user, org, account, contractor = case_org(self.db)
+        self._test_get_all(mgr_user, [account])
+        account_blob = self.resource.get(account.id)
+        self.resource.update(**account_blob)
+        self.resource.delete(**account_blob)
+
+    def test_as_contractor(self):
+        contractor_0, contractor_1 = case_contractors(self.db)
+        self._test_get_all(contractor_0.user, [contractor_0.bank_account])
+        account_0 = self.resource.get(contractor_0.bank_account.id)
+        self.resource.update(**account_0)
+        self.resource.delete(**account_0)
+
+        self.resource.get(contractor_1.bank_account.id, 401)
+        account_1 = copy(account_0)
+        account_1['id'] = contractor_1.bank_account.id
+        self.resource.update(expected_status=401, **account_1)
+        self.resource.delete(expected_status=401, **account_1)
