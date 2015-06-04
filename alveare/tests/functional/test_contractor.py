@@ -1,12 +1,13 @@
+from unittest import skip
+
 from . import AlveareRestTestCase, AlveareNoMockRestTestCase
-from alveare.common.utils import AlveareResource
+from alveare.common.utils import AlveareResource, validate_resource_collection
 from alveare.tests.common.contractor import (
     case_cleared_contractors,
     case_cleared_contractors_as_contractor,
     case_nominated_contractors,
 )
 from alveare.models import User
-from unittest import skip
 
 
 class TestContractorResource(AlveareRestTestCase):
@@ -90,28 +91,17 @@ class TestContractorNoMock(AlveareNoMockRestTestCase):
         super().setUp()
         self.resource = AlveareResource(self, 'Contractor')
 
-    def _test_get_all(self, logged_in_user, expected_resources):
-        self.login(logged_in_user.email, 'foo')
-        resources = self.resource.get_all() # test GET collection
-        self.assertEqual(len(resources), len(expected_resources))
-        resources_ids = [res['id'] for res in resources]
-        self.assertIn(logged_in_user.id, resources_ids)
-        for _res in expected_resources:
-            self.assertIn(_res.id, resources_ids)
-            one_res = self.resource.get(_res.id) # test GET one resource
-            self.assertTrue(one_res)
-
     def test_get_all_cleared_contractors_as_manager(self):
         mgr_user, expected_resources = case_cleared_contractors(self.db)
-        self._test_get_all(mgr_user, expected_resources)
+        validate_resource_collection(self, mgr_user, expected_resources)
 
     def test_get_all_nominated_contractors_as_manager(self):
         mgr_user, expected_resources = case_nominated_contractors(self.db)
-        self._test_get_all(mgr_user, expected_resources)
+        validate_resource_collection(self, mgr_user, expected_resources)
 
     def test_get_all_contractors_as_contractor(self):
         contractor, expected_resources = case_cleared_contractors_as_contractor(self.db)
-        self._test_get_all(contractor.user, expected_resources)
+        validate_resource_collection(self, contractor.user, expected_resources)
 
     def test_manager_cannot_modify_contractor(self):
         mgr_user, expected_contractors = case_cleared_contractors(self.db)

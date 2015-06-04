@@ -9,7 +9,7 @@ from alveare.tests.common.bank_account import (
     case_org,
     case_contractors,
 )
-from alveare.common.utils import AlveareResource
+from alveare.common.utils import AlveareResource, validate_resource_collection
 
 url = 'bank_accounts/{}'.format
 
@@ -126,19 +126,9 @@ class TestBankAccount(AlveareNoMockRestTestCase):
         super().setUp()
         self.resource = AlveareResource(self, 'BankAccount')
 
-    def _test_get_all(self, logged_in_user, expected_resources):
-        self.login(logged_in_user.email, 'foo')
-        resources = self.resource.get_all() # test GET collection
-        self.assertEqual(len(resources), len(expected_resources))
-        resources_ids = [res['id'] for res in resources]
-        for _res in expected_resources:
-            self.assertIn(_res.id, resources_ids)
-            one_res = self.resource.get(_res.id) # test GET one resource
-            self.assertTrue(one_res)
-
     def test_as_manager(self):
         mgr_user, org, account, contractor = case_org(self.db)
-        self._test_get_all(mgr_user, [account])
+        validate_resource_collection(self, mgr_user, [account])
         account_blob = self.resource.get(account.id)
         self.resource.update(**account_blob)
         self.resource.delete(**account_blob)
@@ -146,7 +136,7 @@ class TestBankAccount(AlveareNoMockRestTestCase):
 
     def test_as_contractor(self):
         contractor_0, contractor_1 = case_contractors(self.db)
-        self._test_get_all(contractor_0.user, [contractor_0.bank_account])
+        validate_resource_collection(self, contractor_0.user, [contractor_0.bank_account])
         account_0 = self.resource.get(contractor_0.bank_account.id)
         self.resource.update(**account_0)
         self.resource.delete(**account_0)

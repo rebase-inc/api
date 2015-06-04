@@ -4,6 +4,11 @@ from . import AlveareModelTestCase
 
 from alveare import models
 from alveare.common import mock
+from alveare.common.utils import validate_query_fn
+from alveare.tests.common.code_repository import (
+    case_mgr_with_repo,
+    case_cleared_contractor,
+)
 
 class TestCodeRepositoryModel(AlveareModelTestCase):
 
@@ -41,3 +46,25 @@ class TestCodeRepositoryModel(AlveareModelTestCase):
         with self.assertRaises(ValueError):
             self.create_model(self.model, 123456789, 'foo')
 
+    def test_as_mgr(self):
+        validate_query_fn(self, models.CodeRepository, case_mgr_with_repo, models.CodeRepository.as_manager)
+        user, repo = case_mgr_with_repo(self.db)
+        self.assertTrue(repo.allowed_to_be_created_by(user))
+        self.assertTrue(repo.allowed_to_be_modified_by(user))
+        self.assertTrue(repo.allowed_to_be_deleted_by(user))
+
+    def test_as_cleared_contractor(self):
+        validate_query_fn(self, models.CodeRepository, case_cleared_contractor, models.CodeRepository.as_cleared_contractor)
+        user, repo = case_cleared_contractor(self.db)
+        self.assertFalse(repo.allowed_to_be_created_by(user))
+        self.assertFalse(repo.allowed_to_be_modified_by(user))
+        self.assertFalse(repo.allowed_to_be_deleted_by(user))
+
+    def test_as_other_cleared_contractor(self):
+        _, repo = case_cleared_contractor(self.db)
+        user, _ = case_cleared_contractor(self.db)
+        self.assertNotIn(repo, models.CodeRepository.as_cleared_contractor(user))
+        self.assertFalse(repo.allowed_to_be_created_by(user))
+        self.assertFalse(repo.allowed_to_be_modified_by(user))
+        self.assertFalse(repo.allowed_to_be_deleted_by(user))
+        self.assertFalse(repo.allowed_to_be_viewed_by(user))

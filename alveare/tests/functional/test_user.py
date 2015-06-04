@@ -3,7 +3,7 @@ import time
 import copy
 
 from . import AlveareRestTestCase, AlveareNoMockRestTestCase
-from alveare.common.utils import AlveareResource
+from alveare.common.utils import AlveareResource, validate_resource_collection
 from alveare.models import (
     User,
 )
@@ -115,14 +115,14 @@ class TestUserResource(AlveareRestTestCase):
         self.user_resource.delete(validate=False, **user)
 
 
-class TestUserResourceNoMock(AlveareNoMockRestTestCase):
+class TestUser(AlveareNoMockRestTestCase):
     def setUp(self):
         super().setUp()
-        self.user_resource = AlveareResource(self, 'User')
+        self.resource = AlveareResource(self, 'User')
 
     def _test_get_all(self, logged_in_user, expected_users):
         self.login(logged_in_user.email, 'foo')
-        users = self.user_resource.get_all()
+        users = self.resource.get_all()
         self.assertEqual(len(users), len(expected_users))
         user_ids = [user['id'] for user in users]
         self.assertIn(logged_in_user.id, user_ids)
@@ -130,17 +130,17 @@ class TestUserResourceNoMock(AlveareNoMockRestTestCase):
             self.assertIn(_user.id, user_ids)
 
     def test_get_all_manager_users(self):
-        self._test_get_all(*case_manager_users(self.db))
+        validate_resource_collection(self, *case_manager_users(self.db))
 
     def test_get_all_contractor_users(self):
         logged_in_user, expected_contractor_users = case_contractor_users(self.db)
-        self._test_get_all(logged_in_user, expected_contractor_users+[logged_in_user])
+        validate_resource_collection(self, logged_in_user, expected_contractor_users+[logged_in_user])
 
     def test_get_all_nominated_users(self):
         logged_in_user, expected_nominated_users = case_nominated_users(self.db)
-        self._test_get_all(logged_in_user, expected_nominated_users+[logged_in_user])
+        validate_resource_collection(self, logged_in_user, expected_nominated_users+[logged_in_user])
 
     def test_get_all_other_contractor_users(self):
         logged_in_user, manager_users, expected_contractor_users = case_contractors_with_contractor(self.db)
         expected_users = manager_users + expected_contractor_users
-        self._test_get_all(logged_in_user, expected_users)
+        validate_resource_collection(self, logged_in_user, expected_users)

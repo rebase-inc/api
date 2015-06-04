@@ -241,6 +241,25 @@ class AlveareResource(object):
             **resource
         )
 
+def validate_query_fn(test, klass, case, query_fn):
+        user, resource = case(test.db)
+        case(test.db) # create more unrelated resource, to make sure the queries discriminate properly
+        resources = query_fn(user).all()
+        test.assertEqual([resource], resources)
+        test.assertEqual([resource], query_fn(user, resource.id).all())
+        test.assertEqual([resource], klass.query_by_user(user).all())
+        test.assertTrue(resource.allowed_to_be_viewed_by(user))
+
+def validate_resource_collection(test, logged_in_user, expected_resources):
+    test.login(logged_in_user.email, 'foo')
+    resources = test.resource.get_all() # test GET collection
+    test.assertEqual(len(resources), len(expected_resources))
+    resources_ids = [res['id'] for res in resources]
+    for _res in expected_resources:
+        test.assertIn(_res.id, resources_ids)
+        one_res = test.resource.get(_res.id) # test GET one resource
+        test.assertTrue(one_res)
+
 dictionaries = defaultdict(list, {
     '/usr/share/dict/words':        [],
     '/usr/share/dict/propernames':  [],
