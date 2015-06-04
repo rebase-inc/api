@@ -120,15 +120,6 @@ class TestUser(AlveareNoMockRestTestCase):
         super().setUp()
         self.resource = AlveareResource(self, 'User')
 
-    def _test_get_all(self, logged_in_user, expected_users):
-        self.login(logged_in_user.email, 'foo')
-        users = self.resource.get_all()
-        self.assertEqual(len(users), len(expected_users))
-        user_ids = [user['id'] for user in users]
-        self.assertIn(logged_in_user.id, user_ids)
-        for _user in expected_users:
-            self.assertIn(_user.id, user_ids)
-
     def test_get_all_manager_users(self):
         validate_resource_collection(self, *case_manager_users(self.db))
 
