@@ -71,7 +71,6 @@ class TestBankAccountResource(AlveareRestTestCase):
         org = self.find_resource_without_bank_account('organizations')
         account = self.create_bank_account('organization', org['id'], 'Our Account')
         org_with_account = self.get_resource('organizations/{id}'.format(**org))['organization']
-        print(org_with_account)
         self.assertEqual(org_with_account['bank_account']['id'], account['id'])
 
     def test_create_bank_account_for_contractor(self):
@@ -137,12 +136,13 @@ class TestBankAccount(AlveareNoMockRestTestCase):
             one_res = self.resource.get(_res.id) # test GET one resource
             self.assertTrue(one_res)
 
-    def test_get_all_as_manager(self):
+    def test_as_manager(self):
         mgr_user, org, account, contractor = case_org(self.db)
         self._test_get_all(mgr_user, [account])
         account_blob = self.resource.get(account.id)
         self.resource.update(**account_blob)
         self.resource.delete(**account_blob)
+        self.resource.create(**account_blob)
 
     def test_as_contractor(self):
         contractor_0, contractor_1 = case_contractors(self.db)
@@ -150,6 +150,10 @@ class TestBankAccount(AlveareNoMockRestTestCase):
         account_0 = self.resource.get(contractor_0.bank_account.id)
         self.resource.update(**account_0)
         self.resource.delete(**account_0)
+        new_account = copy(account_0)
+        del new_account['id']
+        new_account['account_number'] = 9876
+        self.resource.create(**new_account)
 
         self.resource.get(contractor_1.bank_account.id, 401)
         account_1 = copy(account_0)

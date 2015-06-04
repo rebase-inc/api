@@ -177,11 +177,13 @@ def create_one_auction(db, tickets=None, duration=1000, finish_work_by=None, red
     db.session.add(auction)
     return auction
 
-def create_one_nomination(db, auction=None, contractor=None):
+def create_one_nomination(db, auction=None, contractor=None, approved=False):
     from alveare.models import Nomination
     auction = auction or create_one_auction(db)
     contractor = contractor or create_one_contractor(db)
     nomination = Nomination(contractor, auction.ticket_set)
+    if approved:
+        auction.approved_talents.append(nomination)
     db.session.add(nomination)
     return nomination
 
@@ -204,6 +206,12 @@ def create_one_feedback(db):
     feedback = Feedback(auction, contractor, 'Your auction sucks')
     db.session.add(feedback)
     return feedback
+
+def create_work_offer(db, contractor, snapshot, price):
+    from alveare.models import WorkOffer
+    offer = WorkOffer(contractor, snapshot, price)
+    db.session.add(offer)
+    return offer
 
 def create_one_bid(db):
     from alveare.models import Bid, WorkOffer
