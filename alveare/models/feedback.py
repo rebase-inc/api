@@ -10,12 +10,11 @@ class Feedback(DB.Model, PermissionMixin):
     contractor_id = DB.Column(DB.Integer, DB.ForeignKey('contractor.id', ondelete='CASCADE'), nullable=False)
     auction_id =    DB.Column(DB.Integer, DB.ForeignKey('auction.id', ondelete='CASCADE'), nullable=False)
 
-    message =       DB.Column(DB.String, nullable=False)
+    comment = DB.relationship('Comment', backref='feedback', lazy='joined', cascade='all, delete-orphan', passive_deletes=True, uselist=False)
 
-    def __init__(self, auction, contractor, message):
+    def __init__(self, auction, contractor):
         self.auction = auction
         self.contractor = contractor
-        self.message = message
 
     @classmethod
     def query_by_user(cls, user):

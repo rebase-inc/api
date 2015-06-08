@@ -21,7 +21,7 @@ class TestInternalTicketModel(AlveareModelTestCase):
 
     def test_delete(self):
         ticket = mock.create_one_internal_ticket(self.db, 'Foobar')
-        comment = models.Comment(ticket, 'heyo')
+        comment = models.Comment('heyo', ticket=ticket)
         self.db.session.commit()
         ticket_id = ticket.id
         comment_id = comment.id

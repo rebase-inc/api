@@ -10,7 +10,7 @@ class ReviewSchema(AlveareSchema):
     id = fields.Integer()
     rating = fields.Integer(required = True)
     work = SecureNestedField('WorkSchema', only='id')
-    comments = SecureNestedField(CommentSchema, many=True)
+    comments = SecureNestedField(CommentSchema, only=('id',), many=True, default=None)
 
     def make_object(self, data):
         from alveare.models import Review

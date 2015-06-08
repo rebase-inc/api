@@ -157,3 +157,7 @@ def register_routes(api):
     from alveare.models.feedback import Feedback
     import alveare.views.feedback as f_view
     add_restful_endpoint(api, Feedback, f_view.serializer, f_view.deserializer, f_view.update_deserializer, None)
+
+    from alveare.models.comment import Comment
+    import alveare.views.comment as c_view
+    add_restful_endpoint(api, Comment, c_view.serializer, c_view.deserializer, c_view.update_deserializer, None)

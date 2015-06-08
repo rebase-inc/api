@@ -12,7 +12,6 @@ class TestFeedbackResource(AlveareRestTestCase):
         self.assertIn('feedbacks', response)
         self.assertIsInstance(response['feedbacks'], list)
         self.assertIn('id', response['feedbacks'][0])
-        self.assertIn('message', response['feedbacks'][0])
         self.assertIn('contractor', response['feedbacks'][0])
         self.assertIn('auction', response['feedbacks'][0])
 
@@ -25,7 +24,7 @@ class TestFeedbackResource(AlveareRestTestCase):
         feedback = response['feedback']
 
         self.assertEqual(feedback.pop('id'), feedback_id)
-        self.assertIsInstance(feedback.pop('message'), str)
+        self.assertIsInstance(feedback.pop('comment').pop('id'), int)
         self.assertIsInstance(feedback.pop('contractor').pop('id'), int)
         self.assertIsInstance(feedback.pop('auction').pop('id'), int)
         self.assertEqual(feedback, {})
@@ -38,13 +37,12 @@ class TestFeedbackResource(AlveareRestTestCase):
         contractor = self.post_resource('contractors', dict(user=user))['contractor']
 
         auction = self.get_resource('auctions')['auctions'][0]
-        feedback_data = dict(auction=auction, contractor=contractor, message='blah blah blah')
+        feedback_data = dict(auction=auction, contractor=contractor)
 
         feedback = self.post_resource('feedbacks', feedback_data)['feedback']
         self.assertIsInstance(feedback.pop('id'), int)
         self.assertEqual(feedback.pop('auction').pop('id'), auction['id'])
         self.assertEqual(feedback.pop('contractor').pop('id'), contractor['id'])
-        self.assertEqual(feedback.pop('message'), 'blah blah blah')
         self.assertEqual(feedback, {})
 
     def test_update(self):
@@ -54,13 +52,11 @@ class TestFeedbackResource(AlveareRestTestCase):
         contractor = self.post_resource('contractors', dict(user=user))['contractor']
 
         auction = self.get_resource('auctions')['auctions'][0]
-        feedback_data = dict(auction=auction, contractor=contractor, message='blah blah blah')
+        feedback_data = dict(auction=auction, contractor=contractor)
 
         feedback = self.post_resource('feedbacks', feedback_data)['feedback']
-        feedback['message'] = 'halb halb halb'
         updated_feedback = self.put_resource('feedbacks/{}'.format(feedback['id']), feedback)['feedback']
 
-        self.assertEqual(updated_feedback.pop('message'), feedback['message'])
 
     def test_that_feedback_auction_owner_can_see(self):
         feedback = Feedback.query.first()

@@ -47,18 +47,10 @@ class TestCodeRepositoryModel(AlveareModelTestCase):
             self.create_model(self.model, 123456789, 'foo')
 
     def test_as_mgr(self):
-        validate_query_fn(self, models.CodeRepository, case_mgr_with_repo, models.CodeRepository.as_manager)
-        user, repo = case_mgr_with_repo(self.db)
-        self.assertTrue(repo.allowed_to_be_created_by(user))
-        self.assertTrue(repo.allowed_to_be_modified_by(user))
-        self.assertTrue(repo.allowed_to_be_deleted_by(user))
+        validate_query_fn(self, models.CodeRepository, case_mgr_with_repo, models.CodeRepository.as_manager, True, True, True, True)
 
     def test_as_cleared_contractor(self):
-        validate_query_fn(self, models.CodeRepository, case_cleared_contractor, models.CodeRepository.as_cleared_contractor)
-        user, repo = case_cleared_contractor(self.db)
-        self.assertFalse(repo.allowed_to_be_created_by(user))
-        self.assertFalse(repo.allowed_to_be_modified_by(user))
-        self.assertFalse(repo.allowed_to_be_deleted_by(user))
+        validate_query_fn(self, models.CodeRepository, case_cleared_contractor, models.CodeRepository.as_cleared_contractor, False, False, False, True)
 
     def test_as_other_cleared_contractor(self):
         _, repo = case_cleared_contractor(self.db)

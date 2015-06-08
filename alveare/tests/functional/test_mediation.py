@@ -30,6 +30,7 @@ class TestMediationResource(AlveareRestTestCase):
         if 'arbitration' in mediation:
             mediation.pop('arbitration')
 
+        self.assertEqual(mediation.pop('comments'), [])
         self.assertEqual(mediation, {})
 
     def test_create_new(self):
@@ -47,6 +48,7 @@ class TestMediationResource(AlveareRestTestCase):
         self.assertIsInstance(mediation.pop('state'), str)
         self.assertIsInstance(mediation.pop('timeout'), str) #TODO: Actually check that this is a string
         self.assertEqual(mediation.pop('work'), work.get('id'))
+        self.assertEqual(mediation.pop('comments'), [])
         self.assertEqual(mediation, {})
 
     def test_update(self):

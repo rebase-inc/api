@@ -3,17 +3,17 @@ from alveare.common.schema import AlveareSchema
 from alveare.common.database import get_or_make_object, SecureNestedField
 
 class FeedbackSchema(AlveareSchema):
-    id =         fields.Integer()
-    message =    fields.String(required=True)
-    auction =    SecureNestedField('AuctionSchema', only=('id',))
-    contractor = SecureNestedField('ContractorSchema', only=('id',), required=True)
+    id =            fields.Integer()
+    auction =       SecureNestedField('AuctionSchema', only=('id',))
+    contractor =    SecureNestedField('ContractorSchema', only=('id',), required=True)
+    comment =       SecureNestedField('CommentSchema', only=('id',), required=False)
 
     def make_object(self, data):
         from alveare.models import Feedback
         return get_or_make_object(Feedback, data)
 
-serializer = FeedbackSchema(only=('id','auction', 'contractor', 'message'))
-deserializer = FeedbackSchema(only=('auction', 'contractor', 'message'), strict=True)
+serializer = FeedbackSchema(skip_missing=True)
+deserializer = FeedbackSchema(strict=True)
 update_deserializer = FeedbackSchema()
 update_deserializer.make_object = lambda data: data 
 

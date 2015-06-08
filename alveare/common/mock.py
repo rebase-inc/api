@@ -199,11 +199,14 @@ def create_one_job_fit(db, nomination=None, ticket_matches=None):
     db.session.add(job_fit)
     return job_fit
 
-def create_one_feedback(db):
-    from alveare.models import Feedback
-    auction = create_one_auction(db)
-    contractor = create_one_contractor(db)
-    feedback = Feedback(auction, contractor, 'Your auction sucks')
+def create_one_feedback(db, auction=None, contractor=None, comment=None):
+    from alveare.models import Feedback, Comment
+    
+    feedback = Feedback(
+        auction or create_one_auction(db),
+        contractor or create_one_contractor(db)
+    )
+    Comment(comment or 'Your auction sucks', feedback=feedback)
     db.session.add(feedback)
     return feedback
 
@@ -254,7 +257,7 @@ def create_one_work_review(db, rating, comment):
     from alveare.models import Review, Comment
     work = create_some_work(db, review=False).pop()
     review = Review(work, rating)
-    comment = Comment(review, comment)
+    comment = Comment(comment, review=review)
     db.session.add(review)
     return review
 

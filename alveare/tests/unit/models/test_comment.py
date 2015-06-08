@@ -2,9 +2,19 @@ from sqlalchemy.exc import InterfaceError
 from sqlalchemy.orm.exc import ObjectDeletedError
 
 from . import AlveareModelTestCase
-
 from alveare import models
 from alveare.common import mock
+from alveare.common.utils import validate_query_fn
+from alveare.tests.common.comment import (
+    case_mgr_ticket_comment,
+    case_contractor_ticket_comment,
+    case_mgr_mediation_comment,
+    case_contractor_mediation_comment,
+    case_mgr_review_comment,
+    case_contractor_review_comment,
+    case_mgr_feedback_comment,
+    case_contractor_feedback_comment,
+)
 
 class TestCommentModel(AlveareModelTestCase):
 
@@ -37,3 +47,102 @@ class TestCommentModel(AlveareModelTestCase):
             models.Review('foo', 'foo')
             self.db.session.commit()
 
+    def test_ticket_comment_as_manager(self):
+        validate_query_fn(
+            self,
+            models.Comment,
+            case_mgr_ticket_comment,
+            models.Comment.as_manager,
+            True, True, True, True
+        )
+
+    def test_ticket_comment_as_contractor(self):
+        validate_query_fn(
+            self,
+            models.Comment,
+            case_contractor_ticket_comment,
+            models.Comment.as_contractor,
+            True, True, True, True
+        )
+
+    def test_ticket_comment_as_user(self):
+        _, comment = case_contractor_ticket_comment(self.db)
+        unrelated_user = mock.create_one_user(self.db)
+        self.assertFalse(comment.allowed_to_be_created_by(unrelated_user))
+        self.assertFalse(comment.allowed_to_be_modified_by(unrelated_user))
+        self.assertFalse(comment.allowed_to_be_deleted_by(unrelated_user))
+
+    def test_mediation_comment_as_manager(self):
+        validate_query_fn(
+            self,
+            models.Comment,
+            case_mgr_mediation_comment,
+            models.Comment.as_manager,
+            True, True, True, True
+        )
+
+    def test_mediation_comment_as_contractor(self):
+        validate_query_fn(
+            self,
+            models.Comment,
+            case_contractor_mediation_comment,
+            models.Comment.as_contractor,
+            True, True, True, True
+        )
+
+    def test_mediation_comment_as_user(self):
+        _, comment = case_contractor_mediation_comment(self.db)
+        unrelated_user = mock.create_one_user(self.db)
+        self.assertFalse(comment.allowed_to_be_created_by(unrelated_user))
+        self.assertFalse(comment.allowed_to_be_modified_by(unrelated_user))
+        self.assertFalse(comment.allowed_to_be_deleted_by(unrelated_user))
+
+    def test_review_comment_as_manager(self):
+        validate_query_fn(
+            self,
+            models.Comment,
+            case_mgr_review_comment,
+            models.Comment.as_manager,
+            True, True, True, True
+        )
+
+    def test_review_comment_as_contractor(self):
+        validate_query_fn(
+            self,
+            models.Comment,
+            case_contractor_review_comment,
+            models.Comment.as_contractor,
+            True, True, True, True
+        )
+
+    def test_review_comment_as_user(self):
+        _, comment = case_contractor_review_comment(self.db)
+        unrelated_user = mock.create_one_user(self.db)
+        self.assertFalse(comment.allowed_to_be_created_by(unrelated_user))
+        self.assertFalse(comment.allowed_to_be_modified_by(unrelated_user))
+        self.assertFalse(comment.allowed_to_be_deleted_by(unrelated_user))
+
+    def test_feedback_comment_as_manager(self):
+        validate_query_fn(
+            self,
+            models.Comment,
+            case_mgr_feedback_comment,
+            models.Comment.as_manager,
+            True, True, True, True
+        )
+
+    def test_feedback_comment_as_contractor(self):
+        validate_query_fn(
+            self,
+            models.Comment,
+            case_contractor_feedback_comment,
+            models.Comment.as_contractor,
+            True, True, True, True
+        )
+
+    def test_feedback_comment_as_user(self):
+        _, comment = case_contractor_feedback_comment(self.db)
+        unrelated_user = mock.create_one_user(self.db)
+        self.assertFalse(comment.allowed_to_be_created_by(unrelated_user))
+        self.assertFalse(comment.allowed_to_be_modified_by(unrelated_user))
+        self.assertFalse(comment.allowed_to_be_deleted_by(unrelated_user))

@@ -1,10 +1,6 @@
 from marshmallow import fields
 from alveare.common.schema import AlveareSchema
-from flask.ext.restful import abort
 
-from alveare.models.bank_account import BankAccount
-from alveare.models.organization import Organization
-from alveare.models.contractor import Contractor
 from alveare.common.database import get_or_make_object, SecureNestedField
 
 class BankAccountSchema(AlveareSchema):

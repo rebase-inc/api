@@ -22,7 +22,7 @@ class TestGithubTicketModel(AlveareModelTestCase):
 
     def test_delete(self):
         ticket = mock.create_one_github_ticket(self.db, 1)
-        comment = models.Comment(ticket, 'heyo')
+        comment = models.Comment('heyo', ticket=ticket)
         self.db.session.commit()
         ticket_id = ticket.id
         comment_id = comment.id

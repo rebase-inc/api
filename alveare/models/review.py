@@ -1,6 +1,7 @@
 from sqlalchemy.orm import validates
 
-from alveare.common.database import DB, PermissionMixin
+from alveare.common.database import DB, PermissionMixin, query_by_user_or_id
+from alveare.common.query import query_from_class_to_user
 
 class Review(DB.Model, PermissionMixin):
     __pluralname__ = 'reviews'
@@ -23,34 +24,31 @@ class Review(DB.Model, PermissionMixin):
 
     @classmethod
     def query_by_user(cls, user):
-        from alveare.models import Work, WorkOffer, Contractor, Bid, Auction, TicketSet, User
-        from alveare.models import BidLimit, TicketSnapshot, Ticket , Organization
+        return query_by_user_or_id(cls, cls.get_all, user)
 
-        query = cls.query
+    @classmethod
+    def get_all(cls, user, id=None):
+        return cls.as_manager(user, id).union(cls.as_contractor(user, id))
 
-        if user.is_admin():
-            return query
+    def as_manager(user, id):
+        import alveare.models
+        return query_from_class_to_user(Review, [
+            alveare.models.work.Work,
+            alveare.models.work_offer.WorkOffer,
+            alveare.models.ticket_snapshot.TicketSnapshot,
+            alveare.models.ticket.Ticket,
+            alveare.models.project.Project,
+            alveare.models.organization.Organization,
+            alveare.models.manager.Manager,
+        ], user, id)
 
-        query_contractor = query.join(cls.work)
-        query_contractor = query_contractor.join(Work.offer)
-        query_contractor = query_contractor.join(WorkOffer.contractor)
-        query_contractor = query_contractor.join(Contractor.user)
-        query_contractor = query_contractor.filter(User.id == user.id)
-
-        if user.manager_for_organizations:
-            query_manager = query.join(cls.work)
-            query_manager = query_manager.join(Work.offer)
-            query_manager = query_manager.join(WorkOffer.bid)
-            query_manager = query_manager.join(Bid.auction)
-            query_manager = query_manager.join(Auction.ticket_set)
-            query_manager = query_manager.join(TicketSet.bid_limits)
-            query_manager = query_manager.join(BidLimit.ticket_snapshot)
-            query_manager = query_manager.join(TicketSnapshot.ticket)
-            query_manager = query_manager.join(Ticket.organization)
-            query_manager = query_manager.filter(Organization.id.in_(user.manager_for_organizations))
-            query_contractor = query_contractor.union(query_manager)
-
-        return query_contractor
+    def as_contractor(user, id):
+        import alveare.models
+        return query_from_class_to_user(Review, [
+            alveare.models.work.Work,
+            alveare.models.work_offer.WorkOffer,
+            alveare.models.contractor.Contractor,
+        ], user, id)
 
     def allowed_to_be_created_by(self, user):
         if user.is_admin():
@@ -66,12 +64,7 @@ class Review(DB.Model, PermissionMixin):
     def allowed_to_be_viewed_by(self, user):
         if user.is_admin():
             return True
-        elif self.work.offer.contractor.user == user:
-            return True
-        elif self.work.offer.bid.auction.organization.id in user.manager_for_organizations:
-            return True
-        else:
-            return False
+        return self.get_all(user, self.id).limit(100).all()
 
     def __repr__(self):
         return '<Review[{}] rating={}>'.format(self.id, self.rating)
