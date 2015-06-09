@@ -1,17 +1,28 @@
 from . import AlveareModelTestCase
 
+from alveare.common.utils import validate_query_fn
 from alveare.models import SkillSet
-from alveare.common.mock import create_one_contractor
+from alveare.tests.common.skill_set import (
+    case_mgr,
+    case_contractor,
+)
 
-class TestSkillSetModel(AlveareModelTestCase):
-    def test_create(self):
-        contractor = create_one_contractor(self.db)
-        self.db.session.commit()
-        self.assertNotEqual(SkillSet.query.get(contractor.id), None)
+class TestSkillSet(AlveareModelTestCase):
+    def test_mgr(self):
+        validate_query_fn(
+            self,
+            SkillSet,
+            case_mgr,
+            SkillSet.as_manager,
+            False, False, False, True
+        )
 
-    def test_delete(self):
-        contractor = create_one_contractor(self.db)
-        self.db.session.commit()
-        self.delete_instance(contractor)
-        self.assertEqual(SkillSet.query.all(), [])
+    def test_contractor(self):
+        validate_query_fn(
+            self,
+            SkillSet,
+            case_contractor,
+            SkillSet.as_contractor,
+            True, True, True, True
+        )
 

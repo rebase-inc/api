@@ -1,11 +1,6 @@
 from alveare.common.database import DB, PermissionMixin, query_by_user_or_id
 from alveare.common.query import query_from_class_to_user
 
-from .review import Review
-from .mediation import Mediation
-from .ticket import Ticket
-from .feedback import Feedback
-
 class Comment(DB.Model, PermissionMixin):
     __pluralname__ = 'comments'
 
