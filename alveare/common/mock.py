@@ -15,7 +15,7 @@ def create_one_organization(db, name=None, user=None):
     db.session.add(organization)
     return organization
 
-def create_one_user(db, first_name=None, last_name=None, email=None, password='foo'):
+def create_one_user(db, first_name=None, last_name=None, email=None, password='foo', admin=False):
     from alveare.models import User
     email = email or 'user-{}@alveare.io'.format(uuid.uuid4())
     user = User(
@@ -24,6 +24,7 @@ def create_one_user(db, first_name=None, last_name=None, email=None, password='f
         email,
         password
     )
+    user.admin = admin
     db.session.add(user)
     return user
 

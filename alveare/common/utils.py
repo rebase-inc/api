@@ -243,15 +243,17 @@ class AlveareResource(object):
 
 def validate_query_fn(test, klass, case, query_fn, create, modify, delete, view):
         user, resource = case(test.db)
+        expected_resources = [resource] if resource else []
         case(test.db) # create more unrelated resource, to make sure the queries discriminate properly
         resources = query_fn(user).all()
-        test.assertEqual([resource], resources)
-        test.assertEqual([resource], query_fn(user, resource.id).all())
-        test.assertEqual([resource], klass.query_by_user(user).all())
-        test.assertEqual(create, bool(resource.allowed_to_be_created_by(user)))
-        test.assertEqual(modify, bool(resource.allowed_to_be_modified_by(user)))
-        test.assertEqual(delete, bool(resource.allowed_to_be_deleted_by(user)))
-        test.assertEqual(view,   bool(resource.allowed_to_be_viewed_by(user)))
+        test.assertEqual(expected_resources, resources)
+        test.assertEqual(expected_resources, klass.query_by_user(user).all())
+        if resource:
+            test.assertEqual(expected_resources, query_fn(user, resource.id).all())
+            test.assertEqual(create, bool(resource.allowed_to_be_created_by(user)))
+            test.assertEqual(modify, bool(resource.allowed_to_be_modified_by(user)))
+            test.assertEqual(delete, bool(resource.allowed_to_be_deleted_by(user)))
+            test.assertEqual(view,   bool(resource.allowed_to_be_viewed_by(user)))
 
 def validate_resource_collection(test, logged_in_user, expected_resources):
     test.login(logged_in_user.email, 'foo')

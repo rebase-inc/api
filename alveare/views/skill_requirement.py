@@ -1,12 +1,14 @@
 from flask.ext.restful import abort
 from marshmallow import fields
-from alveare.common.schema import AlveareSchema
 
+from alveare.common.database import get_or_make_object, SecureNestedField
+from alveare.common.schema import AlveareSchema
 from alveare.models.skill_requirement import SkillRequirement
-from alveare.common.database import get_or_make_object
+from alveare.views.ticket import TicketSchema
 
 class SkillRequirementSchema(AlveareSchema):
-    id =            fields.Integer()
+    id =        fields.Integer()
+    ticket =    SecureNestedField(TicketSchema,  only=('id',))
 
     def make_object(self, data):
         from alveare.models import SkillRequirement

@@ -87,18 +87,20 @@ class BaseTestTicketResource(AlveareRestTestCase):
         ticket = self.ticket_resource.get_any()
         self.assertTrue(ticket) # mock should have created at least one account
         self.assertIn('id', ticket)
-        self.assertIn('skill_requirement', ticket)
         self.assertIn('project', ticket)
-        self.assertEqual(ticket['skill_requirement']['id'], ticket['id'])
         return ticket
 
     def get_one_as_admin(self):
         self.login_admin()
-        self._get_one()
+        ticket = self._get_one()
+        self.assertIn('skill_requirement', ticket)
+        self.assertEqual(ticket['skill_requirement']['id'], ticket['id'])
 
     def get_one_as_manager(self):
         self.login_as_manager_only(self.with_project)
         ticket = self._get_one()
+        self.assertIn('skill_requirement', ticket)
+        self.assertEqual(ticket['skill_requirement']['id'], ticket['id'])
 
     def get_one_as_contractor(self):
         self.login_as_contractor()
