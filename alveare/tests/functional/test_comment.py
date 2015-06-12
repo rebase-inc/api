@@ -17,7 +17,7 @@ from alveare.common.utils import AlveareResource, validate_resource_collection
 class TestComment(AlveareNoMockRestTestCase):
     def setUp(self):
         super().setUp()
-        self.resource =             AlveareResource(self, 'Comment')
+        self.resource = AlveareResource(self, 'Comment')
         
     def _test_comment(self, case, create=True, modify=True, delete=True, view=True):
         user, comment = case(self.db)

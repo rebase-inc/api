@@ -12,14 +12,14 @@ class TicketMatchSchema(AlveareSchema):
 
     skill_requirement = SecureNestedField('SkillRequirementSchema',   only=('id',))
     skill_set =         SecureNestedField('SkillSetSchema',           only=('id',))
-    job_fit =           SecureNestedField('JobFitSchema',             only=('contractor_id', 'ticket_set_id'), required=False, default=None)
+    job_fit =           SecureNestedField('JobFitSchema',             only=('contractor_id', 'ticket_set_id'), default=None)
 
     _primary_keys = get_model_primary_keys(TicketMatch)
 
     def make_object(self, data):
         return get_or_make_object(TicketMatch, data, self._primary_keys)
 
-serializer =            TicketMatchSchema()
-deserializer =          TicketMatchSchema(skip_missing=True)
-update_deserializer =   TicketMatchSchema(only=('score',))
+serializer =            TicketMatchSchema(skip_missing=True)
+deserializer =          TicketMatchSchema(strict=True)
+update_deserializer =   TicketMatchSchema()
 update_deserializer.make_object = lambda data: data
