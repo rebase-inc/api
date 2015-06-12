@@ -34,13 +34,20 @@ class Mediation(DB.Model, PermissionMixin):
 
     @classmethod
     def query_by_user(cls, user):
-        return query_by_user_or_id(cls, cls.get_all, user)
+        return cls.get_all(user)
+
+    def filter_by_id(self, query):
+        return query.filter(Mediation.id==self.id)
 
     @classmethod
-    def get_all(cls, user, id=None):
-        return cls.as_manager(user, id).union(cls.as_contractor(user, id))
-
-    def as_manager(user, id):
+    def get_all(cls, user, mediation=None):
+        return query_by_user_or_id(
+            cls,
+            lambda user: cls.as_manager(user).union(cls.as_contractor(user)),
+            cls.filter_by_id,
+            user, mediation
+        )
+    def as_manager(user):
         import alveare.models
         return query_from_class_to_user(Mediation, [
             alveare.models.work.Work,
@@ -50,15 +57,15 @@ class Mediation(DB.Model, PermissionMixin):
             alveare.models.project.Project,
             alveare.models.organization.Organization,
             alveare.models.manager.Manager,
-        ], user, id)
+        ], user)
 
-    def as_contractor(user, id):
+    def as_contractor(user):
         import alveare.models
         return query_from_class_to_user(Mediation, [
             alveare.models.work.Work,
             alveare.models.work_offer.WorkOffer,
             alveare.models.contractor.Contractor,
-        ], user, id)
+        ], user)
 
     def allowed_to_be_created_by(self, user):
         return user.is_admin()
@@ -70,9 +77,7 @@ class Mediation(DB.Model, PermissionMixin):
         return user.is_admin()
 
     def allowed_to_be_viewed_by(self, user):
-        if user.is_admin():
-            return True
-        return self.get_all(user, self.id).limit(100).all()
+        return self.get_all(user, self).limit(100).all()
 
     def __repr__(self):
         return '<Mediation[id:{}] >'.format(self.id)

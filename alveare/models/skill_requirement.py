@@ -1,4 +1,3 @@
-from sqlalchemy.sql import false
 from alveare.common.database import DB, PermissionMixin, query_by_user_or_id
 from alveare.common.query import query_from_class_to_user
 
@@ -14,21 +13,29 @@ class SkillRequirement(DB.Model, PermissionMixin):
 
     @classmethod
     def query_by_user(cls, user):
-        return query_by_user_or_id(cls, cls.get_all, user)
+        return cls.get_all(user)
+
+    def filter_by_id(self, query):
+        return query.filter(SkillRequirement.id==self.id)
 
     @classmethod
-    def get_all(cls, user, id=None):
-        return cls.as_manager(user, id)
+    def get_all(cls, user, skill_requirement=None):
+        return query_by_user_or_id(
+            cls,
+            cls.as_manager,
+            cls.filter_by_id,
+            user, skill_requirement
+        )
 
     @classmethod
-    def as_manager(cls, user, id=None):
+    def as_manager(cls, user):
         import alveare.models
-        return query_from_class_to_user(SkillRequirement, [
+        return query_from_class_to_user(cls, [
             alveare.models.ticket.Ticket,
             alveare.models.project.Project,
             alveare.models.organization.Organization,
             alveare.models.manager.Manager,
-        ], user, id)
+        ], user)
 
     def allowed_to_be_created_by(self, user):
         return user.admin
@@ -37,9 +44,7 @@ class SkillRequirement(DB.Model, PermissionMixin):
     allowed_to_be_deleted_by = allowed_to_be_created_by
 
     def allowed_to_be_viewed_by(self, user):
-        if user.admin:
-            return True
-        return self.as_manager(user, self.id).limit(1).all()
+        return self.get_all(user, self).limit(1).all()
 
     def __repr__(self):
         return '<SkillRequirement[{}]>'.format(self.id)

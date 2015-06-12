@@ -17,13 +17,6 @@ def case_org(db):
     contractor = mock.create_one_contractor(db)
     project = mock.create_one_project(db, org, 'Bar Project')
     clearance = mock.create_one_code_clearance(db, project, contractor)
+    db.session.commit()
     return mgr_user, org, account, contractor
-
-def case_org_with_contractor(db):
-    mgr_user = mock.create_one_user(db)
-    org = mock.create_one_organization(db, pick_an_organization_name(), mgr_user)
-    org_account = mock.create_one_bank_account(db, org)
-
-    contractor_0 = mock.create_one_contractor(db)
-    mock.create_one_bank_account(db, contractor_0)
 

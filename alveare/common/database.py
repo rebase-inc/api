@@ -55,21 +55,11 @@ class PermissionMixin(object):
         msg = 'allowed_to_be_viewed_by not implemented for {}'
         raise NotImplementedError(msg.format(type(self).__name__))
 
-def query_by_user_or_id(cls, query_fn, current_user, object_id=None):
-    ''' 
-    If user is admin, return all instances of cls.
-    Otherwise, return all instances matching 'query_fn'.
-    If object_id is specified, apply it as filter on the result of query_fn.
-
-    This function only works if cls has an 'id' field,
-    but it could be modified to work generically using the 'inspect' module of sqlalchemy
-    See common/utils.py for an example
-    '''
-    if current_user.admin:
+def query_by_user_or_id(cls, query_fn, filter_by_id, user, instance=None):
+    if user.admin:
         query = cls.query
     else:
-        query = query_fn(current_user)
-    if object_id:
-        query = query.filter(cls.id==object_id)
+        query = query_fn(user)
+    if instance:
+        query = instance.filter_by_id(query)
     return query
-

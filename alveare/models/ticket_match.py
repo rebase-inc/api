@@ -1,5 +1,7 @@
+from sqlalchemy import and_
 
-from alveare.common.database import DB, PermissionMixin
+from alveare.common.database import DB, PermissionMixin, query_by_user_or_id
+from alveare.common.query import query_from_class_to_user
 from alveare.models.job_fit import JobFit
 
 class TicketMatch(DB.Model, PermissionMixin):
@@ -7,8 +9,8 @@ class TicketMatch(DB.Model, PermissionMixin):
 
     skill_requirement_id =  DB.Column(DB.Integer, DB.ForeignKey('skill_requirement.id', ondelete='CASCADE'), primary_key=True)
     skill_set_id =          DB.Column(DB.Integer, DB.ForeignKey('skill_set.id',         ondelete='CASCADE'), primary_key=True)
-    contractor_id = DB.Column(DB.Integer, nullable=True)
-    ticket_set_id = DB.Column(DB.Integer, nullable=True)
+    contractor_id =         DB.Column(DB.Integer, nullable=True)
+    ticket_set_id =         DB.Column(DB.Integer, nullable=True)
     score =                 DB.Column(DB.Integer, nullable=False)
 
     __table_args__ = (
@@ -19,25 +21,45 @@ class TicketMatch(DB.Model, PermissionMixin):
         ), {})
 
     def __init__(self, skill_set, skill_requirement, score):
-        self.skill_set = skill_set
         self.skill_requirement = skill_requirement
+        self.skill_set = skill_set
         self.score = score
 
     @classmethod
     def query_by_user(cls, user):
-        return cls.query
+        return cls.get_all(user)
+
+    def filter_by_id(self, query):
+        return query.filter(
+            and_(
+                TicketMatch.skill_set_id==self.skill_set_id,
+                TicketMatch.skill_requirement_id==self.skill_requirement_id
+            )
+        )
+
+    @classmethod
+    def get_all(cls, user, instance=None):
+        return query_by_user_or_id(cls, cls.as_manager, TicketMatch.filter_by_id, user, instance)
+
+    @classmethod
+    def as_manager(cls, user):
+        import alveare.models
+        return query_from_class_to_user(TicketMatch, [
+            alveare.models.skill_requirement.SkillRequirement,
+            alveare.models.ticket.Ticket,
+            alveare.models.project.Project,
+            alveare.models.organization.Organization,
+            alveare.models.manager.Manager,
+        ], user)
 
     def allowed_to_be_created_by(self, user):
-        return True
+        return user.admin
 
-    def allowed_to_be_modified_by(self, user):
-        return self.allowed_to_be_created_by(user)
-
-    def allowed_to_be_deleted_by(self, user):
-        return self.allowed_to_be_created_by(user)
+    allowed_to_be_modified_by = allowed_to_be_created_by
+    allowed_to_be_deleted_by = allowed_to_be_created_by
 
     def allowed_to_be_viewed_by(self, user):
-        return self.allowed_to_be_created_by(user)
+        return self.get_all(user, self).limit(1).all()
 
     def __repr__(self):
         return '<TicketMatch[SkillSet({}), SkillRequirement({})] score={}>'.format(

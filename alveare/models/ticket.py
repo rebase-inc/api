@@ -63,11 +63,8 @@ class Ticket(DB.Model, PermissionMixin):
             return True
         return Ticket.get_all_as_manager(user, self.id).limit(100).all()
 
-    def allowed_to_be_modified_by(self, user):
-        return self.allowed_to_be_created_by(user)
-
-    def allowed_to_be_deleted_by(self, user):
-        return self.allowed_to_be_created_by(user)
+    allowed_to_be_modified_by = allowed_to_be_created_by
+    allowed_to_be_deleted_by = allowed_to_be_created_by
 
     def allowed_to_be_viewed_by(self, user):
         if user.admin:

@@ -24,7 +24,7 @@ def case_cleared_contractors_as_contractor(db):
 
     contractor_0 = all_contractors[0]
     expected_contractors = [contractor_0, all_contractors[1], all_contractors[3]]
-    return contractor_0, expected_contractors
+    return contractor_0.user, expected_contractors
 
 def case_contractor_users(db):
     mgr_user = mock.create_one_user(db)

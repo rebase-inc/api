@@ -49,13 +49,13 @@ class TestCodeRepositoryModel(AlveareModelTestCase):
     def test_as_mgr(self):
         validate_query_fn(self, models.CodeRepository, case_mgr_with_repo, models.CodeRepository.as_manager, True, True, True, True)
 
-    def test_as_cleared_contractor(self):
-        validate_query_fn(self, models.CodeRepository, case_cleared_contractor, models.CodeRepository.as_cleared_contractor, False, False, False, True)
+    def test_as_contractor(self):
+        validate_query_fn(self, models.CodeRepository, case_cleared_contractor, models.CodeRepository.as_contractor, False, False, False, True)
 
     def test_as_other_cleared_contractor(self):
         _, repo = case_cleared_contractor(self.db)
         user, _ = case_cleared_contractor(self.db)
-        self.assertNotIn(repo, models.CodeRepository.as_cleared_contractor(user))
+        self.assertNotIn(repo, models.CodeRepository.as_contractor(user))
         self.assertFalse(repo.allowed_to_be_created_by(user))
         self.assertFalse(repo.allowed_to_be_modified_by(user))
         self.assertFalse(repo.allowed_to_be_deleted_by(user))

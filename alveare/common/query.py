@@ -1,8 +1,8 @@
-def query_from_class_to_user(klass, path, user, id=None):
+
+def query_from_class_to_user(klass, path, user):
     query = klass.query
-    if id:
-        query = query.filter(klass.id==id)
     for node in path:
         query = query.join(node)
-    return query.filter(path[-1].user == user)
+    query = query.filter((path[-1].user if path else klass.user) == user)
+    return query
 

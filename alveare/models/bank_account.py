@@ -1,6 +1,7 @@
 from sqlalchemy.orm import validates
 
 from alveare.common.database import DB, PermissionMixin, query_by_user_or_id
+from alveare.common.query import query_from_class_to_user
 
 class BankAccount(DB.Model, PermissionMixin):
     __pluralname__ = 'bank_accounts'
@@ -20,46 +21,48 @@ class BankAccount(DB.Model, PermissionMixin):
         self.organization = organization
         self.contractor = contractor
 
-    @classmethod
-    def query_by_user(cls, user):
-        return query_by_user_or_id(cls, cls.get_all, user)
+    def filter_by_id(self, query):
+        return query.filter(BankAccount.id==self.id)
 
     @classmethod
-    def get_all(cls, user, account=None):
-        return cls.as_contractor(user, account)\
-            .union(cls.as_manager(user, account))
-
-    @classmethod
-    def as_contractor(cls, user, bank_account_id=None):
-        import alveare.models.contractor
-        query = cls.query\
-            .join(alveare.models.contractor.Contractor)\
-            .filter(alveare.models.contractor.Contractor.user==user)
-        if bank_account_id:
-            query = query.filter(cls.id==bank_account_id)
-        return query
+    def as_contractor(cls, user):
+        import alveare.models
+        return query_from_class_to_user(BankAccount, [alveare.models.contractor.Contractor], user)
 
     @classmethod
     def as_manager(cls, user, bank_account_id=None):
-        import alveare.models.organization
-        query = cls.query\
-            .join(alveare.models.organization.Organization)\
-            .join(alveare.models.Manager)\
-            .filter(alveare.models.manager.Manager.user==user)
-        if bank_account_id:
-            query = query.filter(cls.id==bank_account_id)
-        return query
+        import alveare.models
+        return query_from_class_to_user(BankAccount, [
+            alveare.models.organization.Organization,
+            alveare.models.manager.Manager,
+        ], user)
+
+    @classmethod
+    def get_all(cls, user, account=None):
+        return query_by_user_or_id(
+            cls,
+            lambda user: cls.as_manager(user).union(cls.as_contractor(user)),
+            BankAccount.filter_by_id,
+            user,
+            account
+        )
+
+    @classmethod
+    def query_by_user(cls, user):
+        return cls.get_all(user)
 
     def allowed_to_be_created_by(self, user):
-        return user.admin or self.get_all(user, self.id).all()
+        if user.admin:
+            return True
+        if self.organization:
+            return self.organization.allowed_to_be_modified_by(user)
+        if self.contractor:
+            return self.contractor.allowed_to_be_modified_by(user)
+        raise ValueError('BankAccount instance is missing an organization or a contractor')
 
     allowed_to_be_modified_by = allowed_to_be_created_by
     allowed_to_be_deleted_by = allowed_to_be_created_by
-
-    def allowed_to_be_viewed_by(self, user):
-        if user.admin:
-            return True
-        return self.get_all(user, self.id).all()
+    allowed_to_be_viewed_by = allowed_to_be_created_by
 
     def __repr__(self):
         return '<BankAccount[{}] name="{}" routing={} account={}>'.format(self.id, self.name, self.routing_number, self.account_number)

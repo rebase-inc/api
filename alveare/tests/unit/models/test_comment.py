@@ -128,7 +128,7 @@ class TestCommentModel(AlveareModelTestCase):
             models.Comment,
             case_mgr_feedback_comment,
             models.Comment.as_manager,
-            True, True, True, True
+            False, False, False, True
         )
 
     def test_feedback_comment_as_contractor(self):

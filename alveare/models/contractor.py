@@ -38,24 +38,20 @@ class Contractor(Role):
         return auctions_approved_for
 
     @classmethod
-    def as_manager_get_cleared_contractors(cls, current_user, contractor_id=None):
+    def as_manager_get_cleared_contractors(cls, current_user):
         query = cls.query\
             .join(alveare.models.code_clearance.CodeClearance)\
             .join(alveare.models.project.Project)\
             .join(alveare.models.organization.Organization)\
             .join(alveare.models.manager.Manager)\
             .filter(alveare.models.manager.Manager.user==current_user)
-        if contractor_id:
-            query = query.filter(cls.id==contractor_id)
         return query
 
     nominated_path = None
 
     @classmethod
-    def as_manager_get_nominated_contractors(cls, current_user, contractor_id=None):
+    def as_manager_get_nominated_contractors(cls, current_user):
         query = cls.query
-        if contractor_id:
-            query = query.filter(cls.id==contractor_id)
         if not cls.nominated_path:
             cls.nominated_path = [
                 alveare.models.nomination.Nomination,
@@ -73,7 +69,7 @@ class Contractor(Role):
         return query
 
     @classmethod
-    def as_contractor_get_cleared_contractors(cls, current_user, contractor_id=None):
+    def as_contractor_get_cleared_contractors(cls, current_user):
         query = cls.query.filter(alveare.models.contractor.Contractor.user==current_user)
         path = [
             alveare.models.code_clearance.CodeClearance,
@@ -83,15 +79,25 @@ class Contractor(Role):
         ]
         for klass in path:
             query = query.join(klass)
-        if contractor_id:
-            query = query.filter(cls.id==contractor_id)
         return query
 
+    def filter_by_id(self, query):
+        return query.filter(Contractor.id==self.id)
+
     @classmethod
-    def get_all(cls, current_user, contractor_id=None):
-        return cls.as_manager_get_cleared_contractors(current_user, contractor_id)\
-            .union(cls.as_manager_get_nominated_contractors(current_user, contractor_id))\
-            .union(cls.as_contractor_get_cleared_contractors(current_user, contractor_id))
+    def _all(cls, user):
+        return cls.as_manager_get_cleared_contractors(user)\
+            .union(cls.as_manager_get_nominated_contractors(user))\
+            .union(cls.as_contractor_get_cleared_contractors(user))
+
+    @classmethod
+    def get_all(cls, user, comment=None):
+        return query_by_user_or_id(
+            cls,
+            cls._all,
+            cls.filter_by_id,
+            user, comment
+        )
 
     def allowed_to_be_created_by(self, user):
         return user.is_admin() or self.user == user
@@ -104,7 +110,7 @@ class Contractor(Role):
 
     @classmethod
     def query_by_user(cls, user):
-        return query_by_user_or_id(cls, cls.get_all, user)
+        return cls.get_all(user)
 
     def __repr__(self):
         return '<Contractor[id:{} "{}"] busyness="{}">'.format(

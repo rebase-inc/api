@@ -14,14 +14,22 @@ class SkillSet(DB.Model, PermissionMixin):
 
     @classmethod
     def query_by_user(cls, user):
-        return query_by_user_or_id(cls, cls.get_all, user)
+        return cls.get_all(user)
+
+    def filter_by_id(self, query):
+        return query.filter(SkillSet.id==self.id)
 
     @classmethod
-    def get_all(cls, user, id=None):
-        return cls.as_manager(user, id).union(cls.as_contractor(user, id))
+    def get_all(cls, user, skill_set=None):
+        return query_by_user_or_id(
+            cls,
+            lambda user: cls.as_manager(user).union(cls.as_contractor(user)),
+            cls.filter_by_id,
+            user, skill_set
+        )
 
     @classmethod
-    def as_manager(cls, user, id=None):
+    def as_manager(cls, user):
         import alveare.models
         return query_from_class_to_user(SkillSet, [
             alveare.models.contractor.Contractor,
@@ -29,27 +37,23 @@ class SkillSet(DB.Model, PermissionMixin):
             alveare.models.project.Project,
             alveare.models.organization.Organization,
             alveare.models.manager.Manager,
-        ], user, id)
+        ], user)
 
     @classmethod
-    def as_contractor(cls, user, id=None):
+    def as_contractor(cls, user):
         import alveare.models
         return query_from_class_to_user(SkillSet, [
             alveare.models.contractor.Contractor,
-        ], user, id)
+        ], user)
 
     def allowed_to_be_created_by(self, user):
-        if user.admin:
-            return True
-        return self.as_contractor(user, self.id).limit(1).all()
+        return user.admin
 
     allowed_to_be_modified_by = allowed_to_be_created_by
     allowed_to_be_deleted_by = allowed_to_be_created_by
 
     def allowed_to_be_viewed_by(self, user):
-        if user.admin:
-            return True
-        return self.get_all(user, self.id).limit(1).all()
+        return self.get_all(user, self).limit(1).all()
 
     def __repr__(self):
         return '<SkillSet[{}]>'.format(self.id)

@@ -5,6 +5,7 @@ from alveare.models import SkillSet
 from alveare.tests.common.skill_set import (
     case_mgr,
     case_contractor,
+    case_admin,
 )
 
 class TestSkillSet(AlveareModelTestCase):
@@ -23,6 +24,16 @@ class TestSkillSet(AlveareModelTestCase):
             SkillSet,
             case_contractor,
             SkillSet.as_contractor,
-            True, True, True, True
+            False, False, False, True
         )
 
+    def test_admin(self):
+        user, resource = case_admin(self.db)
+        expected_resources = [resource]
+        resources = SkillSet.query_by_user(user).all()
+        self.assertEqual(expected_resources, resources)
+        self.assertEqual(expected_resources, SkillSet.query_by_user(user).all())
+        self.assertEqual(True, bool(resource.allowed_to_be_created_by(user)))
+        self.assertEqual(True, bool(resource.allowed_to_be_modified_by(user)))
+        self.assertEqual(True, bool(resource.allowed_to_be_deleted_by(user)))
+        self.assertEqual(True, bool(resource.allowed_to_be_viewed_by(user)))

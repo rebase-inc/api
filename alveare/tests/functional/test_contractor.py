@@ -100,8 +100,8 @@ class TestContractorNoMock(AlveareNoMockRestTestCase):
         validate_resource_collection(self, mgr_user, expected_resources)
 
     def test_get_all_contractors_as_contractor(self):
-        contractor, expected_resources = case_cleared_contractors_as_contractor(self.db)
-        validate_resource_collection(self, contractor.user, expected_resources)
+        contractor_user, expected_resources = case_cleared_contractors_as_contractor(self.db)
+        validate_resource_collection(self, contractor_user, expected_resources)
 
     def test_manager_cannot_modify_contractor(self):
         mgr_user, expected_contractors = case_cleared_contractors(self.db)
@@ -113,15 +113,16 @@ class TestContractorNoMock(AlveareNoMockRestTestCase):
         self.resource.update(expected_status=401, **contractor_blob) # test PUT
 
     def test_contractor_cannot_modify_another_contractor(self):
-        contractor, expected_resources = case_cleared_contractors_as_contractor(self.db)
-        self.login(contractor.user.email, 'foo')
+        contractor_user, expected_resources = case_cleared_contractors_as_contractor(self.db)
+        self.login(contractor_user.email, 'foo')
         other_contractor = self.resource.get(expected_resources[1].id)
         self.resource.update(expected_status=401, **other_contractor)
         self.resource.delete(expected_status=401, **other_contractor)
 
     def test_contractor_can_modify_or_delete_self(self):
-        contractor, expected_resources = case_cleared_contractors_as_contractor(self.db)
-        self.login(contractor.user.email, 'foo')
+        contractor_user, expected_resources = case_cleared_contractors_as_contractor(self.db)
+        self.login(contractor_user.email, 'foo')
+        contractor = contractor_user.roles.all()[0]
         contractor_blob = self.resource.get(contractor.id)
         new_busyness = 123456
         contractor_blob['busyness'] = new_busyness
@@ -129,7 +130,8 @@ class TestContractorNoMock(AlveareNoMockRestTestCase):
         self.resource.delete(**contractor_blob)
 
     def test_anonymous_cannot_view_or_modify_contractor(self):
-        contractor, expected_resources = case_cleared_contractors_as_contractor(self.db)
+        contractor_user, expected_resources = case_cleared_contractors_as_contractor(self.db)
+        contractor = contractor_user.roles.all()[0]
         self.logout()
         contractor_blob = self.resource.get(contractor.id, 401)
         self.resource.update(expected_status=401, **{'id': contractor.id})

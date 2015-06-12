@@ -27,10 +27,28 @@ class Review(DB.Model, PermissionMixin):
         return query_by_user_or_id(cls, cls.get_all, user)
 
     @classmethod
-    def get_all(cls, user, id=None):
-        return cls.as_manager(user, id).union(cls.as_contractor(user, id))
+    def _all(cls, user, id=None):
+        return cls.as_manager(user).union(cls.as_contractor(user))
 
-    def as_manager(user, id):
+
+    @classmethod
+    def query_by_user(cls, user):
+        return cls.get_all(user)
+
+    def filter_by_id(self, query):
+        return query.filter(Review.id==self.id)
+
+    @classmethod
+    def get_all(cls, user, comment=None):
+        return query_by_user_or_id(
+            cls,
+            cls._all,
+            cls.filter_by_id,
+            user, comment
+        )
+
+    @classmethod
+    def as_manager(cls, user):
         import alveare.models
         return query_from_class_to_user(Review, [
             alveare.models.work.Work,
@@ -40,31 +58,28 @@ class Review(DB.Model, PermissionMixin):
             alveare.models.project.Project,
             alveare.models.organization.Organization,
             alveare.models.manager.Manager,
-        ], user, id)
+        ], user)
 
-    def as_contractor(user, id):
+    def as_contractor(user):
         import alveare.models
         return query_from_class_to_user(Review, [
             alveare.models.work.Work,
             alveare.models.work_offer.WorkOffer,
             alveare.models.contractor.Contractor,
-        ], user, id)
+        ], user)
 
     def allowed_to_be_created_by(self, user):
         if user.is_admin():
             return True
         return self.work.offer.contractor.user == user
 
-    def allowed_to_be_modified_by(self, user):
-        return self.allowed_to_be_created_by(user)
-
-    def allowed_to_be_deleted_by(self, user):
-        return self.allowed_to_be_created_by(user)
+    allowed_to_be_modified_by = allowed_to_be_created_by
+    allowed_to_be_deleted_by = allowed_to_be_created_by
 
     def allowed_to_be_viewed_by(self, user):
         if user.is_admin():
             return True
-        return self.get_all(user, self.id).limit(100).all()
+        return self.get_all(user, self).limit(100).all()
 
     def __repr__(self):
         return '<Review[{}] rating={}>'.format(self.id, self.rating)

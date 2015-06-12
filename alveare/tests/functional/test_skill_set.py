@@ -83,4 +83,4 @@ class TestSkillSet(AlveareNoMockRestTestCase):
         self._test_skill_set(case_mgr, False, False, False, True)
 
     def test_contractor(self):
-        self._test_skill_set(case_contractor, True, True, True, True)
+        self._test_skill_set(case_contractor, False, False, False, True)

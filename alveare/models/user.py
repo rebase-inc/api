@@ -36,16 +36,22 @@ class User(DB.Model, PermissionMixin):
 
     @classmethod
     def query_by_user(cls, user, user_id=None):
-        return query_by_user_or_id(cls, cls.get_all, user, user_id)
+        return cls.get_all(user)
+
+    def filter_by_id(self, query):
+        return query.filter(User.id==self.id)
 
     @classmethod
-    def get_all(cls, user):
-        return cls.get_all_as_manager(user)\
-            .union(cls.get_all_as_contractor(user))\
-            .union(cls.get_all_as_user(user))
+    def get_all(cls, user, another_user=None):
+        return query_by_user_or_id(
+            cls,
+            lambda user: cls.as_manager(user).union(cls.as_contractor(user)).union(cls.as_user(user)),
+            cls.filter_by_id,
+            user, another_user
+        )
 
     @classmethod
-    def get_all_as_manager(cls, current_user, user_id=None):
+    def as_manager(cls, current_user, user_id=None):
         '''
         As a manager, there are 3 types of users you can read:
         - other managers in your org
@@ -104,7 +110,7 @@ class User(DB.Model, PermissionMixin):
         return cls.query_path(path, current_user, user_id)
 
     @classmethod
-    def get_all_as_contractor(cls, current_user, user_id=None):
+    def as_contractor(cls, current_user, user_id=None):
         return cls.as_contractor_get_managers(current_user, user_id)\
             .union(cls.as_contractor_get_cleared_contractors(current_user, user_id))
 
@@ -133,7 +139,7 @@ class User(DB.Model, PermissionMixin):
         return cls.query_path(path, current_user, user_id)
 
     @classmethod
-    def get_all_as_user(cls, current_user, user_id=None):
+    def as_user(cls, current_user, user_id=None):
         return cls.query.filter(cls.id==current_user.id)
 
     def allowed_to_be_created_by(self, user):

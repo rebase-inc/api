@@ -63,9 +63,6 @@ class TestContractorModel(AlveareModelTestCase):
         self.assertEqual(len(contractors), len(expected_contractors))
         for contractor in expected_contractors:
             self.assertIn(contractor, contractors)
-            _contractors = query_fn(user, contractor.id).all()
-            self.assertTrue(_contractors)
-            self.assertEqual(_contractors[0], contractor)
 
     def test_as_mgr_get_cleared_contractors(self):
         self._test_get_contractors(

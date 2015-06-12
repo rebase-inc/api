@@ -21,30 +21,37 @@ class Comment(DB.Model, PermissionMixin):
 
     @classmethod
     def query_by_user(cls, user):
-        return query_by_user_or_id(cls, cls.get_all, user)
+        return cls.get_all(user)
+
+    def filter_by_id(self, query):
+        return query.filter(Comment.id==self.id)
 
     @classmethod
-    def get_all(cls, user, id=None):
-        return cls.as_manager(user, id)\
-            .union(cls.as_contractor(user, id))
+    def get_all(cls, user, comment=None):
+        return query_by_user_or_id(
+            cls,
+            lambda user: cls.as_manager(user).union(cls.as_contractor(user)),
+            cls.filter_by_id,
+            user, comment
+        )
 
     @classmethod
-    def as_manager(cls, user, id=None):
-        return cls.get_manager_ticket_comment(user, id)\
-            .union(cls.get_manager_mediation_comment(user, id))\
-            .union(cls.get_manager_review_comment(user, id))\
-            .union(cls.get_manager_feedback_comment(user, id))
+    def as_manager(cls, user):
+        return cls.get_manager_ticket_comment(user)\
+            .union(cls.get_manager_mediation_comment(user))\
+            .union(cls.get_manager_review_comment(user))\
+            .union(cls.get_manager_feedback_comment(user))
 
-    def get_manager_ticket_comment(user, id=None):
+    def get_manager_ticket_comment(user):
         import alveare.models
         return query_from_class_to_user(Comment, [
             alveare.models.ticket.Ticket,
             alveare.models.project.Project,
             alveare.models.organization.Organization,
             alveare.models.manager.Manager,
-        ], user, id)
+        ], user)
 
-    def get_manager_feedback_comment(user, id=None):
+    def get_manager_feedback_comment(user):
         import alveare.models
         return query_from_class_to_user(Comment, [
             alveare.models.feedback.Feedback,
@@ -56,9 +63,9 @@ class Comment(DB.Model, PermissionMixin):
             alveare.models.project.Project,
             alveare.models.organization.Organization,
             alveare.models.manager.Manager,
-        ], user, id)
+        ], user)
 
-    def get_manager_mediation_comment(user, id=None):
+    def get_manager_mediation_comment(user):
         import alveare.models
         return query_from_class_to_user(Comment, [
             alveare.models.mediation.Mediation,
@@ -69,9 +76,9 @@ class Comment(DB.Model, PermissionMixin):
             alveare.models.project.Project,
             alveare.models.organization.Organization,
             alveare.models.manager.Manager,
-        ], user, id)
+        ], user)
 
-    def get_manager_review_comment(user, id=None):
+    def get_manager_review_comment(user):
         import alveare.models
         return query_from_class_to_user(Comment, [
             alveare.models.review.Review,
@@ -82,53 +89,61 @@ class Comment(DB.Model, PermissionMixin):
             alveare.models.project.Project,
             alveare.models.organization.Organization,
             alveare.models.manager.Manager,
-        ], user, id)
+        ], user)
 
     @classmethod
-    def as_contractor(cls, user, id=None):
-        return cls.get_contractor_ticket_comment(user, id)\
-            .union(cls.get_contractor_mediation_comment(user, id))\
-            .union(cls.get_contractor_review_comment(user, id))\
-            .union(cls.get_contractor_feedback_comment(user, id))
+    def as_contractor(cls, user):
+        return cls.get_contractor_ticket_comment(user)\
+            .union(cls.get_contractor_mediation_comment(user))\
+            .union(cls.get_contractor_review_comment(user))\
+            .union(cls.get_contractor_feedback_comment(user))
 
-    def get_contractor_ticket_comment(user, id=None):
+    def get_contractor_ticket_comment(user):
         import alveare.models
         return query_from_class_to_user(Comment, [
             alveare.models.ticket.Ticket,
             alveare.models.project.Project,
             alveare.models.code_clearance.CodeClearance,
             alveare.models.contractor.Contractor,
-        ], user, id)
+        ], user)
 
-    def get_contractor_feedback_comment(user, id=None):
+    def get_contractor_feedback_comment(user):
         import alveare.models
         return query_from_class_to_user(Comment, [
             alveare.models.feedback.Feedback,
             alveare.models.contractor.Contractor,
-        ], user, id)
+        ], user)
 
-    def get_contractor_mediation_comment(user, id=None):
+    def get_contractor_mediation_comment(user):
         import alveare.models
         return query_from_class_to_user(Comment, [
             alveare.models.mediation.Mediation,
             alveare.models.work.Work,
             alveare.models.work_offer.WorkOffer,
             alveare.models.contractor.Contractor,
-        ], user, id)
+        ], user)
 
-    def get_contractor_review_comment(user, id=None):
+    def get_contractor_review_comment(user):
         import alveare.models
         return query_from_class_to_user(Comment, [
             alveare.models.review.Review,
             alveare.models.work.Work,
             alveare.models.work_offer.WorkOffer,
             alveare.models.contractor.Contractor,
-        ], user, id)
+        ], user)
 
     def allowed_to_be_created_by(self, user):
         if user.admin:
             return True
-        return self.get_all(user, self.id).all()
+        if self.review:
+            return self.review.allowed_to_be_viewed_by(user)
+        if self.mediation:
+            return self.mediation.allowed_to_be_viewed_by(user)
+        if self.ticket:
+            return self.ticket.allowed_to_be_viewed_by(user)
+        if self.feedback:
+            return self.feedback.allowed_to_be_modified_by(user)
+        raise ValueError('Invalid Comment object')
 
     allowed_to_be_modified_by = allowed_to_be_created_by
     allowed_to_be_deleted_by = allowed_to_be_created_by
@@ -136,7 +151,7 @@ class Comment(DB.Model, PermissionMixin):
     def allowed_to_be_viewed_by(self, user):
         if user.admin:
             return True
-        return self.get_all(user, self.id).all()
+        return self.get_all(user, self).all()
 
     def __repr__(self):
         abbreviated_content = self.content[0:15]

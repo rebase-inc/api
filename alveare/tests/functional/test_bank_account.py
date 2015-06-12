@@ -132,6 +132,7 @@ class TestBankAccount(AlveareNoMockRestTestCase):
         account_blob = self.resource.get(account.id)
         self.resource.update(**account_blob)
         self.resource.delete(**account_blob)
+        del account_blob['id']
         self.resource.create(**account_blob)
 
     def test_as_contractor(self):
