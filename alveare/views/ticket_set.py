@@ -6,16 +6,15 @@ from alveare.common.database import get_or_make_object, SecureNestedField
 
 class TicketSetSchema(AlveareSchema):
     id =          fields.Integer()
-    bid_limits =  SecureNestedField(BidLimitSchema, exclude=('ticket_set',), many=True)
+    bid_limits =  SecureNestedField(BidLimitSchema, exclude=('ticket_set',), only=('id', 'price', 'ticket_snapshot'), many=True)
     auction =     SecureNestedField('AuctionSchema', only=('id',))
     nominations = SecureNestedField('NominationSchema', only=('contractor', 'ticket_set'), many=True)
-    #organization = SecureNestedField('OrganizationSchema', only=('id',))
 
     def make_object(self, data):
         from alveare.models import TicketSet
         return get_or_make_object(TicketSet, data)
 
-serializer = TicketSetSchema(only=('id', 'bid_limits','auction'), skip_missing=True)
-deserializer = TicketSetSchema(only=('bid_limits',), strict=True)
-update_deserializer = TicketSetSchema(only=tuple(), strict=True)
+serializer = TicketSetSchema(skip_missing=True)
+deserializer = TicketSetSchema(strict=True)
+update_deserializer = TicketSetSchema()
 update_deserializer.make_object = lambda data: data

@@ -1,15 +1,18 @@
-from alveare.common.database import DB, PermissionMixin
+from alveare.common.database import DB, PermissionMixin, query_by_user_or_id
 from alveare.models.bid_limit import BidLimit
+from alveare.common.query import query_from_class_to_user
 
 class TicketSet(DB.Model, PermissionMixin):
     __pluralname__ = 'ticket_sets'
 
     id =         DB.Column(DB.Integer, primary_key=True)
     auction_id = DB.Column(DB.Integer, DB.ForeignKey('auction.id', ondelete='CASCADE'), nullable=True)
-    bid_limits = DB.relationship(BidLimit,
+    bid_limits = DB.relationship(
+        BidLimit,
         backref=DB.backref('ticket_set', cascade='all, delete-orphan', single_parent=True),
         cascade='all, delete-orphan',
-        passive_deletes=True)
+        passive_deletes=True
+    )
     nominations = DB.relationship('Nomination', backref='ticket_set', cascade='all, delete-orphan', passive_deletes=True)
 
     def __init__(self, bid_limits):
@@ -21,20 +24,59 @@ class TicketSet(DB.Model, PermissionMixin):
 
     @classmethod
     def query_by_user(cls, user):
-        return cls.query
+        import alveare.models
+        if user.admin:
+            return cls.query
+        return cls._all(user)
+
+    @classmethod
+    def _all(cls, user):
+        return cls.as_manager(user).union(cls.as_contractor(user))
+
+    @classmethod
+    def as_manager(cls, user):
+        import alveare.models
+        return query_from_class_to_user(TicketSet, [
+            alveare.models.bid_limit.BidLimit,
+            alveare.models.ticket_snapshot.TicketSnapshot,
+            alveare.models.ticket.Ticket,
+            alveare.models.project.Project,
+            alveare.models.organization.Organization,
+            alveare.models.manager.Manager,
+        ], user)
+
+    @classmethod
+    def as_contractor(cls, user):
+        import alveare.models
+        return query_from_class_to_user(TicketSet, [
+            alveare.models.nomination.Nomination,
+            alveare.models.contractor.Contractor,
+        ], user)
+
 
     def allowed_to_be_created_by(self, user):
-        return True
+        return self.bid_limits[0].allowed_to_be_created_by(user)
+        #return query_by_user_or_id(
+            #TicketSet,
+            #TicketSet.as_manager,
+            #TicketSet.filter_by_id,
+            #user, self
+        #).limit(1).all()
 
-    def allowed_to_be_modified_by(self, user):
-        return self.allowed_to_be_created_by(user)
+    allowed_to_be_modified_by = allowed_to_be_created_by
+    allowed_to_be_deleted_by = allowed_to_be_created_by
 
-    def allowed_to_be_deleted_by(self, user):
-        return self.allowed_to_be_created_by(user)
+    def filter_by_id(self, query):
+        return query.filter(TicketSet.id==self.id)
 
     def allowed_to_be_viewed_by(self, user):
-        return self.allowed_to_be_created_by(user)
+        return query_by_user_or_id(
+            TicketSet,
+            TicketSet._all,
+            TicketSet.filter_by_id,
+            user, self
+        ).limit(1).all()
+        
 
     def __repr__(self):
         return '<Ticketset[id:{}]>'.format(self.id)
-

@@ -128,6 +128,7 @@ class TestAuctionResource(AlveareRestTestCase):
         self.assertIsInstance(ticket_set.pop('id'), int)
 
         bid_limits = ticket_set.pop('bid_limits')
+        print(bid_limits)
         bid_limit = bid_limits.pop()
         self.assertEqual(bid_limits, [])
         self.assertIsInstance(bid_limit.pop('id'), int)

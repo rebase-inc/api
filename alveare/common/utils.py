@@ -247,7 +247,9 @@ class AlveareResource(object):
 def validate_query_fn(test, klass, case, query_fn, create, modify, delete, view):
     user, resource = case(test.db)
     expected_resources = [resource] if resource else []
-    case(test.db) # create more unrelated resource, to make sure the queries discriminate properly
+    another_user, one_more_resource = case(test.db) # create more unrelated resource, to make sure the queries discriminate properly
+    if user.admin:
+        expected_resources.append(one_more_resource)
     resources = query_fn(user).all()
     test.assertEqual(expected_resources, resources)
     test.assertEqual(expected_resources, klass.query_by_user(user).all())
