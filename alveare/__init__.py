@@ -27,7 +27,7 @@ def create_app(sqlalchemy_object, database_type = 'sqlite', config_filename = 'c
         app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://{username}:{password}@{host}:{port}/{dbname}'.format(**settings)
     else:
         raise Exception('invalid database type!')
-    #app.config.from_object(config_filename)
+
     class AnonymousUser(object):
         is_active = False
         def is_authenticated(self): return False
