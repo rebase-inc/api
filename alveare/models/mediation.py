@@ -12,7 +12,7 @@ class Mediation(DB.Model, PermissionMixin):
     __pluralname__ = 'mediations'
 
     id =            DB.Column(DB.Integer, primary_key=True)
-    dev_answer =    DB.Column(DB.Integer, nullable=True)
+    dev_answer =    DB.Column(DB.String, nullable=True)
     client_answer = DB.Column(DB.Integer, nullable=True)
     timeout =       DB.Column(DB.DateTime, nullable=False)
     work_id =       DB.Column(DB.Integer, DB.ForeignKey('work.id', ondelete='CASCADE'), nullable=False)

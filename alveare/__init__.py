@@ -23,8 +23,8 @@ def create_app(sqlalchemy_object, database_type = 'sqlite', config_filename = 'c
             cursor.close()
         app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
     elif database_type == 'postgres':
-        settings = dict(username='postgres', password='', host='localhost', port='5432', dbname='postgres')
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://{username}:{password}@{host}:{port}/{dbname}'.format(**settings)
+        settings = dict(username='rapha', password='', host='localhost', port='5432', dbname='rebase')
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://{host}:{port}/{dbname}'.format(**settings)
     else:
         raise Exception('invalid database type!')
 

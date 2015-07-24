@@ -18,7 +18,7 @@ class TestBankAccountModel(AlveareModelTestCase):
         self.assertEqual(new_bank_account.account_number, account)
 
     def test_delete(self):
-        new_bank_account = self.create_model(self.model, 'Elon Musk', 111111111, 22222222222)
+        new_bank_account = self.create_model(self.model, 'Elon Musk', 123456789, 12345678901234567)
         self.delete_instance(new_bank_account)
 
     def test_update(self):

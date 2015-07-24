@@ -11,7 +11,7 @@ class BankAccount(DB.Model, PermissionMixin):
     contractor_id =     DB.Column(DB.Integer, DB.ForeignKey('contractor.id', ondelete='CASCADE'), nullable=True)
     name =              DB.Column(DB.String, nullable=False)
     routing_number =    DB.Column(DB.Integer, nullable=False)
-    account_number =    DB.Column(DB.Integer, nullable=False)
+    account_number =    DB.Column(DB.BigInteger, nullable=False) # account numbers can go up to 17 digits
 
     def __init__(self, name, routing_number, account_number, organization=None, contractor=None):
         self.name = name

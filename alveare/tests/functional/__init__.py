@@ -16,7 +16,8 @@ class AlveareRestTestCase(unittest.TestCase):
     create_mock_data = True
 
     def setUp(self):
-        self.app = create_app(DB)
+        self.app = create_app(DB, database_type='postgres') # uses PostGresSQL
+        #self.app = create_app(DB) # uses SQlite3 
         self.db = DB
 
         # not really sure why this is required
