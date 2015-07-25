@@ -1,4 +1,5 @@
 import sys
+from os import environ
 
 from flask.ext.restful import Api
 from flask.ext.login import LoginManager
@@ -23,8 +24,13 @@ def create_app(sqlalchemy_object, database_type = 'sqlite', config_filename = 'c
             cursor.close()
         app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
     elif database_type == 'postgres':
-        settings = dict(username='rapha', password='', host='localhost', port='5432', dbname='rebase')
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://{host}:{port}/{dbname}'.format(**settings)
+        if 'DATABASE_URL' in environ:
+            url = environ['DATABASE_URL']
+        else:
+            settings = dict(username='rapha', password='', host='localhost', port='5432', dbname='rebase')
+            url = 'postgresql://{host}:{port}/{dbname}'.format(**settings)
+        app.logger.debug('PostGresSQL URL: {}', url)
+        app.config['SQLALCHEMY_DATABASE_URI'] = url
     else:
         raise Exception('invalid database type!')
 
