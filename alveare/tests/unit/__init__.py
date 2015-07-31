@@ -1,15 +1,12 @@
 import unittest
 
-from alveare.common.database import DB
+from alveare.common.database import DB, DB_TEST_NAME
 from alveare import create_app
 
 class AlveareTestCase(unittest.TestCase):
 
     def setUp(self):
-        # do we actually need to create the app to do db tests?
-        self.app = create_app(DB, database_type='postgres')
-        self.db = DB
-        self.app.test_request_context().push()
+        self.app, self.app_context, self.db = create_app(local=True, db_name=DB_TEST_NAME)
         DB.create_all()
         DB.session.commit()
 

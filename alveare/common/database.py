@@ -3,6 +3,8 @@ from marshmallow import fields
 from flask.ext.sqlalchemy import SQLAlchemy
 from alveare.common.exceptions import BadDataError, NotFoundError
 DB = SQLAlchemy()
+DB_PRODUCTION_NAME = 'rebase'
+DB_TEST_NAME = 'test_'+DB_PRODUCTION_NAME
 
 def get_or_make_object(model, data, id_fields=None):
     id_fields = id_fields or ['id']

@@ -1,8 +1,3 @@
 from alveare import create_app
-from alveare.common.database import DB
 
-app = create_app(DB, database_type='postgres')
-app_context = app.app_context()
-app_context.push()
-DB.create_all()
-DB.session.commit()
+app, _, _ = create_app()

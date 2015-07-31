@@ -1,8 +1,10 @@
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import aliased
 
 from alveare.models.role import Role
 from alveare.models.user import User
 from alveare.common.database import DB, PermissionMixin, query_by_user_or_id
+from alveare.common.query import query_from_class_to_user
 import alveare.models
 
 class Contractor(Role):
@@ -69,17 +71,16 @@ class Contractor(Role):
         return query
 
     @classmethod
-    def as_contractor_get_cleared_contractors(cls, current_user):
-        query = cls.query.filter(alveare.models.contractor.Contractor.user==current_user)
-        path = [
-            alveare.models.code_clearance.CodeClearance,
-            alveare.models.project.Project,
-            alveare.models.code_clearance.CodeClearance,
-            cls
-        ]
-        for klass in path:
-            query = query.join(klass)
-        return query
+    def as_contractor_get_cleared_contractors(cls, user):
+        import alveare.models
+        ct = aliased(alveare.models.Contractor)
+        return DB.session.query(ct)\
+            .select_from(Contractor)\
+            .filter(Contractor.user==user)\
+            .join(alveare.models.CodeClearance)\
+            .join(alveare.models.Project)\
+            .join(alveare.models.CodeClearance, aliased=True)\
+            .join(ct)
 
     def filter_by_id(self, query):
         return query.filter(Contractor.id==self.id)

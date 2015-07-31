@@ -3,7 +3,7 @@ import datetime
 import unittest
 
 from alveare import models, create_app
-from alveare.common.database import DB
+from alveare.common.database import DB, DB_TEST_NAME
 from alveare.common.mock import create_the_world, create_admin_user
 from alveare.models import (
     User,
@@ -16,13 +16,8 @@ class AlveareRestTestCase(unittest.TestCase):
     create_mock_data = True
 
     def setUp(self):
-        self.app = create_app(DB, database_type='postgres') # uses PostGresSQL
-        #self.app = create_app(DB) # uses SQlite3 
-        self.db = DB
+        self.app, self.app_context, self.db = create_app(local=True, db_name=DB_TEST_NAME)
 
-        # not really sure why this is required
-        self.app_context = self.app.app_context()
-        self.app_context.push()
         self.client = self.app.test_client()
 
         self.db.create_all()

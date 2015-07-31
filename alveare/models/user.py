@@ -1,11 +1,13 @@
 import datetime
 import itertools
 
-from sqlalchemy.ext.hybrid import hybrid_property
 from flask.ext.login import login_user, logout_user
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import aliased
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from alveare.common.database import DB, PermissionMixin, query_by_user_or_id
+from alveare.common.query import query_from_class_to_user
 import alveare.models.organization
 import alveare.models.manager
 
@@ -63,51 +65,48 @@ class User(DB.Model, PermissionMixin):
             .union(cls.as_manager_get_nominated_users(current_user, user_id))
 
     @classmethod
-    def query_path(cls, path, current_user, user_id=None):
-        query = cls.query.filter(cls.id==current_user.id)
-        for klass in path:
-            query = query.join(klass)
+    def as_manager_get_other_managers(cls, user, user_id=None):
+        import alveare.models
+        query = query_from_class_to_user(User, [
+            alveare.models.manager.Manager,
+            alveare.models.organization.Organization,
+            alveare.models.manager.Manager,
+        ], user)
         if user_id:
-            query = query.filter(cls.id==user_id)
+            query = query.filter(User.id==user_id)
         return query
 
     @classmethod
-    def as_manager_get_other_managers(cls, current_user, user_id=None):
-        path = [
-            alveare.models.manager.Manager,
-            alveare.models.organization.Organization,
-            alveare.models.manager.Manager,
-            cls
-        ]
-        return cls.query_path(path, current_user, user_id)
-
-    @classmethod
-    def as_manager_get_cleared_contractors(cls, current_user, user_id=None):
-        path = [
-            alveare.models.manager.Manager,
-            alveare.models.organization.Organization,
-            alveare.models.project.Project,
+    def as_manager_get_cleared_contractors(cls, user, user_id=None):
+        import alveare.models
+        query = query_from_class_to_user(User, [
+            alveare.models.contractor.Contractor,
             alveare.models.code_clearance.CodeClearance,
-            alveare.models.contractor.Contractor,
-            cls
-        ]
-        return cls.query_path(path, current_user, user_id)
+            alveare.models.project.Project,
+            alveare.models.organization.Organization,
+            alveare.models.manager.Manager,
+        ], user)
+        if user_id:
+            query = query.filter(User.id==user_id)
+        return query
 
     @classmethod
-    def as_manager_get_nominated_users(cls, current_user, user_id=None):
-        path = [
-            alveare.models.manager.Manager,
-            alveare.models.organization.Organization,
-            alveare.models.project.Project,
-            alveare.models.ticket.Ticket,
-            alveare.models.ticket_snapshot.TicketSnapshot,
-            alveare.models.bid_limit.BidLimit,
-            alveare.models.ticket_set.TicketSet,
-            alveare.models.nomination.Nomination,
+    def as_manager_get_nominated_users(cls, user, user_id=None):
+        import alveare.models
+        query = query_from_class_to_user(User, [
             alveare.models.contractor.Contractor,
-            cls
-        ]
-        return cls.query_path(path, current_user, user_id)
+            alveare.models.nomination.Nomination,
+            alveare.models.ticket_set.TicketSet,
+            alveare.models.bid_limit.BidLimit,
+            alveare.models.ticket_snapshot.TicketSnapshot,
+            alveare.models.ticket.Ticket,
+            alveare.models.project.Project,
+            alveare.models.organization.Organization,
+            alveare.models.manager.Manager,
+        ], user)
+        if user_id:
+            query = query.filter(User.id==user_id)
+        return query
 
     @classmethod
     def as_contractor(cls, current_user, user_id=None):
@@ -116,27 +115,37 @@ class User(DB.Model, PermissionMixin):
 
     @classmethod
     def as_contractor_get_managers(cls, current_user, user_id=None):
-        path = [
-            alveare.models.contractor.Contractor,
-            alveare.models.code_clearance.CodeClearance,
-            alveare.models.project.Project,
-            alveare.models.organization.Organization,
-            alveare.models.manager.Manager,
-            cls
-        ]
-        return cls.query_path(path, current_user, user_id)
+        import alveare.models
+        UserAlias = aliased(User)
+        query = DB.session.query(UserAlias)\
+            .select_from(User)\
+            .join(alveare.models.contractor.Contractor)\
+            .join(alveare.models.code_clearance.CodeClearance)\
+            .join(alveare.models.project.Project)\
+            .join(alveare.models.organization.Organization)\
+            .join(alveare.models.manager.Manager)\
+            .join(UserAlias)
+        if user_id:
+            query = query.filter(UserAlias.id == user_id)
+        return query
 
     @classmethod
     def as_contractor_get_cleared_contractors(cls, current_user, user_id=None):
-        path = [
-            alveare.models.contractor.Contractor,
-            alveare.models.code_clearance.CodeClearance,
-            alveare.models.project.Project,
-            alveare.models.code_clearance.CodeClearance,
-            alveare.models.contractor.Contractor,
-            cls
-        ]
-        return cls.query_path(path, current_user, user_id)
+        import alveare.models
+        UserAlias = aliased(User)
+        CodeClearanceAlias = aliased(alveare.models.CodeClearance)
+        ContractorAlias = aliased(alveare.models.Contractor)
+        query = DB.session.query(UserAlias)\
+            .select_from(User)\
+            .join(alveare.models.contractor.Contractor)\
+            .join(alveare.models.code_clearance.CodeClearance)\
+            .join(alveare.models.project.Project)\
+            .join(CodeClearanceAlias)\
+            .join(ContractorAlias)\
+            .join(UserAlias)
+        if user_id:
+            query = query.filter(UserAlias.id == user_id)
+        return query
 
     @classmethod
     def as_user(cls, current_user, user_id=None):
