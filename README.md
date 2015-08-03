@@ -27,4 +27,15 @@ git remote add stage git@heroku.com:rebase-stage.git
 #To set an environment variable on a remote configuration:
 heroku config:set APP_SETTINGS=alveare.common.config.StagingConfig --remote stage
 heroku config:set APP_SETTINGS=alveare.common.config.ProductionConfig --remote pro
+
+# Install the PostGreSQL add-on on both apps:
+# the staging app
+heroku addons:create heroku-postgresql:hobby-dev --app rebase-stage
+git push stage master
+heroku run python manage.py db upgrade --app rebase-stage
+
+# the production app
+heroku addons:create heroku-postgresql:hobby-dev --app rebase-pro
+git push pro master
+heroku run python manage.py db upgrade --app rebase-pro
 ```
