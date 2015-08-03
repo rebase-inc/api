@@ -24,6 +24,7 @@ def create_admin_page(app):
 def create_app(local=False, database_type = 'postgres', config_filename = 'config', db_name=DB_PRODUCTION_NAME):
     """ Create our app using the Flask factory pattern """
     app = Flask(__name__)
+    app.config.from_object(environ['APP_SETTINGS'])
     app_context = app.app_context()
     app_context.push()
     create_admin_page(app)
