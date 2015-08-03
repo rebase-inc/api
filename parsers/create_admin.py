@@ -1,23 +1,22 @@
+from flask.ext.script import Command, Option
+
 from alveare import create_app
 from alveare.models import User
 from alveare.common.database import DB
 
-def add_parser(subparsers):
-    parser = subparsers.add_parser('create_admin')
-    parser.set_defaults(func=create_admin)
-    parser.add_argument('email')
-    parser.add_argument('password')
-    parser.add_argument('--first', default='', help='First name of this admin')
-    parser.add_argument('--last', default='', help='Last name of this admin')
+class CreateAdmin(Command):
+    '''Creates a user and tag it as administrator'''
 
-def create_admin(args):
-    user = User(
-        args.first,
-        args.last,
-        args.email,
-        args.password
+    option_list = (
+        Option('email',  help='The email is used as the login.'),
+        Option('password',  help='Make it long and hard to guess, duh.'),
+        Option('--first', default='', help='First name.'),
+        Option('--last', default='', help='Last name.'),
     )
-    user.admin = True
-    app, _, DB = create_app()
-    DB.session.add(user)
-    DB.session.commit()
+
+    def run(self, email, password, first, last):
+        user = User(first, last, email, password)
+        user.admin = True
+        app, _, DB = create_app()
+        DB.session.add(user)
+        DB.session.commit()

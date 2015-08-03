@@ -21,31 +21,17 @@ def create_admin_page(app):
     admin.add_view(ModelView(User, DB.session))
 
 
-def create_app(local=False, database_type = 'postgres', config_filename = 'config', db_name=DB_PRODUCTION_NAME):
+def create_app():
     """ Create our app using the Flask factory pattern """
     app = Flask(__name__)
     app.config.from_object(environ['APP_SETTINGS'])
     app_context = app.app_context()
     app_context.push()
     create_admin_page(app)
-    if database_type == 'sqlite':
-        @event.listens_for(Engine, "connect")
-        def set_sqlite_pragma(dbapi_connection, connection_record):
-            cursor = dbapi_connection.cursor()
-            cursor.execute("PRAGMA foreign_keys=ON")
-            cursor.close()
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
-    elif database_type == 'postgres':
-        if not local and 'DATABASE_URL' in environ:
-            # DATABASE_URL is used by Heroku to advertise the location of the provisioned PostGreSQL DB.
-            url = environ['DATABASE_URL']
-        else:
-            settings = dict(host='localhost', db_name=db_name)
-            url = 'postgresql://{host}/{db_name}'.format(**settings)
-        app.logger.debug('PostGresSQL URL: %s', url)
-        app.config['SQLALCHEMY_DATABASE_URI'] = url
+    if 'DATABASE_URL' in environ:
+        app.config['SQLALCHEMY_DATABASE_URI'] = environ['DATABASE_URL']
     else:
-        raise Exception('invalid database type!')
+        raise EnvironmentError('You need to set the DATABASE_URL variable in your environment. Did you forget to run "source setup.sh" or "source test_setup.sh"?')
 
     class AnonymousUser(object):
         is_active = False

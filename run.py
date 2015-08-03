@@ -7,7 +7,6 @@ from pathlib import Path
 parser = ArgumentParser(description='Manage Rebase\'s Backend')
 subparsers = parser.add_subparsers()
 
-
 for entry in Path('parsers').glob('*.py'):
     if entry.is_file() and not entry.name.startswith('__'):
         module = import_module('parsers.'+entry.stem)

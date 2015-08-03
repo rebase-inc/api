@@ -16,7 +16,7 @@ class AlveareRestTestCase(unittest.TestCase):
     create_mock_data = True
 
     def setUp(self):
-        self.app, self.app_context, self.db = create_app(local=True, db_name=DB_TEST_NAME)
+        self.app, self.app_context, self.db = create_app()
 
         self.client = self.app.test_client()
 

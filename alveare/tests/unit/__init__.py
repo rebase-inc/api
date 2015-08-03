@@ -6,7 +6,7 @@ from alveare import create_app
 class AlveareTestCase(unittest.TestCase):
 
     def setUp(self):
-        self.app, self.app_context, self.db = create_app(local=True, db_name=DB_TEST_NAME)
+        self.app, self.app_context, self.db = create_app()
         DB.create_all()
         DB.session.commit()
 
