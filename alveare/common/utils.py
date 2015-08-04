@@ -2,6 +2,7 @@ from random import choice, seed
 from collections import defaultdict
 from inspect import getmembers, isclass
 from platform import system
+from keyword import kwlist
 
 from sqlalchemy.inspection import inspect
 
