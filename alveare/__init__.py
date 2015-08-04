@@ -3,6 +3,7 @@ from os import environ
 
 from flask.ext.restful import Api
 from flask.ext.login import LoginManager
+from flask_debugtoolbar import DebugToolbarExtension
 from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
 from sqlalchemy.engine import Engine
@@ -23,15 +24,15 @@ def create_admin_page(app):
 
 def create_app():
     """ Create our app using the Flask factory pattern """
+    if 'DATABASE_URL' not in environ or 'APP_SETTINGS' not in environ:
+        raise EnvironmentError('Missing environment variables. Did you forget to run "source setup.sh" or "source test_setup.sh"?')
     app = Flask(__name__)
     app.config.from_object(environ['APP_SETTINGS'])
     app_context = app.app_context()
     app_context.push()
     create_admin_page(app)
-    if 'DATABASE_URL' in environ:
-        app.config['SQLALCHEMY_DATABASE_URI'] = environ['DATABASE_URL']
-    else:
-        raise EnvironmentError('You need to set the DATABASE_URL variable in your environment. Did you forget to run "source setup.sh" or "source test_setup.sh"?')
+    toolbar = DebugToolbarExtension(app)
+    app.config['SQLALCHEMY_DATABASE_URI'] = environ['DATABASE_URL']
 
     class AnonymousUser(object):
         is_active = False

@@ -1,9 +1,11 @@
 from random import choice, seed
 from collections import defaultdict
-import alveare.models
 from inspect import getmembers, isclass
+from platform import system
+
 from sqlalchemy.inspection import inspect
 
+import alveare.models
 
 def plural(text):
     known_forms = {
@@ -274,9 +276,15 @@ dictionaries = defaultdict(list, {
     '/usr/share/dict/propernames':  [],
 })
 
-def pick_a_word(min_size=0, max_size=100, dictionary='/usr/share/dict/words'):
-    # build a one-time cache, limit size of each dictionary to max_num_items
-    if not dictionaries[dictionary]:
+if system() == 'Linux':
+    dictionaries['/usr/share/dict/words'] = kwlist
+    dictionaries['/usr/share/dict/propernames'] = [
+        'Joe', 'Mikey', 'Raif', 'Randell', 'Albert', 'Jones', 'Dominick', 'Walt',
+        'Jim', 'Morgan', 'Sedovic', 'Kieran', 'Panzer', 'Damon', 'Tuan', 'Win',
+        'Cindie', 'Max', 'Barry', 'Sumitro', 'Leonard',
+    ]
+elif system() == 'Darwin':
+    for dictionary in dictionaries.keys():
         max_num_items = 2000
         words = []
         for word in open(dictionary):
@@ -287,6 +295,10 @@ def pick_a_word(min_size=0, max_size=100, dictionary='/usr/share/dict/words'):
                 this_dictionary.append(choice(words))
         else:
             dictionaries[dictionary] = words
+
+
+def pick_a_word(min_size=0, max_size=100, dictionary='/usr/share/dict/words'):
+    # build a one-time cache, limit size of each dictionary to max_num_items
             
     if min_size > 0 or max_size != 100:
         return choice(list(filter(lambda word: (min_size <= len(word)) and (len(word)<= max_size), dictionaries[dictionary])))

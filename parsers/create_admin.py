@@ -4,7 +4,7 @@ from alveare import app, db
 from alveare.models import User
 
 class CreateAdmin(Command):
-    '''Creates a user and tag it as administrator'''
+    '''Creates a user and tags it as administrator'''
 
     option_list = (
         Option('email',  help='The email is used as the login.'),
