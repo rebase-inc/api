@@ -1,6 +1,6 @@
 
-from alveare.common.database import DB
-from alveare.models import RemoteTicket
+from rebase.common.database import DB
+from rebase.models import RemoteTicket
 
 class GithubTicket(RemoteTicket):
     __pluralname__ = 'github_tickets'

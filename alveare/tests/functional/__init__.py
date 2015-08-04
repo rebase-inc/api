@@ -2,10 +2,10 @@ import json
 import datetime
 import unittest
 
-from alveare import models, create_app
-from alveare.common.database import DB, DB_TEST_NAME
-from alveare.common.mock import create_the_world, create_admin_user
-from alveare.models import (
+from rebase import models, create_app
+from rebase.common.database import DB, DB_TEST_NAME
+from rebase.common.mock import create_the_world, create_admin_user
+from rebase.models import (
     User,
     CodeClearance,
     Contractor,

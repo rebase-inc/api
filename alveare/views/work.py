@@ -1,12 +1,12 @@
 from marshmallow import fields
-from alveare.common.schema import AlveareSchema
+from rebase.common.schema import AlveareSchema
 
-from alveare.views.review import ReviewSchema
-from alveare.views.mediation import MediationSchema
-from alveare.views.debit import DebitSchema
-from alveare.views.credit import CreditSchema
-from alveare.views.work_offer import WorkOfferSchema
-from alveare.common.database import get_or_make_object, SecureNestedField
+from rebase.views.review import ReviewSchema
+from rebase.views.mediation import MediationSchema
+from rebase.views.debit import DebitSchema
+from rebase.views.credit import CreditSchema
+from rebase.views.work_offer import WorkOfferSchema
+from rebase.common.database import get_or_make_object, SecureNestedField
 
 class WorkSchema(AlveareSchema):
     id = fields.Integer()
@@ -18,7 +18,7 @@ class WorkSchema(AlveareSchema):
     offer = SecureNestedField(WorkOfferSchema, only='id', default=None)
 
     def make_object(self, data):
-        from alveare.models import Work
+        from rebase.models import Work
         return get_or_make_object(Work, data)
 
 class HaltEventSchema(AlveareSchema):

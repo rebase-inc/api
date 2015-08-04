@@ -1,6 +1,6 @@
 from marshmallow import fields
-from alveare.common.schema import AlveareSchema
-from alveare.common.database import get_or_make_object, SecureNestedField
+from rebase.common.schema import AlveareSchema
+from rebase.common.database import get_or_make_object, SecureNestedField
 
 class WorkOfferSchema(AlveareSchema):
     #bid = SecureNestedField('BidSchema', only='id', required=True)
@@ -11,7 +11,7 @@ class WorkOfferSchema(AlveareSchema):
     ticket_snapshot = SecureNestedField('TicketSnapshotSchema', only='id', required=True)
 
     def make_object(self, data):
-        from alveare.models import WorkOffer
+        from rebase.models import WorkOffer
         return get_or_make_object(WorkOffer, data)
 
 serializer = WorkOfferSchema(only=('id','price','work','ticket_snapshot'), skip_missing=True)

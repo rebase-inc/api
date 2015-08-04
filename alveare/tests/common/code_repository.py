@@ -1,6 +1,6 @@
-from alveare import models
-from alveare.common import mock
-from alveare.common.utils import pick_an_organization_name
+from rebase import models
+from rebase.common import mock
+from rebase.common.utils import pick_an_organization_name
 
 def case_mgr_with_repo(db):
     mgr_user = mock.create_one_user(db)

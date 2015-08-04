@@ -1,7 +1,7 @@
 from marshmallow import fields
-from alveare.common.schema import AlveareSchema
-from alveare.models.github_ticket import GithubTicket
-from alveare.common.database import get_or_make_object, SecureNestedField
+from rebase.common.schema import AlveareSchema
+from rebase.models.github_ticket import GithubTicket
+from rebase.common.database import get_or_make_object, SecureNestedField
 
 class GithubTicketSchema(AlveareSchema):
     id =            fields.Integer()
@@ -16,7 +16,7 @@ class GithubTicketSchema(AlveareSchema):
     comments =          SecureNestedField('CommentSchema',          only=('id',), many=True)
 
     def make_object(self, data):
-        from alveare.models import GithubTicket
+        from rebase.models import GithubTicket
         return get_or_make_object(GithubTicket, data)
 
 serializer =            GithubTicketSchema(skip_missing=True)

@@ -1,5 +1,5 @@
-from alveare import models
-from alveare.common import mock
+from rebase import models
+from rebase.common import mock
 
 def case_manager_users(db):
     mgr_user = mock.create_one_user(db)

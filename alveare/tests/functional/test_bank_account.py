@@ -5,11 +5,11 @@ from operator import eq, ne
 from copy import copy
 
 from . import AlveareRestTestCase, AlveareNoMockRestTestCase
-from alveare.tests.common.bank_account import (
+from rebase.tests.common.bank_account import (
     case_org,
     case_contractors,
 )
-from alveare.common.utils import AlveareResource, validate_resource_collection
+from rebase.common.utils import AlveareResource, validate_resource_collection
 
 url = 'bank_accounts/{}'.format
 

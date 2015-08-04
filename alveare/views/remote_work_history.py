@@ -1,8 +1,8 @@
 from marshmallow import fields
-from alveare.common.schema import AlveareSchema
-from alveare.models.contractor import Contractor
+from rebase.common.schema import AlveareSchema
+from rebase.models.contractor import Contractor
 from flask.ext.restful import abort
-from alveare.common.database import get_or_make_object, SecureNestedField
+from rebase.common.database import get_or_make_object, SecureNestedField
 
 class RemoteWorkHistorySchema(AlveareSchema):
     id =                fields.Integer()
@@ -10,7 +10,7 @@ class RemoteWorkHistorySchema(AlveareSchema):
     github_accounts = SecureNestedField('GithubAccountSchema', only=('id', 'user_name'), many=True)
 
     def make_object(self, data):
-        from alveare.models import RemoteWorkHistory
+        from rebase.models import RemoteWorkHistory
         return get_or_make_object(RemoteWorkHistory, data)
 
 serializer =            RemoteWorkHistorySchema(only=('id','github_accounts'))

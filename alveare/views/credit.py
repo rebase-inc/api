@@ -1,6 +1,6 @@
 from marshmallow import fields
-from alveare.common.schema import AlveareSchema
-from alveare.common.database import get_or_make_object, SecureNestedField
+from rebase.common.schema import AlveareSchema
+from rebase.common.database import get_or_make_object, SecureNestedField
 
 class CreditSchema(AlveareSchema):
 
@@ -10,7 +10,7 @@ class CreditSchema(AlveareSchema):
     work = SecureNestedField('WorkSchema', only='id')
 
     def make_object(self, data):
-        from alveare.models import Credit
+        from rebase.models import Credit
         return get_or_make_object(Credit, data)
 
 serializer = CreditSchema(only=('id','work','price','paid'))

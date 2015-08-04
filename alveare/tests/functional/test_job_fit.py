@@ -1,6 +1,6 @@
 from . import AlveareRestTestCase
 from random import randrange
-from alveare.common.utils import AlveareResource
+from rebase.common.utils import AlveareResource
 from unittest import skip
 
 

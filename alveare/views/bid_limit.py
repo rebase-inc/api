@@ -1,6 +1,6 @@
 from marshmallow import fields
-from alveare.common.schema import AlveareSchema
-from alveare.common.database import get_or_make_object, SecureNestedField
+from rebase.common.schema import AlveareSchema
+from rebase.common.database import get_or_make_object, SecureNestedField
 
 class BidLimitSchema(AlveareSchema):
     id =              fields.Integer()
@@ -9,7 +9,7 @@ class BidLimitSchema(AlveareSchema):
     ticket_set =      SecureNestedField('TicketSetSchema', only=('id',), required=True)
 
     def make_object(self, data):
-        from alveare.models import BidLimit
+        from rebase.models import BidLimit
         return get_or_make_object(BidLimit, data)
 
 serializer = BidLimitSchema(only=('id', 'price', 'ticket_snapshot','ticket_set'), skip_missing=True)

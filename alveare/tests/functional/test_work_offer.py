@@ -3,7 +3,7 @@ import time
 import copy
 
 from . import AlveareRestTestCase
-from alveare.models import Contractor, TicketSnapshot, WorkOffer
+from rebase.models import Contractor, TicketSnapshot, WorkOffer
 
 class TestWorkOfferResource(AlveareRestTestCase):
 

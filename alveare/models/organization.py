@@ -1,8 +1,8 @@
-from alveare.common.database import DB, PermissionMixin
-import alveare.models.manager
-#from alveare.models.project import Project
-#from alveare.models.code_clearance import CodeClearance
-#from alveare.models.contractor import Contractor
+from rebase.common.database import DB, PermissionMixin
+import rebase.models.manager
+#from rebase.models.project import Project
+#from rebase.models.code_clearance import CodeClearance
+#from rebase.models.contractor import Contractor
 
 class Organization(DB.Model, PermissionMixin):
     __pluralname__ = 'organizations'
@@ -58,7 +58,7 @@ class Organization(DB.Model, PermissionMixin):
 
     def __init__(self, name, user):
         self.name = name
-        self.managers.append(alveare.models.manager.Manager(user, self)) # you must have at least one manager
+        self.managers.append(rebase.models.manager.Manager(user, self)) # you must have at least one manager
 
     @classmethod
     def query_by_user(cls, user):
@@ -67,14 +67,14 @@ class Organization(DB.Model, PermissionMixin):
         return cls.get_all_as_manager(user).union(cls.get_all_as_contractor(user))
 
     def get_all_as_manager(user):
-        return Organization.query.filter(Organization.managers.any(alveare.models.manager.Manager.user == user))
+        return Organization.query.filter(Organization.managers.any(rebase.models.manager.Manager.user == user))
 
     def get_all_as_contractor(user):
         return Organization.query\
-            .join(alveare.models.project.Project)\
-            .join(alveare.models.code_clearance.CodeClearance)\
-            .join(alveare.models.contractor.Contractor)\
-            .filter(alveare.models.contractor.Contractor.user==user)
+            .join(rebase.models.project.Project)\
+            .join(rebase.models.code_clearance.CodeClearance)\
+            .join(rebase.models.contractor.Contractor)\
+            .filter(rebase.models.contractor.Contractor.user==user)
 
     def allowed_to_be_created_by(self, user):
         return True

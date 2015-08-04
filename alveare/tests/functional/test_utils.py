@@ -1,5 +1,5 @@
 from unittest import TestCase
-from alveare.common.utils import (
+from rebase.common.utils import (
     pick_a_word,
     pick_a_first_name,
     pick_a_last_name,

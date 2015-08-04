@@ -1,6 +1,6 @@
 
 from sqlalchemy.orm import validates
-from alveare.common.database import DB, PermissionMixin
+from rebase.common.database import DB, PermissionMixin
 
 from .contractor import Contractor
 
@@ -22,7 +22,7 @@ class RemoteWorkHistory(DB.Model, PermissionMixin):
 
     @classmethod
     def query_by_user(cls, user):
-        from alveare.models import Contractor
+        from rebase.models import Contractor
         if user.is_admin():
             return cls.query
         else:

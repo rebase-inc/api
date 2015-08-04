@@ -1,11 +1,11 @@
 import unittest
 
-from alveare.models import (
+from rebase.models import (
     Organization,
     Manager,
     User
 )
-from alveare.common.utils import AlveareResource
+from rebase.common.utils import AlveareResource
 from . import AlveareRestTestCase
 
 url = 'organizations/{}'.format

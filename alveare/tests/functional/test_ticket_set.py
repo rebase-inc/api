@@ -2,8 +2,8 @@ from unittest import skip
 from copy import copy
 
 from . import AlveareRestTestCase, AlveareNoMockRestTestCase
-from alveare.common.utils import AlveareResource, validate_resource_collection
-from alveare.tests.common.ticket_set import (
+from rebase.common.utils import AlveareResource, validate_resource_collection
+from rebase.tests.common.ticket_set import (
     case_contractor,
     case_mgr,
     case_admin,

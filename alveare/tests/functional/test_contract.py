@@ -1,8 +1,8 @@
 from . import AlveareRestTestCase
-from alveare.common.utils import AlveareResource
+from rebase.common.utils import AlveareResource
 from unittest import skip
 
-from alveare.models import Contract, Bid, Contractor, Manager
+from rebase.models import Contract, Bid, Contractor, Manager
 
 class TestContractResource(AlveareRestTestCase):
     def setUp(self):

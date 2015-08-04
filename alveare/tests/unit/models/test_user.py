@@ -3,9 +3,9 @@ import datetime
 
 from . import AlveareModelTestCase
 
-from alveare import models
-from alveare.common import mock
-from alveare.tests.common.user import (
+from rebase import models
+from rebase.common import mock
+from rebase.tests.common.user import (
     case_nominated_users,
     case_contractor_users,
     case_manager_users,

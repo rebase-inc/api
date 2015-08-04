@@ -5,8 +5,8 @@ from sqlalchemy.orm.exc import ObjectDeletedError
 
 from . import AlveareModelTestCase
 
-from alveare import models
-from alveare.common import mock
+from rebase import models
+from rebase.common import mock
 
 #TODO: Make this actually work...github tickets shouldn't be modifiable but they currently are
 class TestGithubTicketModel(AlveareModelTestCase):

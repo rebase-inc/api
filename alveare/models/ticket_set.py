@@ -1,6 +1,6 @@
-from alveare.common.database import DB, PermissionMixin, query_by_user_or_id
-from alveare.models.bid_limit import BidLimit
-from alveare.common.query import query_from_class_to_user
+from rebase.common.database import DB, PermissionMixin, query_by_user_or_id
+from rebase.models.bid_limit import BidLimit
+from rebase.common.query import query_from_class_to_user
 
 class TicketSet(DB.Model, PermissionMixin):
     __pluralname__ = 'ticket_sets'
@@ -24,7 +24,7 @@ class TicketSet(DB.Model, PermissionMixin):
 
     @classmethod
     def query_by_user(cls, user):
-        import alveare.models
+        import rebase.models
         if user.admin:
             return cls.query
         return cls._all(user)
@@ -35,22 +35,22 @@ class TicketSet(DB.Model, PermissionMixin):
 
     @classmethod
     def as_manager(cls, user):
-        import alveare.models
+        import rebase.models
         return query_from_class_to_user(TicketSet, [
-            alveare.models.bid_limit.BidLimit,
-            alveare.models.ticket_snapshot.TicketSnapshot,
-            alveare.models.ticket.Ticket,
-            alveare.models.project.Project,
-            alveare.models.organization.Organization,
-            alveare.models.manager.Manager,
+            rebase.models.bid_limit.BidLimit,
+            rebase.models.ticket_snapshot.TicketSnapshot,
+            rebase.models.ticket.Ticket,
+            rebase.models.project.Project,
+            rebase.models.organization.Organization,
+            rebase.models.manager.Manager,
         ], user)
 
     @classmethod
     def as_contractor(cls, user):
-        import alveare.models
+        import rebase.models
         return query_from_class_to_user(TicketSet, [
-            alveare.models.nomination.Nomination,
-            alveare.models.contractor.Contractor,
+            rebase.models.nomination.Nomination,
+            rebase.models.contractor.Contractor,
         ], user)
 
 

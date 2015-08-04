@@ -5,7 +5,7 @@ import datetime
 import unittest
 
 from . import AlveareRestTestCase
-from alveare.models import Arbitration
+from rebase.models import Arbitration
 
 class TestArbitrationResource(AlveareRestTestCase):
 

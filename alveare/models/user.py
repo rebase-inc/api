@@ -6,10 +6,10 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import aliased
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from alveare.common.database import DB, PermissionMixin, query_by_user_or_id
-from alveare.common.query import query_from_class_to_user
-import alveare.models.organization
-import alveare.models.manager
+from rebase.common.database import DB, PermissionMixin, query_by_user_or_id
+from rebase.common.query import query_from_class_to_user
+import rebase.models.organization
+import rebase.models.manager
 
 class User(DB.Model, PermissionMixin):
     __pluralname__ = 'users'
@@ -66,11 +66,11 @@ class User(DB.Model, PermissionMixin):
 
     @classmethod
     def as_manager_get_other_managers(cls, user, user_id=None):
-        import alveare.models
+        import rebase.models
         query = query_from_class_to_user(User, [
-            alveare.models.manager.Manager,
-            alveare.models.organization.Organization,
-            alveare.models.manager.Manager,
+            rebase.models.manager.Manager,
+            rebase.models.organization.Organization,
+            rebase.models.manager.Manager,
         ], user)
         if user_id:
             query = query.filter(User.id==user_id)
@@ -78,13 +78,13 @@ class User(DB.Model, PermissionMixin):
 
     @classmethod
     def as_manager_get_cleared_contractors(cls, user, user_id=None):
-        import alveare.models
+        import rebase.models
         query = query_from_class_to_user(User, [
-            alveare.models.contractor.Contractor,
-            alveare.models.code_clearance.CodeClearance,
-            alveare.models.project.Project,
-            alveare.models.organization.Organization,
-            alveare.models.manager.Manager,
+            rebase.models.contractor.Contractor,
+            rebase.models.code_clearance.CodeClearance,
+            rebase.models.project.Project,
+            rebase.models.organization.Organization,
+            rebase.models.manager.Manager,
         ], user)
         if user_id:
             query = query.filter(User.id==user_id)
@@ -92,17 +92,17 @@ class User(DB.Model, PermissionMixin):
 
     @classmethod
     def as_manager_get_nominated_users(cls, user, user_id=None):
-        import alveare.models
+        import rebase.models
         query = query_from_class_to_user(User, [
-            alveare.models.contractor.Contractor,
-            alveare.models.nomination.Nomination,
-            alveare.models.ticket_set.TicketSet,
-            alveare.models.bid_limit.BidLimit,
-            alveare.models.ticket_snapshot.TicketSnapshot,
-            alveare.models.ticket.Ticket,
-            alveare.models.project.Project,
-            alveare.models.organization.Organization,
-            alveare.models.manager.Manager,
+            rebase.models.contractor.Contractor,
+            rebase.models.nomination.Nomination,
+            rebase.models.ticket_set.TicketSet,
+            rebase.models.bid_limit.BidLimit,
+            rebase.models.ticket_snapshot.TicketSnapshot,
+            rebase.models.ticket.Ticket,
+            rebase.models.project.Project,
+            rebase.models.organization.Organization,
+            rebase.models.manager.Manager,
         ], user)
         if user_id:
             query = query.filter(User.id==user_id)
@@ -115,15 +115,15 @@ class User(DB.Model, PermissionMixin):
 
     @classmethod
     def as_contractor_get_managers(cls, current_user, user_id=None):
-        import alveare.models
+        import rebase.models
         UserAlias = aliased(User)
         query = DB.session.query(UserAlias)\
             .select_from(User)\
-            .join(alveare.models.contractor.Contractor)\
-            .join(alveare.models.code_clearance.CodeClearance)\
-            .join(alveare.models.project.Project)\
-            .join(alveare.models.organization.Organization)\
-            .join(alveare.models.manager.Manager)\
+            .join(rebase.models.contractor.Contractor)\
+            .join(rebase.models.code_clearance.CodeClearance)\
+            .join(rebase.models.project.Project)\
+            .join(rebase.models.organization.Organization)\
+            .join(rebase.models.manager.Manager)\
             .join(UserAlias)
         if user_id:
             query = query.filter(UserAlias.id == user_id)
@@ -131,15 +131,15 @@ class User(DB.Model, PermissionMixin):
 
     @classmethod
     def as_contractor_get_cleared_contractors(cls, current_user, user_id=None):
-        import alveare.models
+        import rebase.models
         UserAlias = aliased(User)
-        CodeClearanceAlias = aliased(alveare.models.CodeClearance)
-        ContractorAlias = aliased(alveare.models.Contractor)
+        CodeClearanceAlias = aliased(rebase.models.CodeClearance)
+        ContractorAlias = aliased(rebase.models.Contractor)
         query = DB.session.query(UserAlias)\
             .select_from(User)\
-            .join(alveare.models.contractor.Contractor)\
-            .join(alveare.models.code_clearance.CodeClearance)\
-            .join(alveare.models.project.Project)\
+            .join(rebase.models.contractor.Contractor)\
+            .join(rebase.models.code_clearance.CodeClearance)\
+            .join(rebase.models.project.Project)\
             .join(CodeClearanceAlias)\
             .join(ContractorAlias)\
             .join(UserAlias)

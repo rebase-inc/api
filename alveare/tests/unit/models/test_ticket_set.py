@@ -1,10 +1,10 @@
 import unittest
 
 from . import AlveareModelTestCase
-from alveare.models import TicketSet
-from alveare.common.mock import create_one_snapshot
-from alveare.common.utils import validate_query_fn
-from alveare.tests.common.ticket_set import (
+from rebase.models import TicketSet
+from rebase.common.mock import create_one_snapshot
+from rebase.common.utils import validate_query_fn
+from rebase.tests.common.ticket_set import (
     case_contractor,
     case_mgr,
     case_admin,

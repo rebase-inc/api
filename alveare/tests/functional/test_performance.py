@@ -7,7 +7,7 @@ import cProfile
 import pstats
 
 sys.path.insert(0, os.path.expanduser('~/src/api'))
-from alveare.tests.functional import AlveareRestTestCase
+from rebase.tests.functional import AlveareRestTestCase
 
 class TestPerformance(AlveareRestTestCase):
 

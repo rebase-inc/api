@@ -1,7 +1,7 @@
 from datetime import datetime
 
-from alveare.common.database import DB, PermissionMixin, query_by_user_or_id
-from alveare.common.query import query_from_class_to_user
+from rebase.common.database import DB, PermissionMixin, query_by_user_or_id
+from rebase.common.query import query_from_class_to_user
 
 class TicketSnapshot(DB.Model, PermissionMixin):
     __pluralname__ = 'ticket_snapshots'
@@ -43,31 +43,31 @@ class TicketSnapshot(DB.Model, PermissionMixin):
 
     @classmethod
     def as_manager(cls, user):
-        import alveare.models
+        import rebase.models
         return query_from_class_to_user(TicketSnapshot, [
-            alveare.models.ticket.Ticket,
-            alveare.models.project.Project,
-            alveare.models.organization.Organization,
-            alveare.models.manager.Manager,
+            rebase.models.ticket.Ticket,
+            rebase.models.project.Project,
+            rebase.models.organization.Organization,
+            rebase.models.manager.Manager,
         ], user)
 
     @classmethod
     def as_contractor_work_offers(cls, user):
-        import alveare.models
+        import rebase.models
         return query_from_class_to_user(TicketSnapshot, [
-            alveare.models.work_offer.WorkOffer,
-            alveare.models.contractor.Contractor,
+            rebase.models.work_offer.WorkOffer,
+            rebase.models.contractor.Contractor,
         ], user)
 
     @classmethod
     def as_contractor_auctions(cls, user):
-        import alveare.models
+        import rebase.models
         return query_from_class_to_user(TicketSnapshot, [
-            alveare.models.bid_limit.BidLimit,
-            alveare.models.ticket_set.TicketSet,
-            alveare.models.auction.Auction,
-            alveare.models.nomination.Nomination,
-            alveare.models.contractor.Contractor,
+            rebase.models.bid_limit.BidLimit,
+            rebase.models.ticket_set.TicketSet,
+            rebase.models.auction.Auction,
+            rebase.models.nomination.Nomination,
+            rebase.models.contractor.Contractor,
         ], user)
 
     def allowed_to_be_created_by(self, user):

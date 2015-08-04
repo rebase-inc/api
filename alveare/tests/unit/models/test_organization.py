@@ -1,13 +1,13 @@
 import unittest
 
 from . import AlveareModelTestCase
-from alveare import models
-from alveare.common import mock
+from rebase import models
+from rebase.common import mock
 
 class TestOrganizationModel(AlveareModelTestCase):
 
     def test_joined_relationships(self):
-        decoy_user = models.User('Foo', 'Bar', 'foobar@alveare.io', 'foobar')
+        decoy_user = models.User('Foo', 'Bar', 'foobar@rebase.io', 'foobar')
         decoy_org = models.Organization('foobar', decoy_user)
         decoy_proj = models.Project(decoy_org, 'DECOOY')
         decoy_ticket = models.InternalTicket(decoy_proj, 'Decoy Ticket', 'Dont touch me')
@@ -17,7 +17,7 @@ class TestOrganizationModel(AlveareModelTestCase):
         decoy_term_sheet = models.TermSheet('foobar')
         decoy_auction = models.Auction(decoy_ticket_set, decoy_term_sheet)
 
-        user = models.User('Andrew', 'Millspaugh', 'andrew@alveare.io', 'foobar')
+        user = models.User('Andrew', 'Millspaugh', 'andrew@rebase.io', 'foobar')
         organization = models.Organization('Alveare', user)
         project = models.Project(organization, 'REST API')
 

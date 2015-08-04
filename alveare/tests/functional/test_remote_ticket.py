@@ -1,5 +1,5 @@
 from . import AlveareRestTestCase
-from alveare.common.utils import AlveareResource
+from rebase.common.utils import AlveareResource
 from unittest import skip
 
 

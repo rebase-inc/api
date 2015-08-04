@@ -1,4 +1,4 @@
-from alveare.common.database import DB, PermissionMixin
+from rebase.common.database import DB, PermissionMixin
 
 class Role(DB.Model, PermissionMixin):
     __pluralname__ = 'roles'

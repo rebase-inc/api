@@ -1,5 +1,5 @@
 from .project import BaseProjectTestCase
-from alveare.models import (
+from rebase.models import (
     Project,
     Manager,
     Organization,

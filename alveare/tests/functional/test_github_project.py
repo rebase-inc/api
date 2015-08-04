@@ -1,6 +1,6 @@
 from .project import BaseProjectTestCase
-from alveare.common.utils import AlveareResource
-from alveare.models import (
+from rebase.common.utils import AlveareResource
+from rebase.models import (
     Manager,
     Organization,
     Project,

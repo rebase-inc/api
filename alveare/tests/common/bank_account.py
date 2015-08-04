@@ -1,6 +1,6 @@
-from alveare import models
-from alveare.common import mock
-from alveare.common.utils import pick_an_organization_name
+from rebase import models
+from rebase.common import mock
+from rebase.common.utils import pick_an_organization_name
 
 def case_contractors(db):
     contractor_0 = mock.create_one_contractor(db)

@@ -1,6 +1,6 @@
 
-from alveare.common.database import DB, PermissionMixin, query_by_user_or_id
-from alveare.common.query import query_from_class_to_user
+from rebase.common.database import DB, PermissionMixin, query_by_user_or_id
+from rebase.common.query import query_from_class_to_user
 
 class SkillSet(DB.Model, PermissionMixin):
     __pluralname__ = 'skill_sets'
@@ -30,20 +30,20 @@ class SkillSet(DB.Model, PermissionMixin):
 
     @classmethod
     def as_manager(cls, user):
-        import alveare.models
+        import rebase.models
         return query_from_class_to_user(SkillSet, [
-            alveare.models.contractor.Contractor,
-            alveare.models.code_clearance.CodeClearance,
-            alveare.models.project.Project,
-            alveare.models.organization.Organization,
-            alveare.models.manager.Manager,
+            rebase.models.contractor.Contractor,
+            rebase.models.code_clearance.CodeClearance,
+            rebase.models.project.Project,
+            rebase.models.organization.Organization,
+            rebase.models.manager.Manager,
         ], user)
 
     @classmethod
     def as_contractor(cls, user):
-        import alveare.models
+        import rebase.models
         return query_from_class_to_user(SkillSet, [
-            alveare.models.contractor.Contractor,
+            rebase.models.contractor.Contractor,
         ], user)
 
     def allowed_to_be_created_by(self, user):

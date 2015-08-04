@@ -5,8 +5,8 @@ from sqlalchemy.orm.exc import ObjectDeletedError
 
 from . import AlveareModelTestCase
 
-from alveare import models
-from alveare.common import mock
+from rebase import models
+from rebase.common import mock
 
 class TestTicketModel(AlveareModelTestCase):
 

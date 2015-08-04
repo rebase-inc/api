@@ -1,7 +1,7 @@
 from marshmallow import fields
-from alveare.common.schema import AlveareSchema
-from alveare.models.internal_ticket import InternalTicket
-from alveare.common.database import get_or_make_object, SecureNestedField
+from rebase.common.schema import AlveareSchema
+from rebase.models.internal_ticket import InternalTicket
+from rebase.common.database import get_or_make_object, SecureNestedField
 
 class InternalTicketSchema(AlveareSchema):
     id =            fields.Integer()
@@ -16,7 +16,7 @@ class InternalTicketSchema(AlveareSchema):
     comments =          SecureNestedField('CommentSchema',          only=('id',), many=True)
 
     def make_object(self, data):
-        from alveare.models import InternalTicket
+        from rebase.models import InternalTicket
         return get_or_make_object(InternalTicket, data)
 
 serializer =            InternalTicketSchema(skip_missing=True)

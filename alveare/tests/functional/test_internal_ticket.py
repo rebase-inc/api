@@ -1,5 +1,5 @@
 from unittest import skip
-from alveare.common.utils import AlveareResource
+from rebase.common.utils import AlveareResource
 from .ticket import BaseTestTicketResource
 
 class TestInternalTicketResource(BaseTestTicketResource):

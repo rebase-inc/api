@@ -1,9 +1,9 @@
 from sqlalchemy.orm import validates
 from sqlalchemy import or_, sql
 
-import alveare
+import rebase
 
-from alveare.common.database import DB, PermissionMixin
+from rebase.common.database import DB, PermissionMixin
 
 class WorkOffer(DB.Model, PermissionMixin):
     __pluralname__ = 'work_offers'
@@ -27,8 +27,8 @@ class WorkOffer(DB.Model, PermissionMixin):
 
     @classmethod
     def query_by_user(cls, user):
-        from alveare.models import Contractor, Bid, Auction, TicketSet, User
-        from alveare.models import BidLimit, TicketSnapshot, Ticket , Organization
+        from rebase.models import Contractor, Bid, Auction, TicketSet, User
+        from rebase.models import BidLimit, TicketSnapshot, Ticket , Organization
         query = cls.query
 
         if user.is_admin(): return query

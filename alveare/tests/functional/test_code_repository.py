@@ -1,11 +1,11 @@
 from copy import copy
 
 from . import AlveareRestTestCase, AlveareNoMockRestTestCase
-from alveare.tests.common.code_repository import (
+from rebase.tests.common.code_repository import (
     case_mgr_with_repo,
     case_cleared_contractor,
 )
-from alveare.common.utils import AlveareResource, validate_resource_collection
+from rebase.common.utils import AlveareResource, validate_resource_collection
 
 class TestCodeRepository(AlveareNoMockRestTestCase):
     def setUp(self):

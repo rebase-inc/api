@@ -4,9 +4,9 @@ from sqlalchemy.orm import validates
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy import or_, sql
 
-from alveare.common.database import DB, PermissionMixin
-from alveare.common.state import StateMachine
-from alveare.models import BidLimit, Contract, Bid
+from rebase.common.database import DB, PermissionMixin
+from rebase.common.state import StateMachine
+from rebase.models import BidLimit, Contract, Bid
 
 class Auction(DB.Model, PermissionMixin):
     __pluralname__ = 'auctions'
@@ -36,7 +36,7 @@ class Auction(DB.Model, PermissionMixin):
 
     @classmethod
     def query_by_user(cls, user):
-        from alveare.models import Organization, TicketSet, BidLimit, TicketSnapshot, Ticket, Project
+        from rebase.models import Organization, TicketSet, BidLimit, TicketSnapshot, Ticket, Project
         query = cls.query
         all_filters = []
         if user.is_admin():

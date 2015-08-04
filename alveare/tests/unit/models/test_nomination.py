@@ -1,8 +1,8 @@
 import unittest
 
 from . import AlveareModelTestCase
-from alveare.models import Auction, Contractor, Nomination
-from alveare.common.mock import create_one_nomination, create_one_contractor, create_one_auction
+from rebase.models import Auction, Contractor, Nomination
+from rebase.common.mock import create_one_nomination, create_one_contractor, create_one_auction
 
 class TestNomination(AlveareModelTestCase):
 

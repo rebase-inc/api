@@ -1,7 +1,7 @@
 from flask import jsonify, request
 from flask.ext.login import current_user, current_app
-from alveare.common.exceptions import NotFoundError
-from alveare.common.database import DB
+from rebase.common.exceptions import NotFoundError
+from rebase.common.database import DB
 
 def get_collection(model, serializer):
     query = model.query_by_user(current_user)

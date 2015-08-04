@@ -1,6 +1,6 @@
 from sqlalchemy.orm import validates
 
-from alveare.common.database import DB, PermissionMixin
+from rebase.common.database import DB, PermissionMixin
 
 class Credit(DB.Model, PermissionMixin):
     __pluralname__ = 'credits'

@@ -2,11 +2,11 @@ from flask.ext.restful import Resource
 from flask.ext.login import login_required, current_user
 from flask import jsonify, make_response, request
 
-from alveare.models import Auction, Role
-from alveare.views import auction
-from alveare.common.database import DB
-from alveare.common.state import ManagedState
-from alveare.common.rest import get_collection, add_to_collection, get_resource, update_resource, delete_resource
+from rebase.models import Auction, Role
+from rebase.views import auction
+from rebase.common.database import DB
+from rebase.common.state import ManagedState
+from rebase.common.rest import get_collection, add_to_collection, get_resource, update_resource, delete_resource
 
 class AuctionCollection(Resource):
     model = Auction

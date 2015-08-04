@@ -5,10 +5,10 @@ import datetime
 from sqlalchemy.exc import StatementError
 
 from . import AlveareModelTestCase
-from alveare.models import Auction, Ticket, TicketSnapshot, TicketSet, BidLimit, TermSheet, WorkOffer, Bid
-from alveare import models
-from alveare.common import mock
-from alveare.common.state import ManagedState
+from rebase.models import Auction, Ticket, TicketSnapshot, TicketSet, BidLimit, TermSheet, WorkOffer, Bid
+from rebase import models
+from rebase.common import mock
+from rebase.common.state import ManagedState
 
 class TestAuctionModel(AlveareModelTestCase):
 

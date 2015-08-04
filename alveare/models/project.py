@@ -1,8 +1,8 @@
 
-from alveare.common.database import DB, PermissionMixin
-import alveare.models.manager
-import alveare.models.contractor
-import alveare.models.code_clearance
+from rebase.common.database import DB, PermissionMixin
+import rebase.models.manager
+import rebase.models.contractor
+import rebase.models.code_clearance
 
 class Project(DB.Model, PermissionMixin):
     __pluralname__ = 'projects'
@@ -37,24 +37,24 @@ class Project(DB.Model, PermissionMixin):
     @classmethod
     def get_all_as_manager(cls, user):
         return cls.query\
-            .join(alveare.models.organization.Organization)\
-            .join(alveare.models.manager.Manager)\
-            .filter(alveare.models.manager.Manager.user == user)
+            .join(rebase.models.organization.Organization)\
+            .join(rebase.models.manager.Manager)\
+            .filter(rebase.models.manager.Manager.user == user)
 
     @classmethod
     def get_cleared_projects(cls, user):
         ''' Return all projects for which user has a clearance '''
         return cls.query\
-            .join(alveare.models.code_clearance.CodeClearance)\
-            .join(alveare.models.contractor.Contractor)\
-            .filter(alveare.models.contractor.Contractor.user == user)
+            .join(rebase.models.code_clearance.CodeClearance)\
+            .join(rebase.models.contractor.Contractor)\
+            .filter(rebase.models.contractor.Contractor.user == user)
 
     def allowed_to_be_created_by(self, user):
         if user.is_admin():
             return True
-        return alveare.models.organization.Organization.query\
-            .filter(alveare.models.organization.Organization.id == self.organization.id)\
-            .join(alveare.models.manager.Manager, alveare.models.manager.Manager.user == user)\
+        return rebase.models.organization.Organization.query\
+            .filter(rebase.models.organization.Organization.id == self.organization.id)\
+            .join(rebase.models.manager.Manager, rebase.models.manager.Manager.user == user)\
             .limit(100).all()
 
     allowed_to_be_modified_by = allowed_to_be_created_by

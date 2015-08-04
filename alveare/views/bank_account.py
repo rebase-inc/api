@@ -1,7 +1,7 @@
 from marshmallow import fields
-from alveare.common.schema import AlveareSchema
+from rebase.common.schema import AlveareSchema
 
-from alveare.common.database import get_or_make_object, SecureNestedField
+from rebase.common.database import get_or_make_object, SecureNestedField
 
 class BankAccountSchema(AlveareSchema):
     id =             fields.Integer()
@@ -12,7 +12,7 @@ class BankAccountSchema(AlveareSchema):
     contractor =     SecureNestedField('ContractorSchema', only=('id',), default=None)
 
     def make_object(self, data):
-        from alveare.models import BankAccount
+        from rebase.models import BankAccount
         return get_or_make_object(BankAccount, data)
 
 serializer = BankAccountSchema(skip_missing=True)

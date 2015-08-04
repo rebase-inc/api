@@ -7,11 +7,11 @@ from flask.ext.login import (
     current_app
 )
 from flask import jsonify, make_response, request
-from alveare.common.exceptions import UnmarshallingError
+from rebase.common.exceptions import UnmarshallingError
 
-from alveare.views import auth
-from alveare.common.database import DB
-from alveare.common.rest import (
+from rebase.views import auth
+from rebase.common.database import DB
+from rebase.common.rest import (
     get_collection,
     add_to_collection,
     get_resource,

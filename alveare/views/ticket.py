@@ -1,7 +1,7 @@
 from marshmallow import fields
-from alveare.common.schema import AlveareSchema
-from alveare.models.ticket import Ticket
-from alveare.common.database import get_or_make_object, SecureNestedField
+from rebase.common.schema import AlveareSchema
+from rebase.models.ticket import Ticket
+from rebase.common.database import get_or_make_object, SecureNestedField
 
 class TicketSchema(AlveareSchema):
     id =            fields.Integer()
@@ -15,7 +15,7 @@ class TicketSchema(AlveareSchema):
     comments =          SecureNestedField('CommentSchema',          only=('id',), many=True)
 
     def make_object(self, data):
-        from alveare.models import Ticket
+        from rebase.models import Ticket
         return get_or_make_object(Ticket, data)
 
 serializer =            TicketSchema(skip_missing=True)

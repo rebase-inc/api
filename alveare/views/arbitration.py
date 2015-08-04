@@ -1,11 +1,11 @@
 import datetime
 
 from marshmallow import fields
-from alveare.common.schema import AlveareSchema
+from rebase.common.schema import AlveareSchema
 
-from alveare.views import NamespacedSchema
-from alveare.views.comment import CommentSchema
-from alveare.common.database import get_or_make_object, SecureNestedField
+from rebase.views import NamespacedSchema
+from rebase.views.comment import CommentSchema
+from rebase.common.database import get_or_make_object, SecureNestedField
 
 class ArbitrationSchema(AlveareSchema):
     id = fields.Integer()
@@ -13,7 +13,7 @@ class ArbitrationSchema(AlveareSchema):
 
     def make_object(self, data):
         ''' This is an admin only procedure '''
-        from alveare.models import Arbitration
+        from rebase.models import Arbitration
         return get_or_make_object(Arbitration, data)
 
 serializer = ArbitrationSchema(only=('id','mediation'))

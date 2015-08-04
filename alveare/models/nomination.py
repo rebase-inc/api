@@ -1,5 +1,5 @@
 from sqlalchemy import or_, sql
-from alveare.common.database import DB, PermissionMixin
+from rebase.common.database import DB, PermissionMixin
 
 class Nomination(DB.Model, PermissionMixin):
     __pluralname__ = 'nominations'
@@ -15,7 +15,7 @@ class Nomination(DB.Model, PermissionMixin):
         return self.ticket_set.bid_limits[0].ticket_snapshot.ticket.organization
 
     def __init__(self, contractor, ticket_set):
-        from alveare.models import Contractor, TicketSet
+        from rebase.models import Contractor, TicketSet
         if not isinstance(contractor, Contractor):
             raise ValueError('contractor must be of Contractor type!')
         if not isinstance(ticket_set, TicketSet):
@@ -40,7 +40,7 @@ class Nomination(DB.Model, PermissionMixin):
 
     @classmethod
     def query_by_user(cls, user):
-        from alveare.models import TicketSet, BidLimit, TicketSnapshot, Ticket, Project, Organization
+        from rebase.models import TicketSet, BidLimit, TicketSnapshot, Ticket, Project, Organization
         query = cls.query
         if user.is_admin():
             return query

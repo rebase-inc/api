@@ -2,10 +2,10 @@ import unittest
 
 from . import AlveareModelTestCase
 
-from alveare import models
-from alveare.common import mock
-from alveare.common.utils import validate_query_fn
-from alveare.tests.common.code_repository import (
+from rebase import models
+from rebase.common import mock
+from rebase.common.utils import validate_query_fn
+from rebase.tests.common.code_repository import (
     case_mgr_with_repo,
     case_cleared_contractor,
 )

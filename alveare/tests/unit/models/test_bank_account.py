@@ -1,11 +1,11 @@
 from . import AlveareModelTestCase
 
-from alveare import models
-from alveare.tests.common.bank_account import (
+from rebase import models
+from rebase.tests.common.bank_account import (
     case_contractors,
     case_org,
 )
-from alveare.common import mock
+from rebase.common import mock
 
 class TestBankAccountModel(AlveareModelTestCase):
     model = models.BankAccount

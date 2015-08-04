@@ -3,7 +3,7 @@ import time
 import copy
 
 from . import AlveareRestTestCase
-from alveare.models import Review
+from rebase.models import Review
 
 class TestReviewResource(AlveareRestTestCase):
 

@@ -1,8 +1,8 @@
 from marshmallow import fields
-from alveare.common.schema import AlveareSchema
+from rebase.common.schema import AlveareSchema
 
-from alveare.common.database import get_or_make_object, SecureNestedField
-from alveare.views.role import RoleSchema
+from rebase.common.database import get_or_make_object, SecureNestedField
+from rebase.views.role import RoleSchema
 
 class UserSchema(AlveareSchema):
     id =            fields.Integer()
@@ -17,7 +17,7 @@ class UserSchema(AlveareSchema):
 
 
     def make_object(self, data):
-        from alveare.models import User
+        from rebase.models import User
         if tuple(data.keys()) == ('email',):
             return User.query.filter(User.email == data.get('email')).one()
         return get_or_make_object(User, data)

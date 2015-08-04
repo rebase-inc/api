@@ -2,10 +2,10 @@ from sqlalchemy.exc import InterfaceError
 from sqlalchemy.orm.exc import ObjectDeletedError
 
 from . import AlveareModelTestCase
-from alveare import models
-from alveare.common import mock
-from alveare.common.utils import validate_query_fn
-from alveare.tests.common.comment import (
+from rebase import models
+from rebase.common import mock
+from rebase.common.utils import validate_query_fn
+from rebase.tests.common.comment import (
     case_mgr_ticket_comment,
     case_contractor_ticket_comment,
     case_mgr_mediation_comment,

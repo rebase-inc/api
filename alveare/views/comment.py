@@ -1,8 +1,8 @@
 from marshmallow import fields
-from alveare.common.schema import AlveareSchema
+from rebase.common.schema import AlveareSchema
 
-from alveare.views import NamespacedSchema
-from alveare.common.database import get_or_make_object, SecureNestedField
+from rebase.views import NamespacedSchema
+from rebase.common.database import get_or_make_object, SecureNestedField
 
 class CommentSchema(AlveareSchema):
     id =        fields.Integer()
@@ -14,7 +14,7 @@ class CommentSchema(AlveareSchema):
     feedback =  SecureNestedField('FeedbackSchema',   only=('id',), default=None)
 
     def make_object(self, data):
-        from alveare.models import Comment
+        from rebase.models import Comment
         return get_or_make_object(Comment, data)
 
 serializer =            CommentSchema(skip_missing=True)

@@ -1,5 +1,5 @@
 from sqlalchemy import or_, sql
-from alveare.common.database import DB, PermissionMixin
+from rebase.common.database import DB, PermissionMixin
 
 class Contract(DB.Model, PermissionMixin):
     __pluralname__ = 'contracts'
@@ -11,7 +11,7 @@ class Contract(DB.Model, PermissionMixin):
 
     @classmethod
     def query_by_user(cls, user):
-        from alveare.models import Bid, Contractor, User
+        from rebase.models import Bid, Contractor, User
         query = cls.query
         if user.is_admin():
             return query

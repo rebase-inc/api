@@ -1,5 +1,5 @@
 
-from alveare.common.database import DB, PermissionMixin
+from rebase.common.database import DB, PermissionMixin
 
 class TermSheet(DB.Model, PermissionMixin):
     __pluralname__ = 'term_sheets'

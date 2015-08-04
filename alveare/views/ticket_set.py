@@ -1,8 +1,8 @@
 from marshmallow import fields
-from alveare.common.schema import AlveareSchema
+from rebase.common.schema import AlveareSchema
 
-from alveare.views.bid_limit import BidLimitSchema
-from alveare.common.database import get_or_make_object, SecureNestedField
+from rebase.views.bid_limit import BidLimitSchema
+from rebase.common.database import get_or_make_object, SecureNestedField
 
 class TicketSetSchema(AlveareSchema):
     id =          fields.Integer()
@@ -11,7 +11,7 @@ class TicketSetSchema(AlveareSchema):
     nominations = SecureNestedField('NominationSchema', only=('contractor', 'ticket_set'), many=True)
 
     def make_object(self, data):
-        from alveare.models import TicketSet
+        from rebase.models import TicketSet
         return get_or_make_object(TicketSet, data)
 
 serializer = TicketSetSchema(skip_missing=True)

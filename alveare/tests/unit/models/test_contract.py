@@ -3,7 +3,7 @@ import datetime
 
 from . import AlveareModelTestCase
 
-from alveare.models import (
+from rebase.models import (
     TermSheet,
     Ticket,
     Bid,
@@ -11,7 +11,7 @@ from alveare.models import (
     Contractor,
     Contract,
 )
-from alveare.common import mock
+from rebase.common import mock
 
 class TestContractModel(AlveareModelTestCase):
 

@@ -1,7 +1,7 @@
 
 from marshmallow import fields
-from alveare.common.schema import AlveareSchema
-from alveare.common.database import get_or_make_object, SecureNestedField
+from rebase.common.schema import AlveareSchema
+from rebase.common.database import get_or_make_object, SecureNestedField
 
 class DebitSchema(AlveareSchema):
 
@@ -11,7 +11,7 @@ class DebitSchema(AlveareSchema):
     work = SecureNestedField('WorkSchema', only='id')
 
     def make_object(self, data):
-        from alveare.models import Debit
+        from rebase.models import Debit
         return get_or_make_object(Debit, data)
 
 serializer = DebitSchema(only=('id','work','price','paid'))

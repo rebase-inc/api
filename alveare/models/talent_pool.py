@@ -1,5 +1,5 @@
 
-from alveare.common.database import DB, PermissionMixin
+from rebase.common.database import DB, PermissionMixin
 
 class TalentPool(DB.Model, PermissionMixin):
     __pluralname__ = 'talent_pools'

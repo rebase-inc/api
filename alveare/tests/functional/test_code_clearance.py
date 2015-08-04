@@ -1,7 +1,7 @@
 from . import AlveareRestTestCase
 from sqlalchemy import and_
-from alveare.common.utils import AlveareResource
-from alveare.models import (
+from rebase.common.utils import AlveareResource
+from rebase.models import (
     Contractor,
     Project,
     User,
@@ -93,7 +93,7 @@ class TestCodeClearanceResource(AlveareRestTestCase):
         self.code_clearance_resource.update(**code_clearance)
 
     def test_update_unauthorized(self):
-        self.login('steve@alveare.io', 'foo')
+        self.login('steve@rebase.io', 'foo')
         code_clearance = self.code_clearance_resource.get_any()
         code_clearance['pre_approved'] = not code_clearance['pre_approved']
         self.code_clearance_resource.update(expected_status=401, **code_clearance)

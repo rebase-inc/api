@@ -2,7 +2,7 @@ import unittest
 
 from . import AlveareModelTestCase
 import marshmallow.exceptions
-from alveare.common.exceptions import (
+from rebase.common.exceptions import (
     marshmallow_exceptions,
     MarshallingError,
     UnmarshallingError,

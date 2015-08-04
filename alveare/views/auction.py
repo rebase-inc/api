@@ -1,9 +1,9 @@
 from marshmallow import fields
-from alveare.common.schema import AlveareSchema
+from rebase.common.schema import AlveareSchema
 
-from alveare.views.ticket_set import TicketSetSchema
-from alveare.views.term_sheet import TermSheetSchema
-from alveare.common.database import get_or_make_object, SecureNestedField
+from rebase.views.ticket_set import TicketSetSchema
+from rebase.views.term_sheet import TermSheetSchema
+from rebase.common.database import get_or_make_object, SecureNestedField
 
 class AuctionSchema(AlveareSchema):
     id =               fields.Integer()
@@ -19,7 +19,7 @@ class AuctionSchema(AlveareSchema):
     #approved_talents = SecureNestedField('NominationSchema', only='id')
 
     def make_object(self, data):
-        from alveare.models import Auction
+        from rebase.models import Auction
         return get_or_make_object(Auction, data)
 
 class BidEventSchema(AlveareSchema):

@@ -1,11 +1,11 @@
 from marshmallow import fields
-from alveare.common.schema import AlveareSchema
-from alveare.models.organization import Organization
-from alveare.views.manager import ManagerSchema
-from alveare.views.project import ProjectSchema
-from alveare.views.bank_account import BankAccountSchema
-from alveare.views.user import UserSchema
-from alveare.common.database import get_or_make_object, SecureNestedField
+from rebase.common.schema import AlveareSchema
+from rebase.models.organization import Organization
+from rebase.views.manager import ManagerSchema
+from rebase.views.project import ProjectSchema
+from rebase.views.bank_account import BankAccountSchema
+from rebase.views.user import UserSchema
+from rebase.common.database import get_or_make_object, SecureNestedField
 
 class OrganizationSchema(AlveareSchema):
     id =            fields.Integer()
@@ -16,7 +16,7 @@ class OrganizationSchema(AlveareSchema):
     managers =      SecureNestedField(ManagerSchema,        only=('id','user'), many=True)
 
     def make_object(self, data):
-        from alveare.models import Organization
+        from rebase.models import Organization
         return get_or_make_object(Organization, data)
 
 serializer = OrganizationSchema(exclude=('user',), skip_missing=True)

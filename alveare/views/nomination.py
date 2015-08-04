@@ -1,8 +1,8 @@
 from marshmallow import fields
-from alveare.common.schema import AlveareSchema
-from alveare.common.database import get_or_make_object, SecureNestedField
-from alveare.common.utils import get_model_primary_keys
-from alveare.models import Nomination
+from rebase.common.schema import AlveareSchema
+from rebase.common.database import get_or_make_object, SecureNestedField
+from rebase.common.utils import get_model_primary_keys
+from rebase.models import Nomination
 
 class NominationSchema(AlveareSchema):
 

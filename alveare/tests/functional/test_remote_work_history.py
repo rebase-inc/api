@@ -1,6 +1,6 @@
 from . import AlveareRestTestCase
-from alveare.common.utils import AlveareResource
-from alveare.models import Contractor
+from rebase.common.utils import AlveareResource
+from rebase.models import Contractor
 from unittest import skip
 
 

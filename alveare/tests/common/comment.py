@@ -1,7 +1,7 @@
 from random import randrange
-from alveare import models
-from alveare.common import mock
-from alveare.common.utils import pick_an_organization_name, pick_a_word
+from rebase import models
+from rebase.common import mock
+from rebase.common.utils import pick_an_organization_name, pick_a_word
 
 def base_scenario(db, make_ticket_comment=False, make_mediation_comment=False, make_review_comment=False, make_feedback_comment=False):
     mgr_user =      mock.create_one_user(db)

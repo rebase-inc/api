@@ -2,10 +2,10 @@ import json
 import time
 
 from . import AlveareRestTestCase
-from alveare.common.mock import create_one_manager, create_one_organization
-from alveare.common.utils import AlveareResource
-from alveare.models.organization import Organization
-from alveare.models.manager import Manager
+from rebase.common.mock import create_one_manager, create_one_organization
+from rebase.common.utils import AlveareResource
+from rebase.models.organization import Organization
+from rebase.models.manager import Manager
 
 def mgr_url(id):
     return '/managers/{}'.format(id)
@@ -112,7 +112,7 @@ class TestManagerResource(AlveareRestTestCase):
             expected_status=201,
             first_name='Saul',
             last_name='Goodman',
-            email='saulgoodman@alveare.io',
+            email='saulgoodman@rebase.io',
             password='foo'
         )
         user = self.user_resource.just_ids(user)

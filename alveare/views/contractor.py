@@ -1,7 +1,7 @@
 from marshmallow import fields
-from alveare.common.schema import AlveareSchema
-from alveare.common.database import get_or_make_object, SecureNestedField
-from alveare.views.nomination import NominationSchema
+from rebase.common.schema import AlveareSchema
+from rebase.common.database import get_or_make_object, SecureNestedField
+from rebase.views.nomination import NominationSchema
 
 class ContractorSchema(AlveareSchema):
     id =                    fields.Integer()
@@ -15,7 +15,7 @@ class ContractorSchema(AlveareSchema):
     nominations =           SecureNestedField('NominationSchema',        only='id', many=True, default=None)
 
     def make_object(self, data):
-        from alveare.models import Contractor
+        from rebase.models import Contractor
         return get_or_make_object(Contractor, data)
 
 serializer =            ContractorSchema(skip_missing=True)

@@ -1,15 +1,15 @@
 from marshmallow import fields
-from alveare.common.schema import AlveareSchema
+from rebase.common.schema import AlveareSchema
 
-from alveare.views.ticket_set import TicketSetSchema
-from alveare.common.database import get_or_make_object, SecureNestedField
+from rebase.views.ticket_set import TicketSetSchema
+from rebase.common.database import get_or_make_object, SecureNestedField
 
 class ContractSchema(AlveareSchema):
     id =  fields.Integer()
     bid = SecureNestedField('BidSchema', only=('id',))
 
     def make_object(self, data):
-        from alveare.models import Contract
+        from rebase.models import Contract
         return get_or_make_object(Contract, data)
 
 serializer = ContractSchema(only=('id',), skip_missing=True)

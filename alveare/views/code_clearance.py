@@ -1,12 +1,12 @@
 from marshmallow import fields
-from alveare.common.schema import AlveareSchema
-from alveare.common.database import DB
-from alveare.models.code_clearance import CodeClearance
-from alveare.models.project import Project
-from alveare.models.contractor import Contractor
-from alveare.views.project import ProjectSchema
-from alveare.views.contractor import ContractorSchema
-from alveare.common.database import get_or_make_object, SecureNestedField
+from rebase.common.schema import AlveareSchema
+from rebase.common.database import DB
+from rebase.models.code_clearance import CodeClearance
+from rebase.models.project import Project
+from rebase.models.contractor import Contractor
+from rebase.views.project import ProjectSchema
+from rebase.views.contractor import ContractorSchema
+from rebase.common.database import get_or_make_object, SecureNestedField
 
 class CodeClearanceSchema(AlveareSchema):
     id =           fields.Integer()
@@ -15,7 +15,7 @@ class CodeClearanceSchema(AlveareSchema):
     contractor =   SecureNestedField('ContractorSchema', only=('id',), exclude=('code_clearance',), required=True)
 
     def make_object(self, data):
-        from alveare.models import CodeClearance
+        from rebase.models import CodeClearance
         return get_or_make_object(CodeClearance, data)
 
 serializer = CodeClearanceSchema(skip_missing=True)

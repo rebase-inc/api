@@ -1,7 +1,7 @@
 from sqlalchemy.orm import validates
 
-from alveare.common.database import DB, PermissionMixin
-from alveare.models.ticket_snapshot import TicketSnapshot
+from rebase.common.database import DB, PermissionMixin
+from rebase.models.ticket_snapshot import TicketSnapshot
 
 class BidLimit(DB.Model, PermissionMixin):
     __pluralname__ = 'bid_limits'

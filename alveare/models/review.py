@@ -1,7 +1,7 @@
 from sqlalchemy.orm import validates
 
-from alveare.common.database import DB, PermissionMixin, query_by_user_or_id
-from alveare.common.query import query_from_class_to_user
+from rebase.common.database import DB, PermissionMixin, query_by_user_or_id
+from rebase.common.query import query_from_class_to_user
 
 class Review(DB.Model, PermissionMixin):
     __pluralname__ = 'reviews'
@@ -49,23 +49,23 @@ class Review(DB.Model, PermissionMixin):
 
     @classmethod
     def as_manager(cls, user):
-        import alveare.models
+        import rebase.models
         return query_from_class_to_user(Review, [
-            alveare.models.work.Work,
-            alveare.models.work_offer.WorkOffer,
-            alveare.models.ticket_snapshot.TicketSnapshot,
-            alveare.models.ticket.Ticket,
-            alveare.models.project.Project,
-            alveare.models.organization.Organization,
-            alveare.models.manager.Manager,
+            rebase.models.work.Work,
+            rebase.models.work_offer.WorkOffer,
+            rebase.models.ticket_snapshot.TicketSnapshot,
+            rebase.models.ticket.Ticket,
+            rebase.models.project.Project,
+            rebase.models.organization.Organization,
+            rebase.models.manager.Manager,
         ], user)
 
     def as_contractor(user):
-        import alveare.models
+        import rebase.models
         return query_from_class_to_user(Review, [
-            alveare.models.work.Work,
-            alveare.models.work_offer.WorkOffer,
-            alveare.models.contractor.Contractor,
+            rebase.models.work.Work,
+            rebase.models.work_offer.WorkOffer,
+            rebase.models.contractor.Contractor,
         ], user)
 
     def allowed_to_be_created_by(self, user):

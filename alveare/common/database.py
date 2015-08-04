@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from marshmallow import fields
 from flask.ext.sqlalchemy import SQLAlchemy
-from alveare.common.exceptions import BadDataError, NotFoundError
+from rebase.common.exceptions import BadDataError, NotFoundError
 DB = SQLAlchemy()
 DB_PRODUCTION_NAME = 'rebase'
 DB_TEST_NAME = 'test_'+DB_PRODUCTION_NAME

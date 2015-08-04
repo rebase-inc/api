@@ -6,7 +6,7 @@ from keyword import kwlist
 
 from sqlalchemy.inspection import inspect
 
-import alveare.models
+import rebase.models
 
 def plural(text):
     known_forms = {
@@ -68,7 +68,7 @@ first[{key}] != second[{key}]
 
 class AlveareResource(object):
 
-    all_models = dict(getmembers(alveare.models, predicate=isclass))
+    all_models = dict(getmembers(rebase.models, predicate=isclass))
 
     def __init__(self, test, resource):
         '''

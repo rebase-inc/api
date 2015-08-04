@@ -2,8 +2,8 @@ import datetime
 
 from marshmallow import fields
 
-from alveare.common.schema import AlveareSchema
-from alveare.common.database import get_or_make_object, SecureNestedField
+from rebase.common.schema import AlveareSchema
+from rebase.common.database import get_or_make_object, SecureNestedField
 
 class MediationSchema(AlveareSchema):
     id =            fields.Integer()
@@ -17,7 +17,7 @@ class MediationSchema(AlveareSchema):
 
     def make_object(self, data):
         ''' This is an admin only procedure '''
-        from alveare.models import Mediation
+        from rebase.models import Mediation
         return get_or_make_object(Mediation, data)
 
 serializer =            MediationSchema(skip_missing=True)

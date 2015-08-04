@@ -1,6 +1,6 @@
 from marshmallow import fields
-from alveare.common.schema import AlveareSchema
-from alveare.common.database import SecureNestedField
+from rebase.common.schema import AlveareSchema
+from rebase.common.database import SecureNestedField
 
 class AuthSchema(AlveareSchema):
     user = SecureNestedField('UserSchema', only=('id', 'email',), required=True)

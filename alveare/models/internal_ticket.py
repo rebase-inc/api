@@ -1,6 +1,6 @@
 
-from alveare.common.database import DB
-from alveare.models.ticket import Ticket
+from rebase.common.database import DB
+from rebase.models.ticket import Ticket
 
 class InternalTicket(Ticket):
     __pluralname__ = 'internal_tickets'

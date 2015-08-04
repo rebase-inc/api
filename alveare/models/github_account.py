@@ -1,5 +1,5 @@
 
-from alveare.common.database import DB, PermissionMixin
+from rebase.common.database import DB, PermissionMixin
 
 class GithubAccount(DB.Model, PermissionMixin):
     __pluralname__ = 'github_accounts'
@@ -16,7 +16,7 @@ class GithubAccount(DB.Model, PermissionMixin):
 
     @classmethod
     def query_by_user(cls, user):
-        from alveare.models import RemoteWorkHistory, Contractor
+        from rebase.models import RemoteWorkHistory, Contractor
         if user.is_admin():
             return cls.query
         else:

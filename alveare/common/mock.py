@@ -9,15 +9,15 @@ from .utils import (
 )
 
 def create_one_organization(db, name=None, user=None):
-    from alveare.models import Organization
+    from rebase.models import Organization
     user = user or create_one_user(db)
     organization = Organization(name or pick_an_organization_name(), user)
     db.session.add(organization)
     return organization
 
 def create_one_user(db, first_name=None, last_name=None, email=None, password='foo', admin=False):
-    from alveare.models import User
-    email = email or 'user-{}@alveare.io'.format(uuid.uuid4())
+    from rebase.models import User
+    email = email or 'user-{}@rebase.io'.format(uuid.uuid4())
     user = User(
         first_name or pick_a_first_name(),
         last_name or pick_a_last_name(),
@@ -29,7 +29,7 @@ def create_one_user(db, first_name=None, last_name=None, email=None, password='f
     return user
 
 def create_one_manager(db, user=None, org=None):
-    from alveare.models import Manager
+    from rebase.models import Manager
     user = user or create_one_user(db)
     organization = org or create_one_organization(db)
     manager = Manager(user, organization)
@@ -37,7 +37,7 @@ def create_one_manager(db, user=None, org=None):
     return manager
 
 def create_one_contractor(db, user=None):
-    from alveare.models import Contractor, SkillSet
+    from rebase.models import Contractor, SkillSet
     user = user or create_one_user(db)
     contractor = Contractor(user)
     SkillSet(contractor)
@@ -45,7 +45,7 @@ def create_one_contractor(db, user=None):
     return contractor
 
 def create_one_bank_account(db, owner):
-    from alveare.models import BankAccount, Organization, Contractor
+    from rebase.models import BankAccount, Organization, Contractor
     routing = 123456000+randint(0, 999)
     account = 1230000+randint(0, 9999)
     if isinstance(owner, Organization):
@@ -58,7 +58,7 @@ def create_one_bank_account(db, owner):
     return account
 
 def create_one_code_clearance(db, project=None, contractor=None, pre_approved=False):
-    from alveare.models import CodeClearance
+    from rebase.models import CodeClearance
     contractor = contractor or create_one_contractor(db)
     project = project or create_one_project(db)
     code_clearance = CodeClearance(project, contractor, pre_approved)
@@ -66,21 +66,21 @@ def create_one_code_clearance(db, project=None, contractor=None, pre_approved=Fa
     return code_clearance
 
 def create_one_remote_work_history(db, contractor=None):
-    from alveare.models import RemoteWorkHistory
+    from rebase.models import RemoteWorkHistory
     contractor = contractor or create_one_contractor(db)
     remote_work_history = RemoteWorkHistory(contractor)
     db.session.add(remote_work_history)
     return remote_work_history
 
 def create_one_github_account(db, remote_work_history=None, user_name='ravioli'):
-    from alveare.models import GithubAccount
+    from rebase.models import GithubAccount
     remote_work_history = remote_work_history or create_one_remote_work_history(db)
     github_account = GithubAccount(remote_work_history, user_name)
     db.session.add(github_account)
     return github_account
 
 def create_one_project(db, organization=None, project_name=None):
-    from alveare.models import Organization, Project, CodeRepository
+    from rebase.models import Organization, Project, CodeRepository
     organization = organization or create_one_organization(db)
     project = Project(organization, project_name or pick_a_word().capitalize()+' Project')
     code_repo = CodeRepository(project)
@@ -90,7 +90,7 @@ def create_one_project(db, organization=None, project_name=None):
     return project
 
 def create_one_remote_project(db, organization_name='Alveare', project_name='api'):
-    from alveare.models import Organization, RemoteProject, CodeRepository
+    from rebase.models import Organization, RemoteProject, CodeRepository
     organization = create_one_organization(db, organization_name)
     remote_project = RemoteProject(organization, project_name)
     code_repo = CodeRepository(remote_project)
@@ -100,7 +100,7 @@ def create_one_remote_project(db, organization_name='Alveare', project_name='api
     return remote_project
 
 def create_one_github_project(db, organization=None, project_name='api'):
-    from alveare.models import Organization, GithubProject, CodeRepository
+    from rebase.models import Organization, GithubProject, CodeRepository
     organization = organization or create_one_organization(db, 'Alveare')
     github_project = GithubProject(organization, project_name)
     code_repo = CodeRepository(github_project)
@@ -108,7 +108,7 @@ def create_one_github_project(db, organization=None, project_name='api'):
     return github_project
 
 def create_one_internal_ticket(db, title, description=None, project=None):
-    from alveare.models import InternalTicket, SkillRequirement
+    from rebase.models import InternalTicket, SkillRequirement
     project = project or create_one_project(db)
     description = description or ' '.join(pick_a_word() for i in range(5))
     ticket = InternalTicket(project, title, description)
@@ -117,7 +117,7 @@ def create_one_internal_ticket(db, title, description=None, project=None):
     return ticket
 
 def create_one_remote_ticket(db, title, description=None, project=None):
-    from alveare.models import RemoteTicket, SkillRequirement
+    from rebase.models import RemoteTicket, SkillRequirement
     project = project or create_one_project(db)
     description = description or title + '-DESCRIPTION'
     ticket = RemoteTicket(project, title, description)
@@ -126,7 +126,7 @@ def create_one_remote_ticket(db, title, description=None, project=None):
     return ticket
 
 def create_one_github_ticket(db, number, project=None):
-    from alveare.models import GithubTicket, SkillRequirement
+    from rebase.models import GithubTicket, SkillRequirement
     project = project or create_one_github_project(db)
     ticket = GithubTicket(project, number)
     SkillRequirement(ticket)
@@ -134,7 +134,7 @@ def create_one_github_ticket(db, number, project=None):
     return ticket
 
 def create_some_tickets(db, ticket_titles=None):
-    from alveare.models import InternalTicket, RemoteTicket, SkillRequirement
+    from rebase.models import InternalTicket, RemoteTicket, SkillRequirement
     project = create_one_project(db)
     ticket_titles = ticket_titles or ['Foo', 'Bar', 'Baz', 'Qux']
     tickets = []
@@ -146,7 +146,7 @@ def create_some_tickets(db, ticket_titles=None):
     return tickets
 
 def create_ticket_matches(db, tickets=None, contractor=None):
-    from alveare.models import TicketMatch
+    from rebase.models import TicketMatch
     tickets = tickets or create_some_tickets(db)
     contractor = contractor or create_one_contractor(db)
     ticket_matches = []
@@ -156,7 +156,7 @@ def create_ticket_matches(db, tickets=None, contractor=None):
     return ticket_matches
 
 def create_one_snapshot(db, ticket=None):
-    from alveare.models import InternalTicket, TicketSnapshot, SkillRequirement
+    from rebase.models import InternalTicket, TicketSnapshot, SkillRequirement
     if not ticket:
         ticket = InternalTicket(create_one_project(db), 'for a snapshot')
         SkillRequirement(ticket)
@@ -167,7 +167,7 @@ def create_one_snapshot(db, ticket=None):
 
 def create_one_auction(db, tickets=None, duration=1000, finish_work_by=None, redundancy=1):
     finish_work_by = finish_work_by or datetime.datetime.now() + datetime.timedelta(days=2)
-    from alveare.models import Auction, TicketSet, BidLimit, TicketSnapshot, TermSheet
+    from rebase.models import Auction, TicketSet, BidLimit, TicketSnapshot, TermSheet
     tickets = tickets or create_some_tickets(db)
     ticket_snaps = [TicketSnapshot(ticket) for ticket in tickets]
     bid_limits = [BidLimit(ticket_snap, 200) for ticket_snap in ticket_snaps]
@@ -179,7 +179,7 @@ def create_one_auction(db, tickets=None, duration=1000, finish_work_by=None, red
     return auction
 
 def create_one_nomination(db, auction=None, contractor=None, approved=False):
-    from alveare.models import Nomination
+    from rebase.models import Nomination
     auction = auction or create_one_auction(db)
     contractor = contractor or create_one_contractor(db)
     nomination = Nomination(contractor, auction.ticket_set)
@@ -189,7 +189,7 @@ def create_one_nomination(db, auction=None, contractor=None, approved=False):
     return nomination
 
 def create_one_job_fit(db, nomination=None, ticket_matches=None):
-    from alveare.models import TicketMatch, JobFit
+    from rebase.models import TicketMatch, JobFit
     nomination = nomination or create_one_nomination(db)
     skill_set = nomination.contractor.skill_set
     if not ticket_matches:
@@ -201,7 +201,7 @@ def create_one_job_fit(db, nomination=None, ticket_matches=None):
     return job_fit
 
 def create_one_feedback(db, auction=None, contractor=None, comment=None):
-    from alveare.models import Feedback, Comment
+    from rebase.models import Feedback, Comment
     
     feedback = Feedback(
         auction or create_one_auction(db),
@@ -212,13 +212,13 @@ def create_one_feedback(db, auction=None, contractor=None, comment=None):
     return feedback
 
 def create_work_offer(db, contractor, snapshot, price):
-    from alveare.models import WorkOffer
+    from rebase.models import WorkOffer
     offer = WorkOffer(contractor, snapshot, price)
     db.session.add(offer)
     return offer
 
 def create_one_bid(db):
-    from alveare.models import Bid, WorkOffer
+    from rebase.models import Bid, WorkOffer
     auction = create_one_auction(db)
     contractor = create_one_contractor(db)
     work_offers = []
@@ -229,14 +229,14 @@ def create_one_bid(db):
     return bid
 
 def create_one_contract(db):
-    from alveare.models import Contract
+    from rebase.models import Contract
     bid = create_one_bid(db)
     contract = Contract(bid)
     db.session.add(bid)
     return contract
 
 def create_some_work(db, review=True, debit_credit=True, mediation=True, arbitration=True):
-    from alveare.models import Work, Review, Debit, Credit, Mediation, Arbitration
+    from rebase.models import Work, Review, Debit, Credit, Mediation, Arbitration
     bid = create_one_bid(db)
     works = []
     for work_offer in bid.work_offers:
@@ -255,7 +255,7 @@ def create_some_work(db, review=True, debit_credit=True, mediation=True, arbitra
     return works
 
 def create_one_work_review(db, rating, comment):
-    from alveare.models import Review, Comment
+    from rebase.models import Review, Comment
     work = create_some_work(db, review=False).pop()
     review = Review(work, rating)
     comment = Comment(comment, review=review)
@@ -263,18 +263,18 @@ def create_one_work_review(db, rating, comment):
     return review
 
 def create_admin_user(db, password):
-    god = create_one_user(db, 'Flying', 'SpaghettiMonster', 'fsm@alveare.io', password)
+    god = create_one_user(db, 'Flying', 'SpaghettiMonster', 'fsm@rebase.io', password)
     god.admin = True
     return god
 
 def create_the_world(db):
-    andrew = create_one_user(db, 'Andrew', 'Millspaugh', 'andrew@manager.alveare.io')
-    rapha = create_one_user(db, 'Raphael', 'Goyran', 'raphael@alveare.io')
-    joe = create_one_user(db, 'Joe', 'Pesci', 'joe@alveare.io')
-    tim = create_one_user(db, 'Tim', 'Pesci', 'tim@alveare.io')
+    andrew = create_one_user(db, 'Andrew', 'Millspaugh', 'andrew@manager.rebase.io')
+    rapha = create_one_user(db, 'Raphael', 'Goyran', 'raphael@rebase.io')
+    joe = create_one_user(db, 'Joe', 'Pesci', 'joe@rebase.io')
+    tim = create_one_user(db, 'Tim', 'Pesci', 'tim@rebase.io')
     create_one_snapshot(db)
     create_one_snapshot(db)
-    steve = create_one_user(db, 'Steve', 'Gildred', 'steve@alveare.io')
+    steve = create_one_user(db, 'Steve', 'Gildred', 'steve@rebase.io')
     manager_andrew = create_one_manager(db, andrew) # also creates an organization
     manager_rapha = create_one_manager(db, rapha)
     bigdough_project = create_one_github_project(db, manager_rapha.organization, 'Big Dough')

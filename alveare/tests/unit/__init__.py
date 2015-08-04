@@ -1,7 +1,7 @@
 import unittest
 
-from alveare.common.database import DB, DB_TEST_NAME
-from alveare import create_app
+from rebase.common.database import DB, DB_TEST_NAME
+from rebase import create_app
 
 class AlveareTestCase(unittest.TestCase):
 

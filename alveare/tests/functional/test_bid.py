@@ -2,7 +2,7 @@ import unittest
 
 from . import AlveareRestTestCase
 
-from alveare.models import Bid, Contractor, Manager
+from rebase.models import Bid, Contractor, Manager
 
 class TestBidResource(AlveareRestTestCase):
 

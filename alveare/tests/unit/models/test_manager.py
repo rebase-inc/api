@@ -3,11 +3,11 @@ import datetime
 
 from . import AlveareModelTestCase
 
-from alveare.common import mock
+from rebase.common import mock
 
-from alveare.models.manager import Manager
-from alveare.models.user import User
-from alveare.models.organization import Organization
+from rebase.models.manager import Manager
+from rebase.models.user import User
+from rebase.models.organization import Organization
 
 class TestManagerModel(AlveareModelTestCase):
 

@@ -58,7 +58,7 @@ class TestCreditResource(AlveareRestTestCase):
     def test_delete(self):
         self.login_admin()
         pass
-        user = dict(first_name='Hank', last_name='Schrader', email='hankschrader@alveare.io', password='theyreminerals')
+        user = dict(first_name='Hank', last_name='Schrader', email='hankschrader@rebase.io', password='theyreminerals')
         response = self.post_resource('users', user)
         user_id = response['user']['id']
 

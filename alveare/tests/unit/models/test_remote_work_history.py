@@ -1,8 +1,8 @@
 import unittest
 
 from . import AlveareModelTestCase
-from alveare.models import Contractor, RemoteWorkHistory
-from alveare.common.mock import create_one_remote_work_history
+from rebase.models import Contractor, RemoteWorkHistory
+from rebase.common.mock import create_one_remote_work_history
 
 class TestRemoteWorkHistoryModel(AlveareModelTestCase):
 

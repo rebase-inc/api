@@ -1,7 +1,7 @@
 from marshmallow import fields
-from alveare.common.schema import AlveareSchema
-from alveare.models.code_repository import CodeRepository
-from alveare.common.database import get_or_make_object, SecureNestedField
+from rebase.common.schema import AlveareSchema
+from rebase.models.code_repository import CodeRepository
+from rebase.common.database import get_or_make_object, SecureNestedField
 
 class CodeRepositorySchema(AlveareSchema):
     id =   fields.Integer()
@@ -9,7 +9,7 @@ class CodeRepositorySchema(AlveareSchema):
     project = SecureNestedField('ProjectSchema', only=('id',), default=None)
 
     def make_object(self, data):
-        from alveare.models import CodeRepository
+        from rebase.models import CodeRepository
         return get_or_make_object(CodeRepository, data)
 
 serializer = CodeRepositorySchema()

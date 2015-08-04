@@ -1,4 +1,4 @@
-from alveare.common.database import DB, PermissionMixin
+from rebase.common.database import DB, PermissionMixin
 
 from sqlalchemy import or_, sql
 
@@ -18,7 +18,7 @@ class Bid(DB.Model, PermissionMixin):
     contract = DB.relationship('Contract', backref='bid', cascade='all, delete-orphan', uselist=False)
 
     def __init__(self, auction, contractor):
-        from alveare.models import WorkOffer
+        from rebase.models import WorkOffer
         self.auction = auction
         self.contractor = contractor
         self.work_offers = WorkOffer.query.filter(WorkOffer.contractor == contractor,
@@ -26,7 +26,7 @@ class Bid(DB.Model, PermissionMixin):
 
     @classmethod
     def query_by_user(cls, user):
-        from alveare.models import Contractor, User
+        from rebase.models import Contractor, User
         query = cls.query
         if user.is_admin():
             return query

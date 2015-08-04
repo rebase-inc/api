@@ -1,7 +1,7 @@
 
-from alveare.common.database import DB
+from rebase.common.database import DB
 
-from alveare.models.remote_project import RemoteProject
+from rebase.models.remote_project import RemoteProject
 
 class GithubProject(RemoteProject):
     __pluralname__ = 'github_projects'

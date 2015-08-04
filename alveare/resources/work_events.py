@@ -2,11 +2,11 @@ from flask.ext.restful import Resource
 from flask.ext.login import login_required, current_user
 from flask import jsonify, make_response, request
 
-from alveare.common.state import ManagedState
-from alveare.common.exceptions import NotFoundError
-from alveare.common.database import DB
-from alveare.models import Work
-from alveare.views import work
+from rebase.common.state import ManagedState
+from rebase.common.exceptions import NotFoundError
+from rebase.common.database import DB
+from rebase.models import Work
+from rebase.views import work
 
 class WorkHaltEvents(Resource):
 

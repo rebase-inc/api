@@ -1,11 +1,11 @@
 from sqlalchemy.orm import validates
 
-from alveare.models.role import Role
-from alveare.models.user import User
-from alveare.models.contractor import Contractor
-import alveare.models.organization
+from rebase.models.role import Role
+from rebase.models.user import User
+from rebase.models.contractor import Contractor
+import rebase.models.organization
 
-from alveare.common.database import DB, PermissionMixin
+from rebase.common.database import DB, PermissionMixin
 
 class Manager(Role):
     __pluralname__ = 'managers'
@@ -22,12 +22,12 @@ class Manager(Role):
                 User,
                 type(user)
             ))
-        if not isinstance(organization, alveare.models.organization.Organization):
+        if not isinstance(organization, rebase.models.organization.Organization):
             raise ValueError(
                 '{} field on {} must be {} not {}'.format(
                     'organization',
                     self.__tablename__,
-                    alveare.models.organization.Organization,
+                    rebase.models.organization.Organization,
                     type(organization))
             )
         self.user = user
@@ -51,8 +51,8 @@ class Manager(Role):
     def get_all_as_manager(cls, user, manager_id=None):
         query = cls.query.filter(Manager.user==user)
         query = query\
-            .join(alveare.models.organization.Organization)\
-            .join(alveare.models.manager.Manager)
+            .join(rebase.models.organization.Organization)\
+            .join(rebase.models.manager.Manager)
         if manager_id:
             query = query.filter_by(id=manager_id)
         return query
@@ -64,11 +64,11 @@ class Manager(Role):
         if manager_id:
             query = query.filter_by(id=manager_id)
         return query\
-            .join(alveare.models.organization.Organization)\
-            .join(alveare.models.project.Project)\
-            .join(alveare.models.code_clearance.CodeClearance)\
-            .join(alveare.models.contractor.Contractor)\
-            .filter(alveare.models.contractor.Contractor.user == user)
+            .join(rebase.models.organization.Organization)\
+            .join(rebase.models.project.Project)\
+            .join(rebase.models.code_clearance.CodeClearance)\
+            .join(rebase.models.contractor.Contractor)\
+            .filter(rebase.models.contractor.Contractor.user == user)
 
     def allowed_to_be_created_by(self, user):
         if user.admin:

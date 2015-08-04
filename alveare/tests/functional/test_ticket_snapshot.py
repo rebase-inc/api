@@ -1,12 +1,12 @@
 from copy import copy
 
 from . import AlveareRestTestCase, AlveareNoMockRestTestCase
-from alveare.tests.common.ticket_snapshot import (
+from rebase.tests.common.ticket_snapshot import (
     case_as_manager,
     case_past_work_as_contractor,
     case_auctions_as_contractor,
 )
-from alveare.common.utils import AlveareResource, validate_resource_collection
+from rebase.common.utils import AlveareResource, validate_resource_collection
 
 class TestTicketSnapshot(AlveareNoMockRestTestCase):
     def setUp(self):

@@ -1,18 +1,18 @@
 from flask.ext.restful import abort
 from marshmallow import fields
-from alveare.common.schema import AlveareSchema
+from rebase.common.schema import AlveareSchema
 
-from alveare.models.skill_set import SkillSet
-from alveare.models.contractor import Contractor
-from alveare.views.contractor import ContractorSchema
-from alveare.common.database import get_or_make_object, SecureNestedField
+from rebase.models.skill_set import SkillSet
+from rebase.models.contractor import Contractor
+from rebase.views.contractor import ContractorSchema
+from rebase.common.database import get_or_make_object, SecureNestedField
 
 class SkillSetSchema(AlveareSchema):
     id =            fields.Integer()
     contractor =    SecureNestedField(ContractorSchema,  only=('id',))
 
     def make_object(self, data):
-        from alveare.models import SkillSet
+        from rebase.models import SkillSet
         return get_or_make_object(SkillSet, data)
 
 serializer = SkillSetSchema()

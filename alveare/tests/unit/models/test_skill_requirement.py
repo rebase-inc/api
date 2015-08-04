@@ -1,8 +1,8 @@
 from . import AlveareModelTestCase
 
-from alveare.common.utils import validate_query_fn
-from alveare.models import SkillRequirement
-from alveare.tests.common.skill_requirement import (
+from rebase.common.utils import validate_query_fn
+from rebase.models import SkillRequirement
+from rebase.tests.common.skill_requirement import (
     case_mgr,
     case_contractor,
     case_admin,

@@ -1,8 +1,8 @@
 from . import AlveareRestTestCase
-from alveare.common.utils import AlveareResource
+from rebase.common.utils import AlveareResource
 from unittest import skip
 
-from alveare.models import Contractor, RemoteWorkHistory, GithubAccount
+from rebase.models import Contractor, RemoteWorkHistory, GithubAccount
 
 
 class TestGithubAccountResource(AlveareRestTestCase):

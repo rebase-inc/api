@@ -1,4 +1,4 @@
-from alveare.common.utils import AlveareResource
+from rebase.common.utils import AlveareResource
 from unittest import skip
 from .ticket import BaseTestTicketResource
 

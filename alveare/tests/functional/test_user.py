@@ -3,11 +3,11 @@ import time
 import copy
 
 from . import AlveareRestTestCase, AlveareNoMockRestTestCase
-from alveare.common.utils import AlveareResource, validate_resource_collection
-from alveare.models import (
+from rebase.common.utils import AlveareResource, validate_resource_collection
+from rebase.models import (
     User,
 )
-from alveare.tests.common.user import (
+from rebase.tests.common.user import (
     case_nominated_users,
     case_contractor_users,
     case_manager_users,
@@ -26,7 +26,7 @@ class TestUserResource(AlveareRestTestCase):
 
     def test_create_new_as_admin(self):
         self.login_admin()
-        user = dict(first_name='Saul', last_name='Goodman', email='saulgoodman@alveare.io', password='foo')
+        user = dict(first_name='Saul', last_name='Goodman', email='saulgoodman@rebase.io', password='foo')
 
         expected_response = copy.copy(user)
         expected_response['admin'] = False
@@ -52,7 +52,7 @@ class TestUserResource(AlveareRestTestCase):
             expected_status=201,
             first_name='Saul',
             last_name='Goodman',
-            email='saulgoodman@alveare.io',
+            email='saulgoodman@rebase.io',
             password='foo'
         )
 
@@ -77,7 +77,7 @@ class TestUserResource(AlveareRestTestCase):
 
     def test_update_as_admin(self):
         self.login_admin()
-        user = dict(first_name='Walter', last_name='White', email='walterwhite@alveare.io', password='heisenberg')
+        user = dict(first_name='Walter', last_name='White', email='walterwhite@rebase.io', password='heisenberg')
         response = self.post_resource('users', user)
         user['id'] = response['user']['id']
         user['last_seen'] = response['user']['last_seen']
@@ -90,14 +90,14 @@ class TestUserResource(AlveareRestTestCase):
         user['roles'] = []
         self.assertEqual(user, response['user'])
 
-        new_email = dict(email = 'jessepinkman@alveare.io')
+        new_email = dict(email = 'jessepinkman@rebase.io')
         response = self.put_resource('users/{}'.format(user['id']), new_email)
         user.update(new_email)
         self.assertEqual(user, response['user'])
 
     def test_delete_as_admin(self):
         self.login_admin()
-        user = dict(first_name='Hank', last_name='Schrader', email='hankschrader@alveare.io', password='theyreminerals')
+        user = dict(first_name='Hank', last_name='Schrader', email='hankschrader@rebase.io', password='theyreminerals')
         response = self.post_resource('users', user)
         user_id = response['user']['id']
         response = self.delete_resource('users/{}'.format(user_id))

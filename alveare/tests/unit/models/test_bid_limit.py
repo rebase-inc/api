@@ -1,8 +1,8 @@
 from . import AlveareModelTestCase
 from datetime import datetime
 
-from alveare import models
-from alveare.common import mock
+from rebase import models
+from rebase.common import mock
 
 class TestBidLimitModel(AlveareModelTestCase):
 

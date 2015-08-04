@@ -3,8 +3,8 @@ from sqlalchemy.ext.hybrid import hybrid_property
 
 from .work_offer import WorkOffer
 from .mediation import Mediation
-from alveare.common.database import DB, PermissionMixin
-from alveare.common.state import StateMachine
+from rebase.common.database import DB, PermissionMixin
+from rebase.common.state import StateMachine
 
 class Work(DB.Model, PermissionMixin):
     __pluralname__ = 'work'
@@ -23,8 +23,8 @@ class Work(DB.Model, PermissionMixin):
 
     @classmethod
     def query_by_user(cls, user):
-        from alveare.models import WorkOffer, Contractor, Bid, Auction, TicketSet, User
-        from alveare.models import BidLimit, TicketSnapshot, Ticket , Organization
+        from rebase.models import WorkOffer, Contractor, Bid, Auction, TicketSet, User
+        from rebase.models import BidLimit, TicketSnapshot, Ticket , Organization
 
         query = cls.query
 

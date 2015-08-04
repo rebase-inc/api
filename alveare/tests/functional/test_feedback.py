@@ -2,7 +2,7 @@ import unittest
 
 from . import AlveareRestTestCase
 
-from alveare.models import Feedback, Contractor, Manager
+from rebase.models import Feedback, Contractor, Manager
 
 class TestFeedbackResource(AlveareRestTestCase):
 

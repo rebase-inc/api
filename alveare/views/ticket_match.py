@@ -1,9 +1,9 @@
 from marshmallow import fields
-from alveare.common.schema import AlveareSchema
-from alveare.common.database import get_or_make_object, SecureNestedField
-from alveare.common.utils import get_model_primary_keys
-from alveare.models import TicketMatch
-from alveare.views.job_fit import JobFitSchema
+from rebase.common.schema import AlveareSchema
+from rebase.common.database import get_or_make_object, SecureNestedField
+from rebase.common.utils import get_model_primary_keys
+from rebase.models import TicketMatch
+from rebase.views.job_fit import JobFitSchema
 
 class TicketMatchSchema(AlveareSchema):
     skill_requirement_id =  fields.Integer()

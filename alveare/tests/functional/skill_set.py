@@ -1,12 +1,12 @@
 from copy import copy
 
 from . import AlveareRestTestCase, AlveareNoMockRestTestCase
-from alveare.common.mock import create_one_user
-from alveare.tests.common.comment import (
+from rebase.common.mock import create_one_user
+from rebase.tests.common.comment import (
     case_mgr,
     case_contractor,
 )
-from alveare.common.utils import AlveareResource, validate_resource_collection
+from rebase.common.utils import AlveareResource, validate_resource_collection
 
 class TestComment(AlveareNoMockRestTestCase):
     def setUp(self):

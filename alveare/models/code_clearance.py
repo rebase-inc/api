@@ -1,5 +1,5 @@
 
-from alveare.common.database import DB, PermissionMixin
+from rebase.common.database import DB, PermissionMixin
 
 from .project import Project
 from .contractor import Contractor

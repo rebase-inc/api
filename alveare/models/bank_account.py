@@ -1,7 +1,7 @@
 from sqlalchemy.orm import validates
 
-from alveare.common.database import DB, PermissionMixin, query_by_user_or_id
-from alveare.common.query import query_from_class_to_user
+from rebase.common.database import DB, PermissionMixin, query_by_user_or_id
+from rebase.common.query import query_from_class_to_user
 
 class BankAccount(DB.Model, PermissionMixin):
     __pluralname__ = 'bank_accounts'
@@ -26,15 +26,15 @@ class BankAccount(DB.Model, PermissionMixin):
 
     @classmethod
     def as_contractor(cls, user):
-        import alveare.models
-        return query_from_class_to_user(BankAccount, [alveare.models.contractor.Contractor], user)
+        import rebase.models
+        return query_from_class_to_user(BankAccount, [rebase.models.contractor.Contractor], user)
 
     @classmethod
     def as_manager(cls, user, bank_account_id=None):
-        import alveare.models
+        import rebase.models
         return query_from_class_to_user(BankAccount, [
-            alveare.models.organization.Organization,
-            alveare.models.manager.Manager,
+            rebase.models.organization.Organization,
+            rebase.models.manager.Manager,
         ], user)
 
     @classmethod

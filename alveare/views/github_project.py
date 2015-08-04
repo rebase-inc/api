@@ -1,7 +1,7 @@
 from marshmallow import fields
-from alveare.common.schema import AlveareSchema
-from alveare.models.github_project import GithubProject
-from alveare.common.database import get_or_make_object, SecureNestedField
+from rebase.common.schema import AlveareSchema
+from rebase.models.github_project import GithubProject
+from rebase.common.database import get_or_make_object, SecureNestedField
 
 class GithubProjectSchema(AlveareSchema):
 

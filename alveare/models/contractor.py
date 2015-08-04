@@ -1,11 +1,11 @@
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import aliased
 
-from alveare.models.role import Role
-from alveare.models.user import User
-from alveare.common.database import DB, PermissionMixin, query_by_user_or_id
-from alveare.common.query import query_from_class_to_user
-import alveare.models
+from rebase.models.role import Role
+from rebase.models.user import User
+from rebase.common.database import DB, PermissionMixin, query_by_user_or_id
+from rebase.common.query import query_from_class_to_user
+import rebase.models
 
 class Contractor(Role):
     __pluralname__ = 'contractors'
@@ -42,11 +42,11 @@ class Contractor(Role):
     @classmethod
     def as_manager_get_cleared_contractors(cls, current_user):
         query = cls.query\
-            .join(alveare.models.code_clearance.CodeClearance)\
-            .join(alveare.models.project.Project)\
-            .join(alveare.models.organization.Organization)\
-            .join(alveare.models.manager.Manager)\
-            .filter(alveare.models.manager.Manager.user==current_user)
+            .join(rebase.models.code_clearance.CodeClearance)\
+            .join(rebase.models.project.Project)\
+            .join(rebase.models.organization.Organization)\
+            .join(rebase.models.manager.Manager)\
+            .filter(rebase.models.manager.Manager.user==current_user)
         return query
 
     nominated_path = None
@@ -56,30 +56,30 @@ class Contractor(Role):
         query = cls.query
         if not cls.nominated_path:
             cls.nominated_path = [
-                alveare.models.nomination.Nomination,
-                alveare.models.ticket_set.TicketSet,
-                alveare.models.bid_limit.BidLimit,
-                alveare.models.ticket_snapshot.TicketSnapshot,
-                alveare.models.ticket.Ticket,
-                alveare.models.project.Project,
-                alveare.models.organization.Organization,
-                alveare.models.manager.Manager,
+                rebase.models.nomination.Nomination,
+                rebase.models.ticket_set.TicketSet,
+                rebase.models.bid_limit.BidLimit,
+                rebase.models.ticket_snapshot.TicketSnapshot,
+                rebase.models.ticket.Ticket,
+                rebase.models.project.Project,
+                rebase.models.organization.Organization,
+                rebase.models.manager.Manager,
             ]
         for klass in cls.nominated_path:
             query = query.join(klass)
-        query = query.filter(alveare.models.manager.Manager.user==current_user)
+        query = query.filter(rebase.models.manager.Manager.user==current_user)
         return query
 
     @classmethod
     def as_contractor_get_cleared_contractors(cls, user):
-        import alveare.models
-        ct = aliased(alveare.models.Contractor)
+        import rebase.models
+        ct = aliased(rebase.models.Contractor)
         return DB.session.query(ct)\
             .select_from(Contractor)\
             .filter(Contractor.user==user)\
-            .join(alveare.models.CodeClearance)\
-            .join(alveare.models.Project)\
-            .join(alveare.models.CodeClearance, aliased=True)\
+            .join(rebase.models.CodeClearance)\
+            .join(rebase.models.Project)\
+            .join(rebase.models.CodeClearance, aliased=True)\
             .join(ct)
 
     def filter_by_id(self, query):

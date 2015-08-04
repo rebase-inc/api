@@ -1,5 +1,5 @@
 from sqlalchemy import or_, sql
-from alveare.common.database import DB, PermissionMixin
+from rebase.common.database import DB, PermissionMixin
 
 class Feedback(DB.Model, PermissionMixin):
     __pluralname__ = 'feedbacks'
@@ -18,7 +18,7 @@ class Feedback(DB.Model, PermissionMixin):
 
     @classmethod
     def query_by_user(cls, user):
-        from alveare.models import Contractor, User
+        from rebase.models import Contractor, User
         query = cls.query
         if user.is_admin():
             return query

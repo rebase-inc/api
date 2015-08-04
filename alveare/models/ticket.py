@@ -1,8 +1,8 @@
 
-from alveare.common.database import DB, PermissionMixin
-import alveare.models.organization
-import alveare.models.manager
-import alveare.models.project
+from rebase.common.database import DB, PermissionMixin
+import rebase.models.organization
+import rebase.models.manager
+import rebase.models.project
 
 class Ticket(DB.Model, PermissionMixin):
     __pluralname__ = 'tickets'
@@ -36,13 +36,13 @@ class Ticket(DB.Model, PermissionMixin):
         query = cls.query
         if ticket_id:
             query = query.filter_by(id=ticket_id)
-        query = query.join(alveare.models.project.Project)
+        query = query.join(rebase.models.project.Project)
         if project_type:
-            query = query.filter(alveare.models.project.Project.type == project_type)
+            query = query.filter(rebase.models.project.Project.type == project_type)
         return query\
-            .join(alveare.models.organization.Organization)\
-            .join(alveare.models.manager.Manager)\
-            .filter(alveare.models.manager.Manager.user == user)
+            .join(rebase.models.organization.Organization)\
+            .join(rebase.models.manager.Manager)\
+            .filter(rebase.models.manager.Manager.user == user)
 
     @classmethod
     def get_cleared_projects(cls, user, ticket_id=None, project_type=None):
@@ -50,13 +50,13 @@ class Ticket(DB.Model, PermissionMixin):
         query = cls.query
         if ticket_id:
             query = query.filter_by(id=ticket_id)
-        query = query.join(alveare.models.project.Project)
+        query = query.join(rebase.models.project.Project)
         if project_type:
-            query = query.filter(alveare.models.project.Project.type == project_type)
+            query = query.filter(rebase.models.project.Project.type == project_type)
         return query\
-            .join(alveare.models.code_clearance.CodeClearance)\
-            .join(alveare.models.contractor.Contractor)\
-            .filter(alveare.models.contractor.Contractor.user == user)
+            .join(rebase.models.code_clearance.CodeClearance)\
+            .join(rebase.models.contractor.Contractor)\
+            .filter(rebase.models.contractor.Contractor.user == user)
 
     def allowed_to_be_created_by(self, user):
         if user.admin:

@@ -3,10 +3,10 @@ from flask.ext.login import login_required, current_user
 from flask.ext.restful import Resource
 from flask import jsonify, make_response, request
 
-from alveare.models import User, Manager
-from alveare.views import user
-from alveare.common.database import DB
-from alveare.common.rest import (
+from rebase.models import User, Manager
+from rebase.views import user
+from rebase.common.database import DB
+from rebase.common.rest import (
     query_string_values,
     get_collection,
     add_to_collection,

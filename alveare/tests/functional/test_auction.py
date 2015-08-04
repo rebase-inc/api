@@ -1,8 +1,8 @@
 import unittest
 from datetime import datetime, timedelta
 
-from alveare.common import mock
-from alveare.common.utils import AlveareResource
+from rebase.common import mock
+from rebase.common.utils import AlveareResource
 from . import AlveareRestTestCase
 
 class TestAuctionResource(AlveareRestTestCase):
@@ -16,7 +16,7 @@ class TestAuctionResource(AlveareRestTestCase):
         user_data = dict(
             first_name = 'Andrew',
             last_name = 'Millspaugh',
-            email = 'andrew@auction.alveare.io',
+            email = 'andrew@auction.rebase.io',
             password = 'foobar'
         )
         user = self.post_resource('users', user_data)['user']

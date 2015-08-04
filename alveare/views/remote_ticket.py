@@ -1,9 +1,9 @@
 from marshmallow import fields
-from alveare.common.schema import AlveareSchema
-from alveare.models.remote_ticket import RemoteTicket
-from alveare.models.project import Project
-from alveare.views.skill_requirement import SkillRequirementSchema
-from alveare.common.database import get_or_make_object, SecureNestedField
+from rebase.common.schema import AlveareSchema
+from rebase.models.remote_ticket import RemoteTicket
+from rebase.models.project import Project
+from rebase.views.skill_requirement import SkillRequirementSchema
+from rebase.common.database import get_or_make_object, SecureNestedField
 from flask.ext.restful import abort
 
 class RemoteTicketSchema(AlveareSchema):
@@ -18,7 +18,7 @@ class RemoteTicketSchema(AlveareSchema):
     comments =          SecureNestedField('CommentSchema',          only=('id',), many=True)
 
     def make_object(self, data):
-        from alveare.models import RemoteTicket
+        from rebase.models import RemoteTicket
         return get_or_make_object(RemoteTicket, data)
 
 

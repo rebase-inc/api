@@ -5,7 +5,7 @@ import datetime
 
 from . import AlveareRestTestCase
 
-from alveare.models import Mediation
+from rebase.models import Mediation
 
 class TestMediationResource(AlveareRestTestCase):
 

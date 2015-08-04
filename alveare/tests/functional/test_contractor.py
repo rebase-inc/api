@@ -1,13 +1,13 @@
 from unittest import skip
 
 from . import AlveareRestTestCase, AlveareNoMockRestTestCase
-from alveare.common.utils import AlveareResource, validate_resource_collection
-from alveare.tests.common.contractor import (
+from rebase.common.utils import AlveareResource, validate_resource_collection
+from rebase.tests.common.contractor import (
     case_cleared_contractors,
     case_cleared_contractors_as_contractor,
     case_nominated_contractors,
 )
-from alveare.models import User
+from rebase.models import User
 
 
 class TestContractorResource(AlveareRestTestCase):

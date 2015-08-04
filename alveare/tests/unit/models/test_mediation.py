@@ -3,9 +3,9 @@ import datetime
 from sqlalchemy.orm.exc import ObjectDeletedError
 
 from . import AlveareModelTestCase
-from alveare import models
-from alveare.common import mock
-from alveare.common.state import StateMachine, ManagedState
+from rebase import models
+from rebase.common import mock
+from rebase.common.state import StateMachine, ManagedState
 
 class TestMediationModel(AlveareModelTestCase):
 

@@ -1,8 +1,8 @@
 import unittest
 
 from . import AlveareModelTestCase
-from alveare.models import JobFit, TicketMatch
-from alveare.common.mock import create_one_job_fit, create_one_nomination
+from rebase.models import JobFit, TicketMatch
+from rebase.common.mock import create_one_job_fit, create_one_nomination
 
 class TestJobFit(AlveareModelTestCase):
 

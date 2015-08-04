@@ -4,7 +4,7 @@ import copy
 
 from . import AlveareRestTestCase
 
-from alveare.models import Work
+from rebase.models import Work
 
 class TestWorkResource(AlveareRestTestCase):
 

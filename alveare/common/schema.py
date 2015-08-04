@@ -1,5 +1,5 @@
 from marshmallow import Schema
-from alveare.common.exceptions import marshmallow_exceptions
+from rebase.common.exceptions import marshmallow_exceptions
 
 class AlveareSchema(Schema):
 

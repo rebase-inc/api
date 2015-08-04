@@ -1,8 +1,8 @@
 from unittest import skip
 
 from . import AlveareRestTestCase
-from alveare.common.utils import AlveareResource
-from alveare.models.nomination import Nomination
+from rebase.common.utils import AlveareResource
+from rebase.models.nomination import Nomination
 
 class TestNominationResource(AlveareRestTestCase):
     def setUp(self):
@@ -89,7 +89,7 @@ class TestNominationResource(AlveareRestTestCase):
         self.logout()
         self.login_as_new_user()
 
-        from alveare.models.nomination import Nomination
+        from rebase.models.nomination import Nomination
         nomination = Nomination.query.first()
         self.get_resource('nominations/{}/{}'.format(nomination.contractor_id, nomination.ticket_set_id), 401)
 

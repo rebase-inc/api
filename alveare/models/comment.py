@@ -1,5 +1,5 @@
-from alveare.common.database import DB, PermissionMixin, query_by_user_or_id
-from alveare.common.query import query_from_class_to_user
+from rebase.common.database import DB, PermissionMixin, query_by_user_or_id
+from rebase.common.query import query_from_class_to_user
 
 class Comment(DB.Model, PermissionMixin):
     __pluralname__ = 'comments'
@@ -43,52 +43,52 @@ class Comment(DB.Model, PermissionMixin):
             .union(cls.get_manager_feedback_comment(user))
 
     def get_manager_ticket_comment(user):
-        import alveare.models
+        import rebase.models
         return query_from_class_to_user(Comment, [
-            alveare.models.ticket.Ticket,
-            alveare.models.project.Project,
-            alveare.models.organization.Organization,
-            alveare.models.manager.Manager,
+            rebase.models.ticket.Ticket,
+            rebase.models.project.Project,
+            rebase.models.organization.Organization,
+            rebase.models.manager.Manager,
         ], user)
 
     def get_manager_feedback_comment(user):
-        import alveare.models
+        import rebase.models
         return query_from_class_to_user(Comment, [
-            alveare.models.feedback.Feedback,
-            alveare.models.auction.Auction,
-            alveare.models.ticket_set.TicketSet,
-            alveare.models.bid_limit.BidLimit,
-            alveare.models.ticket_snapshot.TicketSnapshot,
-            alveare.models.ticket.Ticket,
-            alveare.models.project.Project,
-            alveare.models.organization.Organization,
-            alveare.models.manager.Manager,
+            rebase.models.feedback.Feedback,
+            rebase.models.auction.Auction,
+            rebase.models.ticket_set.TicketSet,
+            rebase.models.bid_limit.BidLimit,
+            rebase.models.ticket_snapshot.TicketSnapshot,
+            rebase.models.ticket.Ticket,
+            rebase.models.project.Project,
+            rebase.models.organization.Organization,
+            rebase.models.manager.Manager,
         ], user)
 
     def get_manager_mediation_comment(user):
-        import alveare.models
+        import rebase.models
         return query_from_class_to_user(Comment, [
-            alveare.models.mediation.Mediation,
-            alveare.models.work.Work,
-            alveare.models.work_offer.WorkOffer,
-            alveare.models.ticket_snapshot.TicketSnapshot,
-            alveare.models.ticket.Ticket,
-            alveare.models.project.Project,
-            alveare.models.organization.Organization,
-            alveare.models.manager.Manager,
+            rebase.models.mediation.Mediation,
+            rebase.models.work.Work,
+            rebase.models.work_offer.WorkOffer,
+            rebase.models.ticket_snapshot.TicketSnapshot,
+            rebase.models.ticket.Ticket,
+            rebase.models.project.Project,
+            rebase.models.organization.Organization,
+            rebase.models.manager.Manager,
         ], user)
 
     def get_manager_review_comment(user):
-        import alveare.models
+        import rebase.models
         return query_from_class_to_user(Comment, [
-            alveare.models.review.Review,
-            alveare.models.work.Work,
-            alveare.models.work_offer.WorkOffer,
-            alveare.models.ticket_snapshot.TicketSnapshot,
-            alveare.models.ticket.Ticket,
-            alveare.models.project.Project,
-            alveare.models.organization.Organization,
-            alveare.models.manager.Manager,
+            rebase.models.review.Review,
+            rebase.models.work.Work,
+            rebase.models.work_offer.WorkOffer,
+            rebase.models.ticket_snapshot.TicketSnapshot,
+            rebase.models.ticket.Ticket,
+            rebase.models.project.Project,
+            rebase.models.organization.Organization,
+            rebase.models.manager.Manager,
         ], user)
 
     @classmethod
@@ -99,37 +99,37 @@ class Comment(DB.Model, PermissionMixin):
             .union(cls.get_contractor_feedback_comment(user))
 
     def get_contractor_ticket_comment(user):
-        import alveare.models
+        import rebase.models
         return query_from_class_to_user(Comment, [
-            alveare.models.ticket.Ticket,
-            alveare.models.project.Project,
-            alveare.models.code_clearance.CodeClearance,
-            alveare.models.contractor.Contractor,
+            rebase.models.ticket.Ticket,
+            rebase.models.project.Project,
+            rebase.models.code_clearance.CodeClearance,
+            rebase.models.contractor.Contractor,
         ], user)
 
     def get_contractor_feedback_comment(user):
-        import alveare.models
+        import rebase.models
         return query_from_class_to_user(Comment, [
-            alveare.models.feedback.Feedback,
-            alveare.models.contractor.Contractor,
+            rebase.models.feedback.Feedback,
+            rebase.models.contractor.Contractor,
         ], user)
 
     def get_contractor_mediation_comment(user):
-        import alveare.models
+        import rebase.models
         return query_from_class_to_user(Comment, [
-            alveare.models.mediation.Mediation,
-            alveare.models.work.Work,
-            alveare.models.work_offer.WorkOffer,
-            alveare.models.contractor.Contractor,
+            rebase.models.mediation.Mediation,
+            rebase.models.work.Work,
+            rebase.models.work_offer.WorkOffer,
+            rebase.models.contractor.Contractor,
         ], user)
 
     def get_contractor_review_comment(user):
-        import alveare.models
+        import rebase.models
         return query_from_class_to_user(Comment, [
-            alveare.models.review.Review,
-            alveare.models.work.Work,
-            alveare.models.work_offer.WorkOffer,
-            alveare.models.contractor.Contractor,
+            rebase.models.review.Review,
+            rebase.models.work.Work,
+            rebase.models.work_offer.WorkOffer,
+            rebase.models.contractor.Contractor,
         ], user)
 
     def allowed_to_be_created_by(self, user):

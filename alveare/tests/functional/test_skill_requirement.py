@@ -2,9 +2,9 @@ from unittest import skip
 from copy import copy
 
 from . import AlveareRestTestCase, AlveareNoMockRestTestCase
-from alveare.common.mock import create_one_user
-from alveare.common.utils import AlveareResource, validate_resource_collection
-from alveare.tests.common.skill_requirement import (
+from rebase.common.mock import create_one_user
+from rebase.common.utils import AlveareResource, validate_resource_collection
+from rebase.tests.common.skill_requirement import (
     case_mgr,
     case_contractor,
 )

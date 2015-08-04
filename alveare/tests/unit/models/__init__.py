@@ -2,7 +2,7 @@ import datetime
 
 from .. import AlveareTestCase
 from datetime import datetime
-from alveare import models
+from rebase import models
 
 class AlveareModelTestCase(AlveareTestCase):
 

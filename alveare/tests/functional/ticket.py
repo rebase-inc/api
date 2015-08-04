@@ -1,8 +1,8 @@
 from unittest import skip
 from . import AlveareRestTestCase
-from alveare.common.utils import AlveareResource
-from alveare.common.mock import create_one_project
-from alveare.models import (
+from rebase.common.utils import AlveareResource
+from rebase.common.mock import create_one_project
+from rebase.models import (
     Project,
     Organization,
     Manager,

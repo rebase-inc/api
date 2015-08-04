@@ -1,8 +1,8 @@
 import unittest
 
 from . import AlveareModelTestCase
-from alveare.models import Auction, Contractor, Feedback
-from alveare.common.mock import create_one_feedback
+from rebase.models import Auction, Contractor, Feedback
+from rebase.common.mock import create_one_feedback
 
 class TestFeedbackModel(AlveareModelTestCase):
 

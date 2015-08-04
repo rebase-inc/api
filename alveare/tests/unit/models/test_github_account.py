@@ -1,8 +1,8 @@
 import unittest
 
 from . import AlveareModelTestCase
-from alveare.models import Contractor, RemoteWorkHistory, GithubAccount
-from alveare.common.mock import create_one_github_account, create_one_remote_work_history
+from rebase.models import Contractor, RemoteWorkHistory, GithubAccount
+from rebase.common.mock import create_one_github_account, create_one_remote_work_history
 
 class TestGithubAccountModel(AlveareModelTestCase):
 

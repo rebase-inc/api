@@ -1,6 +1,6 @@
 import unittest
 from collections import defaultdict
-from alveare.common.state import StateMachine, ManagedState
+from rebase.common.state import StateMachine, ManagedState
 
 class TestState(unittest.TestCase):
 

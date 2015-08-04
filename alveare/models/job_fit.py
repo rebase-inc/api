@@ -1,6 +1,6 @@
 
-from alveare.common.database import DB, PermissionMixin
-from alveare.models import Nomination
+from rebase.common.database import DB, PermissionMixin
+from rebase.models import Nomination
 
 class JobFit(DB.Model, PermissionMixin):
     __pluralname__ = 'job_fits'

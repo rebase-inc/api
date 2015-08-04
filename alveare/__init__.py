@@ -11,9 +11,9 @@ from sqlalchemy import event
 from flask import Flask
 from flask.ext.sqlalchemy import SQLAlchemy
 
-from alveare.common.routes import register_routes
-from alveare.models import User
-from alveare.common.database import DB, DB_PRODUCTION_NAME
+from rebase.common.routes import register_routes
+from rebase.models import User
+from rebase.common.database import DB, DB_PRODUCTION_NAME
 
 sys.dont_write_bytecode = True
 

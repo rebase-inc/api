@@ -2,9 +2,9 @@
 from flask.ext.restful import Resource
 from flask.ext.login import login_required, current_user
 from flask import jsonify, make_response, request
-from alveare.common.database import DB
-from alveare.common.rest import get_collection, add_to_collection, get_resource, update_resource, delete_resource
-from alveare.common.utils import make_collection_url, make_resource_url, get_model_primary_keys
+from rebase.common.database import DB
+from rebase.common.rest import get_collection, add_to_collection, get_resource, update_resource, delete_resource
+from rebase.common.utils import make_collection_url, make_resource_url, get_model_primary_keys
 
 def RestfulCollection(model, serializer, deserializer):
     ''' Couldn't get metaclass to work for this, so we're cheating and using a func '''

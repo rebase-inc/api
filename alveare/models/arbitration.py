@@ -2,7 +2,7 @@ from sqlalchemy.orm import validates
 
 from .mediation import Mediation
 
-from alveare.common.database import DB, PermissionMixin
+from rebase.common.database import DB, PermissionMixin
 
 class Arbitration(DB.Model, PermissionMixin):
     __pluralname__ = 'arbitrations'
@@ -18,8 +18,8 @@ class Arbitration(DB.Model, PermissionMixin):
 
     @classmethod
     def query_by_user(cls, user):
-        from alveare.models import Mediation, Work, WorkOffer, Contractor, Bid, Auction, TicketSet
-        from alveare.models import User, BidLimit, TicketSnapshot, Ticket , Organization
+        from rebase.models import Mediation, Work, WorkOffer, Contractor, Bid, Auction, TicketSet
+        from rebase.models import User, BidLimit, TicketSnapshot, Ticket , Organization
 
         query = cls.query
 

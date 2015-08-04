@@ -1,13 +1,13 @@
 from . import AlveareModelTestCase
 
-from alveare.common.utils import validate_query_fn
-from alveare.tests.common.ticket_match import (
+from rebase.common.utils import validate_query_fn
+from rebase.tests.common.ticket_match import (
     case_mgr,
     case_contractor,
     case_admin,
 )
-from alveare.models import TicketMatch
-from alveare.common.mock import create_ticket_matches
+from rebase.models import TicketMatch
+from rebase.common.mock import create_ticket_matches
 
 class TestTicketMatch(AlveareModelTestCase):
 
