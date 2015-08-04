@@ -48,3 +48,9 @@ heroku addons:create heroku-postgresql:hobby-dev --app rebase-pro
 git push pro master
 heroku run python manage.py db upgrade --app rebase-pro
 ```
+
+# How to reset the database
+```bash
+heroku pg:reset --confirm rebase-stage DATABASE_URL -a rebase-stage
+heroku run ./manage db upgrade -a rebase-stage
+```
