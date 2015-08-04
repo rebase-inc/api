@@ -55,3 +55,4 @@ def create_app():
     app.secret_key = 'Not really secret'
     return app, app_context, DB
 
+app, app_context, db = create_app()

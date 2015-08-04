@@ -1,8 +1,7 @@
 from flask.ext.script import Command, Option
 
-from alveare import create_app
+from alveare import app, db
 from alveare.models import User
-from alveare.common.database import DB
 
 class CreateAdmin(Command):
     '''Creates a user and tag it as administrator'''
@@ -17,6 +16,5 @@ class CreateAdmin(Command):
     def run(self, email, password, first, last):
         user = User(first, last, email, password)
         user.admin = True
-        app, _, DB = create_app()
-        DB.session.add(user)
-        DB.session.commit()
+        db.session.add(user)
+        db.session.commit()

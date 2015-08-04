@@ -8,10 +8,8 @@ from flask.ext.migrate import Migrate, MigrateCommand
 
 from inflection import underscore
 
-from alveare import create_app
+from alveare import app, db
 import alveare.models
-
-app, _, db = create_app()
 
 migrate = Migrate(app, db)
 manager = Manager(app)

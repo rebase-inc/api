@@ -1,8 +1,6 @@
 from flask.ext.script import Manager, prompt_bool
 
-from alveare import create_app
-
-_, _, db = create_app()
+from alveare import db
 
 data = Manager(usage="Manage the data inside the database.")
 
