@@ -13,6 +13,13 @@
 8. ```python manage.py db upgrade```
 9. ```foreman start```
 
+# How to run the tests
+```bash
+source test_setup.sh
+nosetests alveare/tests
+```
+
+
 # How to install the app on Heroku
 
 ```bash
