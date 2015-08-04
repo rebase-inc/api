@@ -1,6 +1,6 @@
 from flask.ext.script import Manager, prompt_bool
 
-from alveare import db
+from rebase import db
 
 data = Manager(usage="Manage the data inside the database.")
 

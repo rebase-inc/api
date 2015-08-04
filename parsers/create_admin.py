@@ -1,7 +1,7 @@
 from flask.ext.script import Command, Option
 
-from alveare import app, db
-from alveare.models import User
+from rebase import app, db
+from rebase.models import User
 
 class CreateAdmin(Command):
     '''Creates a user and tags it as administrator'''

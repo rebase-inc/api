@@ -3,4 +3,4 @@ venv/
 *.swp
 *.swo
 app.db
-alveare/.noseids
+rebase/.noseids

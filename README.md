@@ -16,7 +16,7 @@
 # How to run the tests
 ```bash
 source test_setup.sh
-nosetests alveare/tests
+nosetests rebase/tests
 ```
 
 
@@ -34,8 +34,8 @@ git remote add pro git@heroku.com:rebase-pro.git
 git remote add stage git@heroku.com:rebase-stage.git
 
 #To set an environment variable on a remote configuration:
-heroku config:set APP_SETTINGS=alveare.common.config.StagingConfig --remote stage
-heroku config:set APP_SETTINGS=alveare.common.config.ProductionConfig --remote pro
+heroku config:set APP_SETTINGS=rebase.common.config.StagingConfig --remote stage
+heroku config:set APP_SETTINGS=rebase.common.config.ProductionConfig --remote pro
 
 # Install the PostGreSQL add-on on both apps:
 # the staging app

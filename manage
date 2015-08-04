@@ -8,8 +8,8 @@ from flask.ext.migrate import Migrate, MigrateCommand
 
 from inflection import underscore
 
-from alveare import app, db
-import alveare.models
+from rebase import app, db
+import rebase.models
 
 migrate = Migrate(app, db)
 manager = Manager(app)
@@ -31,7 +31,7 @@ for entry in Path('parsers').glob('*.py'):
 
 @manager.shell
 def make_shell_context():
-        return dict(app=app, db=db, models=alveare.models)
+        return dict(app=app, db=db, models=rebase.models)
 
 if __name__ == '__main__':
     manager.run()
