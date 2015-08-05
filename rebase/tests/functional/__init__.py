@@ -16,7 +16,7 @@ class RebaseRestTestCase(unittest.TestCase):
     create_mock_data = True
 
     def setUp(self):
-        self.app, self.app_context, self.db = create_app()
+        self.app, self.app_context, self.db = create_app(testing=True)
 
         self.client = self.app.test_client()
 

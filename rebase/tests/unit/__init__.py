@@ -6,7 +6,7 @@ from rebase import create_app
 class RebaseTestCase(unittest.TestCase):
 
     def setUp(self):
-        self.app, self.app_context, self.db = create_app()
+        self.app, self.app_context, self.db = create_app(testing=True)
         DB.create_all()
         DB.session.commit()
 
