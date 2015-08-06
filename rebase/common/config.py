@@ -20,6 +20,7 @@ class StagingConfig(Config):
 class DevelopmentConfig(Config):
     DEVELOPMENT = True
     DEBUG = True
+    DEBUG_TB_INTERCEPT_REDIRECTS = False
 
 
 class TestingConfig(Config):

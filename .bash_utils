@@ -1,0 +1,9 @@
+# Search recursively for pattern in python files located in rebase/.
+# $ py register_route
+# rebase/__init__.py:15:from rebase.common.routes import register_routes
+# rebase/__init__.py:69:    register_routes(api)
+# rebase/common/routes.py:4:def register_routes(api):
+#
+py () {
+	grep -rn --exclude *.pyc --exclude *.swp --color=auto $1 rebase
+}

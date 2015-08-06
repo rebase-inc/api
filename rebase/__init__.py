@@ -1,6 +1,7 @@
 import sys
 from os import environ
 
+from flask import Flask
 from flask.ext.restful import Api
 from flask.ext.login import LoginManager
 from flask_debugtoolbar import DebugToolbarExtension
@@ -8,12 +9,12 @@ from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
 from sqlalchemy.engine import Engine
 from sqlalchemy import event
-from flask import Flask
 from flask.ext.sqlalchemy import SQLAlchemy
 
 from rebase.common.routes import register_routes
 from rebase.models import User
 from rebase.common.database import DB, DB_PRODUCTION_NAME
+from rebase.github.routes import register_github_routes
 
 sys.dont_write_bytecode = True
 
@@ -53,7 +54,11 @@ def create_app(testing=False):
     DB.init_app(app)
     api = Api(app)
     register_routes(api)
+    register_github_routes(app)
     app.secret_key = 'Not really secret'
+
     return app, app_context, DB
 
 app, app_context, db = create_app()
+
+
