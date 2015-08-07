@@ -1,4 +1,5 @@
 from flask import redirect, url_for, session, request, jsonify
+from flask.ext.login import login_required
 from flask_oauthlib.client import OAuth
 
 def register_github_routes(app):
@@ -16,6 +17,7 @@ def register_github_routes(app):
     )
 
     @app.route('/github/')
+    @login_required
     def index():
         if 'github_token' in session:
             me = github.get('user')
@@ -23,15 +25,18 @@ def register_github_routes(app):
         return redirect(url_for('login'))
 
     @app.route('/github/login')
+    @login_required
     def login():
         return github.authorize(callback=url_for('authorized', _external=True))
 
     @app.route('/github/logout')
+    @login_required
     def logout():
         session.pop('github_token', None)
         return redirect(url_for('index'))
 
     @app.route('/github/authorized')
+    @login_required
     def authorized():
         resp = github.authorized_response()
         if resp is None:
@@ -46,6 +51,7 @@ def register_github_routes(app):
         return jsonify({'result': 'complete success'})
 
     @app.route('/github/repos')
+    @login_required
     def repos():
         if 'github_token' in session:
             me = github.get('user/repos')
@@ -54,5 +60,6 @@ def register_github_routes(app):
         return redirect(url_for('login'))
 
     @github.tokengetter
+    @login_required
     def get_github_oauth_token():
         return session.get('github_token')

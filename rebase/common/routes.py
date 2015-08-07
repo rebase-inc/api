@@ -1,5 +1,4 @@
 from rebase.resources import add_restful_endpoint
-from flask.ext.login import login_required, current_user
 
 def register_routes(api):
 
