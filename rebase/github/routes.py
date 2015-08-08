@@ -6,8 +6,8 @@ def register_github_routes(app):
     oauth = OAuth(app)
     github = oauth.remote_app(
         'github',
-        consumer_key='ccfe7b7be7560c9a112e',
-        consumer_secret='1779c1d363dec567c81c01ef266e4d3f30f79a8d',
+        consumer_key=app.config['HEROKU_CLIENT_ID'],
+        consumer_secret=app.config['HEROKU_CLIENT_SECRET'],
         request_token_params={'scope': 'user, repo'},
         base_url='https://api.github.com/',
         request_token_url=None,
@@ -22,9 +22,8 @@ def register_github_routes(app):
         if 'github_token' in session:
             me = github.get('user')
             repos = github.get('user/repos')
-            app.logger.debug(repos.data)
             return render_template('github.html', data=me.data, repos=repos.data);
-        return github.authorize(callback=url_for('github_authorized', redirect='github_root', _external=True))
+        return github.authorize(callback=url_for('github_authorized', _external=True))
 
     @app.route('/github/login')
     @login_required
@@ -49,16 +48,14 @@ def register_github_routes(app):
         elif 'error' in resp:
             if resp['error'] == 'bad_verification_code':
                 return redirect(url_for('github_login'))
-        app.logger.debug(resp)
         session['github_token'] = (resp['access_token'], '')
-        return redirect(url_for(request.args['redirect']))
+        return redirect(url_for('github_root'))
 
     @app.route('/github/repos')
     @login_required
     def repos():
         if 'github_token' in session:
             me = github.get('user/repos')
-            app.logger.debug(me.data)
             return jsonify({'repos': me.data})
         return redirect(url_for('github_login'))
 

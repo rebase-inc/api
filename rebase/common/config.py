@@ -21,6 +21,8 @@ class DevelopmentConfig(Config):
     DEVELOPMENT = True
     DEBUG = True
     DEBUG_TB_INTERCEPT_REDIRECTS = False
+    HEROKU_CLIENT_ID = 'ccfe7b7be7560c9a112e'
+    HEROKU_CLIENT_SECRET = '1779c1d363dec567c81c01ef266e4d3f30f79a8d'
 
 
 class TestingConfig(Config):

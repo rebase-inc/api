@@ -49,7 +49,6 @@
     var url = ''
     $(document).ready( function () {
 	    $('#github-link').hide();
-	    <!--$('#github-link').style.display = 'none';-->
         var signup = function() {
             $.ajax({
                 type: 'POST',
@@ -68,6 +67,7 @@
                 data: JSON.stringify({ 'user': { 'email': $('#email').val() }, 'password': $('#password').val() }),
                 contentType :"application/json; charset=utf-8",
 		error       : function(err) {
+			$('#github-link').hide();
 			console.log(err); 
 			$('#error-message').html('Login error, sorry!');
 		},
