@@ -6,6 +6,8 @@ class Config(object):
     CSRF_ENABLED = True
     SECRET_KEY = 'this-really-needs-to-be-changed'
     SQLALCHEMY_DATABASE_URI = environ['DATABASE_URL']
+    HEROKU_CLIENT_ID = ''
+    HEROKU_CLIENT_SECRET = ''
 
 
 class ProductionConfig(Config):
