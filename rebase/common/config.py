@@ -17,6 +17,7 @@ class ProductionConfig(Config):
 class StagingConfig(Config):
     DEVELOPMENT = True
     DEBUG = True
+    DEBUG_TB_INTERCEPT_REDIRECTS = False
     HEROKU_CLIENT_ID = environ['HEROKU_CLIENT_ID']
     HEROKU_CLIENT_SECRET = environ['HEROKU_CLIENT_SECRET']
 
