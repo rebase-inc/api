@@ -6,17 +6,19 @@ class Config(object):
     CSRF_ENABLED = True
     SECRET_KEY = 'this-really-needs-to-be-changed'
     SQLALCHEMY_DATABASE_URI = environ['DATABASE_URL']
-    HEROKU_CLIENT_ID = ''
-    HEROKU_CLIENT_SECRET = ''
 
 
 class ProductionConfig(Config):
     DEBUG = False
+    HEROKU_CLIENT_ID = environ['HEROKU_CLIENT_ID']
+    HEROKU_CLIENT_SECRET = environ['HEROKU_CLIENT_SECRET']
 
 
 class StagingConfig(Config):
     DEVELOPMENT = True
     DEBUG = True
+    HEROKU_CLIENT_ID = environ['HEROKU_CLIENT_ID']
+    HEROKU_CLIENT_SECRET = environ['HEROKU_CLIENT_SECRET']
 
 
 class DevelopmentConfig(Config):
