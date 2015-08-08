@@ -1,0 +1,84 @@
+<!doctype html>
+<html>
+  <head>
+  </head>
+  <body>
+    <form>
+    </form>
+  </body>
+</html>
+<html>
+  <head>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <meta name="theme-color" content="#50E3C2">
+    <title>Rebase: Data driven hiring made easy</title>
+    <link href='http://fonts.googleapis.com/css?family=Ubuntu' rel='stylesheet' type='text/css'>
+    <style>
+      body { background: url('https://joinrebase.com/img/geometric-building.jpg'); -webkit-background-size: cover; -moz-background-size: cover; -o-background-size: cover; background-size: cover; }
+      * { font-family: 'Ubuntu', sans-serif; font-weight: 200; font-style: normal; color: #FFFFFF; }
+      #login-box { position: absolute; top: 50%; width: 35%; min-width: 300px; position: relative; margin: 0 auto; transform: translateY(50%); -webkit-transform: translateY(50%); border-radius: 8px; background-color: #F6F8FA; text-align: center; box-sizing: border-box; }
+      #login-box img { height: 55px; padding-top: 10px; padding-bottom: 20px; }
+      #login-box input, #buttons { width: 80%; height: 42px; margin: auto; margin-bottom: 18px; display: block; margin: 10px auto; }
+      #buttons { padding-bottom: 28px; }
+      #login-box button { background: none; box-shadow: none; outline: none; border-radius: 4px; border: none; font-size: 18px; color: #F6F8FA; height: 100%; width: 48%; cursor: pointer; }
+      button#sign-up { background-color: #47C8AB; float: left; }
+      button#log-in { background-color: #1C2D41; float: right; }
+      #login-box input { line-height: 24px; font-size: 14px; border-radius: 4px; border: 1px solid #cbcbd2; box-shadow: inset 0px 1px 2px 0px rgba(200,200,200,0.40); color: #4A4A4A; padding-left: 12px; box-sizing: border-box; }
+      #login-box button:active { opacity: 0.75; transition-duration: 0.2s; }
+      #login-box input:focus { border: 1px solid #47C8AB; box-shadow: inset 0 1px 2px rgba(203,203,210,0.2),0 0 4px rgba(80,227,194,0.35); outline: none; }
+      #github-link { color: #000000; }
+    </style>
+  </head>
+  <body>
+    <div id='login-box'>
+      <img src='https://joinrebase.com/img/logo.svg' alt='Rebase Logo'>
+      <input id='first_name' type='text' value='' placeholder='First Name'></input>
+      <input id='last_name' type='text' value='' placeholder='Last Name'></input>
+      <input id='email' type='email' value='' class='required email' placeholder='Email'></input>
+      <input id='password' type='password' value="" placeholder='Password'></input>
+      <div id='buttons'>
+        <button id='sign-up'>Sign Up</button>
+        <button id='log-in'>Log in</button>
+      </div>
+      <div id='error-message'></div>
+      <a id='github-link' href='/github'>Show off your GitHub work history now</div>
+    </div>
+  </body>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <script>
+    var url = ''
+    $(document).ready( function () {
+	    $('#github-link').hide();
+	    <!--$('#github-link').style.display = 'none';-->
+        var signup = function() {
+            $.ajax({
+                type: 'POST',
+                url: url + '/users',
+                data: JSON.stringify({ 'first_name': $('#first_name').val(), 'last_name': $('#last_name').val(), 'email': $('#email').val(), 'password': $('#password').val()}),
+                contentType :"application/json; charset=utf-8",
+                error       : function(err) { alert('ERROR (check console log for details)'); },
+                success     : function(data) { alert('SUCCESS' + data); }
+            });
+        };
+
+        var login = function() {
+            $.ajax({
+                type: 'POST',
+                url: url + '/auth',
+                data: JSON.stringify({ 'user': { 'email': $('#email').val() }, 'password': $('#password').val() }),
+                contentType :"application/json; charset=utf-8",
+		error       : function(err) {
+			console.log(err); 
+			$('#error-message').html('Login error, sorry!');
+		},
+		success     : function(data) {
+			console.log(data.message);
+			$('#github-link').show();
+		}
+            });
+        };
+        $('#sign-up').bind('click', function (event) { if (event) event.preventDefault(); signup(); });
+        $('#log-in').bind('click', function (event) { if (event) event.preventDefault(); login(); });
+    });
+  </script>
+</html>

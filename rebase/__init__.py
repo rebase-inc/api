@@ -1,7 +1,7 @@
 import sys
 from os import environ
 
-from flask import Flask
+from flask import Flask, render_template
 from flask.ext.restful import Api
 from flask.ext.login import LoginManager
 from flask_debugtoolbar import DebugToolbarExtension
@@ -56,6 +56,10 @@ def create_app(testing=False):
     register_routes(api)
     register_github_routes(app)
     app.secret_key = 'Not really secret'
+
+    @app.route('/')
+    def login_root():
+        return render_template('login.html')
 
     return app, app_context, DB
 
