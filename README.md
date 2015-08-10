@@ -17,25 +17,41 @@
 ```bash
 nosetests rebase/tests
 ```
+# GitHub Integration
+## Register a new GitHub application 
+0. Go here: https://github.com/settings/applications/new
+1. Save these 2 lines into .github_setup and source it:
+```bash
+export GITHUB_CLIENT_ID=<your_github_app_id>
+export GITHUB_CLIENT_SECRET=<your_github_app_secret_key>
+```
 
 
 # Heroku Development
+We are going to create 2 apps. One for production, the other for staging.
+So, first you should register 2 more [GitHub applications](https://github.com/settings/applications/new).
 
 ## Installation
 ```bash
-#To use SSH when pushing to Heroku, I'd recommend adding your pub key to your Heroku account:
+# To use SSH when pushing to Heroku, I'd recommend adding your pub key to your Heroku account:
 heroku keys:add
 
-#Let's create 2 apps, one for verification the other for production:
+# Let's create 2 apps, one for verification the other for production:
 heroku create rebase-pro
 heroku create rebase-stage
 
 git remote add pro git@heroku.com:rebase-pro.git
 git remote add stage git@heroku.com:rebase-stage.git
 
-#To set an environment variable on a remote configuration:
+# To set an environment variable on a remote configuration:
 heroku config:set APP_SETTINGS=rebase.common.config.StagingConfig --remote stage
 heroku config:set APP_SETTINGS=rebase.common.config.ProductionConfig --remote pro
+
+# Connect the GitHub apps to their respective Heroku apps
+heroku config:set GITHUB_CLIENT_ID=<some_key> -a rebase-stage
+heroku config:set GITHUB_CLIENT_SECRET=<some_key> -a rebase-stage
+heroku config:set GITHUB_CLIENT_ID=<some_key> -a rebase-stage
+heroku config:set GITHUB_CLIENT_SECRET=<some_key> -a rebase-stage
 
 # Install the PostGreSQL add-on on both apps:
 # the staging app

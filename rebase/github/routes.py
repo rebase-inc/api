@@ -6,8 +6,8 @@ def register_github_routes(app):
     oauth = OAuth(app)
     github = oauth.remote_app(
         'github',
-        consumer_key=app.config['HEROKU_CLIENT_ID'],
-        consumer_secret=app.config['HEROKU_CLIENT_SECRET'],
+        consumer_key=app.config['GITHUB_CLIENT_ID'],
+        consumer_secret=app.config['GITHUB_CLIENT_SECRET'],
         request_token_params={'scope': 'user, repo'},
         base_url='https://api.github.com/',
         request_token_url=None,

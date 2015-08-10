@@ -1,3 +1,4 @@
+.github_setup
 venv/
 *.pyc
 *.swp
