@@ -35,7 +35,17 @@
   <body>
 	  <div id='data'>
 		  <li>{{data.name}}</li><img src={{data.avatar_url}} height="80"/>
-		  <p>We detected you understand these languages: {{blob}}</p>
+		  <p>We detected you understand these languages:</p>
+		  <table>
+			  <tr>
+				  <th>Language</th><th>Percentage of commits</th>
+			  </tr>
+			  {% for language, percent in languages.items() %}
+			  <tr>
+				  <td>{{language}}</td><td>{{percent}}</td>
+			  </tr>
+			  {% endfor %}
+		  </table>
 		  <li><a href={{data.repos_url}}>{{data.name}}'s GitHub repositories</a></li>
 		  {% for repo in repos %}
 		  <li><a href={{repo.html_url}}>{{repo.html_url}}</a></li>

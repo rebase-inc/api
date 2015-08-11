@@ -1,4 +1,3 @@
-from pprint import pformat
 from pickle import dump
 
 from flask import redirect, url_for, session, request, jsonify, render_template
@@ -21,8 +20,11 @@ def detect_languages(app, github, username):
                 paths.append(path_obj['path'])
             commit_paths.append(paths)
 
+    ## remove these 2 lines once done experimenting
     with open('/tmp/paths.pickle', 'wb') as archive:
         dump(commit_paths, archive)
+    #######
+
     return path_to_languages(commit_paths)
 
 
@@ -46,9 +48,9 @@ def register_github_routes(app):
         if 'github_token' in session:
             me = github.get('user')
             username = me.data['login']
-            blob = pformat(detect_languages(app, github, username))
+            languages = detect_languages(app, github, username)
             repos = github.get('user/repos')
-            return render_template('github.html', data=me.data, repos=repos.data, blob = blob);
+            return render_template('github.html', data=me.data, repos=repos.data, languages = languages);
         return github.authorize(callback=url_for('github_authorized', _external=True))
 
     @app.route('/github/login')

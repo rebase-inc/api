@@ -25,7 +25,7 @@ for extensions in languages.values():
         all_extensions.append(ext)
 
 def path_to_languages(commit_paths):
-    all_languages = set()
+    all_languages = Counter()
     for paths in commit_paths:
         languages = []
         for path in paths:
@@ -33,19 +33,19 @@ def path_to_languages(commit_paths):
             extension = extension.lower()
             if extension and extension in all_extensions:
                 languages.append(set(extension_to_languages[extension]))
-        found_languages = set()
+        found_languages = Counter()
         ambiguous_languages = []
         for commit_languages in languages:
             if len(commit_languages) == 1:
-                found_languages |= commit_languages
+                found_languages.update(commit_languages)
             else:
                 ambiguous_languages.append(commit_languages)
-                for languages in ambiguous_languages:
-                    if languages & found_languages:
-                        continue
-                    else:
-                        found_languages |= languages
-        all_languages |= found_languages
+        for ambi in ambiguous_languages:
+            if ambi & found_languages:
+                continue
+            else:
+                found_languages.update(ambi)
+        all_languages.update(found_languages)
     return all_languages
 
 if __name__ == '__main__':
