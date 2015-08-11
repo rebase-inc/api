@@ -1,6 +1,28 @@
+from pprint import pformat
+from pickle import dump
+
 from flask import redirect, url_for, session, request, jsonify, render_template
 from flask.ext.login import login_required
 from flask_oauthlib.client import OAuth
+
+def detect_languages(app, github, username):
+    ''' returns a list of all languages spoken by this user '''
+    owned_repos = github.get('/user/repos'.format(username)).data
+    commit_paths = []
+    for repo in owned_repos:
+        commits = github.get(repo['url']+'/commits', data={ 'author': username}).data
+        for commit in commits:
+            languages = []
+            paths = []
+            tree = github.get(commit['commit']['tree']['url']).data
+            for path_obj in tree['tree']:
+                paths.append(path_obj['path'])
+            commit_paths.append(paths)
+
+    with open('/tmp/paths.pickle', 'wb') as archive:
+        dump(commit_paths, archive)
+    return commit_paths
+
 
 def register_github_routes(app):
     oauth = OAuth(app)
@@ -21,8 +43,10 @@ def register_github_routes(app):
     def github_root():
         if 'github_token' in session:
             me = github.get('user')
+            username = me.data['login']
+            blob = pformat(detect_languages(app, github, username))
             repos = github.get('user/repos')
-            return render_template('github.html', data=me.data, repos=repos.data);
+            return render_template('github.html', data=me.data, repos=repos.data, blob = blob);
         return github.authorize(callback=url_for('github_authorized', _external=True))
 
     @app.route('/github/login')
