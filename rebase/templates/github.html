@@ -35,7 +35,7 @@
   <body>
 	  <div id='data'>
 		  <li>{{data.name}}</li><img src={{data.avatar_url}} height="80"/>
-		  {{blob}}
+		  <p>We detected you understand these languages: {{blob}}</p>
 		  <li><a href={{data.repos_url}}>{{data.name}}'s GitHub repositories</a></li>
 		  {% for repo in repos %}
 		  <li><a href={{repo.html_url}}>{{repo.html_url}}</a></li>
