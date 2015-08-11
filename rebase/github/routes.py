@@ -5,6 +5,8 @@ from flask import redirect, url_for, session, request, jsonify, render_template
 from flask.ext.login import login_required
 from flask_oauthlib.client import OAuth
 
+from rebase.github.languages import path_to_languages
+
 def detect_languages(app, github, username):
     ''' returns a list of all languages spoken by this user '''
     owned_repos = github.get('/user/repos'.format(username)).data
@@ -21,7 +23,7 @@ def detect_languages(app, github, username):
 
     with open('/tmp/paths.pickle', 'wb') as archive:
         dump(commit_paths, archive)
-    return commit_paths
+    return path_to_languages(commit_paths)
 
 
 def register_github_routes(app):

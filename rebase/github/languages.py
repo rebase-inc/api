@@ -19,14 +19,10 @@ for language, extensions in languages.items():
     for extension in extensions:
         extension_to_languages[extension].append(language)
 
-print(extension_to_languages)
-
 all_extensions = []
 for extensions in languages.values():
     for ext in extensions:
         all_extensions.append(ext)
-
-print(all_extensions)
 
 def path_to_languages(commit_paths):
     all_languages = set()
@@ -37,7 +33,6 @@ def path_to_languages(commit_paths):
             extension = extension.lower()
             if extension and extension in all_extensions:
                 languages.append(set(extension_to_languages[extension]))
-        print(languages)
         found_languages = set()
         ambiguous_languages = []
         for commit_languages in languages:
