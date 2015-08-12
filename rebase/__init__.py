@@ -23,6 +23,16 @@ def create_admin_page(app):
     admin.add_view(ModelView(User, DB.session))
 
 
+class AnonymousUser(object):
+    is_active = False
+    def is_authenticated(self): return False
+    def is_anonymous(self): return True
+    def get_id(self): return None
+    def allowed_to_get(self, instace): return False
+    def allowed_to_create(self, instance): return isinstance(instance, User)
+    def allowed_to_modify(self, instance): return False
+    def allowed_to_delete(self, instance): return False
+
 def create_app(testing=False):
     """ Create our app using the Flask factory pattern """
     if 'DATABASE_URL' not in environ or 'APP_SETTINGS' not in environ:
@@ -34,16 +44,6 @@ def create_app(testing=False):
     create_admin_page(app)
     toolbar = DebugToolbarExtension(app)
     app.config['SQLALCHEMY_DATABASE_URI'] = environ['TEST_URL'] if testing else environ['DATABASE_URL']
-
-    class AnonymousUser(object):
-        is_active = False
-        def is_authenticated(self): return False
-        def is_anonymous(self): return True
-        def get_id(self): return None
-        def allowed_to_get(self, instace): return False
-        def allowed_to_create(self, instance): return isinstance(instance, User)
-        def allowed_to_modify(self, instance): return False
-        def allowed_to_delete(self, instance): return False
     login_manager = LoginManager()
     login_manager.anonymous_user = AnonymousUser
     login_manager.init_app(app)
@@ -62,7 +62,3 @@ def create_app(testing=False):
         return render_template('login.html')
 
     return app, app_context, DB
-
-app, app_context, db = create_app()
-
-

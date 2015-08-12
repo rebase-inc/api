@@ -3,7 +3,6 @@ import datetime
 import unittest
 
 from rebase import models, create_app
-from rebase.common.database import DB, DB_TEST_NAME
 from rebase.common.mock import create_the_world, create_admin_user
 from rebase.models import (
     User,

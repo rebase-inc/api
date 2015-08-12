@@ -1,3 +1,8 @@
+# Architecture overview
+Rebase is a Flask-based website. Its data are stored on a PostgreSQL database.
+Background task are run with RQ which itself relies on Redis.
+Supervisord is used to managed rqworker processes.
+
 # Local Development
 ## Installation
 
@@ -5,6 +10,10 @@
 1. Install PostgreSQL locally. On Mac, see http://postgresapp.com
 2. ```createdb rebase_web```
 3. ```createdb rebase_test```
+4. ```brew install redis```
+5. ```launchctl load ~/Library/LaunchAgents/homebrew.mxcl.redis.plist```
+6. ```easy_install supervisor```
+7. ```supervisord -c etc/supervisord.conf```
 4. Create and activate a Python Virtual Environment
 5. ```pip install -r requirements.txt```
 6. ```source setup.sh```

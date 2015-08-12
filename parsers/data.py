@@ -1,6 +1,7 @@
 from flask.ext.script import Manager, prompt_bool
 
-from rebase import db
+from rebase import create_app
+_, _, db = create_app()
 
 data = Manager(usage="Manage the data inside the database.")
 
