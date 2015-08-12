@@ -14,13 +14,13 @@ Supervisord is used to managed rqworker processes.
 5. ```launchctl load ~/Library/LaunchAgents/homebrew.mxcl.redis.plist```
 6. ```easy_install supervisor```
 7. ```supervisord -c etc/supervisord.conf```
-4. Create and activate a Python Virtual Environment
-5. ```pip install -r requirements.txt```
-6. ```source setup.sh```
-7. ```python manage.py db init```
-8. ```python manage.py db migrate```
-9. ```python manage.py db upgrade```
-10. ```foreman start``` This should launch a server on localhost
+8. Create and activate a Python Virtual Environment
+9. ```pip install -r requirements.txt```
+10. ```source setup.sh```
+11. ```python manage.py db init```
+12. ```python manage.py db migrate```
+13. ```python manage.py db upgrade```
+14. ```foreman start``` This should launch a server on localhost
 
 ## Testing
 ```bash
