@@ -8,6 +8,7 @@ py () {
 
 
 export REBASE_HOST=http://localhost:5000
+export REBASE_COOKIE_JAR=/tmp/rebase-cookie-jar.txt
 
 #
 # POST to rebase
@@ -17,7 +18,8 @@ export REBASE_HOST=http://localhost:5000
 rebase-post () {
 	curl \
 	-L \
-	-c /tmp/rebase-session.txt \
+	-b $REBASE_COOKIE_JAR \
+	-c $REBASE_COOKIE_JAR \
 	-H "Content-Type: application/json" \
 	-X POST -d "$1" \
 	$REBASE_HOST/$2
@@ -35,10 +37,23 @@ rebase-new-user () {
 
 #
 # Login to Rebase
-# $ rebase-login you@mail.com secretpassword
+# $ rebase-login you@mail.com password
 # 
 rebase-login () {
 	rebase-post \
 	"{ \"user\": {\"email\": \"$1\"}, \"password\": \"$2\"}" \
 	auth
+}
+
+#
+## GET something from Rebase
+# $ rebase-get /skill_set
+#
+rebase-get () {
+	curl \
+	-L \
+	-b $REBASE_COOKIE_JAR \
+	-c $REBASE_COOKIE_JAR \
+	-H "Content-Type: application/json" \
+	-X GET $REBASE_HOST/$1
 }
