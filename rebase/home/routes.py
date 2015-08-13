@@ -13,7 +13,6 @@ def register_home(app):
             skill_set = SkillSet.query.join(Contractor).filter(Contractor.user==user).first()
             languages = None
             if skill_set:
-                app.logger.debug(skill_set.skills)
                 languages = skill_set.skills
             return render_template(
                 'main.html',

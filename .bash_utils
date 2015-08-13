@@ -10,19 +10,32 @@ py () {
 export REBASE_HOST=http://localhost:5000
 export REBASE_COOKIE_JAR=/tmp/rebase-cookie-jar.txt
 
+rebase-curl () {
+	curl \
+	-L \
+	-b $REBASE_COOKIE_JAR \
+	-c $REBASE_COOKIE_JAR \
+	-H "Content-Type: application/json" \
+	-X $1 \
+	-d "$2" \
+	 $REBASE_HOST/$3
+}
+
+#
+## GET something from Rebase
+# $ rebase-get /skill_set
+#
+rebase-get () {
+	rebase-curl GET "{}" $1
+}
+
 #
 # POST to rebase
 # e.g.:
 # rebase-post "{\"first_name\": \"$1\", \"last_name\":\"$2\", \"email\":\"$3\", \"password\":\"$4\"}" users
 #
 rebase-post () {
-	curl \
-	-L \
-	-b $REBASE_COOKIE_JAR \
-	-c $REBASE_COOKIE_JAR \
-	-H "Content-Type: application/json" \
-	-X POST -d "$1" \
-	$REBASE_HOST/$2
+	rebase-curl POST "$1" $2
 }
 
 #
@@ -46,14 +59,11 @@ rebase-login () {
 }
 
 #
-## GET something from Rebase
-# $ rebase-get /skill_set
-#
-rebase-get () {
-	curl \
-	-L \
-	-b $REBASE_COOKIE_JAR \
-	-c $REBASE_COOKIE_JAR \
-	-H "Content-Type: application/json" \
-	-X GET $REBASE_HOST/$1
+## Logout from Rebase
+## $ rebase-logout
+##
+rebase-logout () {
+	rebase-get auth
+	echo
+	echo "Goodbye!"
 }
