@@ -6,6 +6,7 @@ class SkillSet(DB.Model, PermissionMixin):
     __pluralname__ = 'skill_sets'
 
     id =  DB.Column(DB.Integer, DB.ForeignKey('contractor.id', ondelete='CASCADE'), primary_key=True)
+    skills =  DB.Column(DB.PickleType, nullable=True)
 
     ticket_matches = DB.relationship('TicketMatch', backref='skill_set', cascade="all, delete-orphan", passive_deletes=True)
 

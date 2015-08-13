@@ -12,6 +12,7 @@ from rebase.github.scanners import read_repo
 from rebase.models.contractor import Contractor
 from rebase.models.github_account import GithubAccount
 from rebase.models.remote_work_history import RemoteWorkHistory
+from rebase.models.skill_set import SkillSet
 from rebase.models.user import User
 
 def save_access_token(github_user, logged_in_user, access_token, db):
@@ -22,9 +23,10 @@ def save_access_token(github_user, logged_in_user, access_token, db):
         if not remote_work_history:
             contractor = Contractor.query_by_user(user).first()
             if not contractor:
-                # NOTE we should eventually do a redirect(url_for('register_as_contractor')) or something, instead of raising an exception
+                # NOTE we should eventually do a redirect(url_for('register_as_contractor')) or something, or raise something
                 #raise NotRegisteredAsContractor(user)
                 contractor = Contractor(user)
+                skill_set = SkillSet(contractor)
             remote_work_history = RemoteWorkHistory(contractor)
         github_account = GithubAccount(
             remote_work_history=remote_work_history,

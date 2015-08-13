@@ -2,8 +2,20 @@ from rebase.github import create_github_app
 from rebase.github.languages import path_to_languages
 from rebase.models.user import User
 from rebase.models.github_account import GithubAccount
+from rebase.models.skill_set import SkillSet
+from rebase.models.contractor import Contractor
 
-def detect_languages(github, username):
+def save_languages(user_id, languages, db):
+    user = User.query.filter(User.id==user_id).first()
+    skill_set = SkillSet.query.join(Contractor).filter(Contractor.user == user).first()
+    if not skill_set:
+        raise RuntimeError('This contractor should have an associated SkillSet already')
+
+    skill_set.skills = languages
+    db.session.add(skill_set)
+    db.session.commit()
+
+def detect_languages(user_id, github, username, db):
     ''' returns a list of all languages spoken by this user '''
     owned_repos = github.get('/user/repos'.format(username)).data
     commit_paths = []
@@ -17,7 +29,10 @@ def detect_languages(github, username):
                 paths.append(path_obj['path'])
             commit_paths.append(paths)
 
-    return path_to_languages(commit_paths)
+    found_languages = path_to_languages(commit_paths)
+    save_languages(user_id, found_languages, db)
+
+    return found_languages
 
 def read_repo(user_id, github_username):
     from rebase import create_app
@@ -33,4 +48,4 @@ def read_repo(user_id, github_username):
     def get_github_oauth_token():
         return github_access_token
 
-    return detect_languages(github, github_username)
+    return detect_languages(user_id, github, github_username, db)
