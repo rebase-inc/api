@@ -1,7 +1,7 @@
 import sys
 from os import environ
 
-from flask import Flask, render_template
+from flask import Flask
 from flask.ext.restful import Api
 from flask.ext.login import LoginManager
 from flask_debugtoolbar import DebugToolbarExtension
@@ -15,6 +15,7 @@ from rebase.common.routes import register_routes
 from rebase.models import User
 from rebase.common.database import DB, DB_PRODUCTION_NAME
 from rebase.github.routes import register_github_routes
+from rebase.home.routes import register_home
 
 sys.dont_write_bytecode = True
 
@@ -53,12 +54,9 @@ def create_app(testing=False):
 
     DB.init_app(app)
     api = Api(app)
+    register_home(app)
     register_routes(api)
     register_github_routes(app)
     app.secret_key = 'Not really secret'
-
-    @app.route('/')
-    def login_root():
-        return render_template('login.html')
 
     return app, app_context, DB

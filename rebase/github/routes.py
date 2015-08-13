@@ -50,7 +50,7 @@ def register_github_routes(app):
             repos = [{}]
             github_user = github.get('user').data
             _ = background_queue.enqueue(read_repo, current_user.id, github_user['login'])
-            return render_template('github.html', data=github_user, repos=repos, languages = languages);
+            return render_template('github.html', github_user=github_user);
         return github.authorize(callback=url_for('github_authorized', _external=True))
 
     @app.route('/github/login')
