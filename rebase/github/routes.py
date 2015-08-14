@@ -7,7 +7,6 @@ from rq import Queue
 
 from rebase.common.database import DB
 from rebase.github import create_github_app
-from rebase.github.languages import path_to_languages
 from rebase.github.scanners import read_repo
 from rebase.models.contractor import Contractor
 from rebase.models.github_account import GithubAccount
@@ -40,16 +39,13 @@ def save_access_token(github_user, logged_in_user, access_token, db):
 def register_github_routes(app):
 
     github = create_github_app(app)
-    background_queue = Queue(connection=Redis())
 
     @app.route('/github/')
     @login_required
     def github_root():
         if 'github_token' in session:
-            languages = {'Python': 1}
-            repos = [{}]
             github_user = github.get('user').data
-            _ = background_queue.enqueue(read_repo, current_user.id, github_user['login'])
+            _ = app.default_queue.enqueue(read_repo, current_user.id, github_user['login'])
             return render_template('github.html', github_user=github_user);
         return github.authorize(callback=url_for('github_authorized', _external=True))
 
