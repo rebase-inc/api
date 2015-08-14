@@ -10,8 +10,9 @@ class SkillSet(DB.Model, PermissionMixin):
 
     ticket_matches = DB.relationship('TicketMatch', backref='skill_set', cascade="all, delete-orphan", passive_deletes=True)
 
-    def __init__(self, contractor):
+    def __init__(self, contractor, skills=None):
         self.contractor = contractor
+        self.skills = skills
 
     @classmethod
     def query_by_user(cls, user):

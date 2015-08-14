@@ -69,6 +69,7 @@ heroku addons:create heroku-postgresql:hobby-dev --as TEST --app rebase-stage
 heroku pg:promote WEB -a rebase-stage
 heroku run python manage.py db upgrade --app rebase-stage
 git push stage master
+heroku scale worker=1 -a rebase-stage
 
 # the production app
 heroku addons:create heroku-postgresql:hobby-dev --as WEB --app rebase-pro
@@ -76,6 +77,7 @@ heroku addons:create heroku-postgresql:hobby-dev --as TEST --app rebase-pro
 heroku pg:promote WEB -a rebase-pro
 heroku run python manage.py db upgrade --app rebase-pro
 git push pro master
+heroku scale worker=1 -a rebase-pro
 
 # create a first admin unser (optional):
 heroku run ./manage create_admin rapha@joinrebase.com supersecretpassword --first Raphael --last Goyran -a rebase-pro

@@ -16,23 +16,25 @@ class DictField(fields.Field):
 
     def _deserialize(self, value):
         ret = {}
-        for key, val in value.items():
-            k = self.key_field.deserialize(key)
-            v = self.nested_field.deserialize(val)
-            ret[k] = v
+        if value:
+            for key, val in value.items():
+                k = self.key_field.deserialize(key)
+                v = self.nested_field.deserialize(val)
+                ret[k] = v
         return ret
 
     def _serialize(self, value, attr, obj):
         ret = {}
-        for key, val in value.items():
-            k = self.key_field._serialize(key, attr, obj)
-            v = self.nested_field.serialize(key, self.get_value(attr, obj))
-            ret[k] = v
+        if value:
+            for key, val in value.items():
+                k = self.key_field._serialize(key, attr, obj)
+                v = self.nested_field.serialize(key, self.get_value(attr, obj))
+                ret[k] = v
         return ret
 
 class SkillSetSchema(RebaseSchema):
     id =            fields.Integer()
-    skills =        DictField(fields.Str(), fields.Integer())
+    skills =        DictField(fields.Str(), fields.Integer(), default={})
     contractor =    SecureNestedField(ContractorSchema,  only=('id',))
 
     def make_object(self, data):
