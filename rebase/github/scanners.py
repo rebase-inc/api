@@ -17,7 +17,7 @@ def save_languages(user_id, languages, db):
 
 def detect_languages(user_id, github, username, db):
     ''' returns a list of all languages spoken by this user '''
-    owned_repos = github.get('/user/repos'.format(username)).data
+    owned_repos = github.get('/user/repos').data
     commit_paths = []
     for repo in owned_repos:
         commits = github.get(repo['url']+'/commits', data={ 'author': username}).data
