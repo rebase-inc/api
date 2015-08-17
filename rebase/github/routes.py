@@ -47,7 +47,25 @@ def register_github_routes(app):
             github_user = github.get('user').data
             _ = app.default_queue.enqueue(read_repo, current_user.id, github_user['login'])
             return render_template('github.html', github_user=github_user);
+
         return github.authorize(callback=url_for('github_authorized', _external=True))
+
+    @app.route('/github/verify')
+    @login_required
+    def verify_all_github_tokens():
+        github_accounts = GithubAccount.query.all()
+        for account in github_accounts:
+            app.logger.debug('Verifying account for '+account.user_name)
+            token = (account.auth_token, '')
+            app.logger.debug('token: '+account.auth_token)
+            github = create_github_app(app)
+            @github.tokengetter
+            def get_github_oauth_token():
+                return token
+            user = github.get('/user').data
+            app.logger.debug(user)
+
+        return jsonify({'success':'complete'})
 
     @app.route('/github/login')
     @login_required
