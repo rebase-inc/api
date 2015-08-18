@@ -3,6 +3,7 @@ from flask import redirect, url_for, session, request, jsonify, render_template
 from flask.ext.login import login_required, current_user
 
 from redis import Redis
+from requests import post
 from rq import Queue
 
 from rebase.common.database import DB
@@ -46,6 +47,9 @@ def register_github_routes(app):
         if 'github_token' in session:
             github_user = github.get('user').data
             _ = app.default_queue.enqueue(read_repo, current_user.id, github_user['login'])
+            clone_data = {'github_oauth_token': session['github_token'][0]}
+            clone_response = post('http://ec2-52-21-89-158.compute-1.amazonaws.com:5001/', json=clone_data)
+            app.logger.debug('Clone request status code: {}'.format(clone_response.status_code))
             return render_template('github.html', github_user=github_user);
 
         return github.authorize(callback=url_for('github_authorized', _external=True))
