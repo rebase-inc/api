@@ -44,7 +44,7 @@ def create_app(testing=False):
         by the client. """
         resp.headers['Access-Control-Allow-Origin'] = request.headers.get('Origin','*')
         resp.headers['Access-Control-Allow-Credentials'] = 'true'
-        resp.headers['Access-Control-Allow-Methods'] = 'PUT', 'POST, OPTIONS, GET'
+        resp.headers['Access-Control-Allow-Methods'] = 'PUT, POST, OPTIONS, GET'
         resp.headers['Access-Control-Allow-Headers'] = request.headers.get('Access-Control-Request-Headers', 'Authorization' )
         # set low for debugging
         if app.debug:
