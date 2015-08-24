@@ -24,6 +24,7 @@ class AuthCollection(Resource):
 
     # TODO: Refactor this to look like other REST endpoints
     def post(self):
+        print(request.form or request.json)
         try:
             auth_data = auth.deserializer.load(request.form or request.json).data
             user = auth_data['user']
