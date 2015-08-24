@@ -1,6 +1,8 @@
 from flask.ext.script import Manager, prompt_bool
 
+
 from rebase import create_app
+from rebase.common import mock
 _, _, db = create_app()
 
 data = Manager(usage="Manage the data inside the database.")
@@ -29,7 +31,8 @@ def recreate(default_data=True, sample_data=False):
 @data.command
 def populate(default_data=False, sample_data=False):
     "Populate database with default data"
-    pass
+    mock.create_the_world(db)
+    db.session.commit()
     #from fixtures import dbfixture
 
     #if default_data:
