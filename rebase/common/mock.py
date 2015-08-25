@@ -296,8 +296,8 @@ class UserStory(object):
             user_ted = create_one_user(db, 'Ted', 'Crisp', 'tedcrisp@joinrebase.com')
             org_veridian = create_one_organization(db, 'veridian', user_ted)
             manager_ted = create_one_manager(db, user_ted, org_veridian)
-            project_matchmaker = create_one_project(db, bossman_manager.organization, 'matchmaker')
-            the_tickets = [create_one_internal_ticket(db, 'Issue #{}'.format(i), project=internal_project) for i in range(10)]
+            project_matchmaker = create_one_project(db, manager_ted.organization, 'matchmaker')
+            the_tickets = [create_one_internal_ticket(db, 'Issue #{}'.format(i), project=project_matchmaker) for i in range(10)]
             self.contractor = create_one_contractor(db, self.user)
             the_matches = create_ticket_matches(db, the_tickets, self.contractor)
             the_auctions = [create_one_auction(db, ticket) for ticket in the_tickets]
