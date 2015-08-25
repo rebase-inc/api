@@ -183,11 +183,6 @@ def create_one_auction(db, tickets=None, duration=1000, finish_work_by=None, red
     organization = tickets[0].project.organization
     auction = Auction(ticket_set, term_sheet, duration, finish_work_by, redundancy)
     db.session.add(auction)
-    print('we got these things:')
-    print(tickets)
-    print(ticket_snaps)
-    print(bid_limits)
-    print(ticket_set)
     return auction
 
 def create_one_nomination(db, auction=None, contractor=None, approved=False):
@@ -295,7 +290,6 @@ class UserStory(object):
         self.password = password
 
     def create(self, db):
-        print('Making the user story!')
         if self.type == self.types['NEW_DEVELOPER']:
             self.user = create_one_user(db, self.first_name, self.last_name, self.email, self.password)
             user_ted = create_one_user(db, 'Ted', 'Crisp', 'tedcrisp@joinrebase.com')
