@@ -8,7 +8,7 @@ class WorkOfferSchema(RebaseSchema):
     price = fields.Integer()
     work = SecureNestedField('WorkSchema', only=('id','review'), default=None)
     contractor = SecureNestedField('ContractorSchema', only='id', required=True)
-    ticket_snapshot = SecureNestedField('TicketSnapshotSchema', only='id', required=True)
+    ticket_snapshot = SecureNestedField('TicketSnapshotSchema', only=('id','ticket'), required=True)
 
     def make_object(self, data):
         from rebase.models import WorkOffer
