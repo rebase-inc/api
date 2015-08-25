@@ -6,7 +6,7 @@ class WorkOfferSchema(RebaseSchema):
     #bid = SecureNestedField('BidSchema', only='id', required=True)
     id = fields.Integer()
     price = fields.Integer()
-    work = SecureNestedField('WorkSchema', only='id', default=None)
+    work = SecureNestedField('WorkSchema', only=('id','review'), default=None)
     contractor = SecureNestedField('ContractorSchema', only='id', required=True)
     ticket_snapshot = SecureNestedField('TicketSnapshotSchema', only='id', required=True)
 
