@@ -9,7 +9,7 @@ class TicketSchema(RebaseSchema):
     description =   fields.String(required=True)
     discriminator = fields.String()
 
-    project =           SecureNestedField('ProjectSchema',          only=('id',), allow_null=True)
+    project =           SecureNestedField('ProjectSchema',          only=('id','name','organization'), allow_null=True)
     skill_requirement = SecureNestedField('SkillRequirementSchema', only=('id',), allow_null=True)
     snapshots =         SecureNestedField('TicketSnapshotSchema',   only=('id','bid_limit'), many=True)
     comments =          SecureNestedField('CommentSchema',          only=('id',), many=True)
