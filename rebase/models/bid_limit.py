@@ -28,7 +28,7 @@ class BidLimit(DB.Model, PermissionMixin):
     allowed_to_be_deleted_by = allowed_to_be_created_by
 
     def allowed_to_be_viewed_by(self, user):
-        return true
+        return True
 
     @property
     def organization(self):
