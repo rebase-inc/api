@@ -290,6 +290,7 @@ class UserStory(object):
         self.password = password
 
     def create(self, db):
+        from rebase.models import Comment
         if self.type == self.types['NEW_DEVELOPER']:
             self.user = create_one_user(db, self.first_name, self.last_name, self.email, self.password, admin=True)
             user_ted = create_one_user(db, 'Ted', 'Crisp', 'tedcrisp@joinrebase.com')
