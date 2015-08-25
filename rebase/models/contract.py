@@ -7,6 +7,7 @@ class Contract(DB.Model, PermissionMixin):
     id = DB.Column(DB.Integer, DB.ForeignKey('bid.id', ondelete='CASCADE'), primary_key=True)
 
     def __init__(self, bid):
+        from rebase.models import Work
         self.bid = bid
         for work_offer in bid.work_offers:
             Work(work_offer)
