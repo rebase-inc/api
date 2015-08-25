@@ -119,7 +119,6 @@ def create_one_internal_ticket(db, title, description=None, project=None):
     description = description or ' '.join(pick_a_word() for i in range(5))
     ticket = InternalTicket(project, title, description)
     SkillRequirement(ticket)
-    Comment(FAKE_COMMENTS[randint(0,2)], ticket)
     db.session.add(ticket)
     return ticket
 
