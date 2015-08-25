@@ -8,6 +8,8 @@ class Contract(DB.Model, PermissionMixin):
 
     def __init__(self, bid):
         self.bid = bid
+        for work_offer in bid.work_offers:
+            Work(work_offer)
 
     @classmethod
     def query_by_user(cls, user):
