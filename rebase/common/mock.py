@@ -291,7 +291,7 @@ class UserStory(object):
 
     def create(self, db):
         if self.type == self.types['NEW_DEVELOPER']:
-            self.user = create_one_user(db, self.first_name, self.last_name, self.email, self.password)
+            self.user = create_one_user(db, self.first_name, self.last_name, self.email, self.password, admin=True)
             user_ted = create_one_user(db, 'Ted', 'Crisp', 'tedcrisp@joinrebase.com')
             org_veridian = create_one_organization(db, 'veridian', user_ted)
             manager_ted = create_one_manager(db, user_ted, org_veridian)
