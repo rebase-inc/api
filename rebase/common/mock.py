@@ -8,6 +8,12 @@ from .utils import (
     pick_an_organization_name,
 )
 
+FAKE_COMMENTS = [
+    '@rapha, I\'m convinced that you were right regarding the composite primary keys being a better choice. However, in the few places where we are using composite primary keys right now, I don’t think the relationship is being properly referenced. See the SQLAlchemy documentation for proper reference of a composite foreign key.',
+    'What do you mean? Is this not correct (from job_fit model)? ```__table_args__ = ( DB.ForeignKeyConstraint( [contractor_id, ticket_set_id], [Nomination.contractor_id, Nomination.ticket_set_id], ondelete=\'CASCADE\'), {})```',
+    'Hmm, that does look correct. The one I was looking at is in the bid model. It indirectly references the auction and contractor ids through the nomination model, though it doesn’t specifically reference the nomination model. This should instead be switched to a reference like above. I guess I should\'ve actually looked into the places where this was happening.',
+]
+
 def create_one_organization(db, name=None, user=None):
     from rebase.models import Organization
     user = user or create_one_user(db)
@@ -113,6 +119,7 @@ def create_one_internal_ticket(db, title, description=None, project=None):
     description = description or ' '.join(pick_a_word() for i in range(5))
     ticket = InternalTicket(project, title, description)
     SkillRequirement(ticket)
+    Comment(FAKE_COMMENTS[randint(0,2)], ticket)
     db.session.add(ticket)
     return ticket
 
@@ -130,6 +137,7 @@ def create_one_github_ticket(db, number, project=None):
     project = project or create_one_github_project(db)
     ticket = GithubTicket(project, number)
     SkillRequirement(ticket)
+
     db.session.add(ticket)
     return ticket
 
