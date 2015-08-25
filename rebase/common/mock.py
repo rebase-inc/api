@@ -299,7 +299,7 @@ class UserStory(object):
             the_tickets = [create_one_internal_ticket(db, 'Issue #{}'.format(i), project=project_matchmaker) for i in range(10)]
             self.contractor = create_one_contractor(db, self.user)
             the_matches = create_ticket_matches(db, the_tickets, self.contractor)
-            the_auctions = [create_one_auction(db, ticket) for ticket in the_tickets]
+            the_auctions = [create_one_auction(db, [ticket]) for ticket in the_tickets]
             the_nominations = [create_one_nomination(db, auction, self.contractor) for auction in the_auctions]
             the_job_fits = [create_one_job_fit(db, nomination, match) for nomination, match in zip(the_nominations, the_matches)]
 
