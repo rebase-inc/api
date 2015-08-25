@@ -114,7 +114,7 @@ def create_one_github_project(db, organization=None, project_name='api'):
     return github_project
 
 def create_one_internal_ticket(db, title, description=None, project=None):
-    from rebase.models import InternalTicket, SkillRequirement
+    from rebase.models import InternalTicket, SkillRequirement, Comment
     project = project or create_one_project(db)
     description = description or ' '.join(pick_a_word() for i in range(5))
     ticket = InternalTicket(project, title, description)
