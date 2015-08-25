@@ -298,7 +298,7 @@ class UserStory(object):
             manager_ted = create_one_manager(db, user_ted, org_veridian)
             project_matchmaker = create_one_project(db, manager_ted.organization, 'matchmaker')
             the_tickets = [create_one_internal_ticket(db, 'Issue #{}'.format(i), project=project_matchmaker) for i in range(10)]
-            the_comments = [Comment(FAKE_COMMENTS[randint(0,2)], ticket) for ticket in the_tickets]
+            the_comments = [Comment(FAKE_COMMENTS[randint(0,2)], ticket=ticket) for ticket in the_tickets]
             self.contractor = create_one_contractor(db, self.user)
             the_matches = create_ticket_matches(db, the_tickets, self.contractor)
             the_auctions = [create_one_auction(db, [ticket]) for ticket in the_tickets]
