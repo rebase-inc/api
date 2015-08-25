@@ -177,6 +177,8 @@ def create_one_auction(db, tickets=None, duration=1000, finish_work_by=None, red
     from rebase.models import Auction, TicketSet, BidLimit, TicketSnapshot, TermSheet
     tickets = tickets or create_some_tickets(db)
     ticket_snaps = [TicketSnapshot(ticket) for ticket in tickets]
+    print('we have the ticket snaps of ')
+    print(ticket_snaps)
     bid_limits = [BidLimit(ticket_snap, 200) for ticket_snap in ticket_snaps]
     term_sheet = TermSheet('Some legal mumbo-jumbo')
     ticket_set = TicketSet(bid_limits)
