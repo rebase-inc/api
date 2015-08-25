@@ -6,7 +6,7 @@ class BidLimitSchema(RebaseSchema):
     id =              fields.Integer()
     price =           fields.Integer()
     ticket_snapshot = SecureNestedField('TicketSnapshotSchema', only=('id','title', 'ticket'), required=True)
-    ticket_set =      SecureNestedField('TicketSetSchema', only=('id',), required=True)
+    ticket_set =      SecureNestedField('TicketSetSchema', only=('id','auction'), required=True)
 
     def make_object(self, data):
         from rebase.models import BidLimit
