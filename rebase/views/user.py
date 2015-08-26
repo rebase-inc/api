@@ -15,7 +15,6 @@ class UserSchema(RebaseSchema):
 
     roles = SecureNestedField('RoleSchema', only=('id','type'), many=True)
 
-
     def make_object(self, data):
         from rebase.models import User
         if tuple(data.keys()) == ('email',):

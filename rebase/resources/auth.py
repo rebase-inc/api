@@ -35,7 +35,12 @@ class AuthCollection(Resource):
                 return response
             else:
                 login_user(authed_user)
-                response = jsonify(**{'user': user.serializer.dump(authed_user).data, 'auth': 'success'})
+                response = jsonify(**{'user': {
+                        id: authed_user.id,
+                        first_name: authed_user.first_name,
+                        last_name: authed_user.last_name,
+                        email: authed_user.email,
+                        }, 'auth': 'success'})
                 response.status_code = 201
                 return response
         except UnmarshallingError as e:
