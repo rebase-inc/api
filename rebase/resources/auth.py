@@ -36,7 +36,7 @@ class AuthCollection(Resource):
             else:
                 login_user(auth_user)
                 user.serializer.context = dict(current_user = current_user)
-                response = jsonify(**{'user': user.serializer.dump(auth_user).data }, 'message': 'success!'})
+                response = jsonify(**{'user': user.serializer.dump(auth_user).data, 'message': 'success!'})
                 response.status_code = 201
                 return response
         except UnmarshallingError as e:
