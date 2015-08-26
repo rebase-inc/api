@@ -44,6 +44,7 @@ class AuthCollection(Resource):
                 response.status_code = 201
                 return response
         except UnmarshallingError as e:
+            print(e)
             logout_user()
             response = jsonify(message = 'No credentials provided!')
             response.status_code = 401
