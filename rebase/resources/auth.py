@@ -9,7 +9,7 @@ from flask.ext.login import (
 from flask import jsonify, make_response, request
 from rebase.common.exceptions import UnmarshallingError
 
-from rebase.views import auth
+from rebase.views import auth, user
 from rebase.common.database import DB
 from rebase.common.rest import (
     get_collection,
@@ -26,16 +26,16 @@ class AuthCollection(Resource):
     def post(self):
         try:
             auth_data = auth.deserializer.load(request.form or request.json).data
-            user = auth_data['user']
+            authed_user = auth_data['user']
             password = auth_data['password']
-            if not user.check_password(password):
+            if not authed_user.check_password(password):
                 logout_user()
                 response = jsonify(message = 'Incorrect password!')
                 response.status_code = 401
                 return response
             else:
-                login_user(user)
-                response = jsonify(message = '{} {} succesfully logged in'.format(user.first_name, user.last_name))
+                login_user(authed_user)
+                response = jsonify(**{'user': user.serializer.dump(authed_user).data, 'auth': 'success'})
                 response.status_code = 201
                 return response
         except UnmarshallingError as e:
