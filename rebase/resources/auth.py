@@ -10,7 +10,7 @@ from flask.ext.login import (
 from flask import jsonify, make_response, request, redirect
 from rebase.common.exceptions import UnmarshallingError
 
-from rebase.views import auth
+from rebase.views import auth, user
 from rebase.common.database import DB
 from rebase.common.rest import (
     get_collection,
