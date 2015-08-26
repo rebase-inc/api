@@ -4,7 +4,8 @@ from flask.ext.login import (
     login_required,
     login_user,
     logout_user,
-    current_app
+    current_app,
+    current_user
 )
 from flask import jsonify, make_response, request, redirect
 from rebase.common.exceptions import UnmarshallingError
