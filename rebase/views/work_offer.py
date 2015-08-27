@@ -12,6 +12,8 @@ class WorkOfferSchema(RebaseSchema):
 
     def make_object(self, data):
         from rebase.models import WorkOffer
+        print('trying to make work offer with data:')
+        print(data)
         return get_or_make_object(WorkOffer, data)
 
 serializer = WorkOfferSchema(only=('id','price','work','ticket_snapshot'), skip_missing=True)
