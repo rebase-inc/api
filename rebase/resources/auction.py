@@ -45,7 +45,9 @@ class AuctionBidEvents(Resource):
 
     @login_required
     def post(self, id):
+        print('in auction bid event handler')
         single_auction = Auction.query.get_or_404(id)
+        print('got auction {}'.format(single_auction)
         auction_event = auction.bid_event_deserializer.load(request.form or request.json).data
 
         with ManagedState():
