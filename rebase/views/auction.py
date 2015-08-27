@@ -20,6 +20,7 @@ class AuctionSchema(RebaseSchema):
 
     def make_object(self, data):
         from rebase.models import Auction
+        print('trying to make auction with data: {}'.format(data))
         return get_or_make_object(Auction, data)
 
 class BidEventSchema(RebaseSchema):
