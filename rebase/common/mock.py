@@ -14,6 +14,18 @@ FAKE_COMMENTS = [
     'Hmm, that does look correct. The one I was looking at is in the bid model. It indirectly references the auction and contractor ids through the nomination model, though it doesn’t specifically reference the nomination model. This should instead be switched to a reference like above. I guess I should\'ve actually looked into the places where this was happening.',
 ]
 
+FAKE_TICKETS = [
+    'Abstract out state machine event resource creation',
+    'For all ORM relationships that reference a table with composite foreign key, combine those keys into one relationship.',
+    'Add permission checking to rebase REST object creation and up date methods.',
+    'Refactor auction ORM model to remove organization helper relationship.',
+    'Change bank account model initialization method to take a generic owner parameter.',
+    'Do this one thing and then the other thing so we have more things to do.',
+    'Delete every line of code from the codebase, destroy everybody\'s computers, and delete our github accounts.',
+    'Play with the quadcopter for 10-15 hours.',
+    'Build some really cool software, get a bunch of people to use it, and make a billion dollars.',
+]
+
 def create_one_organization(db, name=None, user=None):
     from rebase.models import Organization
     user = user or create_one_user(db)
@@ -297,8 +309,10 @@ class UserStory(object):
             org_veridian = create_one_organization(db, 'veridian', user_ted)
             manager_ted = create_one_manager(db, user_ted, org_veridian)
             project_matchmaker = create_one_project(db, manager_ted.organization, 'matchmaker')
-            the_tickets = [create_one_internal_ticket(db, 'Issue #{}'.format(i), project=project_matchmaker) for i in range(10)]
-            the_comments = [Comment(FAKE_COMMENTS[randint(0,2)], ticket=ticket) for ticket in the_tickets]
+            the_tickets = [create_one_internal_ticket(db, fake_ticket, project=project_matchmaker) for fake_ticket in FAKE_TICKETS]
+            for ticket in the_tickets:
+                for fake_comment in FAKE_COMMENTS:
+                    Comment(fake_comment, ticket=ticket)
             self.contractor = create_one_contractor(db, self.user)
             the_matches = create_ticket_matches(db, the_tickets, self.contractor)
             the_auctions = [create_one_auction(db, [ticket]) for ticket in the_tickets]
