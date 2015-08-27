@@ -12,6 +12,7 @@ class BidSchema(RebaseSchema):
 
     def make_object(self, data):
         from rebase.models import Bid
+        print('trying to make bid with data: {}'.format(data))
         return get_or_make_object(Bid, data)
 
 serializer = BidSchema(only=('id', 'auction', 'contractor','work_offers'))
