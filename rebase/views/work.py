@@ -15,7 +15,7 @@ class WorkSchema(RebaseSchema):
     mediation = SecureNestedField(MediationSchema, only=('id','state'), attribute='mediation_rounds', many=True)
     debit = SecureNestedField(DebitSchema, only='id', default=None)
     credit = SecureNestedField(CreditSchema, only='id', default=None)
-    offer = SecureNestedField(WorkOfferSchema, only='id', default=None)
+    offer = SecureNestedField(WorkOfferSchema, exclude=('work',), default=None)
 
     def make_object(self, data):
         from rebase.models import Work
