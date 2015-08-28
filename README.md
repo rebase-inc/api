@@ -7,7 +7,7 @@ Supervisord is used to managed rqworker processes.
 ## Installation
 
 0. Go through https://devcenter.heroku.com/articles/getting-started-with-python
-1. Install PostgreSQL locally. On Mac, see http://postgresapp.com
+1. Install PostgreSQL locally. On Mac, see http://postgresapp.com. Don't forget to set your $PATH (http://postgresapp.com/documentation/cli-tools.html)
 2. ```createdb rebase_web```
 3. ```createdb rebase_test```
 4. ```brew install redis```
@@ -17,9 +17,9 @@ Supervisord is used to managed rqworker processes.
 8. Create and activate a Python Virtual Environment
 9. ```pip install -r requirements.txt```
 10. ```source setup.sh```
-11. ```python manage.py db init```
-12. ```python manage.py db migrate```
-13. ```python manage.py db upgrade```
+11. ```python manage db init```
+12. ```python manage db migrate```
+13. ```python manage db upgrade```
 14. ```foreman start``` This should launch a server on localhost
 
 ## Testing
@@ -27,7 +27,7 @@ Supervisord is used to managed rqworker processes.
 nosetests rebase/tests
 ```
 # GitHub Integration
-## Register a new GitHub application 
+## Register a new GitHub application
 0. Go here: https://github.com/settings/applications/new
 1. Save these 2 lines into .github_setup and source it:
 ```bash
