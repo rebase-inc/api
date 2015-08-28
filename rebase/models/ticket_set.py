@@ -56,12 +56,6 @@ class TicketSet(DB.Model, PermissionMixin):
 
     def allowed_to_be_created_by(self, user):
         return self.bid_limits[0].allowed_to_be_created_by(user)
-        #return query_by_user_or_id(
-            #TicketSet,
-            #TicketSet.as_manager,
-            #TicketSet.filter_by_id,
-            #user, self
-        #).limit(1).all()
 
     allowed_to_be_modified_by = allowed_to_be_created_by
     allowed_to_be_deleted_by = allowed_to_be_created_by

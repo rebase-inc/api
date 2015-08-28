@@ -5,6 +5,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy import or_, sql
 
 from rebase.common.database import DB, PermissionMixin
+from rebase.common.query import query_from_class_to_user
 from rebase.common.state import StateMachine
 from rebase.models import BidLimit, Contract, Bid
 
@@ -34,47 +35,46 @@ class Auction(DB.Model, PermissionMixin):
     def __repr__(self):
         return '<Auction[id:{}] finish_work_by={}>'.format(self.id, self.finish_work_by)
 
+    def as_contractor(user):
+        import rebase.models as models
+        return query_from_class_to_user(Auction, [
+            models.Nomination,
+            models.Contractor,
+        ], user)
+
+    def as_manager(user):
+        import rebase.models as models
+        return query_from_class_to_user(Auction, [
+            models.TicketSet,
+            models.BidLimit,
+            models.TicketSnapshot,
+            models.Ticket,
+            models.Project,
+            models.Organization,
+            models.Manager,
+        ], user)
+
+    def _all(user):
+        return Auction.as_contractor(user).union(Auction.as_manager(user))
+
     @classmethod
     def query_by_user(cls, user):
-        from rebase.models import Organization, TicketSet, BidLimit, TicketSnapshot, Ticket, Project
-        query = cls.query
-        all_filters = []
         if user.is_admin():
-            return query
-
-        auctions_approved_for = []
-        for contractor in user.contractor_roles.all():
-            auctions_approved_for.extend(contractor.auctions_approved_for)
-
-        all_filters = []
-        if auctions_approved_for:
-            all_filters.append(Organization.id.in_(auctions_approved_for))
-        if user.manager_for_organizations:
-            all_filters.append(Organization.id.in_(user.manager_for_organizations))
-        if not all_filters:
-            return query.filter(sql.false())
-        query = query.join(cls.ticket_set)
-        query = query.join(TicketSet.bid_limits)
-        query = query.join(BidLimit.ticket_snapshot)
-        query = query.join(TicketSnapshot.ticket)
-        query = query.join(Ticket.project)
-        query = query.join(Project.organization)
-        return query.filter(or_(*all_filters))
+            return cls.query
+        return cls._all(user)
 
     def allowed_to_be_created_by(self, user):
         if user.is_admin():
             return True
-        organization_id = self.organization.id
-        return bool(organization_id in user.manager_for_organizations)
+        return Auction.as_manager(user).first()
 
-    def allowed_to_be_modified_by(self, user):
-        return self.allowed_to_be_created_by(user)
-
-    def allowed_to_be_deleted_by(self, user):
-        return self.allowed_to_be_created_by(user)
+    allowed_to_be_modified_by = allowed_to_be_created_by
+    allowed_to_be_deleted_by = allowed_to_be_created_by
 
     def allowed_to_be_viewed_by(self, user):
-        return self.allowed_to_be_created_by(user)
+        if user.is_admin():
+            return True
+        return Auction._all(user).filter(Auction.id==self.id).first()
 
     @property
     def organization(self):

@@ -9,6 +9,13 @@ from rebase.models import Auction, Ticket, TicketSnapshot, TicketSet, BidLimit, 
 from rebase import models
 from rebase.common import mock
 from rebase.common.state import ManagedState
+from rebase.common.utils import validate_query_fn
+from rebase.tests.common.auction import (
+    case_mgr,
+    case_contractor,
+    case_admin,
+    case_anonymous,
+)
 
 class TestAuctionModel(RebaseModelTestCase):
 
@@ -166,3 +173,42 @@ class TestAuctionModel(RebaseModelTestCase):
         with self.assertRaises(ValueError):
             auction = mock.create_one_auction(self.db, redundancy='foo')
             self.db.session.commit()
+
+
+class TestAuction(RebaseModelTestCase):
+
+    def test_contractor(self):
+        validate_query_fn(
+            self,
+            Auction,
+            case_contractor,
+            Auction.as_contractor,
+            False, False, False, True
+        )
+
+    def test_mgr(self):
+        validate_query_fn(
+            self,
+            Auction,
+            case_mgr,
+            Auction.as_manager,
+            True, True, True, True
+        )
+
+    def test_admin(self):
+        validate_query_fn(
+            self,
+            Auction,
+            case_admin,
+            Auction.query_by_user,
+            True, True, True, True
+        )
+
+    def test_anonymous(self):
+        validate_query_fn(
+            self,
+            Auction,
+            case_anonymous,
+            Auction.query_by_user,
+            False, False, False, False
+        )
