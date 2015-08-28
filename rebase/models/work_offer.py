@@ -67,6 +67,7 @@ class WorkOffer(DB.Model, PermissionMixin):
         return (self.bid and self.bid.auction.organization.id in user.manager_for_organizations) or (self.contractor.user == user)
 
     def __repr__(self):
+        return 'Work Offer: {}'.format(self.__dict__)
         return '<WorkOffer[{}] for snapshot {ticket_snapshot_id} on bid {bid_id} at {price} dollars>'.format(self.id, **self.__dict__)
 
     @validates('price')
