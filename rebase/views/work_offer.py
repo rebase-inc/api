@@ -15,7 +15,7 @@ class WorkOfferSchema(RebaseSchema):
         return get_or_make_object(WorkOffer, data)
 
 serializer = WorkOfferSchema(only=('id','price','work','ticket_snapshot'), skip_missing=True)
-deserializer = WorkOfferSchema(only=('price','work','contractor','ticket_snapshot'), strict=True)
+deserializer = WorkOfferSchema(only=('price','contractor','ticket_snapshot'), strict=True)
 
 update_deserializer = WorkOfferSchema(only=('price',), strict=True)
 update_deserializer.make_object = lambda data: data

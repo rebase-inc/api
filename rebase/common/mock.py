@@ -224,7 +224,7 @@ def create_one_bid(db):
     work_offers = []
     for bid_limit in auction.ticket_set.bid_limits:
         work_offers.append(WorkOffer(contractor, bid_limit.ticket_snapshot, 150))
-    bid = Bid(auction, contractor)
+    bid = Bid(auction, contractor, work_offers)
     db.session.add(bid)
     return bid
 

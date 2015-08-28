@@ -3,15 +3,15 @@ from flask.ext.login import login_required, current_user
 from flask import jsonify, make_response, request
 
 from rebase.models import Auction, Role
-from rebase.views import auction
+from rebase.views import auction as auction_views
 from rebase.common.database import DB
 from rebase.common.state import ManagedState
 from rebase.common.rest import get_collection, add_to_collection, get_resource, update_resource, delete_resource
 
 class AuctionCollection(Resource):
     model = Auction
-    serializer = auction.serializer
-    deserializer = auction.deserializer
+    serializer = auction_views.serializer
+    deserializer = auction_views.deserializer
     url = '/{}'.format(model.__pluralname__)
 
     @login_required
@@ -24,9 +24,9 @@ class AuctionCollection(Resource):
 
 class AuctionResource(Resource):
     model = Auction
-    serializer = auction.serializer
-    deserializer = auction.deserializer
-    update_deserializer = auction.update_deserializer
+    serializer = auction_views.serializer
+    deserializer = auction_views.deserializer
+    update_deserializer = auction_views.update_deserializer
     url = '/{}/<int:id>'.format(model.__pluralname__)
 
     @login_required
@@ -46,14 +46,14 @@ class AuctionBidEvents(Resource):
     @login_required
     def post(self, id):
         single_auction = Auction.query.get_or_404(id)
-        auction_event = auction.bid_event_deserializer.load(request.form or request.json).data
+        auction_event = auction_views.bid_event_deserializer.load(request.json).data
 
         with ManagedState():
             single_auction.machine.send(*auction_event)
 
         DB.session.commit()
 
-        response = jsonify(auction = auction.serializer.dump(single_auction).data)
+        response = jsonify(auction = auction_views.serializer.dump(single_auction).data)
         response.status_code = 201
         return response
 
@@ -62,14 +62,14 @@ class AuctionEndEvents(Resource):
     @login_required
     def post(self, id):
         single_auction = Auction.query.get_or_404(id)
-        auction_event = auction.end_event_deserializer.load(request.form or request.json).data
+        auction_event = auction_views.end_event_deserializer.load(request.form or request.json).data
 
         with ManagedState():
             single_auction.machine.send(auction_event)
 
         DB.session.commit()
 
-        response = jsonify(auction = auction.serializer.dump(single_auction).data)
+        response = jsonify(auction = auction_views.serializer.dump(single_auction).data)
         response.status_code = 201
         return response
 
@@ -78,13 +78,13 @@ class AuctionFailEvents(Resource):
     @login_required
     def post(self, id):
         single_auction = Auction.query.get_or_404(id)
-        auction_event = auction.fail_event_deserializer.load(request.form or request.json).data
+        auction_event = auction_views.fail_event_deserializer.load(request.form or request.json).data
 
         with ManagedState():
             single_auction.machine.send(auction_event)
 
         DB.session.commit()
 
-        response = jsonify(auction = auction.serializer.dump(single_auction).data)
+        response = jsonify(auction = auction_views.serializer.dump(single_auction).data)
         response.status_code = 201
         return response

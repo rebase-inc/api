@@ -17,12 +17,11 @@ class Bid(DB.Model, PermissionMixin):
 
     contract = DB.relationship('Contract', backref='bid', cascade='all, delete-orphan', uselist=False)
 
-    def __init__(self, auction, contractor):
+    def __init__(self, auction, contractor, work_offers):
         from rebase.models import WorkOffer
         self.auction = auction
         self.contractor = contractor
-        self.work_offers = WorkOffer.query.filter(WorkOffer.contractor == contractor,
-            WorkOffer.ticket_snapshot_id.in_([bl.ticket_snapshot.id for bl in auction.ticket_set.bid_limits]))
+        self.work_offers = work_offers
 
     @classmethod
     def query_by_user(cls, user):

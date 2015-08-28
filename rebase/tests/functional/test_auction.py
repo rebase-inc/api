@@ -152,3 +152,27 @@ class TestAuctionResource(RebaseRestTestCase):
 
         auction = self.post_resource('auctions/{}/fail_events'.format(auction['id']), dict())['auction']
         self.assertEqual(auction.pop('state'), 'failed')
+
+    def test_bid_on_auction(self):
+        self.login_admin()
+        auction = next(filter(lambda a: a['state'] == 'created', self.get_resource('auctions')['auctions']))
+        contractor = self.get_resource('contractors')['contractors'][0]
+        ticket_snapshot = { 'id' : auction['ticket_set']['bid_limits'][0]['ticket_snapshot']['id'] }
+        work_offers = []
+        for bid_limit in auction['ticket_set']['bid_limits']:
+            work_offer = {
+                'ticket_snapshot': bid_limit['ticket_snapshot'],
+                'price': .8*bid_limit['price'],
+                'contractor': contractor
+            }
+            work_offers.append(work_offer)
+
+        bid = {
+            'bid': {
+                'auction' : { 'id': auction['id'] },
+                'contractor' : { 'id': contractor['id'] },
+                'work_offers' : work_offers
+            }
+        }
+        auction = self.post_resource('auctions/{}/bid_events'.format(auction['id']), bid)['auction']
+        self.assertEqual(auction.pop('state'), 'ended')
