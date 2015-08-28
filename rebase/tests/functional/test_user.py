@@ -16,7 +16,8 @@ from rebase.tests.common.user import (
 
 class TestUserResource(RebaseRestTestCase):
     def setUp(self):
-        self.user_resource =        RebaseResource(self, 'User')
+        self.user_resource = RebaseResource(self, 'User')
+        self.role_resource = RebaseResource(self, 'Role')
         super().setUp()
 
     def test_get_all_as_admin(self):
@@ -24,27 +25,33 @@ class TestUserResource(RebaseRestTestCase):
         response = self.get_resource('users', expected_code = 200)
         self.assertIn('users', response)
 
+    def _strip_role_ids(self, response):
+        for role in response['user']['roles']:
+            role.pop('id')
+
     def test_create_new_as_admin(self):
         self.login_admin()
         user = dict(first_name='Saul', last_name='Goodman', email='saulgoodman@rebase.io', password='foo')
 
         expected_response = copy.copy(user)
         expected_response['admin'] = False
-        expected_response['roles'] = []
+        expected_response['roles'] = [{'type': 'contractor'}]
         expected_response.pop('password')
 
         response = self.post_resource('users', user)
         last_seen = response['user'].pop('last_seen') # we don't know the exact time anyways
         user_id = response['user'].pop('id') # we don't know the id the database will give it
+        self._strip_role_ids(response)
 
         self.assertNotIn('password', response['user'])
-        self.assertEqual(response['user'], expected_response)
+        self.user_resource.assertComposite(expected_response, response['user'], recurse=True)
 
         response = self.get_resource('users/{}'.format(user_id))
+        self._strip_role_ids(response)
         expected_response['last_seen'] = last_seen
         expected_response['id'] = user_id
 
-        self.assertEqual(response['user'], expected_response)
+        self.user_resource.assertComposite(expected_response, response['user'], recurse=True)
 
     def _create_user(self, validate=None):
         return self.user_resource.create(
@@ -87,12 +94,14 @@ class TestUserResource(RebaseRestTestCase):
         response = self.put_resource('users/{}'.format(user['id']), new_name)
         user.update(new_name)
         user['admin'] = False
-        user['roles'] = []
+        user['roles'] = [{'type':'contractor'}]
+        self._strip_role_ids(response)
         self.assertEqual(user, response['user'])
 
         new_email = dict(email = 'jessepinkman@rebase.io')
         response = self.put_resource('users/{}'.format(user['id']), new_email)
         user.update(new_email)
+        self._strip_role_ids(response)
         self.assertEqual(user, response['user'])
 
     def test_delete_as_admin(self):

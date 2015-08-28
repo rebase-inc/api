@@ -6,3 +6,4 @@ venv/
 *.swo
 app.db
 rebase/.noseids
+migrations

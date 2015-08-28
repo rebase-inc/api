@@ -61,6 +61,34 @@ class ForcedError(ClientError):
         error_message = error_message.format(error.field_name, data)
         super().__init__(400, error_message)
 
+
+class ServerError(Exception):
+    def __init__(self, code=500, message=None, more_data=None):
+        if LAUNCH_DEBUGGER:
+            import pdb; pdb.set_trace()
+        more_data = more_data or {}
+        self.code = code
+        self.data = {
+            'status': code,
+            'message': message or HTTP_STATUS_CODES.get(code, 'Server Error')
+        }
+        if isinstance(more_data, dict):
+            self.data.update(more_data)
+        super().__init__(self)
+
+class NoRole(ServerError):
+    error_message = 'User[{}] should have an associated role'
+
+    def __init__(self, user):
+        super().__init__(message=NoRole.error_message.format(user.id))
+
+class UnknownRole(ServerError):
+    error_message = 'Unknown role: {}'
+
+    def __init__(self, role):
+        super().__init__(message=UnknownRole.error_message.format(role))
+
+
 @contextmanager
 def marshmallow_exceptions(data=None):
     try:

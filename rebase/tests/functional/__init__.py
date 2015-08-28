@@ -3,7 +3,7 @@ import datetime
 import unittest
 
 from rebase import models, create_app
-from rebase.common.mock import create_the_world, create_admin_user
+from rebase.common.mock import create_the_world, create_admin_user, create_one_contractor, create_one_user
 from rebase.models import (
     User,
     CodeClearance,
@@ -19,6 +19,7 @@ class RebaseRestTestCase(unittest.TestCase):
 
         self.client = self.app.test_client()
 
+        self.db.drop_all()
         self.db.create_all()
         self.db.session.commit()
 
@@ -39,7 +40,7 @@ class RebaseRestTestCase(unittest.TestCase):
         self.get_resource('/auth')
 
     def login_as_new_user(self):
-        new_user = models.User.query.filter(~models.User.roles.any() & ~models.User.admin).first()
+        new_user = create_one_user(self.db)
         self.login(new_user.email, 'foo')
 
     def login_as(self, exclude_roles=None, filters=None):
@@ -70,7 +71,7 @@ class RebaseRestTestCase(unittest.TestCase):
     def login_as_contractor_only_with_clearance(self, filters=None):
         ''' login as and return a non-admin user whose only role is contractor with some clearances '''
         def new_filters(query):
-            new_query = query.join(Contractor).join(CodeClearance)
+            new_query = query.join(Contractor).filter(Contractor.clearances.any())
             if filters:
                 new_query = filters(new_query)
             return new_query

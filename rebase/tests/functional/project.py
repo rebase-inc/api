@@ -96,6 +96,7 @@ class BaseProjectTestCase(RebaseRestTestCase):
         )
 
     def create_as_contractor(self):
+        import pdb; pdb.set_trace()
         user = self.login_as_contractor_only_with_clearance()
         org = user.roles[0].clearances[0].project.organization
         self.project_resource.create(
