@@ -7,7 +7,6 @@ DB_PRODUCTION_NAME = 'rebase'
 DB_TEST_NAME = 'test_'+DB_PRODUCTION_NAME
 
 def get_or_make_object(model, data, id_fields=None):
-    print('getting or making {} with data {} and id fields {}'.format(model, data, id_fields))
     id_fields = id_fields or ['id']
     instance_id = tuple(data.get(id_field) for id_field in id_fields)
     if all(instance_id):
@@ -17,7 +16,9 @@ def get_or_make_object(model, data, id_fields=None):
         return instance
     elif not data:
         raise BadDataError(model_name=model.__tablename__)
-    return model(**data)
+    print('getting or making {} with data {} and id fields {}'.format(model, data, id_fields))
+    m = model(**data)
+    return m
 
 class SecureNestedField(fields.Nested):
     def _serialize(self, nested_obj, attr, obj):
