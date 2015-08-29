@@ -40,6 +40,7 @@ class WorkReviewEvents(Resource):
 
         DB.session.commit()
 
+        work.serializer.context = dict(current_user = current_user)
         response = jsonify(work = work.serializer.dump(work_instance).data)
         response.status_code = 201
         return response
@@ -94,6 +95,7 @@ class WorkResumeEvents(Resource):
 
         DB.session.commit()
 
+        work.serializer.context = dict(current_user = current_user)
         response = jsonify(work = work.serializer.dump(work_instance).data)
         response.status_code = 201
         return response

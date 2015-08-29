@@ -16,10 +16,7 @@ def get_or_make_object(model, data, id_fields=None):
         return instance
     elif not data:
         raise BadDataError(model_name=model.__tablename__)
-    print('getting or making {} with data {} and id fields {}'.format(model, data, id_fields))
-    m = model(**data)
-    print('found {}'.format(m))
-    return m
+    return model(**data)
 
 class SecureNestedField(fields.Nested):
     def _serialize(self, nested_obj, attr, obj):
