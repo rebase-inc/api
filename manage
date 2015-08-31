@@ -32,7 +32,7 @@ for entry in Path('parsers').glob('*.py'):
 
 @manager.shell
 def make_shell_context():
-        return dict(app=app, db=db, models=rebase.models)
+    return dict(app=app, db=db, models=rebase.models)
 
 if __name__ == '__main__':
     manager.run()

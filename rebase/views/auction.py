@@ -16,7 +16,6 @@ class AuctionSchema(RebaseSchema):
     feedbacks =        SecureNestedField('FeedbackSchema', only='id')
     bids =             SecureNestedField('BidSchema', only=('id',), many=True)
     organization =     SecureNestedField('OrganizationSchema', only=('id',), required=True)
-    #approved_talents = SecureNestedField('NominationSchema', only='id')
 
     def make_object(self, data):
         from rebase.models import Auction
@@ -40,7 +39,7 @@ deserializer = AuctionSchema(only=('duration', 'finish_work_by', 'redundancy', '
 deserializer.declared_fields['term_sheet'].only = None
 deserializer.declared_fields['ticket_set'].only = None
 
-update_deserializer = AuctionSchema(only=tuple(), strict=True)
+update_deserializer = AuctionSchema(only=('id', 'duration', 'term_sheet', 'redundancy'), strict=True)
 update_deserializer.make_object = lambda data: data
 
 bid_event_deserializer = BidEventSchema(strict=True)

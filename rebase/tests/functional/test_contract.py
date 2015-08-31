@@ -14,6 +14,7 @@ class TestContractResource(RebaseRestTestCase):
         contract = self.resource.get_any()
         self.assertTrue(contract)
         self.assertTrue(contract.pop('id'))
+        self.assertTrue(contract.pop('bid'))
         self.assertEqual(contract, {})
 
     @skip('contracts are immutable')
@@ -52,7 +53,7 @@ class TestContractResource(RebaseRestTestCase):
         random_contractor = Contractor.query.first()
         all_owned_contract_ids = [bid.contract.id for bid in random_contractor.bids]
 
-        self.post_resource('auth', dict(user=dict(email=random_contractor.user.email), password='foo'))
+        self.login(random_contractor.user.email, 'foo')
         contracts = self.get_resource('contracts')['contracts']
         response_contract_ids = [contract['id'] for contract in contracts]
         self.assertEqual(set(all_owned_contract_ids), set(response_contract_ids))

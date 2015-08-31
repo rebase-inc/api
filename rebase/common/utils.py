@@ -24,6 +24,12 @@ def get_model_primary_keys(model):
 def primary_key(instance):
     return inspect(instance).identity
 
+def ids(instance):
+    ''' return a dictionary of with the ids of instance
+    e.g. ids(some_db_class) => {'a': 1, 'b':3} where (a, b) is the primary key of some_db_class
+    '''
+    return dict(zip(get_model_primary_keys(type(instance)), primary_key(instance)))
+
 def make_collection_url(model):
     return '/'+ model.__pluralname__
 
@@ -95,7 +101,7 @@ class RebaseResource(object):
         try:
             return self.url_format(*(map(lambda key: resource[key], self.primary_key)))
         except KeyError as e:
-            raise ValueError('Cant format {} with {}'.format(resource_url(model), resource))
+            raise ValueError('Cant find {} in {}'.format(self.primary_key, resource))
 
     def just_ids(self, resource):
         '''
@@ -120,7 +126,6 @@ class RebaseResource(object):
         return response[self.resource]
 
     def delete(self, validate=True, expected_status=200, **resource):
-        
         self.test.delete_resource(self.url(resource), expected_status)
         if expected_status in [401, 404]:
             return None
@@ -192,13 +197,13 @@ class RebaseResource(object):
         else:
             self.test.assertEqual(first, second)
 
-    def validate_response(self, resource, response):
+    def validate_response(self, request, response):
         '''
-        Performs a number of assertions on the response and returns the new resource
+        Performs a number of assertions on the response and returns the new created object
         '''
         self.test.assertIn(self.resource, response)
         new_res = response[self.resource]
-        self.assertComposite(resource, new_res)
+        self.assertComposite(request, new_res, recurse=True)
 
         # verify the new resource has been committed to the database
         # by doing an independent request
@@ -206,7 +211,6 @@ class RebaseResource(object):
         self.test.assertIn(self.resource, response)
         queried_resource = response[self.resource]
         self.test.assertTrue(queried_resource)
-        self.assertComposite(resource, queried_resource)
         return queried_resource
 
     def modify_or_create(

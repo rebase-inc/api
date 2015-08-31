@@ -1,9 +1,108 @@
 import unittest
 from datetime import datetime, timedelta
+from functools import partial
+from math import floor
 
+from . import PermissionTestCase, RebaseRestTestCase
 from rebase.common import mock
-from rebase.common.utils import RebaseResource
-from . import RebaseRestTestCase
+from rebase.common.utils import ids, RebaseResource
+from rebase.tests.common.auction import (
+    case_contractor,
+    case_mgr,
+    case_admin,
+    case_anonymous,
+)
+
+
+def _new_instance(auction):
+    return {
+        'duration':         auction.duration,
+        'finish_work_by':   auction.finish_work_by.isoformat(),
+        'ticket_set':       {
+            'bid_limits': [ ids(bid_limit) for bid_limit in auction.ticket_set.bid_limits ]
+        },
+        'bids': [],
+        'term_sheet':       ids(auction.term_sheet),
+        'redundancy':       auction.redundancy,
+    }
+
+def _modify_this(auction):
+    updated_auction = ids(auction)
+    updated_auction.update({
+        'duration': 2*auction.duration,
+        'term_sheet': ids(auction.term_sheet),
+        'redundancy': auction.redundancy
+    })
+    return updated_auction
+
+
+class TestAuction(PermissionTestCase):
+    model = 'Auction'
+    _create = partial(PermissionTestCase._create, new_instance=_new_instance)
+    _modify = partial(PermissionTestCase._modify, modify_this=_modify_this)
+
+    def test_contractor_view(self):
+        self._view(case_contractor, True)
+
+    def _make_bid(self, user, auction, price_ratio):
+        work_offers = []
+        for bid_limit in auction.ticket_set.bid_limits:
+            work_offer = {
+                'ticket_snapshot': ids(bid_limit.ticket_snapshot),
+                'price': floor(price_ratio*bid_limit.price),
+                'contractor': ids(user.roles[0]),
+            }
+            work_offers.append(work_offer)
+
+        bid = {
+            'bid': {
+                'auction' : ids(auction),
+                'contractor' : ids(user.roles[0]),
+                'work_offers' : work_offers
+            }
+        }
+        return bid
+
+    def _delete_all_my_bids(self, user):
+        bid_resource =  RebaseResource(self, 'Bid')
+        bids = bid_resource.get_all()
+        for bid in bids:
+            bid_resource.delete(**bid)
+
+    def test_contractor_over_bid(self):
+        user, auction = self._run(case_contractor)
+
+        over_bid = self._make_bid(user, auction, 1.2)
+        auction_blob = self.post_resource('auctions/{}/bid_events'.format(auction.id), over_bid)['auction']
+        self.assertEqual(auction_blob['state'], 'waiting_for_bids')
+
+    def test_contractor_under_bid(self):
+        user, auction = self._run(case_contractor)
+
+        bid = self._make_bid(user, auction, 0.8)
+        auction_blob = self.post_resource('auctions/{}/bid_events'.format(auction.id), bid)['auction']
+        self.assertEqual(auction_blob['state'], 'ended')
+
+    def test_contractor_modify(self):
+        TestAuction._modify(self, case_contractor, False)
+
+    def test_contractor_delete(self):
+        self._delete(case_contractor, False)
+
+    def test_contractor_create(self):
+        TestAuction._create(self, case_contractor, False)
+
+    def test_mgr_view(self):
+        self._view(case_mgr, True)
+
+    def test_mgr_modify(self):
+        TestAuction._modify(self, case_mgr, True)
+
+    def test_mgr_delete(self):
+        self._delete(case_mgr, True)
+
+    def test_mgr_create(self):
+        TestAuction._create(self, case_mgr, True)
 
 class TestAuctionResource(RebaseRestTestCase):
     def setUp(self):
@@ -128,7 +227,6 @@ class TestAuctionResource(RebaseRestTestCase):
         self.assertIsInstance(ticket_set.pop('id'), int)
 
         bid_limits = ticket_set.pop('bid_limits')
-        print(bid_limits)
         bid_limit = bid_limits.pop()
         self.assertEqual(bid_limits, [])
         self.assertIsInstance(bid_limit.pop('id'), int)
@@ -137,7 +235,6 @@ class TestAuctionResource(RebaseRestTestCase):
         ticket_snapshot = bid_limit.pop('ticket_snapshot')
         self.assertEqual(bid_limit, {})
         self.assertIsInstance(ticket_snapshot.pop('id'), int)
-        self.assertEqual(ticket_snapshot, {})
 
         term_sheet = auction.pop('term_sheet')
         self.assertIsInstance(term_sheet.pop('id'), int)

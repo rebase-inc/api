@@ -1,7 +1,7 @@
 from copy import copy
 
 from . import RebaseRestTestCase, RebaseNoMockRestTestCase
-from rebase.common.mock import create_one_user
+from rebase.common.mock import create_one_user, create_admin_user
 from rebase.common.utils import RebaseResource, validate_resource_collection
 from rebase.tests.common.skill_set import (
     case_mgr,
@@ -71,7 +71,8 @@ class TestSkillSet(RebaseNoMockRestTestCase):
         self.resource.create(expected_status=401, **new_skill_set_blob)
 
         # admin tests
-        self.login_admin()
+        admin_user = create_admin_user(self.db, password='foo')
+        self.login(admin_user.email, 'foo')
         skill_set_blob = self.resource.get(skill_set.id)
         self.resource.update(**skill_set_blob)
         self.resource.delete(**skill_set_blob)

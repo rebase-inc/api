@@ -1,8 +1,7 @@
-from unittest import skip
-from copy import copy
+from functools import partial
 
-from . import RebaseRestTestCase, RebaseNoMockRestTestCase
-from rebase.common.utils import RebaseResource, validate_resource_collection
+from . import PermissionTestCase
+from rebase.common.utils import ids
 from rebase.tests.common.ticket_set import (
     case_contractor,
     case_mgr,
@@ -10,107 +9,57 @@ from rebase.tests.common.ticket_set import (
     case_anonymous,
 )
 
-class TestTicketSetResource(RebaseRestTestCase):
-    def setUp(self):
-        self.resource = RebaseResource(self, 'TicketSet')
-        super().setUp()
+def _new_instance(ticket_set):
+    return {
+        'bid_limits': [ ids(bid_limit) for bid_limit in ticket_set.bid_limits ]
+    }
 
-    def test_get_one(self):
-        self.login_admin()
-        ticket_set = self.resource.get_any()
-        self.assertTrue(ticket_set)
-        self.assertTrue(ticket_set['id'])
-        self.assertIsInstance(ticket_set['auction']['id'], int)
-        self.assertIsInstance(ticket_set['bid_limits'], list)
+class TicketSetPermissions(PermissionTestCase):
+    model = 'TicketSet'
 
-    @skip('ticket set doesnt have any updatable fields')
-    def test_update(self):
-        self.login_admin()
-        pass
-
-    def test_delete(self):
-        self.login_admin()
-        self.resource.delete_any()
-
-    def test_delete_auction(self):
-        self.login_admin()
-        ticket_set = self.resource.get_any()
-        self.delete_resource('auctions/{id}'.format(**ticket_set['auction']))
-        self.get_resource(self.resource.url(ticket_set), 404)
-
-class TestTicketSet(RebaseNoMockRestTestCase):
-    def setUp(self):
-        self.resource = RebaseResource(self, 'TicketSet')
-        super().setUp()
-
-    def _run(self, case):
-        user, ticket_set = case(self.db)
-        self.login(user.email, 'foo')
-        return user, ticket_set
-
-    def _test_ticket_set_collection(self, case):
-        user, ticket_set = self._run(case)
-        validate_resource_collection(self, user, [ticket_set] if ticket_set else [])
-
-    def _test_ticket_set_view(self, case, view):
-        _, ticket_set = self._run(case)
-        ticket_set_blob = self.resource.get(ticket_set.id, 200 if view else 401)
-
-    def _test_ticket_set_modify(self, case, modify):
-        _, ticket_set = self._run(case)
-        new_ticket_set_blob = {
-            'id': ticket_set.id,
-        }
-        self.resource.update(expected_status=200 if modify else 401, **new_ticket_set_blob)
-
-    def _test_ticket_set_delete(self, case, delete):
-        _, ticket_set = self._run(case)
-        ticket_set_blob = {
-            'id': ticket_set.id
-        }
-        self.resource.delete(expected_status=200 if delete else 401, **ticket_set_blob)
-
-    def _test_ticket_set_create(self, case, create):
-        user, ticket_set = self._run(case)
-        bid_limit = ticket_set.bid_limits[0]
-        new_ticket_set_blob = {
-            'bid_limits': [
-                {
-                    'id': bid_limit.id,
-                    'price': bid_limit.price,
-                    'ticket_snapshot': {'id': bid_limit.ticket_snapshot.id}
-                }
-            ]
-        }
-                 
-        self.resource.create(expected_status=201 if create else 401, **new_ticket_set_blob)
+    _create = partial(PermissionTestCase._create, new_instance=_new_instance)
 
     def test_mgr_collection(self):
-        self._test_ticket_set_collection(case_mgr)
+        self._collection(case_mgr)
 
     def test_mgr_view(self):
-        self._test_ticket_set_view(case_mgr, True)
+        self._view(case_mgr, True)
 
     def test_mgr_modify(self):
-        self._test_ticket_set_modify(case_mgr, True)
+        self._modify(case_mgr, True)
 
     def test_mgr_delete(self):
-        self._test_ticket_set_delete(case_mgr, True)
+        self._delete(case_mgr, True)
 
     def test_mgr_create(self):
-        self._test_ticket_set_create(case_mgr, True)
+        TicketSetPermissions._create(self, case_mgr, True)
 
     def test_contractor_collection(self):
-        self._test_ticket_set_collection(case_contractor)
+        self._collection(case_contractor)
 
     def test_contractor_view(self):
-        self._test_ticket_set_view(case_contractor, True)
+        self._view(case_contractor, True)
 
     def test_contractor_modify(self):
-        self._test_ticket_set_modify(case_contractor, False)
+        self._modify(case_contractor, False)
 
     def test_contractor_delete(self):
-        self._test_ticket_set_delete(case_contractor, False)
+        self._delete(case_contractor, False)
 
     def test_contractor_create(self):
-        self._test_ticket_set_create(case_contractor, False)
+        TicketSetPermissions._create(self, case_contractor, False)
+
+    def test_admin_collection(self):
+        self._collection(case_admin)
+
+    def test_admin_view(self):
+        self._view(case_admin, True)
+
+    def test_admin_modify(self):
+        self._modify(case_admin, True)
+
+    def test_admin_delete(self):
+        self._delete(case_admin, True)
+
+    def test_admin_create(self):
+        TicketSetPermissions._create(self, case_admin, True)

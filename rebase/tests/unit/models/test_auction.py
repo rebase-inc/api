@@ -33,7 +33,7 @@ class TestAuctionModel(RebaseModelTestCase):
             work_offers = []
             for bid_limit in bid_limits:
                 work_offers.append(WorkOffer(contractor1, bid_limit.ticket_snapshot, int(bid_limit.price * 1.2)))
-            bid = Bid(auction, contractor1)
+            bid = Bid(auction, contractor1, work_offers)
             self.db.session.add(bid)
             self.db.session.commit()
             auction.machine.send('bid', bid)
@@ -42,7 +42,7 @@ class TestAuctionModel(RebaseModelTestCase):
             work_offers = []
             for bid_limit in bid_limits:
                 work_offers.append(WorkOffer(contractor2, bid_limit.ticket_snapshot, int(bid_limit.price * 0.8)))
-            bid = Bid(auction, contractor2)
+            bid = Bid(auction, contractor2, work_offers)
             self.db.session.add(bid)
             self.db.session.commit()
             auction.machine.send('bid', bid)
@@ -51,7 +51,7 @@ class TestAuctionModel(RebaseModelTestCase):
             work_offers = []
             for bid_limit in bid_limits:
                 work_offers.append(WorkOffer(contractor3, bid_limit.ticket_snapshot, int(bid_limit.price * 0.8)))
-            bid = Bid(auction, contractor3)
+            bid = Bid(auction, contractor3, work_offers)
             self.db.session.add(bid)
             self.db.session.commit()
             auction.machine.send('bid', bid)
@@ -73,7 +73,7 @@ class TestAuctionModel(RebaseModelTestCase):
         work_offers = []
         for bid_limit in bid_limits:
             work_offers.append(WorkOffer(contractor1, bid_limit.ticket_snapshot, int(bid_limit.price * 1.2)))
-        bid = Bid(auction, contractor1)
+        bid = Bid(auction, contractor1, work_offers)
         self.db.session.add(bid)
         self.db.session.commit()
         with managed_state:
@@ -85,7 +85,7 @@ class TestAuctionModel(RebaseModelTestCase):
         work_offers = []
         for bid_limit in bid_limits:
             work_offers.append(WorkOffer(contractor2, bid_limit.ticket_snapshot, int(bid_limit.price * 0.8)))
-        bid = Bid(auction, contractor2)
+        bid = Bid(auction, contractor2, work_offers)
         self.db.session.add(bid)
         self.db.session.commit()
         with managed_state:
@@ -97,7 +97,7 @@ class TestAuctionModel(RebaseModelTestCase):
         work_offers = []
         for bid_limit in bid_limits:
             work_offers.append(WorkOffer(contractor3, bid_limit.ticket_snapshot, int(bid_limit.price * 0.8)))
-        bid = Bid(auction, contractor3)
+        bid = Bid(auction, contractor3, work_offers)
         self.db.session.add(bid)
         self.db.session.commit()
         with managed_state:

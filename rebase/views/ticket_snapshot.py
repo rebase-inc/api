@@ -7,8 +7,8 @@ class TicketSnapshotSchema(RebaseSchema):
     title =       fields.String()
     description = fields.String()
     date =        fields.DateTime()
-    ticket =      SecureNestedField('TicketSchema', only=('id',), required=True)
-    bid_limit =   SecureNestedField('BidLimitSchema', only=('id',))
+    ticket =      SecureNestedField('TicketSchema', only=('id','title','comments','project'))
+    bid_limit =   SecureNestedField('BidLimitSchema', only=('id','ticket_set'))
 
     def make_object(self, data):
         from rebase.models import TicketSnapshot
@@ -16,6 +16,6 @@ class TicketSnapshotSchema(RebaseSchema):
 
 serializer = TicketSnapshotSchema(skip_missing=True)
 
-deserializer = TicketSnapshotSchema(only=('ticket',), strict=True)
+deserializer = TicketSnapshotSchema(only=('id', 'ticket'), skip_missing=True,  strict=True)
 update_deserializer = TicketSnapshotSchema()
 update_deserializer.make_object = lambda data: data

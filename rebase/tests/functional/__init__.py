@@ -4,6 +4,7 @@ import unittest
 
 from rebase import models, create_app
 from rebase.common.mock import create_the_world, create_admin_user
+from rebase.common.utils import RebaseResource, validate_resource_collection, ids
 from rebase.models import (
     User,
     CodeClearance,
@@ -24,13 +25,13 @@ class RebaseRestTestCase(unittest.TestCase):
 
         if self.create_mock_data:
             create_the_world(self.db)
-        self.admin_user = create_admin_user(self.db, password='admin')
-        self.db.session.commit()
+            self.admin_user = create_admin_user(self.db, password='foo')
+            self.db.session.commit()
 
         self.addCleanup(self.cleanup)
 
     def login_admin(self):
-        self.post_resource('/auth', { 'user': {'email': self.admin_user.email}, 'password': 'admin'})
+        self.post_resource('/auth', { 'user': {'email': self.admin_user.email}, 'password': 'foo'})
 
     def login(self, email, password):
         return self.post_resource('/auth', { 'user': {'email': email}, 'password': password})
@@ -163,3 +164,72 @@ class RebaseNoMockRestTestCase(RebaseRestTestCase):
 
     def setUp(self):
         super().setUp()
+
+class PermissionTestCase(RebaseNoMockRestTestCase):
+    '''
+    TestCase don't use __init__ constructor, so we use static member 'model' to describe
+    which model the resource is describing
+    Each class deriving from PermissionTestCase will overwrite 'model' to define it.
+    '''
+
+    create_mock_data = False
+    model = None
+
+    def setUp(self):
+        if not self.model:
+            raise TypeError('Classes deriving from PermissionTestCase must set their "model" member to a valid class from rebase.models')
+        self.resource = RebaseResource(self, self.model)
+        super().setUp()
+
+    def _run(self, case):
+        user, instance = case(self.db)
+        self.login(user.email, 'foo')
+        return user, instance
+
+    def _collection(self, case):
+        user, instance = self._run(case)
+        validate_resource_collection(self, user, [instance] if instance else [])
+
+    def _view(self, case, view, validate=None):
+        _, instance = self._run(case)
+        instance_blob = self.resource.get(ids(instance), 200 if view else 401)
+        if view and validate:
+            validate(self, instance_blob)
+        return instance_blob
+
+    def _modify(self, case, allowed_to_modify, modify_this=None):
+        _, instance = self._run(case)
+        if modify_this:
+            modified_blob = modify_this(instance)
+        else:
+            modified_blob = ids(instance)
+        self.resource.update(expected_status=200 if allowed_to_modify else 401, **modified_blob)
+
+    def _delete(self, case,  delete):
+        _, instance = self._run(case)
+        instance_blob = ids(instance)
+        self.resource.delete(expected_status=200 if delete else 401, **instance_blob)
+
+    def _create(self, case, create, new_instance, validate=None, delete_first=False):
+        '''
+        *case* is a function with no param that return a tuple (logged_in_user, instance)
+        where logged_in_user is the user that is assumed to be logged in and instance is some instance of resource type.
+
+        *create* is a boolean, True means logged_in_user can create another instance, False means it's forbidden (resource will return 401).
+
+        *new_instance* is a function that given instance, will return a dict for a new instance of the same resource type.
+
+        *validate* is a function (new_blob, response) which tests the response of the POST against the new_blob submitted in the request.
+        If left to None, a default validate is performed by the RebaseResource object associated with the model.
+
+        *delete_first* if True will delete the instance returned by the last call to the case function.
+        This is useful when a DB model has a unique constraint on one of many of its fields
+
+        '''
+        user, instance = self._run(case)
+        new_instance_blob = new_instance(instance)
+        if delete_first:
+            delete_blob = ids(instance)
+            self.resource.delete(expected_status=200, **delete_blob)
+        self.resource.create(expected_status=201 if create else 401, validate=validate, **new_instance_blob)
+

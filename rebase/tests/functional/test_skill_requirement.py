@@ -2,7 +2,7 @@ from unittest import skip
 from copy import copy
 
 from . import RebaseRestTestCase, RebaseNoMockRestTestCase
-from rebase.common.mock import create_one_user
+from rebase.common.mock import create_one_user, create_admin_user
 from rebase.common.utils import RebaseResource, validate_resource_collection
 from rebase.tests.common.skill_requirement import (
     case_mgr,
@@ -74,7 +74,8 @@ class TestSkillRequirement(RebaseNoMockRestTestCase):
             self.resource.create(expected_status=401, **new_skill_requirement_blob)
 
         # admin tests
-        self.login_admin()
+        admin_user = create_admin_user(self.db, password='foo')
+        self.login(admin_user.email, 'foo')
         if skill_requirement:
             skill_requirement_blob = self.resource.get(skill_requirement.id)
             self.resource.update(**skill_requirement_blob)

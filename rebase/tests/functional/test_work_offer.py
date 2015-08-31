@@ -1,103 +1,79 @@
-import json
-import time
-import copy
+from functools import partial
+from math import floor
 
-from . import RebaseRestTestCase
+from . import RebaseRestTestCase, PermissionTestCase
+from rebase.common.utils import ids
 from rebase.models import Contractor, TicketSnapshot, WorkOffer
+from rebase.tests.common.work_offer import (
+    case_contractor,
+    case_mgr,
+    case_mgr_create,
+    case_mgr_collection,
+    case_admin,
+)
 
-class TestWorkOfferResource(RebaseRestTestCase):
+def _new_instance(work_offer):
+    return {
+        'contractor':       ids(work_offer.contractor),
+        'ticket_snapshot':  ids(work_offer.ticket_snapshot),
+        'price':            floor(.9*work_offer.price)
+    }
 
-    def test_get_all(self):
-        self.login_admin()
-        response = self.get_resource('work_offers')
-        self.assertIn('work_offers', response)
-        self.assertIsInstance(response['work_offers'], list)
-        self.assertIsInstance(response['work_offers'][0]['ticket_snapshot'], int)
+def _modify_this(work_offer):
+    new = _new_instance(work_offer)
+    new.update(ids(work_offer))
+    new['price'] = floor(new['price']*.7)
+    return new
 
-    def test_get_one(self):
-        self.login_admin()
-        response = self.get_resource('work_offers')
-        work_offer_id = response['work_offers'][0]['id']
+def _validate_work_offer(test, work_offer):
+    test.assertIsInstance(work_offer.pop('id'), int)
+    test.assertIsInstance(work_offer.pop('work', 1), int)
+    test.assertIsInstance(work_offer.pop('price'), int)
+    snapshot = work_offer.pop('ticket_snapshot')
+    test.assertIn('id', snapshot)
+    test.assertIsInstance(work_offer.pop('contractor'), dict)
+    test.assertEqual(work_offer, {})
 
-        response = self.get_resource('work_offers/{}'.format(work_offer_id))
-        work_offer = response['work_offer']
+class TestWorkOffer(PermissionTestCase):
+    model = 'WorkOffer'
+    _create = partial(PermissionTestCase._create, new_instance=_new_instance)
+    _view = partial(PermissionTestCase._view, validate=_validate_work_offer)
+    _modify = partial(PermissionTestCase._modify, modify_this=_modify_this)
 
-        self.assertIsInstance(work_offer.pop('id'), int)
-        self.assertIsInstance(work_offer.pop('work', 1), int)
-        self.assertIsInstance(work_offer.pop('price'), int)
-        self.assertIsInstance(work_offer.pop('ticket_snapshot'), int)
-        self.assertEqual(work_offer, {})
+    def test_mgr_delete(self):
+        self._delete(case_mgr, False)
 
-    def test_create_new(self):
-        self.login_admin()
-        snapshot = self.get_resource('ticket_snapshots')['ticket_snapshots'][0]
-        contractor = self.get_resource('contractors')['contractors'][0]
+    def test_mgr_collection(self):
+        self._collection(case_mgr_collection)
 
-        response = self.post_resource('work_offers', dict(ticket_snapshot=snapshot, price=7890, contractor=contractor))
-        work_offer = response['work_offer']
-        {'work_offer': {'id': 29, 'price': 7890, 'ticket_snapshot': 1}}
+    def test_mgr_modify(self):
+        TestWorkOffer._modify(self, case_mgr, False)
 
-        self.assertIsInstance(work_offer.pop('id'), int)
-        self.assertEqual(work_offer.pop('price'), 7890)
-        self.assertEqual(work_offer.pop('ticket_snapshot'), snapshot['id'])
-        self.assertEqual(work_offer, {})
+    def test_mgr_view(self):
+        TestWorkOffer._view(self, case_mgr, True)
 
-    def test_update(self):
-        self.login_admin()
-        response = self.get_resource('work_offers')
-        work_offer_id = response['work_offers'][0]['id']
+    def test_mgr_create(self):
+        mgr_user, work_offer, snapshot_2 = case_mgr_create(self.db)
 
-        response = self.get_resource('work_offers/{}'.format(work_offer_id))
-        work_offer = response['work_offer']
+        work_offer_2 = {
+            'contractor':       ids(work_offer.contractor),
+            'ticket_snapshot':  ids(snapshot_2),
+            'price':            floor(.9*work_offer.price)
+        }
 
-        new_fields = dict(price = work_offer['price']*2)
-        response = self.put_resource('work_offers/{}'.format(work_offer['id']), new_fields)
-        work_offer.update(new_fields)
-        self.assertEqual(work_offer, response['work_offer'])
+        super()._create(lambda db: (mgr_user, work_offer), False, new_instance=lambda _: work_offer_2)
 
-    def test_delete(self):
-        self.login_admin()
-        response = self.get_resource('work_offers')
-        work_offer_id = response['work_offers'][0]['id']
+    def test_contractor_delete(self):
+        self._delete(case_contractor, True)
 
-        self.delete_resource('work_offers/{}'.format(work_offer_id))
-        self.get_resource('work_offers/{}'.format(work_offer_id), expected_code=404)
+    def test_contractor_collection(self):
+        self._collection(case_contractor)
 
-    def test_contractor_can_get_their_own(self):
-        contractor = Contractor.query.first()
-        snapshot = TicketSnapshot.query.first()
-        work_offer_data = dict(
-            ticket_snapshot= dict(id = snapshot.id),
-            contractor = dict(id = contractor.id),
-            price = 9999
-        )
-        self.login(contractor.user.email, 'foo')
-        new_work_offer = self.post_resource('work_offers', work_offer_data)['work_offer']
-        self.get_resource('work_offers/{id}'.format(**new_work_offer))
+    def test_contractor_modify(self):
+        TestWorkOffer._modify(self, case_contractor, True)
 
-        work_offers = self.get_resource('work_offers')['work_offers']
-        work_offer_ids = [wo['id'] for wo in work_offers]
-        self.assertIn(new_work_offer['id'], work_offer_ids)
+    def test_contractor_view(self):
+        TestWorkOffer._view(self, case_contractor, True)
 
-        self.login_as_new_user()
-        self.get_resource('work_offers/{id}'.format(**new_work_offer), 401)
-
-        work_offers = self.get_resource('work_offers')['work_offers']
-        work_offer_ids = [wo['id'] for wo in work_offers]
-        self.assertNotIn(new_work_offer['id'], work_offer_ids)
-
-    def test_manager_of_auction_can_see_them(self):
-        work_offer = WorkOffer.query.filter(WorkOffer.bid != None).first()
-        manager = work_offer.bid.auction.organization.managers[0]
-
-        self.login(manager.user.email, 'foo')
-        self.get_resource('work_offers/{}'.format(work_offer.id))
-        work_offers = self.get_resource('work_offers')['work_offers']
-        work_offer_ids = [wo['id'] for wo in work_offers]
-        self.assertIn(work_offer.id, work_offer_ids)
-
-        self.login_as_new_user()
-        self.get_resource('work_offers/{}'.format(work_offer.id), 401)
-        work_offers = self.get_resource('work_offers')['work_offers']
-        work_offer_ids = [wo['id'] for wo in work_offers]
-        self.assertNotIn(work_offer.id, work_offer_ids)
+    def test_contractor_create(self):
+        TestWorkOffer._create(self, case_contractor, True, delete_first=True)

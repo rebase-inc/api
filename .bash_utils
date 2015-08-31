@@ -3,7 +3,7 @@
 # $ py register_route
 #
 py () {
-	grep -rn --exclude *.pyc --exclude *.swp --color=auto $1 rebase
+	grep -rn --exclude *.pyc --exclude *.swp --color=auto "$1" rebase
 }
 
 

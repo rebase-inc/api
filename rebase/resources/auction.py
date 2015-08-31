@@ -46,7 +46,7 @@ class AuctionBidEvents(Resource):
     @login_required
     def post(self, id):
         single_auction = Auction.query.get_or_404(id)
-        auction_event = auction_views.bid_event_deserializer.load(request.json).data
+        auction_event = auction_views.bid_event_deserializer.load(request.form or request.json).data
 
         with ManagedState():
             single_auction.machine.send(*auction_event)

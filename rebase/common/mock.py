@@ -8,6 +8,24 @@ from .utils import (
     pick_an_organization_name,
 )
 
+FAKE_COMMENTS = [
+    '@rapha, I\'m convinced that you were right regarding the composite primary keys being a better choice. However, in the few places where we are using composite primary keys right now, I don’t think the relationship is being properly referenced. See the SQLAlchemy documentation for proper reference of a composite foreign key.',
+    'What do you mean? Is this not correct (from job_fit model)? ```__table_args__ = ( DB.ForeignKeyConstraint( [contractor_id, ticket_set_id], [Nomination.contractor_id, Nomination.ticket_set_id], ondelete=\'CASCADE\'), {})```',
+    'Hmm, that does look correct. The one I was looking at is in the bid model. It indirectly references the auction and contractor ids through the nomination model, though it doesn’t specifically reference the nomination model. This should instead be switched to a reference like above. I guess I should\'ve actually looked into the places where this was happening.',
+]
+
+FAKE_TICKETS = [
+    'Abstract out state machine event resource creation',
+    'For all ORM relationships that reference a table with composite foreign key, combine those keys into one relationship.',
+    'Add permission checking to rebase REST object creation and up date methods.',
+    'Refactor auction ORM model to remove organization helper relationship.',
+    'Change bank account model initialization method to take a generic owner parameter.',
+    'Do this one thing and then the other thing so we have more things to do.',
+    'Delete every line of code from the codebase, destroy everybody\'s computers, and delete our github accounts.',
+    'Play with the quadcopter for 10-15 hours.',
+    'Build some really cool software, get a bunch of people to use it, and make a billion dollars.',
+]
+
 def create_one_organization(db, name=None, user=None):
     from rebase.models import Organization
     user = user or create_one_user(db)
@@ -108,7 +126,7 @@ def create_one_github_project(db, organization=None, project_name='api'):
     return github_project
 
 def create_one_internal_ticket(db, title, description=None, project=None):
-    from rebase.models import InternalTicket, SkillRequirement
+    from rebase.models import InternalTicket, SkillRequirement, Comment
     project = project or create_one_project(db)
     description = description or ' '.join(pick_a_word() for i in range(5))
     ticket = InternalTicket(project, title, description)
@@ -130,6 +148,7 @@ def create_one_github_ticket(db, number, project=None):
     project = project or create_one_github_project(db)
     ticket = GithubTicket(project, number)
     SkillRequirement(ticket)
+
     db.session.add(ticket)
     return ticket
 
@@ -202,7 +221,7 @@ def create_one_job_fit(db, nomination=None, ticket_matches=None):
 
 def create_one_feedback(db, auction=None, contractor=None, comment=None):
     from rebase.models import Feedback, Comment
-    
+
     feedback = Feedback(
         auction or create_one_auction(db),
         contractor or create_one_contractor(db)
@@ -267,7 +286,43 @@ def create_admin_user(db, password):
     god.admin = True
     return god
 
+
+class UserStory(object):
+    types = { 'NEW_DEVELOPER' : 'NEW_DEVELOPER' }
+
+    def __init__(self, type, first_name, last_name, email, password):
+        if type == self.types['NEW_DEVELOPER']:
+            pass
+        else:
+            raise Exception('Invalid type!')
+        self.type = type
+        self.first_name = first_name
+        self.last_name = last_name
+        self.email = email
+        self.password = password
+
+    def create(self, db):
+        from rebase.models import Comment
+        if self.type == self.types['NEW_DEVELOPER']:
+            self.user = create_one_user(db, self.first_name, self.last_name, self.email, self.password, admin=True)
+            user_ted = create_one_user(db, 'Ted', 'Crisp', 'tedcrisp@joinrebase.com')
+            org_veridian = create_one_organization(db, 'veridian', user_ted)
+            manager_ted = create_one_manager(db, user_ted, org_veridian)
+            project_matchmaker = create_one_project(db, manager_ted.organization, 'matchmaker')
+            the_tickets = [create_one_internal_ticket(db, fake_ticket, project=project_matchmaker) for fake_ticket in FAKE_TICKETS]
+            for ticket in the_tickets:
+                for fake_comment in FAKE_COMMENTS:
+                    Comment(fake_comment, ticket=ticket)
+            self.contractor = create_one_contractor(db, self.user)
+            the_matches = create_ticket_matches(db, the_tickets, self.contractor)
+            the_auctions = [create_one_auction(db, [ticket]) for ticket in the_tickets]
+            the_nominations = [create_one_nomination(db, auction, self.contractor, True) for auction in the_auctions]
+            the_job_fits = [create_one_job_fit(db, nomination, [match]) for nomination, match in zip(the_nominations, the_matches)]
+
+
 def create_the_world(db):
+    #dev_user_story = UserStory('NEW_DEVELOPER', 'Phil', 'Meyman', 'philmeyman@joinrebase.com', 'lem')
+    #dev_user_story.create(db)
     andrew = create_one_user(db, 'Andrew', 'Millspaugh', 'andrew@manager.rebase.io')
     rapha = create_one_user(db, 'Raphael', 'Goyran', 'raphael@rebase.io')
     joe = create_one_user(db, 'Joe', 'Pesci', 'joe@rebase.io')

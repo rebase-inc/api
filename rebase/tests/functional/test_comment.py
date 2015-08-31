@@ -1,7 +1,7 @@
 from copy import copy
 
 from . import RebaseRestTestCase, RebaseNoMockRestTestCase
-from rebase.common.mock import create_one_user
+from rebase.common.mock import create_one_user, create_admin_user
 from rebase.tests.common.comment import (
     case_mgr_ticket_comment,
     case_contractor_ticket_comment,
@@ -18,6 +18,8 @@ class TestComment(RebaseNoMockRestTestCase):
     def setUp(self):
         super().setUp()
         self.resource = RebaseResource(self, 'Comment')
+        self.admin_user = create_admin_user(self.db, password='foo')
+        self.db.session.commit()
         
     def _test_comment(self, case, create=True, modify=True, delete=True, view=True):
         user, comment = case(self.db)

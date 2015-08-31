@@ -23,7 +23,7 @@ class TestReviewResource(RebaseRestTestCase):
         self.assertIsInstance(review.pop('id'), int)
         self.assertIsInstance(review.pop('rating'), int)
         self.assertIsInstance(review.pop('comments'), list)
-        self.assertIsInstance(review.pop('work'), int)
+        self.assertIsInstance(review.pop('work'), dict)
 
     def test_create_new(self):
         self.login_admin()
@@ -38,7 +38,7 @@ class TestReviewResource(RebaseRestTestCase):
         self.assertIsInstance(review.pop('id'), int)
         self.assertEqual(review.pop('comments'), [])
         self.assertEqual(review.pop('rating'), 4)
-        self.assertEqual(review.pop('work'), work['id'])
+        self.assertEqual(review.pop('work'), work)
 
     def test_update(self):
         self.login_admin()

@@ -5,8 +5,8 @@ from rebase.common.database import get_or_make_object, SecureNestedField
 class BidLimitSchema(RebaseSchema):
     id =              fields.Integer()
     price =           fields.Integer()
-    ticket_snapshot = SecureNestedField('TicketSnapshotSchema', only=('id',), required=True)
-    ticket_set =      SecureNestedField('TicketSetSchema', only=('id',), required=True)
+    ticket_snapshot = SecureNestedField('TicketSnapshotSchema', only=('id','title', 'ticket'))
+    ticket_set =      SecureNestedField('TicketSetSchema', only=('id','auction'))
 
     def make_object(self, data):
         from rebase.models import BidLimit
@@ -19,5 +19,5 @@ serializer = BidLimitSchema(only=('id', 'price', 'ticket_snapshot','ticket_set')
 #serializer.declared_fields['ticket_snapshot'].only = 'id'
 #serializer.declared_fields['ticket_set'].only = 'id'
 
-deserializer = BidLimitSchema(only=('price','ticket_snapshot'), strict=True)
+deserializer = BidLimitSchema(only=('id', 'price', 'ticket_snapshot' ), skip_missing=True, strict=True)
 update_deserializer = BidLimitSchema(only=('price',), strict=True)

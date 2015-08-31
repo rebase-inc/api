@@ -8,7 +8,7 @@ from rebase.common.database import get_or_make_object, SecureNestedField
 
 class ManagerSchema(RebaseSchema):
     id =           fields.Integer()
-    organization = SecureNestedField('OrganizationSchema',  only=('id',), allow_null=True)
+    organization = SecureNestedField('OrganizationSchema',  only=('id','name'), allow_null=True)
     user =         SecureNestedField('UserSchema',          only=('id',), allow_null=True)
 
     def make_object(self, data):

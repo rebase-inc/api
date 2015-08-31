@@ -16,7 +16,7 @@ class TestWorkOfferModel(RebaseModelTestCase):
         work_offer_ids = []
         for bid_limit in bid_limits:
             work_offers.append(models.WorkOffer(contractor, bid_limit.ticket_snapshot, int(bid_limit.price * 1.2)))
-        bid = models.Bid(auction, contractor)
+        bid = models.Bid(auction, contractor, work_offers)
         self.db.session.add(bid)
         self.db.session.commit()
 
@@ -38,7 +38,7 @@ class TestWorkOfferModel(RebaseModelTestCase):
         work_offer_ids = []
         for bid_limit in bid_limits:
             work_offers.append(models.WorkOffer(contractor, bid_limit.ticket_snapshot, int(bid_limit.price * 1.2)))
-        bid = models.Bid(auction, contractor)
+        bid = models.Bid(auction, contractor, work_offers)
         self.db.session.add(bid)
         self.db.session.commit()
 

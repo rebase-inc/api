@@ -13,7 +13,7 @@ class UserSchema(RebaseSchema):
     last_seen =     fields.DateTime(required=True)
     admin =         fields.Boolean(default=False)
 
-    roles = SecureNestedField('RoleSchema', only=('id','type'), many=True)
+    roles = SecureNestedField('RoleSchema', exclude=('user',), many=True)
 
 
     def make_object(self, data):

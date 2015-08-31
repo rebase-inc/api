@@ -18,6 +18,7 @@ def case_past_work_as_contractor(db):
     ticket = mock.create_one_github_ticket(db, 123, project)
     snapshot = mock.create_one_snapshot(db, ticket)
     contractor = mock.create_one_contractor(db)
+    mock.create_one_code_clearance(db, project=project, contractor=contractor, pre_approved=True)
     other_contractor = mock.create_one_contractor(db)
     work_offer = mock.create_work_offer(db, contractor, snapshot, 1000)
     other_work_offer = mock.create_work_offer(db, other_contractor, snapshot, 1000)

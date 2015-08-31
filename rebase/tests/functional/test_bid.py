@@ -1,95 +1,66 @@
-import unittest
+from functools import partial
 
-from . import RebaseRestTestCase
+from . import PermissionTestCase
 
 from rebase.models import Bid, Contractor, Manager
+from rebase.common.utils import ids
+from rebase.tests.common.bid import case_mgr, case_contractor, case_admin
 
-class TestBidResource(RebaseRestTestCase):
 
-    def test_get_all(self):
-        self.login_admin()
-        response = self.get_resource('bids')
-        self.assertIn('bids', response)
-        self.assertIsInstance(response['bids'], list)
-        self.assertIn('work_offers', response['bids'][0])
+def _new_instance(instance):
+    return {
+        'auction': ids(instance.auction),
+        'contractor': ids(instance.contractor),
+        'work_offers': [ ids(wo) for wo in instance.work_offers.all() ]
+    }
 
-    def test_get_one(self):
-        self.login_admin()
-        response = self.get_resource('bids')
-        bid_id = response['bids'][0]['id']
+class TestBid(PermissionTestCase):
+    model = 'Bid'
 
-        response = self.get_resource('bids/{}'.format(bid_id))
-        bid = response['bid']
+    _create = partial(PermissionTestCase._create, new_instance=_new_instance)
 
-        self.assertEqual(bid.pop('id'), bid_id)
-        self.assertIsInstance(bid.pop('work_offers'), list)
-        self.assertIsInstance(bid.pop('contractor'), int)
-        self.assertIsInstance(bid.pop('auction'), int)
-        self.assertEqual(bid, {})
+    def test_admin_create(self):
+        TestBid._create(self, case_admin, True)
 
-    def test_create_new(self):
-        self.login_admin()
-        ''' admin only '''
-        user_data = dict(first_name='foo', last_name='bar', email='foo@bar.com', password='baz')
-        user = self.post_resource('users', user_data)['user']
-        contractor = self.post_resource('contractors', dict(user=user))['contractor']
+    def test_admin_collection(self):
+        self._collection(case_admin)
 
-        auction = self.get_resource('auctions')['auctions'][0]
-        work_offer_ids = []
-        for bid_limit in auction['ticket_set']['bid_limits']:
-            snapshot_data = dict(ticket_snapshot = dict(id=bid_limit['ticket_snapshot']['id']), price=666, contractor=contractor)
-            work_offer = self.post_resource('work_offers', snapshot_data)['work_offer']
-            work_offer_ids.append(work_offer['id'])
-        bid_data = dict(auction=auction, contractor=contractor)
+    def test_admin_view(self):
+        self._view(case_admin, True)
 
-        bid = self.post_resource('bids', bid_data)['bid']
-        self.assertIsInstance(bid.pop('id'), int)
-        self.assertEqual(bid.pop('auction'), auction['id'])
-        self.assertEqual(bid.pop('contractor'), contractor['id'])
-        self.assertEqual(bid.pop('work_offers'), work_offer_ids)
-        self.assertEqual(bid, {})
+    def test_admin_modify(self):
+        self._modify(case_admin, True)
 
-    def test_that_bid_creator_can_see(self):
-        bid = Bid.query.first()
-        creator_user = bid.contractor.user
+    def test_admin_delete(self):
+        self._delete(case_admin, True)
 
-        self.get_resource('bids/{}'.format(bid.id), 401)
-        self.post_resource('auth', dict(user=dict(email=creator_user.email), password='foo'))
-        self.get_resource('bids/{}'.format(bid.id))
+    def test_contractor_create(self):
+        TestBid._create(self, case_contractor, True)
 
-    def test_that_bid_auction_owner_can_see(self):
-        bid = Bid.query.first()
-        manager_user = bid.auction.organization.managers[0].user
+    def test_contractor_delete(self):
+        self._delete(case_contractor, True)
 
-        self.post_resource('auth', dict(user=dict(email=manager_user.email), password='foo'))
-        self.get_resource('bids/{}'.format(bid.id))
-        self.login_as_new_user()
-        self.get_resource('bids/{}'.format(bid.id), 401)
+    def test_contractor_collection(self):
+        self._collection(case_contractor)
 
-    def test_that_creator_only_sees_bids_that_they_made(self):
-        random_contractor = Contractor.query.first()
-        all_owned_bid_ids = [bid.id for bid in random_contractor.bids]
+    def test_contractor_view(self):
+        self._view(case_contractor, True)
 
-        self.post_resource('auth', dict(user=dict(email=random_contractor.user.email), password='foo'))
-        bids = self.get_resource('bids')['bids']
-        response_bid_ids = [bid['id'] for bid in bids]
-        self.assertEqual(set(all_owned_bid_ids), set(response_bid_ids))
+    def test_contractor_modify(self):
+        self._modify(case_contractor, True)
 
-    def test_that_manager_only_sees_bids_that_they_own(self):
-        random_manager = Manager.query.first()
-        all_auctions = random_manager.organization.auctions
-        all_owned_bid_ids = []
-        for auction in all_auctions:
-            for bid in auction.bids:
-                all_owned_bid_ids.append(bid.id)
-        self.post_resource('auth', dict(user=dict(email=random_manager.user.email), password='foo'))
-        bids = self.get_resource('bids')['bids']
-        response_bid_ids = [bid['id'] for bid in bids]
-        self.assertEqual(set(all_owned_bid_ids), set(response_bid_ids))
+    def test_mgr_collection(self):
+        self._collection(case_mgr)
 
-    @unittest.skip('skipping this test for now')
-    def test_update(self):
-        self.login_admin()
-        ''' admin only '''
-        pass
+    def test_mgr_view(self):
+        self._view(case_mgr, True)
+
+    def test_mgr_modify(self):
+        self._modify(case_mgr, False)
+
+    def test_mgr_delete(self):
+        self._delete(case_mgr, False)
+
+    def test_mgr_create(self):
+        TestBid._create(self, case_mgr, False)
 

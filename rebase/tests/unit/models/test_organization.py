@@ -57,32 +57,32 @@ class TestOrganizationModel(RebaseModelTestCase):
         for ticket in organization.tickets:
             reported_ticket_ids.append(ticket.id)
             self.assertEqual(ticket.organization, organization)
-        self.assertEqual(reported_ticket_ids, [first_ticket.id, second_ticket.id, third_ticket.id])
+        self.assertEqual(set(reported_ticket_ids), set([first_ticket.id, second_ticket.id, third_ticket.id]))
 
         reported_snap_ids = []
         for snapshot in organization.ticket_snapshots:
             reported_snap_ids.append(snapshot.id)
             self.assertEqual(snapshot.organization, organization)
-        self.assertEqual(reported_snap_ids, [first_snap.id, second_snap.id, third_snap.id])
+        self.assertEqual(set(reported_snap_ids), set([first_snap.id, second_snap.id, third_snap.id]))
 
         # test out the organization.bid_limits relationship
         reported_bid_limit_ids = []
         for bid_limit in organization.bid_limits:
             reported_bid_limit_ids.append(bid_limit.id)
             self.assertTrue(bid_limit.organization)
-        self.assertEqual(reported_bid_limit_ids, [first_bid_limit.id, second_bid_limit.id, third_bid_limit.id])
+        self.assertEqual(set(reported_bid_limit_ids), set([first_bid_limit.id, second_bid_limit.id, third_bid_limit.id]))
 
         reported_ticket_set_ids = []
         for ticket_set in organization.ticket_sets:
             reported_ticket_set_ids.append(ticket_set.id)
             self.assertTrue(ticket_set.organization)
-        self.assertEqual(reported_ticket_set_ids, [first_ticket_set.id, second_ticket_set.id, third_ticket_set.id])
+        self.assertEqual(set(reported_ticket_set_ids), set([first_ticket_set.id, second_ticket_set.id, third_ticket_set.id]))
 
         reported_auction_ids = []
         for auction in organization.auctions:
             reported_auction_ids.append(auction.id)
             self.assertTrue(auction.organization)
-        self.assertEqual(reported_auction_ids, [first_auction.id, second_auction.id, third_auction.id])
+        self.assertEqual(set(reported_auction_ids), set([first_auction.id, second_auction.id, third_auction.id]))
 
     #@unittest.skip('Havent built this yet')
     #def test_create(self):

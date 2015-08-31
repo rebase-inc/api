@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 from marshmallow import fields
+from flask.ext.login import current_user
 from flask.ext.sqlalchemy import SQLAlchemy
 from rebase.common.exceptions import BadDataError, NotFoundError
 DB = SQLAlchemy()
@@ -25,7 +26,6 @@ class SecureNestedField(fields.Nested):
                 return []
             else:
                 return None
-        current_user = self.context.get('current_user')
         if not current_user:
             raise ValueError('current_user not supplied to {} nested on {}'.format(nested_obj, obj))
         if self.many:

@@ -1,4 +1,5 @@
 from rebase.common.database import DB, PermissionMixin
+from rebase.common.query import query_from_class_to_user
 
 from sqlalchemy import or_, sql
 
@@ -23,36 +24,48 @@ class Bid(DB.Model, PermissionMixin):
         self.contractor = contractor
         self.work_offers = work_offers
 
+    def as_manager(user):
+        import rebase.models as models
+        return query_from_class_to_user(Bid, [
+            models.Auction,
+            models.TicketSet,
+            models.BidLimit,
+            models.TicketSnapshot,
+            models.Ticket,
+            models.Project,
+            models.Organization,
+            models.Manager,
+        ], user)
+
+    def as_contractor(user):
+        import rebase.models as models
+        return query_from_class_to_user(Bid, [
+            models.Auction,
+            models.Nomination,
+            models.Contractor,
+        ], user)
+
+    def _all(user):
+        return Bid.as_contractor(user).union(Bid.as_manager(user))
+
     @classmethod
     def query_by_user(cls, user):
-        from rebase.models import Contractor, User
-        query = cls.query
         if user.is_admin():
-            return query
-        query = query.join(cls.contractor)
-        query = query.join(Contractor.user)
-
-        all_filters = []
-        if user.manager_for_organizations:
-            all_filters.append(User.id.in_([m.user.id for m in user.manager_roles]))
-        all_filters.append(User.id == user.id)
-        return query.filter(or_(*all_filters))
+            return cls.query
+        return cls._all(user)
 
     def allowed_to_be_created_by(self, user):
         if user.is_admin():
             return True
-        return bool(self.contractor.user == user)
+        return Bid.as_contractor(user).first()
 
-    def allowed_to_be_modified_by(self, user):
-        return self.allowed_to_be_created_by(user)
-
-    def allowed_to_be_deleted_by(self, user):
-        return self.allowed_to_be_created_by(user)
+    allowed_to_be_modified_by = allowed_to_be_created_by
+    allowed_to_be_deleted_by = allowed_to_be_created_by
 
     def allowed_to_be_viewed_by(self, user):
         if user.is_admin():
             return True
-        return (self.auction.organization.id in user.manager_for_organizations) or (self.contractor.user == user)
+        return Bid._all(user).filter(Bid.id==self.id).first()
 
     def __repr__(self):
         return '<Bid[auction({}), contractor({})]>'.format(self.auction_id, self.contractor_id)
