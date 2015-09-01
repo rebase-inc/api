@@ -17,9 +17,9 @@ Supervisord is used to managed rqworker processes.
 8. Create and activate a Python Virtual Environment
 9. ```pip install -r requirements.txt```
 10. ```source setup.sh```
-11. ```python manage db init```
-12. ```python manage db migrate```
-13. ```python manage db upgrade```
+11. ```./manage db init```
+12. ```./manage db migrate```
+13. ```./manage db upgrade```
 14. ```foreman start``` This should launch a server on localhost
 
 ## Testing
@@ -68,7 +68,7 @@ heroku config:set GITHUB_CLIENT_SECRET=<some_key> -a rebase-stage
 heroku addons:create heroku-postgresql:hobby-dev --as WEB --app rebase-stage
 heroku addons:create heroku-postgresql:hobby-dev --as TEST --app rebase-stage
 heroku pg:promote WEB -a rebase-stage
-heroku run python manage.py db upgrade --app rebase-stage
+heroku run ./manage.py db upgrade --app rebase-stage
 git push stage master
 heroku scale worker=1 -a rebase-stage
 
@@ -76,7 +76,7 @@ heroku scale worker=1 -a rebase-stage
 heroku addons:create heroku-postgresql:hobby-dev --as WEB --app rebase-pro
 heroku addons:create heroku-postgresql:hobby-dev --as TEST --app rebase-pro
 heroku pg:promote WEB -a rebase-pro
-heroku run python manage.py db upgrade --app rebase-pro
+heroku run ./manage.py db upgrade --app rebase-pro
 git push pro master
 heroku scale worker=1 -a rebase-pro
 
