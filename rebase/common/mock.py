@@ -287,42 +287,60 @@ def create_admin_user(db, password):
     return god
 
 
-class UserStory(object):
-    types = { 'NEW_DEVELOPER' : 'NEW_DEVELOPER' }
-
-    def __init__(self, type, first_name, last_name, email, password):
-        if type == self.types['NEW_DEVELOPER']:
-            pass
-        else:
-            raise Exception('Invalid type!')
-        self.type = type
+class DeveloperUserStory(object):
+    def __init__(self, db, first_name, last_name, email, password):
         self.first_name = first_name
         self.last_name = last_name
         self.email = email
         self.password = password
 
-    def create(self, db):
         from rebase.models import Comment
-        if self.type == self.types['NEW_DEVELOPER']:
-            self.user = create_one_user(db, self.first_name, self.last_name, self.email, self.password, admin=True)
-            user_ted = create_one_user(db, 'Ted', 'Crisp', 'tedcrisp@joinrebase.com')
-            org_veridian = create_one_organization(db, 'veridian', user_ted)
-            manager_ted = create_one_manager(db, user_ted, org_veridian)
-            project_matchmaker = create_one_project(db, manager_ted.organization, 'matchmaker')
-            the_tickets = [create_one_internal_ticket(db, fake_ticket, project=project_matchmaker) for fake_ticket in FAKE_TICKETS]
-            for ticket in the_tickets:
-                for fake_comment in FAKE_COMMENTS:
-                    Comment(fake_comment, ticket=ticket)
-            self.contractor = create_one_contractor(db, self.user)
-            the_matches = create_ticket_matches(db, the_tickets, self.contractor)
-            the_auctions = [create_one_auction(db, [ticket]) for ticket in the_tickets]
-            the_nominations = [create_one_nomination(db, auction, self.contractor, True) for auction in the_auctions]
-            the_job_fits = [create_one_job_fit(db, nomination, [match]) for nomination, match in zip(the_nominations, the_matches)]
+        self.user = create_one_user(db, self.first_name, self.last_name, self.email, self.password, admin=True)
+        user_ted = create_one_user(db, 'Ted', 'Crisp', 'tedcrisp@joinrebase.com')
+        org_veridian = create_one_organization(db, 'veridian', user_ted)
+        manager_ted = create_one_manager(db, user_ted, org_veridian)
+        project_matchmaker = create_one_project(db, manager_ted.organization, 'matchmaker')
+        the_tickets = [create_one_internal_ticket(db, fake_ticket, project=project_matchmaker) for fake_ticket in FAKE_TICKETS]
+        for ticket in the_tickets:
+            for fake_comment in FAKE_COMMENTS:
+                Comment(fake_comment, ticket=ticket)
+        self.contractor = create_one_contractor(db, self.user)
+        the_matches = create_ticket_matches(db, the_tickets, self.contractor)
+        the_auctions = [create_one_auction(db, [ticket]) for ticket in the_tickets]
+        the_nominations = [create_one_nomination(db, auction, self.contractor, True) for auction in the_auctions]
+        the_job_fits = [create_one_job_fit(db, nomination, [match]) for nomination, match in zip(the_nominations, the_matches)]
 
+class ManagerUserStory(object):
+    def __init__(self, db, first_name, last_name, email, password):
+        self.first_name = first_name
+        self.last_name = last_name
+        self.email = email
+        self.password = password
+
+        from rebase.models import Comment
+        self.user = create_one_user(db, self.first_name, self.last_name, self.email, self.password, admin=True)
+        dev1 = create_one_user(db, 'Andy', 'Dwyer', 'andy@joinrebase.com')
+        dev2 = create_one_user(db, 'April', 'Ludgate', 'april@joinrebase.com')
+        dev3 = create_one_user(db, 'Leslie', 'Knope', 'leslie@joinrebase.com')
+        dev4 = create_one_user(db, 'Donna', 'Meagle', 'donna@joinrebase.com')
+        dev5 = create_one_user(db, 'Tom', 'Haverford', 'tom@joinrebase.com')
+        organization = create_one_organization(db, 'Parks and Recreation', self.user)
+        project = create_one_project(db, organization, 'Lot 48')
+        the_tickets = [create_one_internal_ticket(db, fake_ticket, project=project) for fake_ticket in FAKE_TICKETS]
+        for ticket in the_tickets:
+            for fake_comment in FAKE_COMMENTS:
+                Comment(fake_comment, ticket=ticket)
+
+        the_contractors = [create_one_contractor(db, user) for user in [dev1, dev2, dev3, dev4, dev5]]
+        the_auctions = [create_one_auction(db, [ticket]) for ticket in the_tickets]
+
+        for auction, ticket in zip(the_auctions, the_tickets):
+            for contractor in the_contractors:
+                match = create_ticket_matches(db, [ticket], contractor)
+                nomination = create_one_nomination(db, auction, contractor, True)
+                job_fit = create_one_job_fit(db, nomination, match)
 
 def create_the_world(db):
-    #dev_user_story = UserStory('NEW_DEVELOPER', 'Phil', 'Meyman', 'philmeyman@joinrebase.com', 'lem')
-    #dev_user_story.create(db)
     andrew = create_one_user(db, 'Andrew', 'Millspaugh', 'andrew@manager.rebase.io')
     rapha = create_one_user(db, 'Raphael', 'Goyran', 'raphael@rebase.io')
     joe = create_one_user(db, 'Joe', 'Pesci', 'joe@rebase.io')

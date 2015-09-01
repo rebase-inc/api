@@ -22,6 +22,10 @@ class Organization(DB.Model, PermissionMixin):
             backref=DB.backref('organization', uselist=False),
             viewonly=True)
 
+    def __init__(self, name, user):
+        self.name = name
+        self.managers.append(rebase.models.manager.Manager(user, self)) # you must have at least one manager
+
     @property
     def ticket_snapshots(self):
         ticket_snapshots = []
@@ -55,10 +59,6 @@ class Organization(DB.Model, PermissionMixin):
             if auction and auction not in auctions:
                 auctions.append(auction)
         return auctions
-
-    def __init__(self, name, user):
-        self.name = name
-        self.managers.append(rebase.models.manager.Manager(user, self)) # you must have at least one manager
 
     @classmethod
     def query_by_user(cls, user):

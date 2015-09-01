@@ -22,7 +22,9 @@ class JobFit(DB.Model, PermissionMixin):
         if not ticket_matches:
             raise ValueError('JobFit must have at least one instance of a TicketMatch')
         if len(ticket_matches) != len(nomination.ticket_set.bid_limits):
-            raise ValueError('JobFit must be initialized with one instance of a TicketMatch for each ticket in the relation auction')
+            msg = 'JobFit must be initialized with one instance of a TicketMatch for each ticket in the related auction'
+            msg += ': Expected {}, got {}'.format(len(nomination.ticket_set.bid_limits), len(ticket_matches))
+            raise ValueError(msg)
         self.nomination = nomination
         self.ticket_matches = ticket_matches
 
