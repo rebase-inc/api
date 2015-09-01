@@ -20,6 +20,7 @@ class RebaseRestTestCase(unittest.TestCase):
 
         self.client = self.app.test_client()
 
+        self.db.drop_all()
         self.db.create_all()
         self.db.session.commit()
 
@@ -40,7 +41,7 @@ class RebaseRestTestCase(unittest.TestCase):
         self.get_resource('/auth')
 
     def login_as_new_user(self):
-        new_user = models.User.query.filter(~models.User.roles.any() & ~models.User.admin).first()
+        new_user = create_one_user(self.db)
         self.login(new_user.email, 'foo')
 
     def login_as(self, exclude_roles=None, filters=None):
@@ -61,6 +62,7 @@ class RebaseRestTestCase(unittest.TestCase):
         if filters:
             query = filters(query)
         user = query.first()
+        self.assertTrue(user)
         self.login(user.email, 'foo')
         return user
 
@@ -71,7 +73,7 @@ class RebaseRestTestCase(unittest.TestCase):
     def login_as_contractor_only_with_clearance(self, filters=None):
         ''' login as and return a non-admin user whose only role is contractor with some clearances '''
         def new_filters(query):
-            new_query = query.join(Contractor).join(CodeClearance)
+            new_query = query.join(Contractor).filter(Contractor.clearances.any())
             if filters:
                 new_query = filters(new_query)
             return new_query
@@ -83,7 +85,15 @@ class RebaseRestTestCase(unittest.TestCase):
             Login as and return a non-admin user whose only role is manager.
             filters is same as with login_as method
         '''
-        return self.login_as(['contractor'], filters)
+        query = User.query\
+            .join(User.roles)\
+            .filter(Role.type.in_(['manager']))
+        if filters:
+            query = filters(query)
+        user = query.first()
+        self.assertTrue(user)
+        self.login(user.email, 'foo')
+        return user
 
     def login_as_no_role_user(self):
         ''' login as return non-admin user with role '''
@@ -186,18 +196,18 @@ class PermissionTestCase(RebaseNoMockRestTestCase):
         self.login(user.email, 'foo')
         return user, instance
 
-    def _collection(self, case):
+    def collection(self, case):
         user, instance = self._run(case)
         validate_resource_collection(self, user, [instance] if instance else [])
 
-    def _view(self, case, view, validate=None):
+    def view(self, case, view, validate=None):
         _, instance = self._run(case)
         instance_blob = self.resource.get(ids(instance), 200 if view else 401)
         if view and validate:
             validate(self, instance_blob)
         return instance_blob
 
-    def _modify(self, case, allowed_to_modify, modify_this=None):
+    def modify(self, case, allowed_to_modify, modify_this=None):
         _, instance = self._run(case)
         if modify_this:
             modified_blob = modify_this(instance)
@@ -205,12 +215,12 @@ class PermissionTestCase(RebaseNoMockRestTestCase):
             modified_blob = ids(instance)
         self.resource.update(expected_status=200 if allowed_to_modify else 401, **modified_blob)
 
-    def _delete(self, case,  delete):
+    def delete(self, case,  delete):
         _, instance = self._run(case)
         instance_blob = ids(instance)
         self.resource.delete(expected_status=200 if delete else 401, **instance_blob)
 
-    def _create(self, case, create, new_instance, validate=None, delete_first=False):
+    def create(self, case, create, new_instance, validate=None, delete_first=False):
         '''
         *case* is a function with no param that return a tuple (logged_in_user, instance)
         where logged_in_user is the user that is assumed to be logged in and instance is some instance of resource type.

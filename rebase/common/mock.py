@@ -1,6 +1,6 @@
 import datetime
 import uuid
-from random import randint
+from random import randint, randrange
 from .utils import (
     pick_a_word,
     pick_a_first_name,
@@ -107,44 +107,47 @@ def create_one_project(db, organization=None, project_name=None):
     db.session.add(code_repo)
     return project
 
-def create_one_remote_project(db, organization_name='Rebase', project_name='api'):
+def create_one_remote_project(db, organization=None, project_name=None):
     from rebase.models import Organization, RemoteProject, CodeRepository
-    organization = create_one_organization(db, organization_name)
-    remote_project = RemoteProject(organization, project_name)
+    organization = organization or create_one_organization(db)
+    remote_project = RemoteProject(organization, project_name or pick_a_word().capitalize()+' Project')
     code_repo = CodeRepository(remote_project)
     db.session.add(organization)
     db.session.add(remote_project)
     db.session.add(code_repo)
     return remote_project
 
-def create_one_github_project(db, organization=None, project_name='api'):
+def create_one_github_project(db, organization=None, project_name=None):
     from rebase.models import Organization, GithubProject, CodeRepository
-    organization = organization or create_one_organization(db, 'Rebase')
-    github_project = GithubProject(organization, project_name)
+    organization = organization or create_one_organization(db)
+    github_project = GithubProject(organization, project_name or pick_a_word().capitalize()+' Project')
     code_repo = CodeRepository(github_project)
     db.session.add(github_project)
     return github_project
 
-def create_one_internal_ticket(db, title, description=None, project=None):
+def create_one_internal_ticket(db, title=None, description=None, project=None):
     from rebase.models import InternalTicket, SkillRequirement, Comment
     project = project or create_one_project(db)
+    title = title or ' '.join(pick_a_word() for i in range(5))
     description = description or ' '.join(pick_a_word() for i in range(5))
     ticket = InternalTicket(project, title, description)
     SkillRequirement(ticket)
     db.session.add(ticket)
     return ticket
 
-def create_one_remote_ticket(db, title, description=None, project=None):
+def create_one_remote_ticket(db, title=None, description=None, project=None):
     from rebase.models import RemoteTicket, SkillRequirement
     project = project or create_one_project(db)
-    description = description or title + '-DESCRIPTION'
+    title = title or ' '.join(pick_a_word() for i in range(5))
+    description = description or ' '.join(pick_a_word() for i in range(15))
     ticket = RemoteTicket(project, title, description)
     SkillRequirement(ticket)
     db.session.add(ticket)
     return ticket
 
-def create_one_github_ticket(db, number, project=None):
+def create_one_github_ticket(db, number=None, project=None):
     from rebase.models import GithubTicket, SkillRequirement
+    number = number or randrange(1, 99999)
     project = project or create_one_github_project(db)
     ticket = GithubTicket(project, number)
     SkillRequirement(ticket)

@@ -1,5 +1,6 @@
 
 from rebase.common.database import DB, PermissionMixin
+from rebase.common.exceptions import NoRole, UnknownRole
 import rebase.models.organization
 import rebase.models.manager
 import rebase.models.project
@@ -58,6 +59,11 @@ class Ticket(DB.Model, PermissionMixin):
             .join(rebase.models.contractor.Contractor)\
             .filter(rebase.models.contractor.Contractor.user == user)
 
+    role_to_query = {
+        'Manager': get_all_as_manager,
+        'Contractor': get_cleared_projects
+    }
+
     def allowed_to_be_created_by(self, user):
         if user.admin:
             return True
@@ -67,11 +73,14 @@ class Ticket(DB.Model, PermissionMixin):
     allowed_to_be_deleted_by = allowed_to_be_created_by
 
     def allowed_to_be_viewed_by(self, user):
+        import pdb; pdb.set_trace()
         if user.admin:
             return True
-        return Ticket.get_cleared_projects(user, self.id).union(
-            Ticket.get_all_as_manager(user, self.id)
-        ).limit(100).all()
-
+        if not user.current_role:
+            raise NoRole(user)
+        if user.current_role.type not in role_to_query:
+            raise UnknownRole(user.current_role)
+        return role_to_query[user.current_role.type](user, self.id).limit(1).all()
+        
     def __repr__(self):
         return '<Ticket[{}] title="{}">'.format(self.id, self.title)

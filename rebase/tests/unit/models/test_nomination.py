@@ -34,7 +34,6 @@ class TestNomination(RebaseModelTestCase):
         self.db.session.commit()
 
         self.assertEqual(   Nomination.query.all(),  [] )
-        self.assertEqual(   Contractor.query.all(), [] )
         self.assertNotEqual(Auction.query.all(),    [] )
 
     def test_delete_auction(self):

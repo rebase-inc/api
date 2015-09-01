@@ -24,11 +24,15 @@ class User(DB.Model, PermissionMixin):
     admin =             DB.Column(DB.Boolean,   nullable=False, default=False)
 
     def __init__(self, first_name, last_name, email, password):
+        from rebase.models.contractor import Contractor
         self.first_name = first_name
         self.last_name = last_name
         self.email = email
         self.last_seen = datetime.datetime.now()
         self.set_password(password)
+        # This is a hack until we clarify the sign-up design:
+        # every new user will start off as a contractor.
+        self.current_role = Contractor(self)
 
     def set_password(self, password):
         self.hashed_password = generate_password_hash(password)
@@ -171,7 +175,7 @@ class User(DB.Model, PermissionMixin):
     def is_active(self): return True
     def is_anonymous(self): return False
     def get_id(self): return str(self.id)
-    def get_role(self): return False
+    def get_role(self): return self.current_role
 
     @property
     def manager_roles(self):

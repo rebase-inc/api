@@ -20,46 +20,46 @@ class TicketSetPermissions(PermissionTestCase):
     _create = partial(PermissionTestCase._create, new_instance=_new_instance)
 
     def test_mgr_collection(self):
-        self._collection(case_mgr)
+        self.collection(case_mgr)
 
     def test_mgr_view(self):
-        self._view(case_mgr, True)
+        self.view(case_mgr, True)
 
     def test_mgr_modify(self):
-        self._modify(case_mgr, True)
+        self.modify(case_mgr, True)
 
     def test_mgr_delete(self):
-        self._delete(case_mgr, True)
+        self.delete(case_mgr, True)
 
     def test_mgr_create(self):
         TicketSetPermissions._create(self, case_mgr, True)
 
     def test_contractor_collection(self):
-        self._collection(case_contractor)
+        self.collection(case_contractor)
 
     def test_contractor_view(self):
-        self._view(case_contractor, True)
+        self.view(case_contractor, True)
 
     def test_contractor_modify(self):
-        self._modify(case_contractor, False)
+        self.modify(case_contractor, False)
 
     def test_contractor_delete(self):
-        self._delete(case_contractor, False)
+        self.delete(case_contractor, False)
 
     def test_contractor_create(self):
         TicketSetPermissions._create(self, case_contractor, False)
 
     def test_admin_collection(self):
-        self._collection(case_admin)
+        self.collection(case_admin)
 
     def test_admin_view(self):
-        self._view(case_admin, True)
+        self.view(case_admin, True)
 
     def test_admin_modify(self):
-        self._modify(case_admin, True)
+        self.modify(case_admin, True)
 
     def test_admin_delete(self):
-        self._delete(case_admin, True)
+        self.delete(case_admin, True)
 
     def test_admin_create(self):
         TicketSetPermissions._create(self, case_admin, True)
