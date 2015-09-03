@@ -1,11 +1,13 @@
 from functools import partial
 
 from rebase.common.utils import ids, RebaseResource
-from rebase.tests.common.github_ticket import (
-    case_contractor,
-    case_mgr,
-    case_admin,
-    case_anonymous,
+from rebase.tests.common.ticket import (
+    case_github_contractor,
+    case_github_mgr,
+    case_github_admin,
+    case_github_admin_collection,
+    case_github_anonymous,
+    case_github_anonymous_collection,
 )
 
 from . import PermissionTestCase
@@ -22,50 +24,62 @@ class TestGithubTicket(PermissionTestCase):
     model = 'GithubTicket'
     _create = partial(PermissionTestCase.create, new_instance=_new_instance)
 
+    def test_contractor_collection(self):
+        self.collection(case_github_contractor, 'contractor')
+
     def test_contractor_view(self):
-        self.view(case_contractor, 'contractor', True)
+        self.view(case_github_contractor, 'contractor', True)
 
     def test_contractor_modify(self):
-        self.modify(case_contractor, 'contractor', False)
+        self.modify(case_github_contractor, 'contractor', False)
 
     def test_contractor_delete(self):
-        self.delete(case_contractor, 'contractor', False)
+        self.delete(case_github_contractor, 'contractor', False)
 
     def test_contractor_create(self):
-        TestGithubTicket._create(self, case_contractor, 'contractor', False)
+        TestGithubTicket._create(self, case_github_contractor, 'contractor', False)
+
+    def test_mgr_collection(self):
+        self.collection(case_github_mgr, 'manager')
 
     def test_mgr_view(self):
-        self.view(case_mgr, 'manager', True)
+        self.view(case_github_mgr, 'manager', True)
 
     def test_mgr_modify(self):
-        self.modify(case_mgr, 'manager', True)
+        self.modify(case_github_mgr, 'manager', True)
 
     def test_mgr_delete(self):
-        self.delete(case_mgr, 'manager', True)
+        self.delete(case_github_mgr, 'manager', True)
 
     def test_mgr_create(self):
-        TestGithubTicket._create(self, case_mgr, 'manager', True)
+        TestGithubTicket._create(self, case_github_mgr, 'manager', True)
+
+    def test_admin_collection(self):
+        self.collection(case_github_admin_collection, 'manager')
 
     def test_admin_view(self):
-        self.view(case_admin, 'manager', True)
+        self.view(case_github_admin, 'manager', True)
 
     def test_admin_modify(self):
-        self.modify(case_admin, 'manager', True)
+        self.modify(case_github_admin, 'manager', True)
 
     def test_admin_delete(self):
-        self.delete(case_admin, 'manager', True)
+        self.delete(case_github_admin, 'manager', True)
 
     def test_admin_create(self):
-        TestGithubTicket._create(self, case_admin, 'manager', True)
+        TestGithubTicket._create(self, case_github_admin, 'manager', True)
+
+    def test_anonymous_collection(self):
+        self.collection(case_github_anonymous_collection, 'manager')
 
     def test_anonymous_view(self):
-        self.view(case_anonymous, 'manager', False)
+        self.view(case_github_anonymous, 'manager', False)
 
     def test_anonymous_modify(self):
-        self.modify(case_anonymous, 'manager', False)
+        self.modify(case_github_anonymous, 'manager', False)
 
     def test_anonymous_delete(self):
-        self.delete(case_anonymous, 'manager', False)
+        self.delete(case_github_anonymous, 'manager', False)
 
     def test_anonymous_create(self):
-        TestGithubTicket._create(self, case_anonymous, 'manager', False)
+        TestGithubTicket._create(self, case_github_anonymous, 'manager', False)

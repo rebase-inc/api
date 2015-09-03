@@ -26,19 +26,20 @@ class Ticket(DB.Model, PermissionMixin):
     def __init__(self, *args, **kwargs):
         raise NotImplemented('Ticket is abstract')
 
-    def role_to_query_fn(self, role):
-        if role.type == 'manager':
-            return self.get_all_as_manager
-        elif role.type == 'contractor':
-            return self.get_cleared_projects
+    @classmethod
+    def role_to_query_fn(cls, user):
+        if user.current_role.type == 'manager':
+            return cls.get_all_as_manager
+        elif user.current_role.type == 'contractor':
+            return cls.get_cleared_projects
         else:
-            raise UnknownRole(role)
+            raise UnknownRole(user.current_role)
 
     @classmethod
     def query_by_user(cls, user):
         if user.admin:
             return cls.query
-        return cls.role_to_query_fn(user.current_role)(user, project_type='project')
+        return cls.role_to_query_fn(user)(user, project_type='project')
 
     @classmethod
     def get_all_as_manager(cls, user, ticket_id=None, project_type=None):
@@ -70,7 +71,7 @@ class Ticket(DB.Model, PermissionMixin):
     def allowed_to_be_created_by(self, user):
         if user.admin:
             return True
-        query = Ticket.role_to_query_fn(user.current_role)(user, ticket_id=self.id)
+        query = Ticket.role_to_query_fn(user)(user, ticket_id=self.id)
         return query.limit(1).all()
 
     allowed_to_be_modified_by = allowed_to_be_created_by
@@ -79,7 +80,7 @@ class Ticket(DB.Model, PermissionMixin):
     def allowed_to_be_viewed_by(self, user):
         if user.admin:
             return True
-        query = self.role_to_query_fn(user.current_role)(user, self.id, 'project')
+        query = self.role_to_query_fn(user)(user, self.id, 'project')
         return query.first()
         
     def __repr__(self):

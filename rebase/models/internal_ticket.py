@@ -21,9 +21,7 @@ class InternalTicket(Ticket):
     def query_by_user(cls, user):
         if user.admin:
             return cls.query
-        return super(cls, cls)\
-            .get_all_as_manager(user, project_type='project')\
-            .union(super(cls, cls).get_cleared_projects(user, project_type='project'))
+        return super(cls, cls).role_to_query_fn(user)(user, project_type='project')
 
     def allowed_to_be_created_by(self, user):
         if user.admin:
@@ -36,5 +34,5 @@ class InternalTicket(Ticket):
     def allowed_to_be_viewed_by(self, user):
         if user.admin:
             return True
-        query = self.role_to_query_fn(user.current_role)(user, self.id, 'project')
+        query = self.role_to_query_fn(user)(user, ticket_id=self.id, project_type='project')
         return query.first()

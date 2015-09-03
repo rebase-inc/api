@@ -20,8 +20,7 @@ class GithubTicket(RemoteTicket):
     def query_by_user(cls, user):
         if user.admin:
             return cls.query
-        return super(cls, cls)\
-            .role_to_query_fn(user.current_role)(user, project_type='github_project')
+        return super(cls, cls).role_to_query_fn(user)(user, project_type='github_project')
 
     def allowed_to_be_created_by(self, user):
         if user.admin:
@@ -37,7 +36,7 @@ class GithubTicket(RemoteTicket):
     def allowed_to_be_viewed_by(self, user):
         if user.admin:
             return True
-        query = self.role_to_query_fn(user.current_role)(user, self.id, 'github_project')
+        query = self.role_to_query_fn(user)(user, self.id, 'github_project')
         return query.first()
 
     def __repr__(self):
