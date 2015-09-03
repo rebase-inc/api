@@ -5,6 +5,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy import or_, sql
 
 from rebase.common.database import DB, PermissionMixin
+from rebase.common.exceptions import NoRole, UnknownRole
 from rebase.common.query import query_from_class_to_user
 from rebase.common.state import StateMachine
 from rebase.models import BidLimit, Contract, Bid
@@ -35,16 +36,18 @@ class Auction(DB.Model, PermissionMixin):
     def __repr__(self):
         return '<Auction[id:{}] finish_work_by={}>'.format(self.id, self.finish_work_by)
 
-    def as_contractor(user):
+    @classmethod
+    def _as_contractor(cls, user):
         import rebase.models as models
-        return query_from_class_to_user(Auction, [
+        return query_from_class_to_user(cls, [
             models.Nomination,
             models.Contractor,
         ], user)
 
-    def as_manager(user):
+    @classmethod
+    def _as_manager(cls, user):
         import rebase.models as models
-        return query_from_class_to_user(Auction, [
+        return query_from_class_to_user(cls, [
             models.TicketSet,
             models.BidLimit,
             models.TicketSnapshot,
@@ -54,19 +57,25 @@ class Auction(DB.Model, PermissionMixin):
             models.Manager,
         ], user)
 
-    def _all(user):
-        return Auction.as_contractor(user).union(Auction.as_manager(user))
+    @classmethod
+    def _role_to_query_fn(cls, user):
+        if user.current_role.type == 'manager':
+            return cls._as_manager
+        elif user.current_role.type == 'contractor':
+            return cls._as_contractor
+        else:
+            raise UnknownRole(user.current_role)
 
     @classmethod
     def query_by_user(cls, user):
         if user.is_admin():
             return cls.query
-        return cls._all(user)
+        return cls._role_to_query_fn(user)(user)
 
     def allowed_to_be_created_by(self, user):
         if user.is_admin():
             return True
-        return Auction.as_manager(user).first()
+        return self.ticket_set.bid_limits[0].ticket_snapshot.ticket.allowed_to_be_created_by(user)
 
     allowed_to_be_modified_by = allowed_to_be_created_by
     allowed_to_be_deleted_by = allowed_to_be_created_by
@@ -74,7 +83,9 @@ class Auction(DB.Model, PermissionMixin):
     def allowed_to_be_viewed_by(self, user):
         if user.is_admin():
             return True
-        return Auction._all(user).filter(Auction.id==self.id).first()
+        query_auctions_fn = Auction._role_to_query_fn(user)
+        query = query_auctions_fn(user)
+        return query.filter(Auction.id==self.id).first()
 
     @property
     def organization(self):

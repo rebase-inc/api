@@ -202,8 +202,14 @@ class PermissionTestCase(RebaseNoMockRestTestCase):
         return user, instance
 
     def collection(self, case, role):
-        user, instance = self._run(case, role)
-        validate_resource_collection(self, user, [instance] if instance else [])
+        user, thing = self._run(case, role)
+        if isinstance(thing, list):
+            expected_resources = thing
+        elif not thing:
+            expected_resources = []
+        else:
+            expected_resources = [thing]
+        validate_resource_collection(self, user, expected_resources)
 
     def view(self, case, role, allowed_to_view, validate=None):
         _, instance = self._run(case, role)
