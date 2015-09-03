@@ -27,6 +27,15 @@ def base_scenario(db, project_type):
     ticket = fns['ticket'](db, project=project)
     contractor = mock.create_one_contractor(db)
     clearance = mock.create_one_code_clearance(db, project, contractor)
+
+    #let's make this contractor the manager for another org for which mgr_user is a contractor
+    # This is to make sure the queries are properly discrimitating based on the current role
+    org_2 = mock.create_one_organization(db, user=contractor.user)
+    project_2 = fns['project'](db, organization=org_2)
+    ticket_2 = fns['ticket'](db, project=project_2)
+    contractor_2 = mock.create_one_contractor(db, mgr_user)
+    clearance_2 = mock.create_one_code_clearance(db, project_2, contractor_2)
+
     db.session.commit()
     return mgr_user, contractor, ticket
 

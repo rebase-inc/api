@@ -24,13 +24,21 @@ class Ticket(DB.Model, PermissionMixin):
     }
 
     def __init__(self, *args, **kwargs):
-        raise NotImplementedError()
+        raise NotImplemented('Ticket is abstract')
+
+    def role_to_query_fn(self, role):
+        if role.type == 'manager':
+            return self.get_all_as_manager
+        elif role.type == 'contractor':
+            return self.get_cleared_projects
+        else:
+            raise UnknownRole(role)
 
     @classmethod
     def query_by_user(cls, user):
         if user.admin:
             return cls.query
-        return cls.get_all_as_manager(user).union(cls.get_cleared_projects(user))
+        return cls.role_to_query_fn(user.current_role)(user, project_type='project')
 
     @classmethod
     def get_all_as_manager(cls, user, ticket_id=None, project_type=None):
@@ -59,28 +67,20 @@ class Ticket(DB.Model, PermissionMixin):
             .join(rebase.models.contractor.Contractor)\
             .filter(rebase.models.contractor.Contractor.user == user)
 
-    role_to_query = {
-        'Manager': get_all_as_manager,
-        'Contractor': get_cleared_projects
-    }
-
     def allowed_to_be_created_by(self, user):
         if user.admin:
             return True
-        return Ticket.get_all_as_manager(user, self.id).limit(1).all()
+        query = Ticket.role_to_query_fn(user.current_role)(user, ticket_id=self.id)
+        return query.limit(1).all()
 
     allowed_to_be_modified_by = allowed_to_be_created_by
     allowed_to_be_deleted_by = allowed_to_be_created_by
 
     def allowed_to_be_viewed_by(self, user):
-        import pdb; pdb.set_trace()
         if user.admin:
             return True
-        if not user.current_role:
-            raise NoRole(user)
-        if user.current_role.type not in role_to_query:
-            raise UnknownRole(user.current_role)
-        return role_to_query[user.current_role.type](user, self.id).limit(1).all()
+        query = self.role_to_query_fn(user.current_role)(user, self.id, 'project')
+        return query.first()
         
     def __repr__(self):
         return '<Ticket[{}] title="{}">'.format(self.id, self.title)

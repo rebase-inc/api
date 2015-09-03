@@ -37,14 +37,14 @@ class TestContractResource(RebaseRestTestCase):
         creator_user = contract.bid.contractor.user
 
         self.get_resource('contracts/{}'.format(contract.id), 401)
-        self.post_resource('auth', dict(user=dict(email=creator_user.email), password='foo'))
+        self.login(creator_user.email, 'foo', role='contractor')
         self.get_resource('contracts/{}'.format(contract.id))
 
     def test_that_bid_auction_owner_can_see(self):
         contract = Contract.query.first()
         manager_user = contract.bid.auction.organization.managers[0].user
 
-        self.post_resource('auth', dict(user=dict(email=manager_user.email), password='foo'))
+        self.login(manager_user.email, 'foo', role='manager')
         self.get_resource('contracts/{}'.format(contract.id))
         self.login_as_new_user()
         self.get_resource('contracts/{}'.format(contract.id), 401)
@@ -65,7 +65,7 @@ class TestContractResource(RebaseRestTestCase):
         for auction in all_auctions:
             for bid in auction.bids:
                 all_owned_bid_contract_ids.append(bid.contract.id)
-        self.post_resource('auth', dict(user=dict(email=random_manager.user.email), password='foo'))
+        self.login(random_manager.user.email, 'foo', role='manager')
         contracts = self.get_resource('contracts')['contracts']
         response_contract_ids = [contract['id'] for contract in contracts]
         self.assertEqual(set(all_owned_bid_contract_ids), set(response_contract_ids))

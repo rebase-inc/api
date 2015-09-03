@@ -36,21 +36,21 @@ def _validate_work_offer(test, work_offer):
 
 class TestWorkOffer(PermissionTestCase):
     model = 'WorkOffer'
-    _create = partial(PermissionTestCase._create, new_instance=_new_instance)
-    _view = partial(PermissionTestCase._view, validate=_validate_work_offer)
-    _modify = partial(PermissionTestCase._modify, modify_this=_modify_this)
+    _create = partial(PermissionTestCase.create, new_instance=_new_instance)
+    _view = partial(PermissionTestCase.view, validate=_validate_work_offer)
+    _modify = partial(PermissionTestCase.modify, modify_this=_modify_this)
 
     def test_mgr_delete(self):
-        self._delete(case_mgr, False)
+        self.delete(case_mgr, 'manager', False)
 
     def test_mgr_collection(self):
-        self._collection(case_mgr_collection)
+        self.collection(case_mgr_collection, 'manager')
 
     def test_mgr_modify(self):
-        TestWorkOffer._modify(self, case_mgr, False)
+        TestWorkOffer._modify(self, case_mgr, 'manager', False)
 
     def test_mgr_view(self):
-        TestWorkOffer._view(self, case_mgr, True)
+        TestWorkOffer._view(self, case_mgr, 'manager', True)
 
     def test_mgr_create(self):
         mgr_user, work_offer, snapshot_2 = case_mgr_create(self.db)
@@ -61,19 +61,19 @@ class TestWorkOffer(PermissionTestCase):
             'price':            floor(.9*work_offer.price)
         }
 
-        super()._create(lambda db: (mgr_user, work_offer), False, new_instance=lambda _: work_offer_2)
+        super().create(lambda _: (mgr_user, work_offer), 'manager', False, new_instance=lambda _: work_offer_2)
 
     def test_contractor_delete(self):
-        self._delete(case_contractor, True)
+        self.delete(case_contractor, 'contractor', True)
 
     def test_contractor_collection(self):
-        self._collection(case_contractor)
+        self.collection(case_contractor, 'manager')
 
     def test_contractor_modify(self):
-        TestWorkOffer._modify(self, case_contractor, True)
+        TestWorkOffer._modify(self, case_contractor, 'contractor', True)
 
     def test_contractor_view(self):
-        TestWorkOffer._view(self, case_contractor, True)
+        TestWorkOffer._view(self, case_contractor, 'contractor', True)
 
     def test_contractor_create(self):
-        TestWorkOffer._create(self, case_contractor, True, delete_first=True)
+        TestWorkOffer._create(self, case_contractor, 'contractor', True, delete_first=True)

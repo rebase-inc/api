@@ -19,9 +19,15 @@ def plural(text):
         return text+'s'
 
 def get_model_primary_keys(model):
+    ''' returns the tuple of names of components of the primary key
+    e.g get_model_primary_keys(Foo<('id1', 'id2')>)  => ('id1', 'id2')
+    '''
     return tuple(map(lambda key: key.name, inspect(model).primary_key))
 
 def primary_key(instance):
+    ''' given an instance, returns the value of the primary key
+    e.g Foo<('id1':1, 'id2':5)>  => (1, 5)
+    '''
     return inspect(instance).identity
 
 def ids(instance):

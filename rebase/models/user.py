@@ -30,15 +30,25 @@ class User(DB.Model, PermissionMixin):
         self.email = email
         self.last_seen = datetime.datetime.now()
         self.set_password(password)
-        # This is a hack until we clarify the sign-up design:
-        # every new user will start off as a contractor.
-        self.current_role = Contractor(self)
+        self.current_role = None
 
     def set_password(self, password):
         self.hashed_password = generate_password_hash(password)
 
     def check_password(self, password):
         return check_password_hash(self.hashed_password, password)
+
+    def set_role(self, role):
+        from rebase.models.contractor import Contractor
+        if role:
+            self.current_role = self.roles.filter_by(type=role).first()
+        else:
+            self.current_role = self.roles.first()
+        if not self.current_role:
+            # TODO raise instead when user doesn't have a role
+            # we should first create a Role instance and then add the role as a param of the User __init__
+            self.current_role = Contractor(self)
+        return self.current_role
 
     @classmethod
     def query_by_user(cls, user, user_id=None):

@@ -38,11 +38,11 @@ def _modify_this(auction):
 
 class TestAuction(PermissionTestCase):
     model = 'Auction'
-    _create = partial(PermissionTestCase._create, new_instance=_new_instance)
-    _modify = partial(PermissionTestCase._modify, modify_this=_modify_this)
+    _create = partial(PermissionTestCase.create, new_instance=_new_instance)
+    _modify = partial(PermissionTestCase.modify, modify_this=_modify_this)
 
     def test_contractor_view(self):
-        self._view(case_contractor, True)
+        self.view(case_contractor, 'contractor', True)
 
     def _make_bid(self, user, auction, price_ratio):
         work_offers = []
@@ -70,39 +70,39 @@ class TestAuction(PermissionTestCase):
             bid_resource.delete(**bid)
 
     def test_contractor_over_bid(self):
-        user, auction = self._run(case_contractor)
+        user, auction = self._run(case_contractor, 'contractor')
 
         over_bid = self._make_bid(user, auction, 1.2)
         auction_blob = self.post_resource('auctions/{}/bid_events'.format(auction.id), over_bid)['auction']
         self.assertEqual(auction_blob['state'], 'waiting_for_bids')
 
     def test_contractor_under_bid(self):
-        user, auction = self._run(case_contractor)
+        user, auction = self._run(case_contractor, 'contractor')
 
         bid = self._make_bid(user, auction, 0.8)
         auction_blob = self.post_resource('auctions/{}/bid_events'.format(auction.id), bid)['auction']
         self.assertEqual(auction_blob['state'], 'ended')
 
     def test_contractor_modify(self):
-        TestAuction._modify(self, case_contractor, False)
+        TestAuction._modify(self, case_contractor, 'contractor', False)
 
     def test_contractor_delete(self):
-        self._delete(case_contractor, False)
+        self.delete(case_contractor, 'contractor', False)
 
     def test_contractor_create(self):
-        TestAuction._create(self, case_contractor, False)
+        TestAuction._create(self, case_contractor, 'contractor', False)
 
     def test_mgr_view(self):
-        self._view(case_mgr, True)
+        self.view(case_mgr, 'manager', True)
 
     def test_mgr_modify(self):
-        TestAuction._modify(self, case_mgr, True)
+        TestAuction._modify(self, case_mgr, 'manager', True)
 
     def test_mgr_delete(self):
-        self._delete(case_mgr, True)
+        self.delete(case_mgr, 'manager', True)
 
     def test_mgr_create(self):
-        TestAuction._create(self, case_mgr, True)
+        TestAuction._create(self, case_mgr, 'manager', True)
 
 class TestAuctionResource(RebaseRestTestCase):
     def setUp(self):
@@ -111,7 +111,6 @@ class TestAuctionResource(RebaseRestTestCase):
         super().setUp()
 
     def test_get_auctions_for_org_and_by_approval(self):
-        self.get_resource('auctions', 401)
         user_data = dict(
             first_name = 'Andrew',
             last_name = 'Millspaugh',
@@ -119,13 +118,11 @@ class TestAuctionResource(RebaseRestTestCase):
             password = 'foobar'
         )
         user = self.post_resource('users', user_data)['user']
-        self.post_resource('auth', dict(user=user, password='foobar')) #login
-
-        self.logout()
-        foo = self.login(user_data['email'], user_data['password'])
+        self.login(user_data['email'], user_data['password'], role='contractor')
 
         org_data = dict(name='Bitstrap', user=user)
         organization = self.post_resource('organizations', org_data)['organization']
+        self.login(user_data['email'], user_data['password'], role='manager')
 
         project_data = dict(organization=organization, name='Some stupid app')
         project = self.post_resource('projects', project_data)['project']
@@ -133,8 +130,12 @@ class TestAuctionResource(RebaseRestTestCase):
         ticket_data = dict(project=project, title='TiTlE', description='dEsCrIpTiOn')
         ticket = self.post_resource('internal_tickets', ticket_data)['internal_ticket']
 
-        ticket_snapshot = self.post_resource('ticket_snapshots', dict(ticket=ticket))['ticket_snapshot']
-        bid_limit = self.post_resource('bid_limits', dict(ticket_snapshot=ticket_snapshot, price=999))['bid_limit']
+        self.ticket_snapshot_resource = RebaseResource(self, 'TicketSnapshot')
+        snapshot = self.ticket_snapshot_resource.create(**{
+            'ticket': {'id': ticket['id']}
+        })
+        snapshot = self.ticket_snapshot_resource.just_ids(snapshot)
+        bid_limit = self.post_resource('bid_limits', dict(ticket_snapshot=snapshot, price=999))['bid_limit']
 
         ticket_set = self.post_resource('ticket_sets', dict(bid_limits=[bid_limit]))['ticket_set']
         term_sheet = self.get_resource('term_sheets')['term_sheets'][0]
@@ -169,12 +170,12 @@ class TestAuctionResource(RebaseRestTestCase):
         contractor_id = nomination['contractor']['id']
         ticket_set_id = nomination['ticket_set']['id']
 
-        self.post_resource('auth', dict(user=our_user, password='foo')) #login
+        self.login(our_user['email'], 'foo', role='contractor')
 
         our_users_auctions = self.get_resource('auctions')['auctions']
         self.assertNotIn(auction['id'], [a['id'] for a in our_users_auctions])
 
-        self.post_resource('auth', dict(user=user, password='foobar')) #login
+        self.login(user['email'], user_data['password'], role='manager')
         self.put_resource('nominations/{}/{}'.format(contractor_id, ticket_set_id), dict(auction=auction))
         our_users_auctions = self.get_resource('auctions')['auctions']
         self.assertIn(auction['id'], [a['id'] for a in our_users_auctions])

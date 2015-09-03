@@ -29,13 +29,13 @@ class TestUserResource(RebaseRestTestCase):
         for role in response['user']['roles']:
             role.pop('id')
 
-    def test_create_new_as_admin(self):
+    def test_create_as_admin(self):
         self.login_admin()
         user = dict(first_name='Saul', last_name='Goodman', email='saulgoodman@rebase.io', password='foo')
 
         expected_response = copy.copy(user)
         expected_response['admin'] = False
-        expected_response['roles'] = [{'type': 'contractor'}]
+        expected_response['roles'] = []
         expected_response.pop('password')
 
         response = self.post_resource('users', user)
@@ -79,6 +79,7 @@ class TestUserResource(RebaseRestTestCase):
     def test_update(self):
         user = self._create_user()
         self.login(user['email'], 'foo')
+        user = self.user_resource.get(user)
         user['last_name'] = 'Badman'
         self.user_resource.update(**user)
 
@@ -94,7 +95,8 @@ class TestUserResource(RebaseRestTestCase):
         response = self.put_resource('users/{}'.format(user['id']), new_name)
         user.update(new_name)
         user['admin'] = False
-        user['roles'] = [{'type':'contractor'}]
+        user['roles'] = []
+        user['current_role'] = None
         self._strip_role_ids(response)
         self.assertEqual(user, response['user'])
 

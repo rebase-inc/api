@@ -3,7 +3,7 @@ import datetime
 import unittest
 
 from rebase import models, create_app
-from rebase.common.mock import create_the_world, create_admin_user
+from rebase.common.mock import create_the_world, create_admin_user, create_one_user
 from rebase.common.utils import RebaseResource, validate_resource_collection, ids
 from rebase.models import (
     User,
@@ -31,11 +31,15 @@ class RebaseRestTestCase(unittest.TestCase):
 
         self.addCleanup(self.cleanup)
 
-    def login_admin(self):
-        self.post_resource('/auth', { 'user': {'email': self.admin_user.email}, 'password': 'foo'})
+    def login_admin(self, role='manager'):
+        self.login(self.admin_user.email, 'foo', role=role)
 
-    def login(self, email, password):
-        return self.post_resource('/auth', { 'user': {'email': email}, 'password': password})
+    def login(self, email, password, role=None):
+        response = self.post_resource('/auth', { 'user': {'email': email}, 'password': password, 'role': role})
+        user = response['user']
+        current_role = user['current_role']
+        #print('Logged in as {} with role "{}"'.format(user['email'], current_role))
+        return user
 
     def logout(self):
         self.get_resource('/auth')
@@ -175,6 +179,7 @@ class RebaseNoMockRestTestCase(RebaseRestTestCase):
     def setUp(self):
         super().setUp()
 
+
 class PermissionTestCase(RebaseNoMockRestTestCase):
     '''
     TestCase don't use __init__ constructor, so we use static member 'model' to describe
@@ -191,41 +196,43 @@ class PermissionTestCase(RebaseNoMockRestTestCase):
         self.resource = RebaseResource(self, self.model)
         super().setUp()
 
-    def _run(self, case):
+    def _run(self, case, role):
         user, instance = case(self.db)
-        self.login(user.email, 'foo')
+        self.login(user.email, 'foo', role)
         return user, instance
 
-    def collection(self, case):
-        user, instance = self._run(case)
+    def collection(self, case, role):
+        user, instance = self._run(case, role)
         validate_resource_collection(self, user, [instance] if instance else [])
 
-    def view(self, case, view, validate=None):
-        _, instance = self._run(case)
-        instance_blob = self.resource.get(ids(instance), 200 if view else 401)
-        if view and validate:
+    def view(self, case, role, allowed_to_view, validate=None):
+        _, instance = self._run(case, role)
+        instance_blob = self.resource.get(ids(instance), 200 if allowed_to_view else 401)
+        if allowed_to_view and validate:
             validate(self, instance_blob)
         return instance_blob
 
-    def modify(self, case, allowed_to_modify, modify_this=None):
-        _, instance = self._run(case)
+    def modify(self, case, role, allowed_to_modify, modify_this=None):
+        _, instance = self._run(case, role)
         if modify_this:
             modified_blob = modify_this(instance)
         else:
             modified_blob = ids(instance)
         self.resource.update(expected_status=200 if allowed_to_modify else 401, **modified_blob)
 
-    def delete(self, case,  delete):
-        _, instance = self._run(case)
+    def delete(self, case, role,  allowed_to_delete):
+        _, instance = self._run(case, role)
         instance_blob = ids(instance)
-        self.resource.delete(expected_status=200 if delete else 401, **instance_blob)
+        self.resource.delete(expected_status=200 if allowed_to_delete else 401, **instance_blob)
 
-    def create(self, case, create, new_instance, validate=None, delete_first=False):
+    def create(self, case, role, allowed_to_create, new_instance, validate=None, delete_first=False):
         '''
         *case* is a function with no param that return a tuple (logged_in_user, instance)
         where logged_in_user is the user that is assumed to be logged in and instance is some instance of resource type.
 
-        *create* is a boolean, True means logged_in_user can create another instance, False means it's forbidden (resource will return 401).
+        *role* is the role the user logging in as
+
+        *allowed_to_create* is a boolean, True means logged_in_user can create another instance, False means it's forbidden (resource will return 401).
 
         *new_instance* is a function that given instance, will return a dict for a new instance of the same resource type.
 
@@ -236,10 +243,10 @@ class PermissionTestCase(RebaseNoMockRestTestCase):
         This is useful when a DB model has a unique constraint on one of many of its fields
 
         '''
-        user, instance = self._run(case)
+        user, instance = self._run(case, role)
         new_instance_blob = new_instance(instance)
         if delete_first:
             delete_blob = ids(instance)
             self.resource.delete(expected_status=200, **delete_blob)
-        self.resource.create(expected_status=201 if create else 401, validate=validate, **new_instance_blob)
+        self.resource.create(expected_status=201 if allowed_to_create else 401, validate=validate, **new_instance_blob)
 

@@ -23,49 +23,49 @@ class TestGithubTicket(PermissionTestCase):
     _create = partial(PermissionTestCase.create, new_instance=_new_instance)
 
     def test_contractor_view(self):
-        self.view(case_contractor, True)
+        self.view(case_contractor, 'contractor', True)
 
     def test_contractor_modify(self):
-        self.modify(case_contractor, False)
+        self.modify(case_contractor, 'contractor', False)
 
     def test_contractor_delete(self):
-        self.delete(case_contractor, False)
+        self.delete(case_contractor, 'contractor', False)
 
     def test_contractor_create(self):
-        TestGithubTicket._create(self, case_contractor, False)
+        TestGithubTicket._create(self, case_contractor, 'contractor', False)
 
     def test_mgr_view(self):
-        self.view(case_mgr, True)
+        self.view(case_mgr, 'manager', True)
 
     def test_mgr_modify(self):
-        self.modify(case_mgr, True)
+        self.modify(case_mgr, 'manager', True)
 
     def test_mgr_delete(self):
-        self.delete(case_mgr, True)
+        self.delete(case_mgr, 'manager', True)
 
     def test_mgr_create(self):
-        TestGithubTicket._create(self, case_mgr, True)
+        TestGithubTicket._create(self, case_mgr, 'manager', True)
 
     def test_admin_view(self):
-        self.view(case_admin, True)
+        self.view(case_admin, 'manager', True)
 
     def test_admin_modify(self):
-        self.modify(case_admin, True)
+        self.modify(case_admin, 'manager', True)
 
     def test_admin_delete(self):
-        self.delete(case_admin, True)
+        self.delete(case_admin, 'manager', True)
 
     def test_admin_create(self):
-        TestGithubTicket._create(self, case_admin, True)
+        TestGithubTicket._create(self, case_admin, 'manager', True)
 
     def test_anonymous_view(self):
-        self.view(case_anonymous, False)
+        self.view(case_anonymous, 'manager', False)
 
     def test_anonymous_modify(self):
-        self.modify(case_anonymous, False)
+        self.modify(case_anonymous, 'manager', False)
 
     def test_anonymous_delete(self):
-        self.delete(case_anonymous, False)
+        self.delete(case_anonymous, 'manager', False)
 
     def test_anonymous_create(self):
-        TestGithubTicket._create(self, case_anonymous, False)
+        TestGithubTicket._create(self, case_anonymous, 'manager', False)

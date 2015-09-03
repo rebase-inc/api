@@ -62,7 +62,7 @@ class TestFeedbackResource(RebaseRestTestCase):
         feedback = Feedback.query.first()
         manager_user = feedback.auction.organization.managers[0].user
 
-        self.post_resource('auth', dict(user=dict(email=manager_user.email), password='foo'))
+        self.login(manager_user.email, 'foo', role='manager')
         self.get_resource('feedbacks/{}'.format(feedback.id))
         self.login_as_new_user()
         self.get_resource('feedbacks/{}'.format(feedback.id), 401)
@@ -71,7 +71,7 @@ class TestFeedbackResource(RebaseRestTestCase):
         random_contractor = Contractor.query.first()
         all_owned_feedback_ids = [feedback.id for feedback in random_contractor.feedbacks]
 
-        self.post_resource('auth', dict(user=dict(email=random_contractor.user.email), password='foo'))
+        self.login(random_contractor.user.email, 'foo', role='contractor')
         feedbacks = self.get_resource('feedbacks')['feedbacks']
         response_feedback_ids = [feedback['id'] for feedback in feedbacks]
         self.assertEqual(set(all_owned_feedback_ids), set(response_feedback_ids))
@@ -83,7 +83,7 @@ class TestFeedbackResource(RebaseRestTestCase):
         for auction in all_auctions:
             for feedback in auction.feedbacks:
                 all_owned_feedback_ids.append(feedback.id)
-        self.post_resource('auth', dict(user=dict(email=random_manager.user.email), password='foo'))
+        self.login(random_manager.user.email, 'foo', role='mananger')
         feedbacks = self.get_resource('feedbacks')['feedbacks']
         response_feedback_ids = [feedback['id'] for feedback in feedbacks]
         self.assertEqual(set(all_owned_feedback_ids), set(response_feedback_ids))

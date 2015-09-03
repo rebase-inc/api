@@ -1,5 +1,6 @@
 
 from rebase.common.database import DB, PermissionMixin
+from rebase.common.exceptions import NoRole, UnknownRole
 import rebase.models.manager
 import rebase.models.contractor
 import rebase.models.code_clearance
@@ -54,8 +55,9 @@ class Project(DB.Model, PermissionMixin):
             return True
         return rebase.models.organization.Organization.query\
             .filter(rebase.models.organization.Organization.id == self.organization.id)\
-            .join(rebase.models.manager.Manager, rebase.models.manager.Manager.user == user)\
-            .limit(100).all()
+            .join(rebase.models.manager.Manager)\
+            .filter(rebase.models.manager.Manager.user == user)\
+            .first()
 
     allowed_to_be_modified_by = allowed_to_be_created_by
     allowed_to_be_deleted_by = allowed_to_be_created_by
@@ -64,6 +66,6 @@ class Project(DB.Model, PermissionMixin):
         if user.is_admin():
             return True
         return Project.get_all_as_manager(user)\
+            .union(Project.get_cleared_projects(user))\
             .filter(Project.id == self.id)\
-            .union(Project.get_cleared_projects(user).filter(Project.id == self.id))\
-            .limit(100).all()
+            .first()

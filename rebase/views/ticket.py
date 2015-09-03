@@ -5,8 +5,8 @@ from rebase.common.database import get_or_make_object, SecureNestedField
 
 class TicketSchema(RebaseSchema):
     id =            fields.Integer()
-    title =         fields.String(required=True)
-    description =   fields.String(required=True)
+    title =         fields.String()
+    description =   fields.String()
     discriminator = fields.String()
 
     project =           SecureNestedField('ProjectSchema',          only=('id','name','organization'), allow_null=True)
@@ -19,6 +19,6 @@ class TicketSchema(RebaseSchema):
         return get_or_make_object(Ticket, data)
 
 serializer =            TicketSchema(skip_missing=True)
-deserializer =          TicketSchema(strict=True)
+deserializer =          TicketSchema(only=('id', 'title', 'description'), skip_missing=True, strict=True)
 update_deserializer =   TicketSchema()
 update_deserializer.make_object = lambda data: data

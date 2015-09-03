@@ -1,4 +1,5 @@
 
+from flask import jsonify, make_response, request, redirect, session
 from flask.ext.restful import Resource
 from flask.ext.login import (
     login_required,
@@ -7,7 +8,6 @@ from flask.ext.login import (
     current_app,
     current_user
 )
-from flask import jsonify, make_response, request, redirect
 from rebase.common.exceptions import UnmarshallingError
 
 from rebase.views import auth, user
@@ -29,6 +29,7 @@ class AuthCollection(Resource):
             auth_data = auth.deserializer.load(request.form or request.json).data
             auth_user = auth_data['user']
             password = auth_data['password']
+            role = auth_data.get('role', '')
             if not auth_user.check_password(password):
                 logout_user()
                 response = jsonify(message = 'Incorrect password!')
@@ -36,6 +37,8 @@ class AuthCollection(Resource):
                 return response
             else:
                 login_user(auth_user)
+                current_role = current_user.set_role(role)
+                session['role'] = current_role.type
                 user.serializer.context = dict(current_user = current_user)
                 response = jsonify(**{'user': user.serializer.dump(auth_user).data, 'message': 'success!'})
                 response.status_code = 201
