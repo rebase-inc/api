@@ -1,4 +1,5 @@
 
+# TODO remove this code and file once the refactoring of permissions is completed
 def query_from_class_to_user(klass, path, user):
     query = klass.query
     for node in path:

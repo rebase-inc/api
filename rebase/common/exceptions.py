@@ -88,6 +88,16 @@ class UnknownRole(ServerError):
     def __init__(self, role):
         super().__init__(message=UnknownRole.error_message.format(role))
 
+class AsManagerPathUndefined(TypeError):
+    error_message = 'You need to provide a valid list for RoleBasedPermissions.as_manager_path'
+    def __init__(self, klass):
+        super().__init__(error_message.format(klass.__name__))
+
+class AsContractorPathUndefined(TypeError):
+    error_message = 'You need to provide a valid list for {}.as_contractor_path'
+    def __init__(self, klass):
+        super().__init__(error_message.format(klass.__name__))
+
 
 @contextmanager
 def marshmallow_exceptions(data=None):

@@ -1,4 +1,4 @@
-from functools import partial
+from functools import partialmethod
 
 from rebase.common.utils import ids, RebaseResource
 from rebase.tests.common.ticket import (
@@ -22,7 +22,7 @@ def _new_instance(github_ticket):
 
 class TestGithubTicket(PermissionTestCase):
     model = 'GithubTicket'
-    _create = partial(PermissionTestCase.create, new_instance=_new_instance)
+    _create = partialmethod(PermissionTestCase.create, new_instance=_new_instance)
 
     def test_contractor_collection(self):
         self.collection(case_github_contractor, 'contractor')
@@ -37,7 +37,7 @@ class TestGithubTicket(PermissionTestCase):
         self.delete(case_github_contractor, 'contractor', False)
 
     def test_contractor_create(self):
-        TestGithubTicket._create(self, case_github_contractor, 'contractor', False)
+        self._create(case_github_contractor, 'contractor', False)
 
     def test_mgr_collection(self):
         self.collection(case_github_mgr, 'manager')
@@ -52,7 +52,7 @@ class TestGithubTicket(PermissionTestCase):
         self.delete(case_github_mgr, 'manager', True)
 
     def test_mgr_create(self):
-        TestGithubTicket._create(self, case_github_mgr, 'manager', True)
+        self._create(case_github_mgr, 'manager', True)
 
     def test_admin_collection(self):
         self.collection(case_github_admin_collection, 'manager')
@@ -67,7 +67,7 @@ class TestGithubTicket(PermissionTestCase):
         self.delete(case_github_admin, 'manager', True)
 
     def test_admin_create(self):
-        TestGithubTicket._create(self, case_github_admin, 'manager', True)
+        self._create(case_github_admin, 'manager', True)
 
     def test_anonymous_collection(self):
         self.collection(case_github_anonymous_collection, 'manager')
@@ -82,4 +82,4 @@ class TestGithubTicket(PermissionTestCase):
         self.delete(case_github_anonymous, 'manager', False)
 
     def test_anonymous_create(self):
-        TestGithubTicket._create(self, case_github_anonymous, 'manager', False)
+        self._create(case_github_anonymous, 'manager', False)

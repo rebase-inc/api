@@ -1,5 +1,4 @@
-from functools import partial
-from unittest import skip
+from functools import partialmethod
 
 from . import PermissionTestCase
 from rebase.common.utils import ids, pick_a_word
@@ -11,7 +10,6 @@ from rebase.tests.common.ticket import (
     case_internal_anonymous,
     case_internal_anonymous_collection,
 )
-from .ticket import BaseTestTicketResource
 
 
 def _new_instance(ticket):
@@ -23,7 +21,7 @@ def _new_instance(ticket):
 
 class TestTicket(PermissionTestCase):
     model = 'InternalTicket'
-    _create = partial(PermissionTestCase.create, new_instance=_new_instance)
+    _create = partialmethod(PermissionTestCase.create, new_instance=_new_instance)
 
     def test_contractor_collection(self):
         self.collection(case_internal_contractor, 'contractor')
@@ -32,7 +30,7 @@ class TestTicket(PermissionTestCase):
         self.view(case_internal_contractor, 'contractor', True)
 
     def test_contractor_create(self):
-        TestTicket._create(self, case_internal_contractor, 'contractor', False)
+        self._create(case_internal_contractor, 'contractor', False)
 
     def test_contractor_modify(self):
         self.modify(case_internal_contractor, 'contractor', False)
@@ -47,7 +45,7 @@ class TestTicket(PermissionTestCase):
         self.view(case_internal_mgr, 'manager', True)
 
     def test_mgr_create(self):
-        TestTicket._create(self, case_internal_mgr, 'manager', True)
+        self._create(case_internal_mgr, 'manager', True)
 
     def test_mgr_modify(self):
         self.modify(case_internal_mgr, 'manager', True)
@@ -62,7 +60,7 @@ class TestTicket(PermissionTestCase):
         self.view(case_internal_admin, 'manager', True)
 
     def test_admin_create(self):
-        TestTicket._create(self, case_internal_admin, 'manager', True)
+        self._create(case_internal_admin, 'manager', True)
 
     def test_admin_modify(self):
         self.modify(case_internal_admin, 'manager', True)
@@ -74,7 +72,7 @@ class TestTicket(PermissionTestCase):
         self.view(case_internal_anonymous, 'manager', False)
 
     def test_anonymous_create(self):
-        TestTicket._create(self, case_internal_anonymous, 'manager', False)
+        self._create(case_internal_anonymous, 'manager', False)
 
     def test_anonymous_modify(self):
         self.modify(case_internal_anonymous, 'manager', False)

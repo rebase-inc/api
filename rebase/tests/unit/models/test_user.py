@@ -105,5 +105,5 @@ class TestUserModel(RebaseModelTestCase):
         self._test_users(models.User.as_contractor_get_managers, *case_managers_with_contractor(self.db))
 
     def test_cleared_users_from_contractor(self):
-        logged_in_user, manager_users, cleared_users = case_contractors_with_contractor(self.db)
+        logged_in_user, (manager_users, cleared_users) = case_contractors_with_contractor(self.db)
         self._test_users(models.User.as_contractor_get_cleared_contractors, *(logged_in_user, cleared_users))

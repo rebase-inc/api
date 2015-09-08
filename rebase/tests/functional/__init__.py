@@ -179,6 +179,11 @@ class RebaseNoMockRestTestCase(RebaseRestTestCase):
     def setUp(self):
         super().setUp()
 
+    def _run(self, case, role):
+        user, instance = case(self.db)
+        self.login(user.email, 'foo', role)
+        return user, instance
+
 
 class PermissionTestCase(RebaseNoMockRestTestCase):
     '''
@@ -196,11 +201,6 @@ class PermissionTestCase(RebaseNoMockRestTestCase):
         self.resource = RebaseResource(self, self.model)
         super().setUp()
 
-    def _run(self, case, role):
-        user, instance = case(self.db)
-        self.login(user.email, 'foo', role)
-        return user, instance
-
     def collection(self, case, role):
         user, thing = self._run(case, role)
         if isinstance(thing, list):
@@ -209,7 +209,7 @@ class PermissionTestCase(RebaseNoMockRestTestCase):
             expected_resources = []
         else:
             expected_resources = [thing]
-        validate_resource_collection(self, user, expected_resources)
+        validate_resource_collection(self, expected_resources)
 
     def view(self, case, role, allowed_to_view, validate=None):
         _, instance = self._run(case, role)
@@ -252,7 +252,7 @@ class PermissionTestCase(RebaseNoMockRestTestCase):
         user, instance = self._run(case, role)
         new_instance_blob = new_instance(instance)
         if delete_first:
-            delete_blob = ids(instance)
-            self.resource.delete(expected_status=200, **delete_blob)
+            self.db.session.delete(instance)
+            self.db.session.commit()
         self.resource.create(expected_status=201 if allowed_to_create else 401, validate=validate, **new_instance_blob)
 

@@ -92,20 +92,19 @@ class TestContractorNoMock(RebaseNoMockRestTestCase):
         self.resource = RebaseResource(self, 'Contractor')
 
     def test_get_all_cleared_contractors_as_manager(self):
-        mgr_user, expected_resources = case_cleared_contractors(self.db)
-        validate_resource_collection(self, mgr_user, expected_resources)
+        mgr_user, expected_resources = self._run(case_cleared_contractors, 'manager')
+        validate_resource_collection(self, expected_resources)
 
     def test_get_all_nominated_contractors_as_manager(self):
-        mgr_user, expected_resources = case_nominated_contractors(self.db)
-        validate_resource_collection(self, mgr_user, expected_resources)
+        mgr_user, expected_resources = self._run(case_nominated_contractors, 'manager')
+        validate_resource_collection(self, expected_resources)
 
     def test_get_all_contractors_as_contractor(self):
-        contractor_user, expected_resources = case_cleared_contractors_as_contractor(self.db)
-        validate_resource_collection(self, contractor_user, expected_resources)
+        contractor_user, expected_resources = self._run(case_cleared_contractors_as_contractor, 'contractor')
+        validate_resource_collection(self, expected_resources)
 
     def test_manager_cannot_modify_contractor(self):
-        mgr_user, expected_contractors = case_cleared_contractors(self.db)
-        self.login(mgr_user.email, 'foo')
+        mgr_user, expected_contractors = self._run(case_cleared_contractors, 'contractor')
         contractor = expected_contractors[0]
         contractor_blob = self.resource.get(contractor.id)
         self.assertTrue(contractor_blob)
@@ -113,15 +112,13 @@ class TestContractorNoMock(RebaseNoMockRestTestCase):
         self.resource.update(expected_status=401, **contractor_blob) # test PUT
 
     def test_contractor_cannot_modify_another_contractor(self):
-        contractor_user, expected_resources = case_cleared_contractors_as_contractor(self.db)
-        self.login(contractor_user.email, 'foo')
+        contractor_user, expected_resources = self._run(case_cleared_contractors_as_contractor, 'contractor')
         other_contractor = self.resource.get(expected_resources[1].id)
         self.resource.update(expected_status=401, **other_contractor)
         self.resource.delete(expected_status=401, **other_contractor)
 
     def test_contractor_can_modify_or_delete_self(self):
-        contractor_user, expected_resources = case_cleared_contractors_as_contractor(self.db)
-        self.login(contractor_user.email, 'foo')
+        contractor_user, expected_resources = self._run(case_cleared_contractors_as_contractor, 'contractor')
         contractor = contractor_user.roles.all()[0]
         contractor_blob = self.resource.get(contractor.id)
         new_busyness = 123456
@@ -130,7 +127,7 @@ class TestContractorNoMock(RebaseNoMockRestTestCase):
         self.resource.delete(**contractor_blob)
 
     def test_anonymous_cannot_view_or_modify_contractor(self):
-        contractor_user, expected_resources = case_cleared_contractors_as_contractor(self.db)
+        contractor_user, expected_resources = self._run(case_cleared_contractors_as_contractor, 'manager')
         contractor = contractor_user.roles.all()[0]
         self.logout()
         contractor_blob = self.resource.get(contractor.id, 401)

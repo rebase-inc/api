@@ -1,8 +1,102 @@
-from . import RebaseRestTestCase
-from rebase.common.utils import RebaseResource
-from unittest import skip
+from functools import partialmethod
 
+from . import RebaseRestTestCase, PermissionTestCase
+from rebase.common.utils import RebaseResource, ids
 from rebase.models import Contract, Bid, Contractor, Manager
+from rebase.tests.common.contract import (
+    case_user_1_as_mgr,
+    case_user_1_as_contractor,
+    case_user_2_as_mgr,
+    case_user_2_as_contractor,
+    case_admin,
+    case_admin_collection,
+)
+
+def _new_instance(contract):
+    return {
+        'bid': ids(contract.bid),
+    }
+
+
+class TestContract(PermissionTestCase):
+    model = 'Contract'
+    _create = partialmethod(PermissionTestCase.create, new_instance=_new_instance)
+
+    def test_user_1_as_mgr_collection(self):
+        self.collection(case_user_1_as_mgr, 'manager')
+
+    def test_user_1_as_mgr_view(self):
+        self.view(case_user_1_as_mgr, 'manager', True)
+
+    def test_user_1_as_mgr_modify(self):
+        self.modify(case_user_1_as_mgr, 'manager', False)
+
+    def test_user_1_as_mgr_delete(self):
+        self.delete(case_user_1_as_mgr, 'manager', False)
+
+    def test_user_1_as_mgr_create(self):
+        self._create(case_user_1_as_mgr, 'manager', False)
+
+    def test_user_1_as_contractor_collection(self):
+        self.collection(case_user_1_as_contractor, 'contractor')
+
+    def test_user_1_as_contractor_view(self):
+        self.view(case_user_1_as_contractor, 'contractor', True)
+
+    def test_user_1_as_contractor_modify(self):
+        self.modify(case_user_1_as_contractor, 'contractor', False)
+
+    def test_user_1_as_contractor_delete(self):
+        self.delete(case_user_1_as_contractor, 'contractor', False)
+
+    def test_user_1_as_contractor_create(self):
+        self._create(case_user_1_as_contractor, 'contractor', False)
+
+    def test_user_2_as_mgr_collection(self):
+        self.collection(case_user_2_as_mgr, 'manager')
+
+    def test_user_2_as_mgr_view(self):
+        self.view(case_user_2_as_mgr, 'manager', True)
+
+    def test_user_2_as_mgr_modify(self):
+        self.modify(case_user_2_as_mgr, 'manager', False)
+
+    def test_user_2_as_mgr_delete(self):
+        self.delete(case_user_2_as_mgr, 'manager', False)
+
+    def test_user_2_as_mgr_create(self):
+        self._create(case_user_2_as_mgr, 'manager', False)
+
+    def test_user_2_as_contractor_collection(self):
+        self.collection(case_user_2_as_contractor, 'contractor')
+
+    def test_user_2_as_contractor_view(self):
+        self.view(case_user_2_as_contractor, 'contractor', True)
+
+    def test_user_2_as_contractor_modify(self):
+        self.modify(case_user_2_as_contractor, 'contractor', False)
+
+    def test_user_2_as_contractor_delete(self):
+        self.delete(case_user_2_as_contractor, 'contractor', False)
+
+    def test_user_2_as_contractor_create(self):
+        self._create(case_user_2_as_contractor, 'contractor', False)
+
+    def test_admin_collection(self):
+        self.collection(case_admin_collection, 'manager')
+
+    def test_admin_view(self):
+        self.view(case_admin, 'contractor', True)
+
+    def test_admin_modify(self):
+        self.modify(case_admin, 'contractor', True)
+
+    def test_admin_delete(self):
+        self.delete(case_admin, 'contractor', True)
+
+    def test_admin_create(self):
+        self._create(case_admin, 'contractor', True)
+
 
 class TestContractResource(RebaseRestTestCase):
     def setUp(self):
@@ -16,11 +110,6 @@ class TestContractResource(RebaseRestTestCase):
         self.assertTrue(contract.pop('id'))
         self.assertTrue(contract.pop('bid'))
         self.assertEqual(contract, {})
-
-    @skip('contracts are immutable')
-    def test_update(self):
-        self.login_admin()
-        pass
 
     def test_delete(self):
         self.login_admin()

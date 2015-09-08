@@ -24,7 +24,7 @@ class Ticket(DB.Model, PermissionMixin):
     }
 
     def __init__(self, *args, **kwargs):
-        raise NotImplemented('Ticket is abstract')
+        raise NotImplementedError('Ticket is abstract')
 
     @classmethod
     def role_to_query_fn(cls, user):

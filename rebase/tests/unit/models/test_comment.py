@@ -42,17 +42,13 @@ class TestCommentModel(RebaseModelTestCase):
         modified_comment = models.Comment.query.get(comment.id)
         self.assertEqual(modified_comment.content, 'Bar')
 
-    def test_bad_create(self):
-        with self.assertRaises(ValueError):
-            models.Review('foo', 'foo')
-            self.db.session.commit()
-
     def test_ticket_comment_as_manager(self):
         validate_query_fn(
             self,
             models.Comment,
             case_mgr_ticket_comment,
             models.Comment.as_manager,
+            'manager',
             True, True, True, True
         )
 
@@ -62,12 +58,14 @@ class TestCommentModel(RebaseModelTestCase):
             models.Comment,
             case_contractor_ticket_comment,
             models.Comment.as_contractor,
+            'contractor',
             True, True, True, True
         )
 
     def test_ticket_comment_as_user(self):
         _, comment = case_contractor_ticket_comment(self.db)
         unrelated_user = mock.create_one_user(self.db)
+        unrelated_user.set_role('manager')
         self.assertFalse(comment.allowed_to_be_created_by(unrelated_user))
         self.assertFalse(comment.allowed_to_be_modified_by(unrelated_user))
         self.assertFalse(comment.allowed_to_be_deleted_by(unrelated_user))
@@ -78,6 +76,7 @@ class TestCommentModel(RebaseModelTestCase):
             models.Comment,
             case_mgr_mediation_comment,
             models.Comment.as_manager,
+            'manager',
             True, True, True, True
         )
 
@@ -87,6 +86,7 @@ class TestCommentModel(RebaseModelTestCase):
             models.Comment,
             case_contractor_mediation_comment,
             models.Comment.as_contractor,
+            'contractor',
             True, True, True, True
         )
 
@@ -103,6 +103,7 @@ class TestCommentModel(RebaseModelTestCase):
             models.Comment,
             case_mgr_review_comment,
             models.Comment.as_manager,
+            'manager',
             True, True, True, True
         )
 
@@ -112,12 +113,14 @@ class TestCommentModel(RebaseModelTestCase):
             models.Comment,
             case_contractor_review_comment,
             models.Comment.as_contractor,
+            'contractor',
             True, True, True, True
         )
 
     def test_review_comment_as_user(self):
         _, comment = case_contractor_review_comment(self.db)
         unrelated_user = mock.create_one_user(self.db)
+        unrelated_user.set_role('manager')
         self.assertFalse(comment.allowed_to_be_created_by(unrelated_user))
         self.assertFalse(comment.allowed_to_be_modified_by(unrelated_user))
         self.assertFalse(comment.allowed_to_be_deleted_by(unrelated_user))
@@ -128,6 +131,7 @@ class TestCommentModel(RebaseModelTestCase):
             models.Comment,
             case_mgr_feedback_comment,
             models.Comment.as_manager,
+            'manager',
             False, False, False, True
         )
 
@@ -137,6 +141,7 @@ class TestCommentModel(RebaseModelTestCase):
             models.Comment,
             case_contractor_feedback_comment,
             models.Comment.as_contractor,
+            'contractor',
             True, True, True, True
         )
 

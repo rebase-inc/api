@@ -18,7 +18,8 @@ def base_scenario(db, make_ticket_comment=False, make_mediation_comment=False, m
         work_offer =    mock.create_work_offer(db, contractor, snapshot, randrange(10*2, 10*3))
         work =          models.Work(work_offer)
         mediation =     models.Mediation(work)
-        review =        models.Review(work, randrange(1,6))
+        review =        models.Review(work)
+        review.rating = randrange(1,5)
 
     comment_text = "I say: "+pick_a_word()+" to you sir!"
 

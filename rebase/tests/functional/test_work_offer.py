@@ -1,4 +1,4 @@
-from functools import partial
+from functools import partialmethod
 from math import floor
 
 from . import RebaseRestTestCase, PermissionTestCase
@@ -36,9 +36,9 @@ def _validate_work_offer(test, work_offer):
 
 class TestWorkOffer(PermissionTestCase):
     model = 'WorkOffer'
-    _create = partial(PermissionTestCase.create, new_instance=_new_instance)
-    _view = partial(PermissionTestCase.view, validate=_validate_work_offer)
-    _modify = partial(PermissionTestCase.modify, modify_this=_modify_this)
+    _create =   partialmethod(PermissionTestCase.create, new_instance=_new_instance)
+    _view =     partialmethod(PermissionTestCase.view, validate=_validate_work_offer)
+    _modify =   partialmethod(PermissionTestCase.modify, modify_this=_modify_this)
 
     def test_mgr_delete(self):
         self.delete(case_mgr, 'manager', False)
@@ -47,10 +47,10 @@ class TestWorkOffer(PermissionTestCase):
         self.collection(case_mgr_collection, 'manager')
 
     def test_mgr_modify(self):
-        TestWorkOffer._modify(self, case_mgr, 'manager', False)
+        self._modify(case_mgr, 'manager', False)
 
     def test_mgr_view(self):
-        TestWorkOffer._view(self, case_mgr, 'manager', True)
+        self._view(case_mgr, 'manager', True)
 
     def test_mgr_create(self):
         mgr_user, work_offer, snapshot_2 = case_mgr_create(self.db)
@@ -70,10 +70,10 @@ class TestWorkOffer(PermissionTestCase):
         self.collection(case_contractor, 'manager')
 
     def test_contractor_modify(self):
-        TestWorkOffer._modify(self, case_contractor, 'contractor', True)
+        self._modify(case_contractor, 'contractor', True)
 
     def test_contractor_view(self):
-        TestWorkOffer._view(self, case_contractor, 'contractor', True)
+        self._view(case_contractor, 'contractor', True)
 
     def test_contractor_create(self):
-        TestWorkOffer._create(self, case_contractor, 'contractor', True, delete_first=True)
+        self._create(case_contractor, 'contractor', True, delete_first=True)

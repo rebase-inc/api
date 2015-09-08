@@ -43,7 +43,7 @@ def case_admin_collection(db):
     return admin_user, [auction, auction_2]
 
 def case_anonymous(db):
-    _, _, _ = base_scenario(db)
+    _, _, _, _ = base_scenario(db)
     anonymous_user = mock.create_one_user(db)
     db.session.commit()
     return anonymous_user, None

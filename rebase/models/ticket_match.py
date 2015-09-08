@@ -63,8 +63,8 @@ class TicketMatch(DB.Model, PermissionMixin):
 
     def __repr__(self):
         return '<TicketMatch[SkillSet({}), SkillRequirement({})] score={}>'.format(
-            skill_set_id,
-            skill_requirement_id,
+            self.skill_set_id,
+            self.skill_requirement_id,
             self.score
         )
 

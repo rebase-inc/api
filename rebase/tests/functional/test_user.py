@@ -132,17 +132,18 @@ class TestUser(RebaseNoMockRestTestCase):
         self.resource = RebaseResource(self, 'User')
 
     def test_get_all_manager_users(self):
-        validate_resource_collection(self, *case_manager_users(self.db))
+        mgr_user, users = self._run(case_manager_users, 'manager')
+        validate_resource_collection(self, users)
 
     def test_get_all_contractor_users(self):
-        logged_in_user, expected_contractor_users = case_contractor_users(self.db)
-        validate_resource_collection(self, logged_in_user, expected_contractor_users+[logged_in_user])
+        logged_in_user, expected_contractor_users = self._run(case_contractor_users, 'contractor')
+        validate_resource_collection(self, expected_contractor_users+[logged_in_user])
 
     def test_get_all_nominated_users(self):
-        logged_in_user, expected_nominated_users = case_nominated_users(self.db)
-        validate_resource_collection(self, logged_in_user, expected_nominated_users+[logged_in_user])
+        logged_in_user, expected_nominated_users = self._run(case_nominated_users, 'manager')
+        validate_resource_collection(self, expected_nominated_users+[logged_in_user])
 
     def test_get_all_other_contractor_users(self):
-        logged_in_user, manager_users, expected_contractor_users = case_contractors_with_contractor(self.db)
+        _, (manager_users, expected_contractor_users) = self._run(case_contractors_with_contractor, 'contractor')
         expected_users = manager_users + expected_contractor_users
-        validate_resource_collection(self, logged_in_user, expected_users)
+        validate_resource_collection(self, expected_users)

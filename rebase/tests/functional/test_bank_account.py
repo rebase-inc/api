@@ -128,7 +128,8 @@ class TestBankAccount(RebaseNoMockRestTestCase):
 
     def test_as_manager(self):
         mgr_user, org, account, contractor = case_org(self.db)
-        validate_resource_collection(self, mgr_user, [account])
+        self.login(mgr_user.email, 'foo', 'manager')
+        validate_resource_collection(self, [account])
         account_blob = self.resource.get(account.id)
         self.resource.update(**account_blob)
         self.resource.delete(**account_blob)
@@ -137,7 +138,8 @@ class TestBankAccount(RebaseNoMockRestTestCase):
 
     def test_as_contractor(self):
         contractor_0, contractor_1 = case_contractors(self.db)
-        validate_resource_collection(self, contractor_0.user, [contractor_0.bank_account])
+        self.login(contractor_0.user.email, 'foo', 'contractor')
+        validate_resource_collection(self, [contractor_0.bank_account])
         account_0 = self.resource.get(contractor_0.bank_account.id)
         self.resource.update(**account_0)
         self.resource.delete(**account_0)

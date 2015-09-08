@@ -126,6 +126,5 @@ class TestClearance(RebaseNoMockRestTestCase):
 
     def test_get_all_as_contractor(self):
         (mgr_user, [contractor_1, contractor_2, contractor_3, contractor_4]) = case_cleared_contractors(self.db)
-        validate_resource_collection(self, contractor_1.user, contractor_1.clearances)
-
-
+        self.login(contractor_1.user.email, 'foo', 'contractor')
+        validate_resource_collection(self, contractor_1.clearances)

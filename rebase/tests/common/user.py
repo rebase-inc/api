@@ -37,7 +37,7 @@ def case_nominated_users(db):
     contractor_2 = mock.create_one_contractor(db)
     nomination_2 = mock.create_one_nomination(db, auction, contractor_2)
     db.session.commit()
-    return (mgr_user, [contractor_1.user, contractor_2.user])
+    return mgr_user, [contractor_1.user, contractor_2.user]
 
 def case_managers_with_contractor(db):
     mgr_user = mock.create_one_user(db)
@@ -66,13 +66,15 @@ def case_contractors_with_contractor(db):
     db.session.commit()
     return (
         contractor_1.user,
-        [
-            mgr_user_1.roles.first().user,
-            mgr_user_2.roles.first().user
-        ],
-        [
-            contractor_1.user,
-            contractor_2.user,
-            contractor_3.user
-        ]
+        (
+            [
+                mgr_user_1.roles.first().user,
+                mgr_user_2.roles.first().user
+            ],
+            [
+                contractor_1.user,
+                contractor_2.user,
+                contractor_3.user
+            ]
+        )
     )

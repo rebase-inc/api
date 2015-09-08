@@ -15,6 +15,7 @@ class TestSkillRequirement(RebaseModelTestCase):
             SkillRequirement,
             case_mgr,
             SkillRequirement.get_all,
+            'mananger',
             False, False, False, True
         )
 
@@ -24,6 +25,7 @@ class TestSkillRequirement(RebaseModelTestCase):
             SkillRequirement,
             case_contractor,
             SkillRequirement.get_all,
+            'contractor',
             False, False, False, False
         )
 

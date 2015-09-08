@@ -13,7 +13,7 @@ from rebase.common.utils import validate_query_fn
 from rebase.tests.common.auction import (
     case_mgr,
     case_contractor,
-    case_admin,
+    case_admin_collection,
     case_anonymous,
 )
 
@@ -183,6 +183,7 @@ class TestAuction(RebaseModelTestCase):
             Auction,
             case_contractor,
             Auction.as_contractor,
+            'contractor',
             False, False, False, True
         )
 
@@ -192,6 +193,7 @@ class TestAuction(RebaseModelTestCase):
             Auction,
             case_mgr,
             Auction.as_manager,
+            'manager',
             True, True, True, True
         )
 
@@ -199,8 +201,9 @@ class TestAuction(RebaseModelTestCase):
         validate_query_fn(
             self,
             Auction,
-            case_admin,
+            case_admin_collection,
             Auction.query_by_user,
+            'manager',
             True, True, True, True
         )
 
@@ -210,5 +213,6 @@ class TestAuction(RebaseModelTestCase):
             Auction,
             case_anonymous,
             Auction.query_by_user,
+            'manager',
             False, False, False, False
         )

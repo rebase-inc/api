@@ -1,3 +1,6 @@
+from inspect import isclass
+from sys import modules
+
 from rebase.models.bid_limit import *
 from rebase.models.contract import *
 from rebase.models.bid import *
@@ -38,3 +41,8 @@ from rebase.models.manager import *
 from rebase.models.bid import *
 from rebase.models.job_fit import *
 
+models = modules[__name__]
+loaded_references = models.__dict__.copy()
+for klass_name, klass in loaded_references.items():
+    if isclass(klass) and issubclass(klass, PermissionMixin):
+        klass.setup_queries(models)

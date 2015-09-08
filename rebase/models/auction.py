@@ -37,7 +37,7 @@ class Auction(DB.Model, PermissionMixin):
         return '<Auction[id:{}] finish_work_by={}>'.format(self.id, self.finish_work_by)
 
     @classmethod
-    def _as_contractor(cls, user):
+    def as_contractor(cls, user):
         import rebase.models as models
         return query_from_class_to_user(cls, [
             models.Nomination,
@@ -45,7 +45,7 @@ class Auction(DB.Model, PermissionMixin):
         ], user)
 
     @classmethod
-    def _as_manager(cls, user):
+    def as_manager(cls, user):
         import rebase.models as models
         return query_from_class_to_user(cls, [
             models.TicketSet,
@@ -60,9 +60,9 @@ class Auction(DB.Model, PermissionMixin):
     @classmethod
     def _role_to_query_fn(cls, user):
         if user.current_role.type == 'manager':
-            return cls._as_manager
+            return cls.as_manager
         elif user.current_role.type == 'contractor':
-            return cls._as_contractor
+            return cls.as_contractor
         else:
             raise UnknownRole(user.current_role)
 

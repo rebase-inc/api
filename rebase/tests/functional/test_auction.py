@@ -1,6 +1,6 @@
 import unittest
 from datetime import datetime, timedelta
-from functools import partial
+from functools import partialmethod
 from math import floor
 
 from . import PermissionTestCase, RebaseRestTestCase
@@ -39,8 +39,8 @@ def _modify_this(auction):
 
 class TestAuction(PermissionTestCase):
     model = 'Auction'
-    _create = partial(PermissionTestCase.create, new_instance=_new_instance)
-    _modify = partial(PermissionTestCase.modify, modify_this=_modify_this)
+    _create = partialmethod(PermissionTestCase.create, new_instance=_new_instance)
+    _modify = partialmethod(PermissionTestCase.modify, modify_this=_modify_this)
 
     def test_contractor_view(self):
         self.view(case_contractor, 'contractor', True)
@@ -88,13 +88,13 @@ class TestAuction(PermissionTestCase):
         self.collection(case_contractor, 'contractor')
 
     def test_contractor_modify(self):
-        TestAuction._modify(self, case_contractor, 'contractor', False)
+        self._modify(case_contractor, 'contractor', False)
 
     def test_contractor_delete(self):
         self.delete(case_contractor, 'contractor', False)
 
     def test_contractor_create(self):
-        TestAuction._create(self, case_contractor, 'contractor', False)
+        self._create(case_contractor, 'contractor', False)
 
     def test_mgr_collection(self):
         self.collection(case_mgr, 'manager')
@@ -107,25 +107,25 @@ class TestAuction(PermissionTestCase):
         self.view(case_mgr, 'manager', True, validate=TestAuction._validate)
 
     def test_mgr_modify(self):
-        TestAuction._modify(self, case_mgr, 'manager', True)
+        self._modify(case_mgr, 'manager', True)
 
     def test_mgr_delete(self):
         self.delete(case_mgr, 'manager', True)
 
     def test_mgr_create(self):
-        TestAuction._create(self, case_mgr, 'manager', True)
+        self._create(case_mgr, 'manager', True)
 
     def test_admin_view(self):
         self.view(case_admin, 'manager', True)
 
     def test_admin_modify(self):
-        TestAuction._modify(self, case_admin, 'manager', True)
+        self._modify(case_admin, 'manager', True)
 
     def test_admin_delete(self):
         self.delete(case_admin, 'manager', True)
 
     def test_admin_create(self):
-        TestAuction._create(self, case_admin, 'manager', True)
+        self._create(case_admin, 'manager', True)
 
     def test_admin_collection(self):
         self.collection(case_admin_collection, 'manager')
