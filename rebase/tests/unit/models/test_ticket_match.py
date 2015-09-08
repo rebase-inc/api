@@ -28,6 +28,7 @@ class TestTicketMatch(RebaseModelTestCase):
             TicketMatch,
             case_mgr,
             TicketMatch.get_all,
+            'manager',
             False, False, False, True
         )
 
@@ -37,6 +38,7 @@ class TestTicketMatch(RebaseModelTestCase):
             TicketMatch,
             case_contractor,
             TicketMatch.get_all,
+            'contractor',
             False, False, False, False
         )
 

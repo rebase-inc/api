@@ -1,90 +1,112 @@
-import json
-import time
-import copy
+from functools import partialmethod
 
-from . import RebaseRestTestCase
-from rebase.models import Review
+from . import PermissionTestCase
+from rebase.common.utils import ids
+from rebase.tests.common.review import (
+    case_user_1_as_mgr,
+    case_user_1_as_contractor,
+    case_user_2_as_mgr,
+    case_user_2_as_contractor,
+    case_admin,
+    case_admin_collection,
+)
 
-class TestReviewResource(RebaseRestTestCase):
+def _new_instance(instance):
+    return {
+        'work': ids(instance.work),
+        'rating': instance.rating
+    }
 
-    def test_get_all(self):
-        self.login_admin()
-        response = self.get_resource('reviews')
-        self.assertIn('reviews', response)
-        self.assertIsInstance(response['reviews'], list)
+def _modify_this(review):
+    updated_review = ids(review)
+    updated_review.update(rating=(review.rating+1)%5)
+    return updated_review
 
-    def test_get_one(self):
-        self.login_admin()
-        response = self.get_resource('reviews')
-        review_id = response['reviews'][0]['id']
+class TestReview(PermissionTestCase):
+    model = 'Review'
+    _create = partialmethod(PermissionTestCase.create, new_instance=_new_instance, delete_first=True)
 
-        response = self.get_resource('reviews/{}'.format(review_id))
-        review = response['review']
+    def _validate(self, review):
         self.assertIsInstance(review.pop('id'), int)
         self.assertIsInstance(review.pop('rating'), int)
         self.assertIsInstance(review.pop('comments'), list)
         self.assertIsInstance(review.pop('work'), dict)
 
-    def test_create_new(self):
-        self.login_admin()
-        response = self.get_resource('work')
+    _view = partialmethod(PermissionTestCase.view, validate=_validate)
 
-        #find a work object without a review
-        work = [work for work in response['work'] if 'review' not in work][0]
+    _modify = partialmethod(PermissionTestCase.modify, modify_this=_modify_this)
+        
+    def test_user_1_as_mgr_collection(self):
+        self.collection(case_user_1_as_mgr, 'manager')
 
-        review = dict(rating=4, work={'id': work['id']})
-        review = self.post_resource('reviews', review)['review']
+    def test_user_1_as_mgr_view(self):
+        self._view(case_user_1_as_mgr, 'manager', True)
 
-        self.assertIsInstance(review.pop('id'), int)
-        self.assertEqual(review.pop('comments'), [])
-        self.assertEqual(review.pop('rating'), 4)
-        self.assertEqual(review.pop('work'), work)
+    def test_user_1_as_mgr_modify(self):
+        self._modify(case_user_1_as_mgr, 'manager', True)
 
-    def test_update(self):
-        self.login_admin()
-        response = self.get_resource('reviews')
-        review_id = response['reviews'][0]['id']
+    def test_user_1_as_mgr_delete(self):
+        self.delete(case_user_1_as_mgr, 'manager', False)
 
-        response = self.get_resource('reviews/{}'.format(review_id))
-        review = response['review']
-        new_rating = dict(rating=review['rating'] % 5 + 1)
-        response = self.put_resource('reviews/{}'.format(review['id']), new_rating)
-        review.update(new_rating)
-        self.assertEqual(review, response['review'])
+    def test_user_1_as_mgr_create(self):
+        self._create(case_user_1_as_mgr, 'manager', False)
 
-    def test_contractor_can_get_their_own(self):
-        review = Review.query.first()
-        contractor = review.work.offer.contractor
-        self.get_resource('reviews/{}'.format(review.id), 401)
-        self.login(contractor.user.email, 'foo')
-        self.get_resource('reviews/{}'.format(review.id))
+    def test_user_1_as_contractor_collection(self):
+        self.collection(case_user_1_as_contractor, 'contractor')
 
-        returned_reviews = self.get_resource('reviews')['reviews']
-        returned_review_ids = [r['id'] for r in returned_reviews]
-        actual_review_ids = []
-        for work_offer in contractor.work_offers:
-            if work_offer.work and work_offer.work.review:
-                actual_review_ids.append(work_offer.work.review.id)
-        self.assertEqual(set(returned_review_ids), set(actual_review_ids))
+    def test_user_1_as_contractor_view(self):
+        self._view(case_user_1_as_contractor, 'contractor', True)
 
-        self.login_as_new_user()
-        reviews = self.get_resource('reviews')['reviews']
-        review_ids = [r['id'] for r in reviews]
-        self.assertNotIn(review.id, review_ids)
+    def test_user_1_as_contractor_modify(self):
+        self._modify(case_user_1_as_contractor, 'contractor', True)
 
-    def test_manager_of_auction_can_see_them(self):
-        review = Review.query.first()
-        manager = review.work.offer.bid.auction.organization.managers[0]
-        self.login(manager.user.email, 'foo')
-        self.get_resource('reviews/{}'.format(review.id))
-        reviews = self.get_resource('reviews')['reviews']
-        review_ids = [r['id'] for r in reviews]
-        self.assertIn(review.id, review_ids)
+    def test_user_1_as_contractor_delete(self):
+        self.delete(case_user_1_as_contractor, 'contractor', False)
 
-        self.login_as_new_user()
-        self.get_resource('reviews/{}'.format(review.id), 401)
-        reviews = self.get_resource('reviews')['reviews']
-        review_ids = [r['id'] for r in reviews]
-        self.assertNotIn(review.id, review_ids)
+    def test_user_1_as_contractor_create(self):
+        self._create(case_user_1_as_contractor, 'contractor', False)
 
+    def test_user_2_as_mgr_collection(self):
+        self.collection(case_user_2_as_mgr, 'manager')
 
+    def test_user_2_as_mgr_view(self):
+        self._view(case_user_2_as_mgr, 'manager', True)
+
+    def test_user_2_as_mgr_modify(self):
+        self._modify(case_user_2_as_mgr, 'manager', True)
+
+    def test_user_2_as_mgr_delete(self):
+        self.delete(case_user_2_as_mgr, 'manager', False)
+
+    def test_user_2_as_mgr_create(self):
+        self._create(case_user_2_as_mgr, 'manager', False)
+
+    def test_user_2_as_contractor_collection(self):
+        self.collection(case_user_2_as_contractor, 'contractor')
+
+    def test_user_2_as_contractor_view(self):
+        self._view(case_user_2_as_contractor, 'contractor', True)
+
+    def test_user_2_as_contractor_modify(self):
+        self._modify(case_user_2_as_contractor, 'contractor', True)
+
+    def test_user_2_as_contractor_delete(self):
+        self.delete(case_user_2_as_contractor, 'contractor', False)
+
+    def test_user_2_as_contractor_create(self):
+        self._create(case_user_2_as_contractor, 'contractor', False)
+
+    def test_admin_collection(self):
+        self.collection(case_admin_collection, 'manager')
+
+    def test_admin_view(self):
+        self._view(case_admin, 'contractor', True)
+
+    def test_admin_modify(self):
+        self._modify(case_admin, 'contractor', True)
+
+    def test_admin_delete(self):
+        self.delete(case_admin, 'contractor', True)
+
+    def test_admin_create(self):
+        self._create(case_admin, 'contractor', True)

@@ -20,14 +20,12 @@ class GithubTicket(RemoteTicket):
     def query_by_user(cls, user):
         if user.admin:
             return cls.query
-        return super(cls, cls)\
-            .get_all_as_manager(user, project_type='github_project')\
-            .union(super(cls, cls).get_cleared_projects(user, project_type='github_project'))
+        return super(cls, cls).role_to_query_fn(user)(user, project_type='github_project')
 
     def allowed_to_be_created_by(self, user):
         if user.admin:
             return True
-        return GithubTicket.get_all_as_manager(user, self.id, 'github_project').limit(100).all()
+        return self.project.allowed_to_be_modified_by(user)
 
     def allowed_to_be_modified_by(self, user):
         return self.allowed_to_be_created_by(user)
@@ -38,9 +36,8 @@ class GithubTicket(RemoteTicket):
     def allowed_to_be_viewed_by(self, user):
         if user.admin:
             return True
-        return GithubTicket.get_cleared_projects(user, self.id, 'github_project').union(
-            GithubTicket.get_all_as_manager(user, self.id, 'github_project')
-        ).limit(100).all()
+        query = self.role_to_query_fn(user)(user, self.id, 'github_project')
+        return query.first()
 
     def __repr__(self):
         return '<GithubTicket[id:{}] number={}>'.format(self.id, self.number)

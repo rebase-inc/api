@@ -47,10 +47,10 @@ class TestCodeRepositoryModel(RebaseModelTestCase):
             self.create_model(self.model, 123456789, 'foo')
 
     def test_as_mgr(self):
-        validate_query_fn(self, models.CodeRepository, case_mgr_with_repo, models.CodeRepository.as_manager, True, True, True, True)
+        validate_query_fn(self, models.CodeRepository, case_mgr_with_repo, models.CodeRepository.as_manager, 'manager', True, True, True, True)
 
     def test_as_contractor(self):
-        validate_query_fn(self, models.CodeRepository, case_cleared_contractor, models.CodeRepository.as_contractor, False, False, False, True)
+        validate_query_fn(self, models.CodeRepository, case_cleared_contractor, models.CodeRepository.as_contractor, 'contractor', False, False, False, True)
 
     def test_as_other_cleared_contractor(self):
         _, repo = case_cleared_contractor(self.db)

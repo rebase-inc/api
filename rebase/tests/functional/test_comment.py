@@ -21,9 +21,9 @@ class TestComment(RebaseNoMockRestTestCase):
         self.admin_user = create_admin_user(self.db, password='foo')
         self.db.session.commit()
         
-    def _test_comment(self, case, create=True, modify=True, delete=True, view=True):
-        user, comment = case(self.db)
-        validate_resource_collection(self, user, [comment])
+    def _test_comment(self, case, role, create=True, modify=True, delete=True, view=True):
+        user, comment = self._run(case, role)
+        validate_resource_collection(self, [comment])
         if view:
             comment_blob = self.resource.get(comment.id)
         if modify:
@@ -57,7 +57,7 @@ class TestComment(RebaseNoMockRestTestCase):
         self.resource.create(**new_comment_blob)
 
     def test_mgr_ticket_comment(self):
-        self._test_comment(case_mgr_ticket_comment)
+        self._test_comment(case_mgr_ticket_comment, 'manager')
 
     def test_mgr_ticket_negative_comment(self):
         self._negative_test_comment(case_mgr_ticket_comment)
@@ -66,7 +66,7 @@ class TestComment(RebaseNoMockRestTestCase):
         self._admin_test_comment(case_mgr_ticket_comment)
 
     def test_contractor_ticket_comment(self):
-        self._test_comment(case_contractor_ticket_comment)
+        self._test_comment(case_contractor_ticket_comment, 'contractor')
 
     def test_contractor_ticket_negative_comment(self):
         self._negative_test_comment(case_contractor_ticket_comment)
@@ -75,7 +75,7 @@ class TestComment(RebaseNoMockRestTestCase):
         self._admin_test_comment(case_contractor_ticket_comment)
 
     def test_mgr_mediation_comment(self):
-        self._test_comment(case_mgr_mediation_comment)
+        self._test_comment(case_mgr_mediation_comment, 'manager')
 
     def test_mgr_mediation_negative_comment(self):
         self._negative_test_comment(case_mgr_mediation_comment)
@@ -84,7 +84,7 @@ class TestComment(RebaseNoMockRestTestCase):
         self._admin_test_comment(case_mgr_mediation_comment)
 
     def test_contractor_mediation_comment(self):
-        self._test_comment(case_contractor_mediation_comment)
+        self._test_comment(case_contractor_mediation_comment, 'contractor')
 
     def test_contractor_mediation_negative_comment(self):
         self._negative_test_comment(case_contractor_mediation_comment)
@@ -93,7 +93,7 @@ class TestComment(RebaseNoMockRestTestCase):
         self._admin_test_comment(case_contractor_mediation_comment)
 
     def test_mgr_review_comment(self):
-        self._test_comment(case_mgr_review_comment)
+        self._test_comment(case_mgr_review_comment, 'manager')
 
     def test_mgr_review_negative_comment(self):
         self._negative_test_comment(case_mgr_review_comment)
@@ -102,7 +102,7 @@ class TestComment(RebaseNoMockRestTestCase):
         self._admin_test_comment(case_mgr_review_comment)
 
     def test_contractor_review_comment(self):
-        self._test_comment(case_contractor_review_comment)
+        self._test_comment(case_contractor_review_comment, 'contractor')
 
     def test_contractor_review_negative_comment(self):
         self._negative_test_comment(case_contractor_review_comment)
@@ -111,7 +111,7 @@ class TestComment(RebaseNoMockRestTestCase):
         self._admin_test_comment(case_contractor_review_comment)
 
     def test_mgr_feedback_comment(self):
-        self._test_comment(case_mgr_feedback_comment, False, False, False, True)
+        self._test_comment(case_mgr_feedback_comment, 'manager', False, False, False, True)
 
     def test_mgr_feedback_negative_comment(self):
         self._negative_test_comment(case_mgr_feedback_comment, False, False, False, True)
@@ -126,4 +126,4 @@ class TestComment(RebaseNoMockRestTestCase):
         self._admin_test_comment(case_contractor_feedback_comment)
 
     def test_contractor_feedback_comment(self):
-        self._test_comment(case_contractor_feedback_comment)
+        self._test_comment(case_contractor_feedback_comment, 'contractor')

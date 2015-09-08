@@ -19,9 +19,15 @@ def plural(text):
         return text+'s'
 
 def get_model_primary_keys(model):
+    ''' returns the tuple of names of components of the primary key
+    e.g get_model_primary_keys(Foo<('id1', 'id2')>)  => ('id1', 'id2')
+    '''
     return tuple(map(lambda key: key.name, inspect(model).primary_key))
 
 def primary_key(instance):
+    ''' given an instance, returns the value of the primary key
+    e.g Foo<('id1':1, 'id2':5)>  => (1, 5)
+    '''
     return inspect(instance).identity
 
 def ids(instance):
@@ -251,29 +257,38 @@ class RebaseResource(object):
             **resource
         )
 
-def validate_query_fn(test, klass, case, query_fn, create, modify, delete, view):
+def into_list(resource):
+    if isinstance(resource, list):
+        expected_resources = resource
+    elif not resource:
+        expected_resources = []
+    else:
+        expected_resources = [resource]
+    return expected_resources
+
+def validate_query_fn(test, klass, case, query_fn, role, create, modify, delete, view):
     user, resource = case(test.db)
-    expected_resources = [resource] if resource else []
+    expected_resources = into_list(resource)
     another_user, one_more_resource = case(test.db) # create more unrelated resource, to make sure the queries discriminate properly
     if user.admin:
-        expected_resources.append(one_more_resource)
+        expected_resources.extend(into_list(one_more_resource))
+    user.set_role(role)
     resources = query_fn(user).all()
-    test.assertEqual(expected_resources, resources)
+    test.assertEqual(set(expected_resources), set(resources))
     test.assertEqual(expected_resources, klass.query_by_user(user).all())
-    if resource:
-        test.assertEqual(create, bool(resource.allowed_to_be_created_by(user)))
-        test.assertEqual(modify, bool(resource.allowed_to_be_modified_by(user)))
-        test.assertEqual(delete, bool(resource.allowed_to_be_deleted_by(user)))
-        test.assertEqual(view,   bool(resource.allowed_to_be_viewed_by(user)))
+    for res in expected_resources:
+        test.assertEqual(create, bool(res.allowed_to_be_created_by(user)))
+        test.assertEqual(modify, bool(res.allowed_to_be_modified_by(user)))
+        test.assertEqual(delete, bool(res.allowed_to_be_deleted_by(user)))
+        test.assertEqual(view,   bool(res.allowed_to_be_viewed_by(user)))
 
-def validate_resource_collection(test, logged_in_user, expected_resources):
-    test.login(logged_in_user.email, 'foo')
+def validate_resource_collection(test, expected_resources):
     resources = test.resource.get_all() # test GET collection
     test.assertEqual(len(resources), len(expected_resources))
-    resources_ids = [res['id'] for res in resources]
+    resources_ids = [ test.resource.just_ids(res) for res in resources]
     for _res in expected_resources:
-        test.assertIn(_res.id, resources_ids)
-        one_res = test.resource.get(_res.id) # test GET one resource
+        test.assertIn(ids(_res), resources_ids)
+        one_res = test.resource.get(ids(_res)) # test GET one resource
         test.assertTrue(one_res)
 
 dictionaries = defaultdict(list, {

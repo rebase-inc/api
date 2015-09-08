@@ -21,24 +21,18 @@ class InternalTicket(Ticket):
     def query_by_user(cls, user):
         if user.admin:
             return cls.query
-        return super(cls, cls)\
-            .get_all_as_manager(user, project_type='project')\
-            .union(super(cls, cls).get_cleared_projects(user, project_type='project'))
+        return super(cls, cls).role_to_query_fn(user)(user, project_type='project')
 
     def allowed_to_be_created_by(self, user):
         if user.admin:
             return True
-        return InternalTicket.get_all_as_manager(user, self.id, 'project').limit(100).all()
+        return self.project.allowed_to_be_modified_by(user)
 
-    def allowed_to_be_modified_by(self, user):
-        return self.allowed_to_be_created_by(user)
-
-    def allowed_to_be_deleted_by(self, user):
-        return self.allowed_to_be_created_by(user)
+    allowed_to_be_modified_by = allowed_to_be_created_by
+    allowed_to_be_deleted_by = allowed_to_be_created_by
 
     def allowed_to_be_viewed_by(self, user):
         if user.admin:
             return True
-        return InternalTicket.get_cleared_projects(user, self.id, 'project').union(
-            InternalTicket.get_all_as_manager(user, self.id, 'project')
-        ).limit(100).all()
+        query = self.role_to_query_fn(user)(user, ticket_id=self.id, project_type='project')
+        return query.first()

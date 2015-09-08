@@ -14,4 +14,5 @@ class ContractSchema(RebaseSchema):
 
 serializer = ContractSchema(only=('id','bid'), skip_missing=True)
 deserializer = ContractSchema(only=('bid',), strict=True)
-update_deserializer = ContractSchema()
+update_deserializer = ContractSchema(only=('id',), strict=True, skip_missing=True)
+update_deserializer.make_object = lambda data: data

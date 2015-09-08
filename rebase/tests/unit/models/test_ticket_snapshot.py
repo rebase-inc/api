@@ -54,6 +54,7 @@ class TestTicketSnapshotModel(RebaseModelTestCase):
             TicketSnapshot,
             case_as_manager,
             TicketSnapshot.as_manager,
+            'manager',
             True, True, True, True
         )
 
@@ -63,6 +64,7 @@ class TestTicketSnapshotModel(RebaseModelTestCase):
             TicketSnapshot,
             case_past_work_as_contractor,
             TicketSnapshot.as_contractor_work_offers,
+            'contractor',
             False, False, False, True
         )
 
@@ -72,5 +74,6 @@ class TestTicketSnapshotModel(RebaseModelTestCase):
             TicketSnapshot,
             case_auctions_as_contractor,
             TicketSnapshot.as_contractor_auctions,
+            'contractor',
             False, False, False, True
         )

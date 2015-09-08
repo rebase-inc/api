@@ -1,6 +1,6 @@
 import datetime
 import uuid
-from random import randint
+from random import randint, randrange
 from .utils import (
     pick_a_word,
     pick_a_first_name,
@@ -102,49 +102,48 @@ def create_one_project(db, organization=None, project_name=None):
     organization = organization or create_one_organization(db)
     project = Project(organization, project_name or pick_a_word().capitalize()+' Project')
     code_repo = CodeRepository(project)
-    db.session.add(organization)
-    db.session.add(project)
     db.session.add(code_repo)
     return project
 
-def create_one_remote_project(db, organization_name='Rebase', project_name='api'):
-    from rebase.models import Organization, RemoteProject, CodeRepository
-    organization = create_one_organization(db, organization_name)
-    remote_project = RemoteProject(organization, project_name)
+def create_one_remote_project(db, organization=None, project_name=None):
+    from rebase.models import RemoteProject, CodeRepository
+    organization = organization or create_one_organization(db)
+    remote_project = RemoteProject(organization, project_name or pick_a_word().capitalize()+' Project')
     code_repo = CodeRepository(remote_project)
-    db.session.add(organization)
-    db.session.add(remote_project)
     db.session.add(code_repo)
     return remote_project
 
-def create_one_github_project(db, organization=None, project_name='api'):
+def create_one_github_project(db, organization=None, project_name=None):
     from rebase.models import Organization, GithubProject, CodeRepository
-    organization = organization or create_one_organization(db, 'Rebase')
-    github_project = GithubProject(organization, project_name)
+    organization = organization or create_one_organization(db)
+    github_project = GithubProject(organization, project_name or pick_a_word().capitalize()+' Project')
     code_repo = CodeRepository(github_project)
     db.session.add(github_project)
     return github_project
 
-def create_one_internal_ticket(db, title, description=None, project=None):
+def create_one_internal_ticket(db, title=None, description=None, project=None):
     from rebase.models import InternalTicket, SkillRequirement, Comment
     project = project or create_one_project(db)
+    title = title or ' '.join(pick_a_word() for i in range(5))
     description = description or ' '.join(pick_a_word() for i in range(5))
     ticket = InternalTicket(project, title, description)
     SkillRequirement(ticket)
     db.session.add(ticket)
     return ticket
 
-def create_one_remote_ticket(db, title, description=None, project=None):
+def create_one_remote_ticket(db, title=None, description=None, project=None):
     from rebase.models import RemoteTicket, SkillRequirement
     project = project or create_one_project(db)
-    description = description or title + '-DESCRIPTION'
+    title = title or ' '.join(pick_a_word() for i in range(5))
+    description = description or ' '.join(pick_a_word() for i in range(15))
     ticket = RemoteTicket(project, title, description)
     SkillRequirement(ticket)
     db.session.add(ticket)
     return ticket
 
-def create_one_github_ticket(db, number, project=None):
+def create_one_github_ticket(db, number=None, project=None):
     from rebase.models import GithubTicket, SkillRequirement
+    number = number or randrange(1, 99999)
     project = project or create_one_github_project(db)
     ticket = GithubTicket(project, number)
     SkillRequirement(ticket)
@@ -254,7 +253,7 @@ def create_one_contract(db):
     db.session.add(bid)
     return contract
 
-def create_some_work(db, review=True, debit_credit=True, mediation=True, arbitration=True):
+def create_some_work(db, review=False, debit_credit=True, mediation=True, arbitration=True):
     from rebase.models import Work, Review, Debit, Credit, Mediation, Arbitration
     bid = create_one_bid(db)
     works = []
@@ -262,7 +261,7 @@ def create_some_work(db, review=True, debit_credit=True, mediation=True, arbitra
         work = Work(work_offer)
         works.append(work)
         if review:
-            _ = Review(work, 5)
+            _ = Review(work)
         if debit_credit:
             _ = Debit(work, 100)
             _ = Credit(work, 120)
@@ -276,7 +275,8 @@ def create_some_work(db, review=True, debit_credit=True, mediation=True, arbitra
 def create_one_work_review(db, rating, comment):
     from rebase.models import Review, Comment
     work = create_some_work(db, review=False).pop()
-    review = Review(work, rating)
+    review = Review(work)
+    review.rating = rating
     comment = Comment(comment, review=review)
     db.session.add(review)
     return review

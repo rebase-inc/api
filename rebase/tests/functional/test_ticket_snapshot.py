@@ -14,8 +14,8 @@ class TestTicketSnapshot(RebaseNoMockRestTestCase):
         self.resource = RebaseResource(self, 'TicketSnapshot')
 
     def test_as_manager(self):
-        mgr_user, snapshot = case_as_manager(self.db)
-        validate_resource_collection(self, mgr_user, [snapshot])
+        mgr_user, snapshot = self._run(case_as_manager, 'manager')
+        validate_resource_collection(self, [snapshot])
         snapshot_blob = self.resource.get(snapshot.id)
         del snapshot_blob['date']
         self.resource.update(**snapshot_blob)
@@ -25,8 +25,8 @@ class TestTicketSnapshot(RebaseNoMockRestTestCase):
         self.resource.create(**new_snapshot)
 
     def test_as_contractor(self):
-        contractor_user, snapshot = case_past_work_as_contractor(self.db)
-        validate_resource_collection(self, contractor_user, [snapshot])
+        contractor_user, snapshot = self._run(case_past_work_as_contractor, 'contractor')
+        validate_resource_collection(self, [snapshot])
         snapshot_blob = self.resource.get(snapshot.id)
         self.resource.update(expected_status=401, **snapshot_blob)
         self.resource.delete(expected_status=401, **snapshot_blob)
@@ -35,10 +35,10 @@ class TestTicketSnapshot(RebaseNoMockRestTestCase):
         new_snapshot['ticket']['id'] = snapshot.ticket.id
         self.resource.create(expected_status=401, **new_snapshot)
 
-        contractor_user, snapshot = case_auctions_as_contractor(self.db)
-        validate_resource_collection(self, contractor_user, [snapshot])
+        contractor_user, snapshot = self._run(case_auctions_as_contractor, 'contractor')
+        validate_resource_collection(self, [snapshot])
 
     def test_as_anonymous(self):
-        mgr_user, snapshot = case_as_manager(self.db)
+        mgr_user, snapshot = self._run(case_as_manager, 'manager')
         self.logout()
         self.assertFalse(self.resource.get_all(401))

@@ -2,7 +2,7 @@ from copy import copy
 
 from . import RebaseRestTestCase, RebaseNoMockRestTestCase
 from rebase.common.mock import create_one_user
-from rebase.common.utils import RebaseResource, validate_resource_collection
+from rebase.common.utils import RebaseResource, validate_resource_collection, ids
 from rebase.tests.common.ticket_match import (
     case_mgr,
     case_contractor,
@@ -58,26 +58,13 @@ class TestTicketMatch(RebaseNoMockRestTestCase):
     def setUp(self):
         super().setUp()
         self.resource = RebaseResource(self, 'TicketMatch')
-
-    def _validate_resource_collection(self, logged_in_user, expected_resources):
-        self.login(logged_in_user.email, 'foo')
-        resources = self.resource.get_all() # self GET collection
-        self.assertEqual(len(resources), len(expected_resources))
-        resources_ids = [(res['skill_requirement_id'], res['skill_set_id']) for res in resources]
-        for _res in expected_resources:
-            self.assertIn((_res.skill_requirement_id, _res.skill_set_id), resources_ids)
         
-    def _test_ticket_match(self, case, create=True, modify=True, delete=True, view=True):
-        user, ticket_match = case(self.db)
+    def _test_ticket_match(self, case, role, create=True, modify=True, delete=True, view=True):
+        user, ticket_match = self._run(case, role)
         if ticket_match:
-            self._validate_resource_collection(user, [ticket_match])
+            validate_resource_collection(self, [ticket_match])
         if view:
-            ticket_match_blob = self.resource.get(
-                {
-                    'skill_requirement_id': ticket_match.skill_requirement_id,
-                    'skill_set_id': ticket_match.skill_set_id
-                }
-            )
+            ticket_match_blob = self.resource.get(ids(ticket_match)) 
         if modify:
             self.resource.update(**ticket_match_blob)
         if delete:
@@ -106,10 +93,10 @@ class TestTicketMatch(RebaseNoMockRestTestCase):
             self.resource.create(expected_status=401, **new_ticket_match_blob)
 
     def test_mgr(self):
-        self._test_ticket_match(case_mgr, False, False, False, True)
+        self._test_ticket_match(case_mgr, 'manager', False, False, False, True)
 
     def test_contractor(self):
-        self._test_ticket_match(case_contractor, False, False, False, False)
+        self._test_ticket_match(case_contractor, 'contractor', False, False, False, False)
 
     def test_admin(self):
-        self._test_ticket_match(case_admin)
+        self._test_ticket_match(case_admin, 'manager')

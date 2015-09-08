@@ -51,9 +51,9 @@ class TestSkillSet(RebaseNoMockRestTestCase):
         self.resource = RebaseResource(self, 'SkillSet')
         super().setUp()
 
-    def _test_skill_set(self, case, create, modify, delete, view):
-        user, skill_set = case(self.db)
-        validate_resource_collection(self, user, [skill_set])
+    def _test_skill_set(self, case, role, create, modify, delete, view):
+        user, skill_set = self._run(case, role)
+        validate_resource_collection(self, [skill_set])
         skill_set_blob = self.resource.get(skill_set.id, 200 if view else 401)
         self.resource.update(expected_status=200 if modify else 401, **skill_set_blob)
         self.resource.delete(expected_status=200 if delete else 401, **skill_set_blob)
@@ -81,7 +81,7 @@ class TestSkillSet(RebaseNoMockRestTestCase):
         self.resource.create(**new_skill_set_blob)
 
     def test_mgr(self):
-        self._test_skill_set(case_mgr, False, False, False, True)
+        self._test_skill_set(case_mgr, 'manager', False, False, False, True)
 
     def test_contractor(self):
-        self._test_skill_set(case_contractor, False, False, False, True)
+        self._test_skill_set(case_contractor, 'contractor', False, False, False, True)

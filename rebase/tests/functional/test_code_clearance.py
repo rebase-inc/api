@@ -1,6 +1,9 @@
-from . import RebaseRestTestCase
+from unittest import skip
+
 from sqlalchemy import and_
-from rebase.common.utils import RebaseResource
+
+from . import RebaseRestTestCase, RebaseNoMockRestTestCase
+from rebase.common.utils import RebaseResource, validate_resource_collection
 from rebase.models import (
     Contractor,
     Project,
@@ -10,7 +13,7 @@ from rebase.models import (
     Organization,
     Role,
 )
-from unittest import skip
+from rebase.tests.common.code_clearance import case_cleared_contractors
 
 class TestCodeClearanceResource(RebaseRestTestCase):
     def setUp(self):
@@ -25,14 +28,6 @@ class TestCodeClearanceResource(RebaseRestTestCase):
         clearances = self.code_clearance_resource.get_all()
         self.assertTrue(clearances)
 
-    def test_get_all_as_contractor(self):
-        user = self.login_as_contractor_only()
-        clearances = self.code_clearance_resource.get_all()
-        self.assertTrue(clearances)
-        for clearance in clearances:
-            contractor = self.contractor_resource.get(clearance['contractor'])
-            with self.subTest(clearance_id=clearance['id']):
-                self.assertEqual(contractor['user']['id'], user.id)
 
     def test_get_all_as_manager(self):
         manhattan_project = Project.query.filter(Project.name=='Manhattan').first()
@@ -55,7 +50,7 @@ class TestCodeClearanceResource(RebaseRestTestCase):
     def test_get_one_unauthorized(self):
         self.login_admin()
         code_clearance = self.code_clearance_resource.get_any()
-        self.login_as_new_user()
+        self.logout()
         self.code_clearance_resource.get(code_clearance, 401)
         self.login_admin()
         self.code_clearance_resource.get(code_clearance)
@@ -123,3 +118,13 @@ class TestCodeClearanceResource(RebaseRestTestCase):
         code_clearance = self.code_clearance_resource.get_any()
         self.delete_resource('contractors/{}'.format(code_clearance['contractor']['id']))
         self.get_resource(self.code_clearance_resource.url(code_clearance), 404)
+
+class TestClearance(RebaseNoMockRestTestCase):
+    def setUp(self):
+        super().setUp()
+        self.resource = RebaseResource(self, 'CodeClearance')
+
+    def test_get_all_as_contractor(self):
+        (mgr_user, [contractor_1, contractor_2, contractor_3, contractor_4]) = case_cleared_contractors(self.db)
+        self.login(contractor_1.user.email, 'foo', 'contractor')
+        validate_resource_collection(self, contractor_1.clearances)

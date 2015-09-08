@@ -2,7 +2,15 @@
 from marshmallow import fields
 from flask.ext.login import current_user
 from flask.ext.sqlalchemy import SQLAlchemy
-from rebase.common.exceptions import BadDataError, NotFoundError
+from rebase.common.exceptions import (
+    BadDataError,
+    NotFoundError,
+    AsContractorPathUndefined,
+    AsManagerPathUndefined,
+)
+from rebase.common.query import query_from_class_to_user
+
+
 DB = SQLAlchemy()
 DB_PRODUCTION_NAME = 'rebase'
 DB_TEST_NAME = 'test_'+DB_PRODUCTION_NAME
@@ -36,10 +44,8 @@ class SecureNestedField(fields.Nested):
         return super()._serialize(nested_obj, attr, obj)
 
 class PermissionMixin(object):
-    @classmethod
-    def query_by_user(cls, user):
-        msg = 'query_by_user not implemented for {}'.format(cls.__name__)
-        raise NotImplementedError(msg.format(cls.__name__))
+    as_contractor_path = None
+    as_manager_path = None
 
     def allowed_to_be_created_by(self, user):
         msg = 'allowed_to_be_created_by not implemented for {}'
@@ -56,6 +62,48 @@ class PermissionMixin(object):
     def allowed_to_be_viewed_by(self, user):
         msg = 'allowed_to_be_viewed_by not implemented for {}'
         raise NotImplementedError(msg.format(type(self).__name__))
+
+    @classmethod
+    def query_from_class_to_user(klass, path, user):
+        query = klass.query
+        for node in path:
+            query = query.join(node)
+        query = query.filter((path[-1].user if path else klass.user) == user)
+        return query
+
+    @classmethod
+    def as_contractor(cls, user):
+        if not cls.as_contractor_path:
+            raise AsContractorPathUndefined(cls)
+        return cls.query_from_class_to_user(cls.as_contractor_path, user)
+
+    @classmethod
+    def as_manager(cls, user):
+        if not cls.as_manager_path:
+            raise AsManagerPathUndefined(cls)
+        return cls.query_from_class_to_user(cls.as_manager_path, user)
+
+    @classmethod
+    def role_to_query_fn(cls, user):
+        if user.current_role.type == 'manager':
+            return cls.as_manager
+        elif user.current_role.type == 'contractor':
+            return cls.as_contractor
+        else:
+            raise UnknownRole(user.current_role)
+
+    @classmethod
+    def query_by_user(cls, user):
+        if user.is_admin():
+            return cls.query
+        return cls.role_to_query_fn(user)(user)
+
+    @classmethod
+    def setup_queries(cls, _):
+        msg = 'setup_queries is not implemented for {}'
+        #raise NotImplemented(msg.format(cls.__name__))
+        #print(msg.format(cls.__name__))
+
 
 def query_by_user_or_id(cls, query_fn, filter_by_id, user, instance=None):
     if user.admin:

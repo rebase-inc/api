@@ -8,7 +8,7 @@ from rebase.common.database import get_or_make_object, SecureNestedField
 
 class ReviewSchema(RebaseSchema):
     id = fields.Integer()
-    rating = fields.Integer(required = True)
+    rating = fields.Integer()
     work = SecureNestedField('WorkSchema', exclude=('review',))
     comments = SecureNestedField(CommentSchema, only=('id',), many=True, default=None)
 
@@ -17,7 +17,7 @@ class ReviewSchema(RebaseSchema):
         return get_or_make_object(Review, data)
 
 serializer = ReviewSchema()
-deserializer = ReviewSchema(only=('rating','work','comments'))
+deserializer = ReviewSchema(only=('work',), skip_missing=True)
 
-update_deserializer = ReviewSchema(only=('rating',))
+update_deserializer = ReviewSchema(only=('id', 'rating'))
 update_deserializer.make_object = lambda data: data

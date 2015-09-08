@@ -10,31 +10,28 @@ from rebase.common import mock
 class TestRemoteProjectModel(RebaseModelTestCase):
 
     def test_create(self):
-        remote_project = mock.create_one_remote_project(self.db, 'Rebase', 'api')
+        remote_project = mock.create_one_remote_project(self.db, project_name='api')
         self.db.session.commit()
 
         self.assertEqual(remote_project.name, 'api')
-        self.assertEqual(remote_project.organization.name, 'Rebase')
         self.assertNotEqual(remote_project.code_repository, None)
 
     def test_delete(self):
-        remote_project = mock.create_one_remote_project(self.db, 'Rebase', 'api')
+        remote_project = mock.create_one_remote_project(self.db, project_name='api')
         self.db.session.commit()
 
         org_id = remote_project.organization.id
         repo_id = remote_project.code_repository.id
 
         self.assertEqual(remote_project.name, 'api')
-        self.assertEqual(remote_project.organization.name, 'Rebase')
         self.assertNotEqual(remote_project.code_repository, None)
 
         self.delete_instance(remote_project)
 
-        self.assertEqual(models.Organization.query.get(org_id).name, 'Rebase')
         self.assertEqual(models.CodeRepository.query.get(repo_id), None)
 
     def test_delete_organization(self):
-        remote_project = mock.create_one_remote_project(self.db, 'Tesla Inc.', 'Model S')
+        remote_project = mock.create_one_remote_project(self.db, project_name='Model S')
         self.db.session.commit()
         remote_project_id = remote_project.id
 
@@ -45,7 +42,7 @@ class TestRemoteProjectModel(RebaseModelTestCase):
         self.assertFalse(queried_project)
 
     def delete_project_with_ticket(self, make_ticket):
-        remote_project = mock.create_one_remote_project(self.db, 'Tesla Inc.', 'Model X')
+        remote_project = mock.create_one_remote_project(self.db, project_name='Model X')
         self.db.session.commit()
         remote_project_id = remote_project.id
 
@@ -77,12 +74,3 @@ class TestRemoteProjectModel(RebaseModelTestCase):
 
     def test_delete_project_with_github_tickets(self):
         self.delete_project_with_ticket(self.make_github_ticket)
-
-    #@unittest.skip('RemoteProject model doesnt have any updatable fields yet')
-    #def test_update(self):
-        #return
-
-    #@unittest.skip('RemoteProject model doesnt have any creation fields yet')
-    #def test_bad_create(self):
-        #return
-

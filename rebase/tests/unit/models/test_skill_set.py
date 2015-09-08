@@ -15,6 +15,7 @@ class TestSkillSet(RebaseModelTestCase):
             SkillSet,
             case_mgr,
             SkillSet.as_manager,
+            'manager',
             False, False, False, True
         )
 
@@ -24,6 +25,7 @@ class TestSkillSet(RebaseModelTestCase):
             SkillSet,
             case_contractor,
             SkillSet.as_contractor,
+            'contractor',
             False, False, False, True
         )
 

@@ -14,8 +14,8 @@ class TestCodeRepository(RebaseNoMockRestTestCase):
         self.project_resource = RebaseResource(self, 'Project')
 
     def test_as_manager(self):
-        mgr_user, repo = case_mgr_with_repo(self.db)
-        validate_resource_collection(self, mgr_user, [repo])
+        mgr_user, repo = self._run(case_mgr_with_repo, 'manager')
+        validate_resource_collection(self, [repo])
         repo_blob = self.resource.get(repo.id)
         project_blob = self.project_resource.get(repo.project.id)
         self.resource.update(**repo_blob)
@@ -26,8 +26,8 @@ class TestCodeRepository(RebaseNoMockRestTestCase):
         self.resource.create(**new_repo)
 
     def test_as_contractor(self):
-        contractor_user, repo = case_cleared_contractor(self.db)
-        validate_resource_collection(self, contractor_user, [repo])
+        contractor_user, repo = self._run(case_cleared_contractor, 'contractor')
+        validate_resource_collection(self, [repo])
         repo_blob = self.resource.get(repo.id)
         self.resource.update(expected_status=401, **repo_blob)
         self.resource.delete(expected_status=401, **repo_blob)
@@ -36,6 +36,6 @@ class TestCodeRepository(RebaseNoMockRestTestCase):
         self.resource.create(expected_status=401, **new_repo)
 
     def test_as_anonymous(self):
-        mgr_user, repo = case_mgr_with_repo(self.db)
+        mgr_user, repo = self._run(case_mgr_with_repo, 'manager')
         self.logout()
         self.assertFalse(self.resource.get_all(401))

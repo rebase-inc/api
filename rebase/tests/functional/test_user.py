@@ -16,7 +16,8 @@ from rebase.tests.common.user import (
 
 class TestUserResource(RebaseRestTestCase):
     def setUp(self):
-        self.user_resource =        RebaseResource(self, 'User')
+        self.user_resource = RebaseResource(self, 'User')
+        self.role_resource = RebaseResource(self, 'Role')
         super().setUp()
 
     def test_get_all_as_admin(self):
@@ -24,7 +25,11 @@ class TestUserResource(RebaseRestTestCase):
         response = self.get_resource('users', expected_code = 200)
         self.assertIn('users', response)
 
-    def test_create_new_as_admin(self):
+    def _strip_role_ids(self, response):
+        for role in response['user']['roles']:
+            role.pop('id')
+
+    def test_create_as_admin(self):
         self.login_admin()
         user = dict(first_name='Saul', last_name='Goodman', email='saulgoodman@rebase.io', password='foo')
 
@@ -36,15 +41,17 @@ class TestUserResource(RebaseRestTestCase):
         response = self.post_resource('users', user)
         last_seen = response['user'].pop('last_seen') # we don't know the exact time anyways
         user_id = response['user'].pop('id') # we don't know the id the database will give it
+        self._strip_role_ids(response)
 
         self.assertNotIn('password', response['user'])
-        self.assertEqual(response['user'], expected_response)
+        self.user_resource.assertComposite(expected_response, response['user'], recurse=True)
 
         response = self.get_resource('users/{}'.format(user_id))
+        self._strip_role_ids(response)
         expected_response['last_seen'] = last_seen
         expected_response['id'] = user_id
 
-        self.assertEqual(response['user'], expected_response)
+        self.user_resource.assertComposite(expected_response, response['user'], recurse=True)
 
     def _create_user(self, validate=None):
         return self.user_resource.create(
@@ -72,6 +79,7 @@ class TestUserResource(RebaseRestTestCase):
     def test_update(self):
         user = self._create_user()
         self.login(user['email'], 'foo')
+        user = self.user_resource.get(user)
         user['last_name'] = 'Badman'
         self.user_resource.update(**user)
 
@@ -88,11 +96,14 @@ class TestUserResource(RebaseRestTestCase):
         user.update(new_name)
         user['admin'] = False
         user['roles'] = []
+        user['current_role'] = None
+        self._strip_role_ids(response)
         self.assertEqual(user, response['user'])
 
         new_email = dict(email = 'jessepinkman@rebase.io')
         response = self.put_resource('users/{}'.format(user['id']), new_email)
         user.update(new_email)
+        self._strip_role_ids(response)
         self.assertEqual(user, response['user'])
 
     def test_delete_as_admin(self):
@@ -121,17 +132,18 @@ class TestUser(RebaseNoMockRestTestCase):
         self.resource = RebaseResource(self, 'User')
 
     def test_get_all_manager_users(self):
-        validate_resource_collection(self, *case_manager_users(self.db))
+        mgr_user, users = self._run(case_manager_users, 'manager')
+        validate_resource_collection(self, users)
 
     def test_get_all_contractor_users(self):
-        logged_in_user, expected_contractor_users = case_contractor_users(self.db)
-        validate_resource_collection(self, logged_in_user, expected_contractor_users+[logged_in_user])
+        logged_in_user, expected_contractor_users = self._run(case_contractor_users, 'contractor')
+        validate_resource_collection(self, expected_contractor_users+[logged_in_user])
 
     def test_get_all_nominated_users(self):
-        logged_in_user, expected_nominated_users = case_nominated_users(self.db)
-        validate_resource_collection(self, logged_in_user, expected_nominated_users+[logged_in_user])
+        logged_in_user, expected_nominated_users = self._run(case_nominated_users, 'manager')
+        validate_resource_collection(self, expected_nominated_users+[logged_in_user])
 
     def test_get_all_other_contractor_users(self):
-        logged_in_user, manager_users, expected_contractor_users = case_contractors_with_contractor(self.db)
+        _, (manager_users, expected_contractor_users) = self._run(case_contractors_with_contractor, 'contractor')
         expected_users = manager_users + expected_contractor_users
-        validate_resource_collection(self, logged_in_user, expected_users)
+        validate_resource_collection(self, expected_users)

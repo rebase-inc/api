@@ -19,6 +19,7 @@ class TestTicketSet(RebaseModelTestCase):
             TicketSet,
             case_contractor,
             TicketSet.query_by_user,
+            'contractor',
             False, False, False, True
         )
 
@@ -28,6 +29,7 @@ class TestTicketSet(RebaseModelTestCase):
             TicketSet,
             case_mgr,
             TicketSet.query_by_user,
+            'manager',
             True, True, True, True
         )
 
@@ -37,6 +39,7 @@ class TestTicketSet(RebaseModelTestCase):
             TicketSet,
             case_admin,
             TicketSet.query_by_user,
+            'contractor',
             True, True, True, True
         )
 
@@ -46,5 +49,6 @@ class TestTicketSet(RebaseModelTestCase):
             TicketSet,
             case_anonymous,
             TicketSet.query_by_user,
+            'manager',
             False, False, False, False
         )

@@ -25,10 +25,11 @@ class TestManagerModel(RebaseModelTestCase):
         self.db.session.commit()
 
         found_manager = Manager.query.get(manager.id)
+        user_id = found_manager.user.id
         self.delete_instance(found_manager)
 
         self.assertEqual(Manager.query.get(manager.id), None)
-        self.assertIsInstance(User.query.get(manager.id), User)
+        self.assertIsInstance(User.query.get(user_id), User)
         self.assertIsInstance(Organization.query.get(manager.organization_id), Organization)
 
     def test_delete_organization(self):

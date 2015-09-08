@@ -50,7 +50,10 @@ class TestWorkModel(RebaseModelTestCase):
         work = mock.create_some_work(self.db).pop()
         self.db.session.commit()
 
-        review_id = work.review.id
+        if work.review:
+            review_id = work.review.id
+        else:
+            review_id = None
         debit_id = work.debit.id
         credit_id = work.credit.id
         mediation_id = work.mediation_rounds[0].id
@@ -60,7 +63,8 @@ class TestWorkModel(RebaseModelTestCase):
         self.assertNotEqual(models.Work.query.get(work.id), None)
         self.delete_instance(work)
 
-        self.assertEqual(models.Review.query.get(review_id), None)
+        if review_id:
+            self.assertEqual(models.Review.query.get(review_id), None)
         self.assertEqual(models.Debit.query.get(debit_id), None)
         self.assertEqual(models.Credit.query.get(credit_id), None)
         self.assertEqual(models.Mediation.query.get(mediation_id), None)
@@ -71,7 +75,8 @@ class TestWorkModel(RebaseModelTestCase):
         work = mock.create_some_work(self.db).pop()
         self.db.session.commit()
 
-        self.db.session.delete(work.review)
+        if work.review:
+            self.db.session.delete(work.review)
         self.db.session.delete(work.debit)
         self.db.session.delete(work.credit)
         for mediation_round in work.mediation_rounds:
@@ -79,12 +84,14 @@ class TestWorkModel(RebaseModelTestCase):
         self.db.session.commit()
 
         found_work = models.Work.query.get(work.id)
-        self.assertEqual(found_work.review, None)
+        if work.review:
+            self.assertEqual(found_work.review, None)
         self.assertEqual(found_work.debit, None)
         self.assertEqual(found_work.credit, None)
         self.assertEqual(len(found_work.mediation_rounds), 0)
 
-        _ = models.Review(work, 4)
+        _ = models.Review(work)
+        work.review.rating = 4
         _ = models.Debit(work, 100)
         _ = models.Credit(work, 110)
         _ = models.Mediation(work)

@@ -21,20 +21,36 @@ class User(DB.Model, PermissionMixin):
     hashed_password =   DB.Column(DB.String,    nullable=False)
     last_seen =         DB.Column(DB.DateTime,  nullable=False)
     roles =             DB.relationship('Role', backref='user', cascade='all, delete-orphan', lazy='dynamic')
+    # TODO add a persistent current role
+    #current_role =      DB.relationship('Role', backref='current_user', userlist=False, cascade='all, delete-orphan', passive_deletes=True)
     admin =             DB.Column(DB.Boolean,   nullable=False, default=False)
 
     def __init__(self, first_name, last_name, email, password):
+        from rebase.models.contractor import Contractor
         self.first_name = first_name
         self.last_name = last_name
         self.email = email
         self.last_seen = datetime.datetime.now()
         self.set_password(password)
+        self.current_role = None
 
     def set_password(self, password):
         self.hashed_password = generate_password_hash(password)
 
     def check_password(self, password):
         return check_password_hash(self.hashed_password, password)
+
+    def set_role(self, role):
+        from rebase.models.contractor import Contractor
+        if role:
+            self.current_role = self.roles.filter_by(type=role).first()
+        else:
+            self.current_role = self.roles.first()
+        if not self.current_role:
+            # TODO raise instead when user doesn't have a role
+            # we should first create a Role instance and then add the role as a param of the User __init__
+            self.current_role = Contractor(self)
+        return self.current_role
 
     @classmethod
     def query_by_user(cls, user, user_id=None):
@@ -171,7 +187,7 @@ class User(DB.Model, PermissionMixin):
     def is_active(self): return True
     def is_anonymous(self): return False
     def get_id(self): return str(self.id)
-    def get_role(self): return False
+    def get_role(self): return self.current_role
 
     @property
     def manager_roles(self):

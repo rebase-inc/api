@@ -12,6 +12,7 @@ class UserSchema(RebaseSchema):
     password =      fields.String(required=True)
     last_seen =     fields.DateTime(required=True)
     admin =         fields.Boolean(default=False)
+    current_role =  SecureNestedField('RoleSchema', only='type')
 
     roles = SecureNestedField('RoleSchema', exclude=('user',), many=True)
 
@@ -22,7 +23,7 @@ class UserSchema(RebaseSchema):
             return User.query.filter(User.email == data.get('email')).one()
         return get_or_make_object(User, data)
 
-serializer = UserSchema(only=('id','admin','first_name','last_name','email','last_seen','roles'))
+serializer = UserSchema(only=('id','admin','first_name','last_name','email','last_seen','roles', 'current_role'))
 
 deserializer = UserSchema(only=('first_name','last_name','email','password'), strict=True)
 
