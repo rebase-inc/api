@@ -37,17 +37,13 @@ class Auction(DB.Model, PermissionMixin):
         return '<Auction[id:{}] finish_work_by={}>'.format(self.id, self.finish_work_by)
 
     @classmethod
-    def as_contractor(cls, user):
-        import rebase.models as models
-        return query_from_class_to_user(cls, [
+    def setup_queries(cls, models):
+        cls.as_contractor_path = [
             models.Nomination,
             models.Contractor,
-        ], user)
+        ]
 
-    @classmethod
-    def as_manager(cls, user):
-        import rebase.models as models
-        return query_from_class_to_user(cls, [
+        cls.as_manager_path = [
             models.TicketSet,
             models.BidLimit,
             models.TicketSnapshot,
@@ -55,22 +51,7 @@ class Auction(DB.Model, PermissionMixin):
             models.Project,
             models.Organization,
             models.Manager,
-        ], user)
-
-    @classmethod
-    def _role_to_query_fn(cls, user):
-        if user.current_role.type == 'manager':
-            return cls.as_manager
-        elif user.current_role.type == 'contractor':
-            return cls.as_contractor
-        else:
-            raise UnknownRole(user.current_role)
-
-    @classmethod
-    def query_by_user(cls, user):
-        if user.is_admin():
-            return cls.query
-        return cls._role_to_query_fn(user)(user)
+        ]
 
     def allowed_to_be_created_by(self, user):
         if user.is_admin():
@@ -83,7 +64,7 @@ class Auction(DB.Model, PermissionMixin):
     def allowed_to_be_viewed_by(self, user):
         if user.is_admin():
             return True
-        query_auctions_fn = Auction._role_to_query_fn(user)
+        query_auctions_fn = Auction.role_to_query_fn(user)
         query = query_auctions_fn(user)
         return query.filter(Auction.id==self.id).first()
 

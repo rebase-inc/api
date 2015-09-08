@@ -46,13 +46,13 @@ class Review(DB.Model, PermissionMixin):
 
     @classmethod
     def setup_queries(cls, models):
-        Review.as_contractor_path = [
+        cls.as_contractor_path = [
             models.Work,
             models.WorkOffer,
             models.Contractor,
         ]
 
-        Review.as_manager_path = [
+        cls.as_manager_path = [
             models.Work,
             models.WorkOffer,
             models.TicketSnapshot,
