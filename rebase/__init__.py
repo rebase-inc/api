@@ -28,7 +28,14 @@ def create_app(testing=False):
     app_context = app.app_context()
     app_context.push()
     toolbar = DebugToolbarExtension(app)
-    app.config['SQLALCHEMY_DATABASE_URI'] = environ['TEST_URL'] if testing else environ['DATABASE_URL']
+    if testing:
+        # WARNING: be sure to close the pipe when exiting this process!
+        setattr(app, 'fifo_db', fifo_db = open('/tmp/db', 'r'))
+        db_url = app.fifo_db.read()
+        print(db_url)
+    else:
+        db_url = environ['DATABASE_URL']
+    app.config['SQLALCHEMY_DATABASE_URI'] = db_url
     setup_admin(app, DB.session)
     setup_login(app)
     setup_rq(app)
