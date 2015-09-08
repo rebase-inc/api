@@ -18,7 +18,6 @@ def drop():
 def create(default_data=True, sample_data=False):
     "Creates database tables from sqlalchemy models"
     db.create_all()
-    populate(default_data, sample_data)
 
 
 @data.command
@@ -35,14 +34,3 @@ def populate(default_data=False, sample_data=False):
     dev_user_story = mock.ManagerUserStory(db, 'Ron', 'Swanson', 'ron@joinrebase.com', 'ron')
 
     db.session.commit()
-    #from fixtures import dbfixture
-
-    #if default_data:
-        #from fixtures.default_data import all
-        #default_data = dbfixture.data(*all)
-        #default_data.setup()
-
-    #if sample_data:
-        #from fixtures.sample_data import all
-        #sample_data = dbfixture.data(*all)
-        #sample_data.setup()

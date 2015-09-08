@@ -15,6 +15,7 @@ from rebase.home.routes import register_home
 from rebase.setup.rq import setup_rq
 from rebase.setup.login import setup_login
 from rebase.setup.admin import setup_admin
+from rebase.setup.cache import setup_cache
 
 sys.dont_write_bytecode = True
 
