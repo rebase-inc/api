@@ -7,7 +7,6 @@ from rebase.models import User, Manager
 from rebase.views import user
 from rebase.common.database import DB
 from rebase.common.rest import (
-    query_string_values,
     get_collection,
     add_to_collection,
     get_resource,

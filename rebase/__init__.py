@@ -32,6 +32,7 @@ def create_app(testing=False):
     setup_admin(app, DB.session)
     setup_login(app)
     setup_rq(app)
+    setup_cache(app)
     DB.init_app(app)
     api = Api(app)
     register_home(app)
