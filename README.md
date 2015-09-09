@@ -55,13 +55,15 @@ git remote add stage git@heroku.com:rebase-stage.git
 
 # To set an environment variable on a remote configuration:
 heroku config:set APP_SETTINGS=rebase.common.config.StagingConfig --remote stage
+heroku config:set FLASK_SECRET_KEY=<some long key> --remote stage
 heroku config:set APP_SETTINGS=rebase.common.config.ProductionConfig --remote pro
+heroku config:set FLASK_SECRET_KEY=<some long key> --remote pro
 
 # Connect the GitHub apps to their respective Heroku apps
 heroku config:set GITHUB_CLIENT_ID=<some_key> -a rebase-stage
 heroku config:set GITHUB_CLIENT_SECRET=<some_key> -a rebase-stage
-heroku config:set GITHUB_CLIENT_ID=<some_key> -a rebase-stage
-heroku config:set GITHUB_CLIENT_SECRET=<some_key> -a rebase-stage
+heroku config:set GITHUB_CLIENT_ID=<some_key> -a rebase-pro
+heroku config:set GITHUB_CLIENT_SECRET=<some_key> -a rebase-pro
 
 # Install the PostGreSQL add-on on both apps:
 # the staging app

@@ -67,3 +67,9 @@ rebase-logout () {
 	echo
 	echo "Goodbye!"
 }
+
+abc () {
+	session=`awk '/heroku.*session/ { printf("%s=%s", $6, $7) }' $REBASE_COOKIE_JAR`
+	echo $session
+	ab -C $session $*
+}

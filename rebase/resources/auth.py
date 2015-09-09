@@ -36,7 +36,7 @@ class AuthCollection(Resource):
                 response.status_code = 401
                 return response
             else:
-                login_user(auth_user)
+                login_user(auth_user, remember=True)
                 current_role = current_user.set_role(role)
                 session['role'] = current_role.type
                 user.serializer.context = dict(current_user = current_user)

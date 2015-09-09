@@ -24,7 +24,6 @@ def create_app(testing=False):
     if 'DATABASE_URL' not in environ or 'APP_SETTINGS' not in environ:
         raise EnvironmentError('Missing environment variables. Did you forget to run "source setup.sh" or "source test_setup.sh"?')
     app = Flask(__name__)
-    app.secret_key = urandom(24)
     app.config.from_object(environ['APP_SETTINGS'])
     app_context = app.app_context()
     app_context.push()

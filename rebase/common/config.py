@@ -4,6 +4,7 @@ class Config(object):
     DEBUG = False
     TESTING = False
     CSRF_ENABLED = True
+    SECRET_KEY = environ['FLASK_SECRET_KEY']
     SQLALCHEMY_DATABASE_URI = environ['DATABASE_URL']
     if 'GITHUB_CLIENT_ID' not in environ:
         raise KeyError('Missing GITHUB_CLIENT_ID from environment. Please follow README.md instructions.')
