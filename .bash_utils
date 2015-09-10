@@ -7,8 +7,17 @@ py () {
 }
 
 
-#export REBASE_HOST=http://rebase-pro.herokuapp.com
-export REBASE_HOST=http://127.0.0.1:5000
+export REBASE_HOST_PRO=http://rebase-pro.herokuapp.com
+export REBASE_HOST_LOCALHOST=http://127.0.0.1:5000
+
+pro () {
+	export REBASE_HOST=$REBASE_HOST_PRO
+}
+
+lh () {
+	export REBASE_HOST=$REBASE_HOST_LOCALHOST
+}
+
 export REBASE_COOKIE_JAR=/tmp/rebase-cookie-jar.txt
 
 rebase-curl () {
@@ -77,16 +86,16 @@ extract_remember () {
 }
 
 abc () {
-	session=`extract_session heroku`
-	remember=`extract_remember heroku`
+	if [ $REBASE_HOST = $REBASE_HOST_PRO ]; then
+		export host_regex=heroku
+	else
+		export host_regex="127.0.0.1"
+	fi
+	echo "Search cookies for hosts: $host_regex"
+	session=$(extract_session "$host_regex")
+	remember=$(extract_remember "$host_regex")
 	cookies="$remember; $session" 
-	ab -C "$cookies" $*
-}
-
-abl () {
-	session=`extract_session localhost`
-	remember=`extract_remember localhost`
-	cookies="$remember; $session" 
+	echo "Cookie: $cookies"
 	ab -C "$cookies" $*
 }
 

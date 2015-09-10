@@ -56,8 +56,10 @@ git remote add stage git@heroku.com:rebase-stage.git
 # To set an environment variable on a remote configuration:
 heroku config:set APP_SETTINGS=rebase.common.config.StagingConfig --remote stage
 heroku config:set FLASK_SECRET_KEY=<some long key> --remote stage
+heroku config:set CONNECTION_POOL_SIZE_PER_WORKER=<your DB max divided by the # of gunicorn workers> --remote stage
 heroku config:set APP_SETTINGS=rebase.common.config.ProductionConfig --remote pro
 heroku config:set FLASK_SECRET_KEY=<some long key> --remote pro
+heroku config:set CONNECTION_POOL_SIZE_PER_WORKER=<your DB max divided by the # of gunicorn workers> --remote pro
 
 # How to generate a really strong key that is easy to copy and paste anywhere
 Using Python 3 interactive shell:
