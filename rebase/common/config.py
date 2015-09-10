@@ -12,7 +12,7 @@ class Config(object):
     if 'GITHUB_CLIENT_SECRET' not in environ:
         raise KeyError('Missing GITHUB_CLIENT_SECRET from environment. Please follow README.md instructions.')
     GITHUB_CLIENT_SECRET = environ['GITHUB_CLIENT_SECRET']
-    SQLALCHEMY_POOL_SIZE = environ['CONNECTION_POOL_SIZE_PER_WORKER']
+    SQLALCHEMY_POOL_SIZE = int(environ['CONNECTION_POOL_SIZE_PER_WORKER'])
     SQLALCHEMY_MAX_OVERFLOW = 1
 
 
