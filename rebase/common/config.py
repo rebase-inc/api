@@ -16,19 +16,23 @@ class Config(object):
 
 class ProductionConfig(Config):
     DEBUG = False
+    FLASK_LOGIN_SESSION_PROTECTION = "strong" # WARNING: this will make Apache Bench fail login unless it is used to login as well
 
 
 class StagingConfig(Config):
     DEVELOPMENT = True
     DEBUG = True
     DEBUG_TB_INTERCEPT_REDIRECTS = False
+    FLASK_LOGIN_SESSION_PROTECTION = "basic"
 
 
 class DevelopmentConfig(Config):
     DEVELOPMENT = True
     DEBUG = True
     DEBUG_TB_INTERCEPT_REDIRECTS = False
+    FLASK_LOGIN_SESSION_PROTECTION = "basic"
 
 
 class TestingConfig(Config):
     TESTING = True
+    FLASK_LOGIN_SESSION_PROTECTION = "basic"

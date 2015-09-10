@@ -59,6 +59,15 @@ heroku config:set FLASK_SECRET_KEY=<some long key> --remote stage
 heroku config:set APP_SETTINGS=rebase.common.config.ProductionConfig --remote pro
 heroku config:set FLASK_SECRET_KEY=<some long key> --remote pro
 
+# How to generate a really strong key that is easy to copy and paste anywhere
+Using Python 3 interactive shell:
+```python
+from string import ascii_lowercase
+from os import urandom
+''.join(map(lambda char: ascii_lowercase[char % (len(ascii_lowercase)-1)], urandom(512)))
+```
+I also added a 'genkey' function to .bash_utils that does the same thing.
+
 # Connect the GitHub apps to their respective Heroku apps
 heroku config:set GITHUB_CLIENT_ID=<some_key> -a rebase-stage
 heroku config:set GITHUB_CLIENT_SECRET=<some_key> -a rebase-stage

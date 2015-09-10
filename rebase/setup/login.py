@@ -17,7 +17,7 @@ class AnonymousUser(object):
 def setup_login(app):
     login_manager = LoginManager()
     login_manager.anonymous_user = AnonymousUser
-    login_manager.session_protection = 'strong'
+    login_manager.session_protection = app.config['FLASK_LOGIN_SESSION_PROTECTION']
     login_manager.init_app(app)
     @login_manager.user_loader
     def load_user(user_id):

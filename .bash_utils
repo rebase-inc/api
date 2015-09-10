@@ -7,7 +7,8 @@ py () {
 }
 
 
-export REBASE_HOST=http://localhost:5000
+#export REBASE_HOST=http://rebase-pro.herokuapp.com
+export REBASE_HOST=http://127.0.0.1:5000
 export REBASE_COOKIE_JAR=/tmp/rebase-cookie-jar.txt
 
 rebase-curl () {
@@ -68,8 +69,33 @@ rebase-logout () {
 	echo "Goodbye!"
 }
 
+extract_session () {
+	awk "/$1.*session/ { printf(\"%s=%s\", \$6, \$7) }" $REBASE_COOKIE_JAR
+}
+extract_remember () {
+	awk "/$1.*remember_token/ { printf(\"%s=%s\", \$6, \$7) }" $REBASE_COOKIE_JAR
+}
+
 abc () {
-	session=`awk '/heroku.*session/ { printf("%s=%s", $6, $7) }' $REBASE_COOKIE_JAR`
-	echo $session
-	ab -C $session $*
+	session=`extract_session heroku`
+	remember=`extract_remember heroku`
+	cookies="$remember; $session" 
+	ab -C "$cookies" $*
+}
+
+abl () {
+	session=`extract_session localhost`
+	remember=`extract_remember localhost`
+	cookies="$remember; $session" 
+	ab -C "$cookies" $*
+}
+
+genkey () {
+	python -c "
+from string import ascii_lowercase
+from os import urandom
+key = ''.join(map(lambda char: ascii_lowercase[char % (len(ascii_lowercase)-1)], urandom(512)))
+print(key)
+"
+
 }
