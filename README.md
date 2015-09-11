@@ -60,17 +60,22 @@ heroku config:set CONNECTION_POOL_SIZE_PER_WORKER=<your DB max divided by the # 
 heroku config:set APP_SETTINGS=rebase.common.config.ProductionConfig --remote pro
 heroku config:set FLASK_SECRET_KEY=<some long key> --remote pro
 heroku config:set CONNECTION_POOL_SIZE_PER_WORKER=<your DB max divided by the # of gunicorn workers> --remote pro
+```
 
-# How to generate a really strong key that is easy to copy and paste anywhere
+## How to generate a really strong key that is easy to copy and paste anywhere
 Using Python 3 interactive shell:
 ```python
-from string import ascii_lowercase
+from string import ascii_lowercase, ascii_uppercase, digits
 from os import urandom
-''.join(map(lambda char: ascii_lowercase[char % (len(ascii_lowercase)-1)], urandom(512)))
+
+charset = ascii_lowercase+ascii_uppercase+digits
+N = len(charset)-1
+''.join(map(lambda char: charset[char%N], urandom(512)))
 ```
 I also added a 'genkey' function to .bash_utils that does the same thing.
 
-# Connect the GitHub apps to their respective Heroku apps
+## Connect the GitHub apps to their respective Heroku apps
+```bash
 heroku config:set GITHUB_CLIENT_ID=<some_key> -a rebase-stage
 heroku config:set GITHUB_CLIENT_SECRET=<some_key> -a rebase-stage
 heroku config:set GITHUB_CLIENT_ID=<some_key> -a rebase-pro
@@ -93,7 +98,7 @@ heroku run ./manage.py db upgrade --app rebase-pro
 git push pro master
 heroku scale worker=1 -a rebase-pro
 
-# create a first admin unser (optional):
+# create a first admin user (optional):
 heroku run ./manage create_admin rapha@joinrebase.com supersecretpassword --first Raphael --last Goyran -a rebase-pro
 ```
 
