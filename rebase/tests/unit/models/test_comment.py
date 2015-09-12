@@ -93,6 +93,7 @@ class TestCommentModel(RebaseModelTestCase):
     def test_mediation_comment_as_user(self):
         _, comment = case_contractor_mediation_comment(self.db)
         unrelated_user = mock.create_one_user(self.db)
+        unrelated_user.set_role('contractor')
         self.assertFalse(comment.allowed_to_be_created_by(unrelated_user))
         self.assertFalse(comment.allowed_to_be_modified_by(unrelated_user))
         self.assertFalse(comment.allowed_to_be_deleted_by(unrelated_user))
