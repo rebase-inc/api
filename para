@@ -35,9 +35,11 @@ def run():
         try:
             with open(fifo_path, 'w') as fifo:
                 print('about to write to /tmp/db')
-                fifo.write(TEST_URL)
+                n = fifo.write(TEST_URL+'\n')
+                print('wrote {} characters'.format(n))
                 print('closing /tmp/db')
         except BrokenPipeError:
+            print('BrokenPipeError')
             continue
 
 if __name__ == '__main__':
