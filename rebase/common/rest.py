@@ -56,7 +56,3 @@ def delete_resource(model, instance_id):
     response = jsonify(message = '{} succesfully deleted'.format(model.__tablename__))
     response.status_code = 200
     return response
-
-def query_string_values(query_string_name):
-    values = [int(value) for value in request.args.get(query_string_name, '').split(',') if value]
-    return values

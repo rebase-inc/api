@@ -4,9 +4,6 @@ from os import environ, urandom
 from flask import Flask, request
 from flask.ext.restful import Api
 from flask_debugtoolbar import DebugToolbarExtension
-from sqlalchemy.engine import Engine
-from sqlalchemy import event
-from flask.ext.sqlalchemy import SQLAlchemy
 
 from rebase.common.routes import register_routes
 from rebase.common.database import DB, DB_PRODUCTION_NAME
@@ -15,6 +12,7 @@ from rebase.home.routes import register_home
 from rebase.setup.rq import setup_rq
 from rebase.setup.login import setup_login
 from rebase.setup.admin import setup_admin
+from rebase.setup.cache import setup_cache
 
 sys.dont_write_bytecode = True
 
@@ -23,10 +21,10 @@ def create_app(testing=False):
     if 'DATABASE_URL' not in environ or 'APP_SETTINGS' not in environ:
         raise EnvironmentError('Missing environment variables. Did you forget to run "source setup.sh" or "source test_setup.sh"?')
     app = Flask(__name__)
-    app.secret_key = urandom(24)
-    app.config.from_object(environ['APP_SETTINGS'])
     app_context = app.app_context()
     app_context.push()
+    DB.init_app(app)
+    app.config.from_object(environ['APP_SETTINGS'])
     toolbar = DebugToolbarExtension(app)
     if testing:
         # WARNING: be sure to close the pipe when exiting this process!
@@ -39,7 +37,7 @@ def create_app(testing=False):
     setup_admin(app, DB.session)
     setup_login(app)
     setup_rq(app)
-    DB.init_app(app)
+    setup_cache(app)
     api = Api(app)
     register_home(app)
     register_routes(api)

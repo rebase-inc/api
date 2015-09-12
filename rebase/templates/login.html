@@ -56,7 +56,10 @@
                 data: JSON.stringify({ 'first_name': $('#first_name').val(), 'last_name': $('#last_name').val(), 'email': $('#email').val(), 'password': $('#password').val()}),
                 contentType :"application/json; charset=utf-8",
                 error       : function(err) { alert('ERROR (check console log for details)'); },
-                success     : function(data) { alert('SUCCESS' + data); }
+		success     : function(data) {
+			console.log(data)
+			window.location.assign('/')
+		}
             });
         };
 
