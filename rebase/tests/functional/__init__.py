@@ -187,13 +187,17 @@ class RebaseNoMockRestTestCase(RebaseRestTestCase):
 class MethodNotImplemented(NotImplementedError):
     error_msg = '{} does not implement PermissionTestCase.{}'
     def __init__(self, instance, method_name):
-        super().__init__(error_msg.format(self.__class__.__name__, method_name))
+        super().__init__(self.error_msg.format(self.__class__.__name__, method_name))
 
 class PermissionTestCase(RebaseNoMockRestTestCase):
     '''
     TestCase don't use __init__ constructor, so we use static member 'model' to describe
     which model the resource is describing
-    Each class deriving from PermissionTestCase will overwrite 'model' to define it.
+    Classe deriving from PermissionTestCase must:
+    - overwrite 'model' to define it. For example model='TicketSet'
+    - define an implementation for these methods:
+        - new
+        - validate_view
     '''
 
     create_mock_data = False
@@ -219,7 +223,7 @@ class PermissionTestCase(RebaseNoMockRestTestCase):
         '''
         Validate the dict returned by a GET to the API
         '''
-        raise MethodNotImplemented(self, 'validate')
+        raise MethodNotImplemented(self, 'validate_view')
 
     def view(self, case, role, allowed_to_view):
         _, instance = self._run(case, role)

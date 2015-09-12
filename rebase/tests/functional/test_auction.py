@@ -15,32 +15,37 @@ from rebase.tests.common.auction import (
 )
 
 
-def _new_instance(auction):
-    return {
-        'duration':         auction.duration,
-        'finish_work_by':   auction.finish_work_by.isoformat(),
-        'ticket_set':       {
-            'bid_limits': [ ids(bid_limit) for bid_limit in auction.ticket_set.bid_limits ]
-        },
-        'bids': [],
-        'term_sheet':       ids(auction.term_sheet),
-        'redundancy':       auction.redundancy,
-    }
-
-def _modify_this(auction):
-    updated_auction = ids(auction)
-    updated_auction.update({
-        'duration': 2*auction.duration,
-        'term_sheet': ids(auction.term_sheet),
-        'redundancy': auction.redundancy
-    })
-    return updated_auction
-
 
 class TestAuction(PermissionTestCase):
     model = 'Auction'
-    _create = partialmethod(PermissionTestCase.create, new_instance=_new_instance)
-    _modify = partialmethod(PermissionTestCase.modify, modify_this=_modify_this)
+
+    def new(_, auction):
+        return {
+            'duration':         auction.duration,
+            'finish_work_by':   auction.finish_work_by.isoformat(),
+            'ticket_set':       {
+                'bid_limits': [ ids(bid_limit) for bid_limit in auction.ticket_set.bid_limits ]
+            },
+            'bids': [],
+            'term_sheet':       ids(auction.term_sheet),
+            'redundancy':       auction.redundancy,
+        }
+
+    def update(_, auction):
+        updated_auction = ids(auction)
+        updated_auction.update({
+            'duration': 2*auction.duration,
+            'term_sheet': ids(auction.term_sheet),
+            'redundancy': auction.redundancy
+        })
+        return updated_auction
+
+    def validate_view(self, auction):
+        self.assertTrue(auction)
+        fields = ['id', 'duration', 'finish_work_by', 'ticket_set', 'bids', 'term_sheet', 'redundancy', 'state']
+        for field in fields:
+            self.assertIn(field, auction)
+        self.assertEqual(auction['state'], 'created')
 
     def test_contractor_view(self):
         self.view(case_contractor, 'contractor', True)
@@ -88,44 +93,40 @@ class TestAuction(PermissionTestCase):
         self.collection(case_contractor, 'contractor')
 
     def test_contractor_modify(self):
-        self._modify(case_contractor, 'contractor', False)
+        self.modify(case_contractor, 'contractor', False)
 
     def test_contractor_delete(self):
         self.delete(case_contractor, 'contractor', False)
 
     def test_contractor_create(self):
-        self._create(case_contractor, 'contractor', False)
+        self.create(case_contractor, 'contractor', False)
 
     def test_mgr_collection(self):
         self.collection(case_mgr, 'manager')
 
-    def _validate(self, auction_blob):
-        self.assertIn('state', auction_blob)
-        self.assertEqual(auction_blob['state'], 'created')
-
     def test_mgr_view(self):
-        self.view(case_mgr, 'manager', True, validate=TestAuction._validate)
+        self.view(case_mgr, 'manager', True)
 
     def test_mgr_modify(self):
-        self._modify(case_mgr, 'manager', True)
+        self.modify(case_mgr, 'manager', True)
 
     def test_mgr_delete(self):
         self.delete(case_mgr, 'manager', True)
 
     def test_mgr_create(self):
-        self._create(case_mgr, 'manager', True)
+        self.create(case_mgr, 'manager', True)
 
     def test_admin_view(self):
         self.view(case_admin, 'manager', True)
 
     def test_admin_modify(self):
-        self._modify(case_admin, 'manager', True)
+        self.modify(case_admin, 'manager', True)
 
     def test_admin_delete(self):
         self.delete(case_admin, 'manager', True)
 
     def test_admin_create(self):
-        self._create(case_admin, 'manager', True)
+        self.create(case_admin, 'manager', True)
 
     def test_admin_collection(self):
         self.collection(case_admin_collection, 'manager')
