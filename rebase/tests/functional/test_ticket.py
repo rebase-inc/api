@@ -24,7 +24,7 @@ class TestTicket(PermissionTestCase):
         updated_ticket = ids(ticket)
         return updated_ticket
 
-    def validateview(self, ticket):
+    def validate_view(self, ticket):
         self.assertTrue(ticket)
         self.assertIn('id', ticket)
         self.assertIsInstance(ticket['id'], int)
@@ -36,13 +36,13 @@ class TestTicket(PermissionTestCase):
     def test_contractor_collection(self):
         self.collection(case_internal_contractor, 'contractor')
 
-    def test_contractorview(self):
+    def test_contractor_view(self):
         self.view(case_internal_contractor, 'contractor', True)
 
     def test_contractor_create(self):
         self.create(case_internal_contractor, 'contractor', False)
 
-    def test_contractormodify(self):
+    def test_contractor_modify(self):
         self.modify(case_internal_contractor, 'contractor', False)
 
     def test_contractor_delete(self):
@@ -51,13 +51,13 @@ class TestTicket(PermissionTestCase):
     def test_mgr_collection(self):
         self.collection(case_internal_mgr, 'manager')
 
-    def test_mgrview(self):
+    def test_mgr_view(self):
         self.view(case_internal_mgr, 'manager', True)
 
     def test_mgr_create(self):
         self.create(case_internal_mgr, 'manager', True)
 
-    def test_mgrmodify(self):
+    def test_mgr_modify(self):
         self.modify(case_internal_mgr, 'manager', True)
 
     def test_mgr_delete(self):
@@ -66,25 +66,25 @@ class TestTicket(PermissionTestCase):
     def test_admin_collection(self):
         self.collection(case_internal_admin_collection, 'manager')
 
-    def test_adminview(self):
+    def test_admin_view(self):
         self.view(case_internal_admin, 'manager', True)
 
     def test_admin_create(self):
         self.create(case_internal_admin, 'manager', True)
 
-    def test_adminmodify(self):
+    def test_admin_modify(self):
         self.modify(case_internal_admin, 'manager', True)
 
     def test_admin_delete(self):
         self.delete(case_internal_admin, 'manager', True)
 
-    def test_anonymousview(self):
+    def test_anonymous_view(self):
         self.view(case_internal_anonymous, 'manager', False)
 
     def test_anonymous_create(self):
         self.create(case_internal_anonymous, 'manager', False)
 
-    def test_anonymousmodify(self):
+    def test_anonymous_modify(self):
         self.modify(case_internal_anonymous, 'manager', False)
 
     def test_anonymous_delete(self):
