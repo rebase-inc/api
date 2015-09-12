@@ -33,8 +33,8 @@ class TestMediation(PermissionTestCase):
         self.assertIsInstance(mediation.pop('id'), int)
         self.assertIsInstance(mediation.pop('timeout'), str)
         self.assertIsInstance(mediation.pop('state'), str)
-        #self.assertIsInstance(mediation.pop('work'), int)
-        #self.assertIsInstance(mediation.pop('comments'), dict)
+        self.assertIsInstance(mediation.pop('work'), int)
+        self.assertIsInstance(mediation.pop('comments'), list)
         
     def test_user_1_as_mgr_collection(self):
         self.collection(self.case.user_1_as_mgr, 'manager')
