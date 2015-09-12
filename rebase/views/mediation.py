@@ -20,8 +20,45 @@ class MediationSchema(RebaseSchema):
         from rebase.models import Mediation
         return get_or_make_object(Mediation, data)
 
+
+class InitializeEventSchema(RebaseSchema):
+    def make_object(self, data):
+        return 'initialize'
+
+class DevAnswerEventSchema(RebaseSchema):
+    def make_object(self, data):
+        return 'dev_answer'
+
+class ClientAnswerEventSchema(RebaseSchema):
+    def make_object(self, data):
+        return 'client_answer'
+
+class TimeoutEventSchema(RebaseSchema):
+    def make_object(self, data):
+        return 'timeout'
+
+class TimeoutAnswerEventSchema(RebaseSchema):
+    def make_object(self, data):
+        return 'timeout_answer'
+
+class AgreeEventSchema(RebaseSchema):
+    def make_object(self, data):
+        return 'agree'
+
+class ArbitrateEventSchema(RebaseSchema):
+    def make_object(self, data):
+        return 'arbitrate'
+
+
 serializer =            MediationSchema(skip_missing=True)
 deserializer =          MediationSchema(strict=True)
-update_deserializer =   MediationSchema()
+update_deserializer =   MediationSchema(only=('id', 'timeout', 'client_answer', 'dev_answer'), skip_missing=True)
 update_deserializer.make_object = lambda data: data
 
+initialize_event_deserializer = InitializeEventSchema()
+dev_answer_event_deserializer = DevAnswerEventSchema()
+client_answer_event_deserializer = ClientAnswerEventSchema()
+timeout_event_deserializer = TimeoutEventSchema()
+timeout_answer_event_deserializer = TimeoutAnswerEventSchema()
+agree_event_deserializer = AgreeEventSchema()
+arbitrate_event_deserializer = ArbitrateEventSchema()

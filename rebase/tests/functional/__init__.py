@@ -184,6 +184,10 @@ class RebaseNoMockRestTestCase(RebaseRestTestCase):
         self.login(user.email, 'foo', role)
         return user, instance
 
+class MethodNotImplemented(NotImplementedError):
+    error_msg = '{} does not implement PermissionTestCase.{}'
+    def __init__(self, instance, method_name):
+        super().__init__(error_msg.format(self.__class__.__name__, method_name))
 
 class PermissionTestCase(RebaseNoMockRestTestCase):
     '''
@@ -211,27 +215,47 @@ class PermissionTestCase(RebaseNoMockRestTestCase):
             expected_resources = [thing]
         validate_resource_collection(self, expected_resources)
 
-    def view(self, case, role, allowed_to_view, validate=None):
+    def view(self, case, role, allowed_to_view):
         _, instance = self._run(case, role)
         instance_blob = self.resource.get(ids(instance), 200 if allowed_to_view else 401)
-        if allowed_to_view and validate:
-            validate(self, instance_blob)
+        if allowed_to_view:
+            self.validate(instance_blob)
         return instance_blob
 
-    def modify(self, case, role, allowed_to_modify, modify_this=None):
+    def validate_modify(_, test_resource, requested, returned):
+        '''
+        Classes deriving from this class should provide their own implementation.
+        The default implementation performs RebaseResource.validate_response
+        '''
+        test_resource.validate_response(requested, returned)
+
+    def modify(self, case, role, allowed_to_modify):
         _, instance = self._run(case, role)
-        if modify_this:
-            modified_blob = modify_this(instance)
-        else:
-            modified_blob = ids(instance)
-        self.resource.update(expected_status=200 if allowed_to_modify else 401, **modified_blob)
+        modified_blob = self.update(instance)
+        self.resource.update(expected_status=200 if allowed_to_modify else 401, validate=self.validate_modify,  **modified_blob)
 
     def delete(self, case, role,  allowed_to_delete):
         _, instance = self._run(case, role)
         instance_blob = ids(instance)
         self.resource.delete(expected_status=200 if allowed_to_delete else 401, **instance_blob)
 
-    def create(self, case, role, allowed_to_create, new_instance, validate=None, delete_first=False):
+    def new(self, old_instance):
+        '''Given instance, will return a dict for a new instance of the same resource type.'''
+        raise MethodNotImplemented(self, 'new')
+
+    def validate(self, instance):
+        '''
+        Validate the dict returned by a GET to the API
+        '''
+        raise MethodNotImplemented(self, 'validate')
+
+    def update(self, instance):
+        '''
+        Given a SQLAlchemy model instance, return its equivalent dict with potentially modified fields
+        '''
+        raise MethodNotImplemented(self, 'update')
+
+    def create(self, case, role, allowed_to_create, validate=None, delete_first=False):
         '''
         *case* is a function with no param that return a tuple (logged_in_user, instance)
         where logged_in_user is the user that is assumed to be logged in and instance is some instance of resource type.
@@ -240,7 +264,6 @@ class PermissionTestCase(RebaseNoMockRestTestCase):
 
         *allowed_to_create* is a boolean, True means logged_in_user can create another instance, False means it's forbidden (resource will return 401).
 
-        *new_instance* is a function that given instance, will return a dict for a new instance of the same resource type.
 
         *validate* is a function (new_blob, response) which tests the response of the POST against the new_blob submitted in the request.
         If left to None, a default validate is performed by the RebaseResource object associated with the model.
@@ -250,7 +273,7 @@ class PermissionTestCase(RebaseNoMockRestTestCase):
 
         '''
         user, instance = self._run(case, role)
-        new_instance_blob = new_instance(instance)
+        new_instance_blob = self.new(instance)
         if delete_first:
             self.db.session.delete(instance)
             self.db.session.commit()
