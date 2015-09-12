@@ -215,12 +215,24 @@ class PermissionTestCase(RebaseNoMockRestTestCase):
             expected_resources = [thing]
         validate_resource_collection(self, expected_resources)
 
+    def validate_view(self, instance):
+        '''
+        Validate the dict returned by a GET to the API
+        '''
+        raise MethodNotImplemented(self, 'validate')
+
     def view(self, case, role, allowed_to_view):
         _, instance = self._run(case, role)
         instance_blob = self.resource.get(ids(instance), 200 if allowed_to_view else 401)
         if allowed_to_view:
-            self.validate(instance_blob)
+            self.validate_view(instance_blob)
         return instance_blob
+
+    def update(self, instance):
+        '''
+        Given a SQLAlchemy model instance, return its equivalent dict with potentially modified fields
+        '''
+        raise MethodNotImplemented(self, 'update')
 
     def validate_modify(_, test_resource, requested, returned):
         '''
@@ -242,18 +254,6 @@ class PermissionTestCase(RebaseNoMockRestTestCase):
     def new(self, old_instance):
         '''Given instance, will return a dict for a new instance of the same resource type.'''
         raise MethodNotImplemented(self, 'new')
-
-    def validate(self, instance):
-        '''
-        Validate the dict returned by a GET to the API
-        '''
-        raise MethodNotImplemented(self, 'validate')
-
-    def update(self, instance):
-        '''
-        Given a SQLAlchemy model instance, return its equivalent dict with potentially modified fields
-        '''
-        raise MethodNotImplemented(self, 'update')
 
     def create(self, case, role, allowed_to_create, validate=None, delete_first=False):
         '''

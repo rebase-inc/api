@@ -9,7 +9,7 @@ class TestReview(PermissionTestCase):
         super().setUp()
         self.case = ReviewUseCase()
 
-    def validate(self, review):
+    def validate_view(self, review):
         self.assertIsInstance(review.pop('id'), int)
         self.assertIsInstance(review.pop('rating'), int)
         self.assertIsInstance(review.pop('comments'), list)
