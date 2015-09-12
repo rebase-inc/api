@@ -13,7 +13,7 @@ class Mediation(DB.Model, PermissionMixin):
 
     id =            DB.Column(DB.Integer, primary_key=True)
     dev_answer =    DB.Column(DB.String, nullable=True)
-    client_answer = DB.Column(DB.Integer, nullable=True)
+    client_answer = DB.Column(DB.String, nullable=True)
     timeout =       DB.Column(DB.DateTime, nullable=False)
     work_id =       DB.Column(DB.Integer, DB.ForeignKey('work.id', ondelete='CASCADE'), nullable=False)
     state =         DB.Column(DB.String, nullable=False, default='discussion')
@@ -33,39 +33,22 @@ class Mediation(DB.Model, PermissionMixin):
         return self._machine
 
     @classmethod
-    def query_by_user(cls, user):
-        return cls.get_all(user)
+    def setup_queries(cls, models):
+        cls.as_contractor_path = [
+            models.work.Work,
+            models.work_offer.WorkOffer,
+            models.contractor.Contractor,
+        ]
 
-    def filter_by_id(self, query):
-        return query.filter(Mediation.id==self.id)
-
-    @classmethod
-    def get_all(cls, user, mediation=None):
-        return query_by_user_or_id(
-            cls,
-            lambda user: cls.as_manager(user).union(cls.as_contractor(user)),
-            cls.filter_by_id,
-            user, mediation
-        )
-    def as_manager(user):
-        import rebase.models
-        return query_from_class_to_user(Mediation, [
-            rebase.models.work.Work,
-            rebase.models.work_offer.WorkOffer,
-            rebase.models.ticket_snapshot.TicketSnapshot,
-            rebase.models.ticket.Ticket,
-            rebase.models.project.Project,
-            rebase.models.organization.Organization,
-            rebase.models.manager.Manager,
-        ], user)
-
-    def as_contractor(user):
-        import rebase.models
-        return query_from_class_to_user(Mediation, [
-            rebase.models.work.Work,
-            rebase.models.work_offer.WorkOffer,
-            rebase.models.contractor.Contractor,
-        ], user)
+        cls.as_manager_path = [
+            models.work.Work,
+            models.work_offer.WorkOffer,
+            models.ticket_snapshot.TicketSnapshot,
+            models.ticket.Ticket,
+            models.project.Project,
+            models.organization.Organization,
+            models.manager.Manager,
+        ]
 
     def allowed_to_be_created_by(self, user):
         return user.is_admin()
@@ -77,7 +60,9 @@ class Mediation(DB.Model, PermissionMixin):
         return user.is_admin()
 
     def allowed_to_be_viewed_by(self, user):
-        return self.get_all(user, self).limit(100).all()
+        if user.is_admin():
+            return True
+        return self.role_to_query_fn(user)(user).filter(Mediation.id==self.id).first()
 
     def __repr__(self):
         return '<Mediation[id:{}] >'.format(self.id)
@@ -134,10 +119,28 @@ class MediationStateMachine(StateMachine):
     def __init__(self, mediation_instance, initial_state):
         self.mediation = mediation_instance
         StateMachine.__init__(self, initial_state = getattr(self, initial_state))
-        self.add_event_transitions('initialize', {None: self.discussion})
-        self.add_event_transitions('dev_answer', {self.discussion: self.waiting_for_client, self.waiting_for_dev:self.decision})
-        self.add_event_transitions('client_answer', {self.discussion:self.waiting_for_dev, self.waiting_for_client:self.decision})
-        self.add_event_transitions('timeout', {self.waiting_for_client:self.timed_out, self.waiting_for_dev:self.timed_out})
-        self.add_event_transitions('timeout_answer', {self.timed_out:self.decision})
-        self.add_event_transitions('agree', {self.decision:self.agreement})
-        self.add_event_transitions('arbitrate', {self.decision:self.arbitration})
+
+        self.add_event_transitions('initialize',    {
+            None: self.discussion
+        })
+        self.add_event_transitions('dev_answer',    {
+            self.discussion:        self.waiting_for_client,
+            self.waiting_for_dev:   self.decision
+        })
+        self.add_event_transitions('client_answer', {
+            self.discussion:            self.waiting_for_dev,
+            self.waiting_for_client:    self.decision
+        })
+        self.add_event_transitions('timeout',       {
+            self.waiting_for_client:    self.timed_out,
+            self.waiting_for_dev:       self.timed_out
+        })
+        self.add_event_transitions('timeout_answer',{
+            self.timed_out: self.decision
+        })
+        self.add_event_transitions('agree',         {
+            self.decision:  self.agreement
+        })
+        self.add_event_transitions('arbitrate',     {
+            self.decision:  self.arbitration
+        })

@@ -9,15 +9,21 @@ from rebase.tests.common.ticket_set import (
     case_anonymous,
 )
 
-def _new_instance(ticket_set):
-    return {
-        'bid_limits': [ ids(bid_limit) for bid_limit in ticket_set.bid_limits ]
-    }
-
 class TicketSetPermissions(PermissionTestCase):
     model = 'TicketSet'
 
-    _create = partialmethod(PermissionTestCase.create, new_instance=_new_instance)
+    def new(self, ticket_set):
+        return {
+            'bid_limits': [ ids(bid_limit) for bid_limit in ticket_set.bid_limits ]
+        }
+
+    def update(self, ticket_set):
+        updated_ticket_set = ids(ticket_set)
+        return updated_ticket_set
+
+    def validate_view(self, ticket_set):
+        self.assertIn('bid_limits', ticket_set)
+        self.assertIsInstance(ticket_set['bid_limits'], list)
 
     def test_mgr_collection(self):
         self.collection(case_mgr, 'manager')
@@ -32,7 +38,7 @@ class TicketSetPermissions(PermissionTestCase):
         self.delete(case_mgr, 'manager', True)
 
     def test_mgr_create(self):
-        self._create(case_mgr, 'manager', True)
+        self.create(case_mgr, 'manager', True)
 
     def test_contractor_collection(self):
         self.collection(case_contractor, 'contractor')
@@ -47,7 +53,7 @@ class TicketSetPermissions(PermissionTestCase):
         self.delete(case_contractor, 'contractor', False)
 
     def test_contractor_create(self):
-        self._create(case_contractor, 'contractor', False)
+        self.create(case_contractor, 'contractor', False)
 
     def test_admin_collection(self):
         self.collection(case_admin, 'manager')
@@ -62,4 +68,4 @@ class TicketSetPermissions(PermissionTestCase):
         self.delete(case_admin, 'manager', True)
 
     def test_admin_create(self):
-        self._create(case_admin, 'manager', True)
+        self.create(case_admin, 'manager', True)

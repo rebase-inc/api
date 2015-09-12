@@ -1,5 +1,3 @@
-from functools import partialmethod
-
 from rebase.common.utils import ids, RebaseResource
 from rebase.tests.common.ticket import (
     case_github_contractor,
@@ -14,15 +12,34 @@ from . import PermissionTestCase
 from .ticket import BaseTestTicketResource
 
 
-def _new_instance(github_ticket):
-    return {
-        'project': ids(github_ticket.project),
-        'number': github_ticket.number+1
-    }
-
 class TestGithubTicket(PermissionTestCase):
     model = 'GithubTicket'
-    _create = partialmethod(PermissionTestCase.create, new_instance=_new_instance)
+
+    def new(self, github_ticket):
+        return {
+            'project': ids(github_ticket.project),
+            'number': github_ticket.number+1
+        }
+
+    def update(_, ticket):
+        updated_ticket = ids(ticket)
+        updated_ticket.update(
+            title=ticket.title+' yo mama',
+            description=ticket.description+'yo mama'
+        )
+        return updated_ticket
+
+
+    def validate_view(self, github_ticket):
+        self.assertTrue(github_ticket)
+        self.assertIn('id', github_ticket)
+        self.assertIsInstance(github_ticket['id'], int)
+        self.assertIn('title', github_ticket)
+        self.assertIsInstance(github_ticket['title'], str)
+        self.assertIn('number', github_ticket)
+        self.assertIsInstance(github_ticket['number'], int)
+        self.assertIn('description', github_ticket)
+        self.assertIsInstance(github_ticket['description'], str)
 
     def test_contractor_collection(self):
         self.collection(case_github_contractor, 'contractor')
@@ -37,7 +54,7 @@ class TestGithubTicket(PermissionTestCase):
         self.delete(case_github_contractor, 'contractor', False)
 
     def test_contractor_create(self):
-        self._create(case_github_contractor, 'contractor', False)
+        self.create(case_github_contractor, 'contractor', False)
 
     def test_mgr_collection(self):
         self.collection(case_github_mgr, 'manager')
@@ -52,7 +69,7 @@ class TestGithubTicket(PermissionTestCase):
         self.delete(case_github_mgr, 'manager', True)
 
     def test_mgr_create(self):
-        self._create(case_github_mgr, 'manager', True)
+        self.create(case_github_mgr, 'manager', True)
 
     def test_admin_collection(self):
         self.collection(case_github_admin_collection, 'manager')
@@ -67,7 +84,7 @@ class TestGithubTicket(PermissionTestCase):
         self.delete(case_github_admin, 'manager', True)
 
     def test_admin_create(self):
-        self._create(case_github_admin, 'manager', True)
+        self.create(case_github_admin, 'manager', True)
 
     def test_anonymous_collection(self):
         self.collection(case_github_anonymous_collection, 'manager')
@@ -82,4 +99,4 @@ class TestGithubTicket(PermissionTestCase):
         self.delete(case_github_anonymous, 'manager', False)
 
     def test_anonymous_create(self):
-        self._create(case_github_anonymous, 'manager', False)
+        self.create(case_github_anonymous, 'manager', False)

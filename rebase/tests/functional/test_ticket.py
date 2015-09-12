@@ -1,5 +1,3 @@
-from functools import partialmethod
-
 from . import PermissionTestCase
 from rebase.common.utils import ids, pick_a_word
 from rebase.tests.common.ticket import (
@@ -12,16 +10,28 @@ from rebase.tests.common.ticket import (
 )
 
 
-def _new_instance(ticket):
-    return {
-        'project': ids(ticket.project),
-        'title': pick_a_word().capitalize()+' '.join(pick_a_word() for i in range(5)),
-        'description': pick_a_word().capitalize()+' '.join(pick_a_word() for i in range(15))
-    }
-
 class TestTicket(PermissionTestCase):
     model = 'InternalTicket'
-    _create = partialmethod(PermissionTestCase.create, new_instance=_new_instance)
+
+    def new(_, ticket):
+        return {
+            'project': ids(ticket.project),
+            'title': pick_a_word().capitalize()+' '.join(pick_a_word() for i in range(5)),
+            'description': pick_a_word().capitalize()+' '.join(pick_a_word() for i in range(15))
+        }
+
+    def update(_, ticket):
+        updated_ticket = ids(ticket)
+        return updated_ticket
+
+    def validate_view(self, ticket):
+        self.assertTrue(ticket)
+        self.assertIn('id', ticket)
+        self.assertIsInstance(ticket['id'], int)
+        self.assertIn('title', ticket)
+        self.assertIsInstance(ticket['title'], str)
+        self.assertIn('description', ticket)
+        self.assertIsInstance(ticket['description'], str)
 
     def test_contractor_collection(self):
         self.collection(case_internal_contractor, 'contractor')
@@ -30,7 +40,7 @@ class TestTicket(PermissionTestCase):
         self.view(case_internal_contractor, 'contractor', True)
 
     def test_contractor_create(self):
-        self._create(case_internal_contractor, 'contractor', False)
+        self.create(case_internal_contractor, 'contractor', False)
 
     def test_contractor_modify(self):
         self.modify(case_internal_contractor, 'contractor', False)
@@ -45,7 +55,7 @@ class TestTicket(PermissionTestCase):
         self.view(case_internal_mgr, 'manager', True)
 
     def test_mgr_create(self):
-        self._create(case_internal_mgr, 'manager', True)
+        self.create(case_internal_mgr, 'manager', True)
 
     def test_mgr_modify(self):
         self.modify(case_internal_mgr, 'manager', True)
@@ -60,7 +70,7 @@ class TestTicket(PermissionTestCase):
         self.view(case_internal_admin, 'manager', True)
 
     def test_admin_create(self):
-        self._create(case_internal_admin, 'manager', True)
+        self.create(case_internal_admin, 'manager', True)
 
     def test_admin_modify(self):
         self.modify(case_internal_admin, 'manager', True)
@@ -72,7 +82,7 @@ class TestTicket(PermissionTestCase):
         self.view(case_internal_anonymous, 'manager', False)
 
     def test_anonymous_create(self):
-        self._create(case_internal_anonymous, 'manager', False)
+        self.create(case_internal_anonymous, 'manager', False)
 
     def test_anonymous_modify(self):
         self.modify(case_internal_anonymous, 'manager', False)
