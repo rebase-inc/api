@@ -12,6 +12,8 @@ from rebase.views.mediation import (
     client_answer_event_deserializer,
     timeout_event_deserializer,
     timeout_answer_event_deserializer,
+    agree_event_deserializer,
+    arbitrate_event_deserializer,
 )
 
 class Event(Resource):
@@ -119,6 +121,44 @@ class MediationTimeoutAnswerEvents(Resource):
 
         with ManagedState():
             mediation_instance.machine.send(review_event)
+
+        DB.session.commit()
+
+        serializer.context = dict(current_user = current_user)
+        response = jsonify(mediation = serializer.dump(mediation_instance).data)
+        response.status_code = 201
+        return response
+
+class MediationAgreeEvents(Resource):
+
+    @login_required
+    def post(self, id):
+        mediation_instance = Mediation.query.get(id)
+        if not mediation_instance:
+            raise NotFoundError(Mediation.__tablename__, id)
+        agree_event = agree_event_deserializer.load(request.form or request.json).data
+
+        with ManagedState():
+            mediation_instance.machine.send(agree_event)
+
+        DB.session.commit()
+
+        serializer.context = dict(current_user = current_user)
+        response = jsonify(mediation = serializer.dump(mediation_instance).data)
+        response.status_code = 201
+        return response
+
+class MediationArbitrateEvents(Resource):
+
+    @login_required
+    def post(self, id):
+        mediation_instance = Mediation.query.get(id)
+        if not mediation_instance:
+            raise NotFoundError(Mediation.__tablename__, id)
+        arbitrate_event = arbitrate_event_deserializer.load(request.form or request.json).data
+
+        with ManagedState():
+            mediation_instance.machine.send(arbitrate_event)
 
         DB.session.commit()
 
