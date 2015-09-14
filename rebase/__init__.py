@@ -8,12 +8,12 @@ from rebase.common.routes import register_routes
 from rebase.common.database import DB, DB_PRODUCTION_NAME
 from rebase.github.routes import register_github_routes
 from rebase.home.routes import register_home
+import rebase.models
 from rebase.setup.admin import setup_admin
 from rebase.setup.cache import setup_cache
 from rebase.setup.cors import setup_cors
 from rebase.setup.login import setup_login
 from rebase.setup.rq import setup_rq
-
 
 def create_app(testing=False):
     """ Create our app using the Flask factory pattern """

@@ -1,66 +1,24 @@
-import atexit
 import json
-from os import getpid, environ
-import unittest
-from subprocess import check_output, check_call
 
-from rebase import models, create_app
 from rebase.common.mock import create_the_world, create_admin_user, create_one_user
 from rebase.common.utils import RebaseResource, validate_resource_collection, ids
 from rebase.models import (
     User,
-    CodeClearance,
     Contractor,
     Role,
 )
-
-TEST_DATABASE_PREFIX='rebase_test'
-DB_URL_PREFIX='postgresql://localhost'
-
-def exists(db_name):
-    output = check_output(['psql', '-lqt']).decode(encoding='UTF-8').splitlines()
-    return any(map(lambda line: line.lstrip().startswith(db_name), output))
-
-@atexit.register
-def delete_all_test_databases():
-    output = check_output(['psql', '-lqt']).decode(encoding='UTF-8').splitlines()
-    all_databases = map(lambda line: line.lstrip().partition(' ')[0], output)
-    all_test_databases = filter(lambda database_name: database_name.startswith(TEST_DATABASE_PREFIX), all_databases)
-    for test_db in all_test_databases:
-        check_call(['dropdb', test_db])
-
-def make_one_test_database_for_this_process():
-    db_name = '{}_{}'.format(TEST_DATABASE_PREFIX, getpid())
-    test_url='{}/{}'.format(DB_URL_PREFIX, db_name)
-    if not exists(db_name):
-        print(db_name+' does not exists, let\'s create it.')
-        check_call(['createdb', db_name])
-        # delete the DB when this process exits
-        environ['TEST_URL'] = test_url
-    else:
-        #print(db_name+' already exists.')
-        pass
+from rebase.tests import RebaseTestCase
 
 
-class RebaseRestTestCase(unittest.TestCase):
+class RebaseRestTestCase(RebaseTestCase):
     create_mock_data = True
 
     def setUp(self):
-        make_one_test_database_for_this_process()
-        self.app, self.app_context, self.db = create_app(testing=True)
-
-        self.client = self.app.test_client()
-
-        self.db.drop_all()
-        self.db.create_all()
-        self.db.session.commit()
-
+        super().setUp()
         if self.create_mock_data:
             create_the_world(self.db)
             self.admin_user = create_admin_user(self.db, password='foo')
             self.db.session.commit()
-
-        self.addCleanup(self.cleanup)
 
     def login_admin(self, role='manager'):
         self.login(self.admin_user.email, 'foo', role=role)
@@ -139,16 +97,6 @@ class RebaseRestTestCase(unittest.TestCase):
             .first()
         self.login(user.email, 'foo')
         return user
-
-    def cleanup(self):
-        try:
-            self.logout()
-        except:
-            pass
-        self.db.session.remove()
-        self.db.drop_all()
-        self.db.get_engine(self.app).dispose()
-        self.app_context.pop()
 
     def get_resource(self, url, expected_code=200):
         error_msg_fmt = 'Expected {}, got {}. Data: {}'
