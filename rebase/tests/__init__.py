@@ -1,9 +1,10 @@
 import atexit
 from os import getpid, environ
-from subprocess import check_output, check_call
+from subprocess import check_output, check_call, call
 from unittest import TestCase
 
 from rebase import create_app
+from rebase.common.database import DB
 
 TEST_DATABASE_PREFIX='rebase_test'
 DB_URL_PREFIX='postgresql://localhost'
@@ -20,8 +21,9 @@ def exists(db_name):
 
 @atexit.register
 def delete_all_test_databases():
+    DB.session.close_all()
     for test_db in all_test_databases():
-        check_call(['dropdb', test_db])
+        call(['dropdb', test_db])
 
 def make_one_test_database_for_this_process():
     db_name = '{}_{}'.format(TEST_DATABASE_PREFIX, getpid())
