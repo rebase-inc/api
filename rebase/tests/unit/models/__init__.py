@@ -1,8 +1,4 @@
-import datetime
-
-from .. import RebaseTestCase
-from datetime import datetime
-from rebase import models
+from rebase.tests import RebaseTestCase
 
 class RebaseModelTestCase(RebaseTestCase):
 

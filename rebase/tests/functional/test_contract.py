@@ -1,5 +1,3 @@
-from functools import partialmethod
-
 from . import RebaseRestTestCase, PermissionTestCase
 from rebase.common.utils import RebaseResource, ids
 from rebase.models import Contract, Bid, Contractor, Manager
@@ -12,15 +10,25 @@ from rebase.tests.common.contract import (
     case_admin_collection,
 )
 
-def _new_instance(contract):
-    return {
-        'bid': ids(contract.bid),
-    }
-
 
 class TestContract(PermissionTestCase):
     model = 'Contract'
-    _create = partialmethod(PermissionTestCase.create, new_instance=_new_instance)
+
+    def new(self, old_contract):
+        return {
+            'bid': ids(old_contract.bid),
+        }
+
+    def validate_view(self, contract):
+        self.assertTrue(contract)
+        self.assertTrue(contract.pop('id'))
+        self.assertTrue(contract.pop('bid'))
+        self.assertEqual(contract, {})
+
+    def update(self, contract):
+        updated_contract = ids(contract)
+        # what else could we update?
+        return updated_contract
 
     def test_user_1_as_mgr_collection(self):
         self.collection(case_user_1_as_mgr, 'manager')
@@ -35,7 +43,7 @@ class TestContract(PermissionTestCase):
         self.delete(case_user_1_as_mgr, 'manager', False)
 
     def test_user_1_as_mgr_create(self):
-        self._create(case_user_1_as_mgr, 'manager', False)
+        self.create(case_user_1_as_mgr, 'manager', False)
 
     def test_user_1_as_contractor_collection(self):
         self.collection(case_user_1_as_contractor, 'contractor')
@@ -50,7 +58,7 @@ class TestContract(PermissionTestCase):
         self.delete(case_user_1_as_contractor, 'contractor', False)
 
     def test_user_1_as_contractor_create(self):
-        self._create(case_user_1_as_contractor, 'contractor', False)
+        self.create(case_user_1_as_contractor, 'contractor', False)
 
     def test_user_2_as_mgr_collection(self):
         self.collection(case_user_2_as_mgr, 'manager')
@@ -65,7 +73,7 @@ class TestContract(PermissionTestCase):
         self.delete(case_user_2_as_mgr, 'manager', False)
 
     def test_user_2_as_mgr_create(self):
-        self._create(case_user_2_as_mgr, 'manager', False)
+        self.create(case_user_2_as_mgr, 'manager', False)
 
     def test_user_2_as_contractor_collection(self):
         self.collection(case_user_2_as_contractor, 'contractor')
@@ -80,7 +88,7 @@ class TestContract(PermissionTestCase):
         self.delete(case_user_2_as_contractor, 'contractor', False)
 
     def test_user_2_as_contractor_create(self):
-        self._create(case_user_2_as_contractor, 'contractor', False)
+        self.create(case_user_2_as_contractor, 'contractor', False)
 
     def test_admin_collection(self):
         self.collection(case_admin_collection, 'manager')
@@ -95,7 +103,7 @@ class TestContract(PermissionTestCase):
         self.delete(case_admin, 'contractor', True)
 
     def test_admin_create(self):
-        self._create(case_admin, 'contractor', True)
+        self.create(case_admin, 'contractor', True)
 
 
 class TestContractResource(RebaseRestTestCase):

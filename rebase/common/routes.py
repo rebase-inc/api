@@ -25,6 +25,21 @@ def register_routes(api):
     api.add_resource(WorkResumeEvents, '/work/<int:id>/resume_events')
     api.add_resource(WorkFailEvents, '/work/<int:id>/fail_events')
 
+    from rebase.resources.mediation_events import (
+        MediationDevAnswerEvents,
+        MediationClientAnswerEvents,
+        MediationTimeoutEvents,
+        MediationTimeoutAnswerEvents,
+        MediationAgreeEvents,
+        MediationArbitrateEvents
+    )
+    api.add_resource(MediationDevAnswerEvents,      '/mediation/<int:id>/dev_answer_events')
+    api.add_resource(MediationClientAnswerEvents,   '/mediation/<int:id>/client_answer_events')
+    api.add_resource(MediationTimeoutEvents,        '/mediation/<int:id>/timeout_events')
+    api.add_resource(MediationTimeoutAnswerEvents,  '/mediation/<int:id>/timeout_answer_events')
+    api.add_resource(MediationAgreeEvents,          '/mediation/<int:id>/agree_events')
+    api.add_resource(MediationArbitrateEvents,      '/mediation/<int:id>/arbitrate_events')
+
     from rebase.models.internal_ticket import InternalTicket
     import rebase.views.internal_ticket as it_view
     add_restful_endpoint(api, InternalTicket, it_view.serializer, it_view.deserializer, it_view.update_deserializer)

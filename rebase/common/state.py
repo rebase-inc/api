@@ -79,7 +79,6 @@ class StateMachine(object):
 
         If event has not been declared via a call add_event_transitions, send will raise a ValueError exception
         '''
-
         if event not in self.event_transitions.keys():
             raise ValueError('Unknown event "{}" sent to {}'.format(event, str(self)))
 

@@ -7,7 +7,17 @@ py () {
 }
 
 
-export REBASE_HOST=http://localhost:5000
+export REBASE_HOST_PRO=http://rebase-pro.herokuapp.com
+export REBASE_HOST_LOCALHOST=http://127.0.0.1:5000
+
+pro () {
+	export REBASE_HOST=$REBASE_HOST_PRO
+}
+
+lh () {
+	export REBASE_HOST=$REBASE_HOST_LOCALHOST
+}
+
 export REBASE_COOKIE_JAR=/tmp/rebase-cookie-jar.txt
 
 rebase-curl () {
@@ -66,4 +76,36 @@ rebase-logout () {
 	rebase-get auth
 	echo
 	echo "Goodbye!"
+}
+
+extract_session () {
+	awk "/$1.*session/ { printf(\"%s=%s\", \$6, \$7) }" $REBASE_COOKIE_JAR
+}
+extract_remember () {
+	awk "/$1.*remember_token/ { printf(\"%s=%s\", \$6, \$7) }" $REBASE_COOKIE_JAR
+}
+
+abc () {
+	if [ $REBASE_HOST = $REBASE_HOST_PRO ]; then
+		export host_regex=heroku
+	else
+		export host_regex="127.0.0.1"
+	fi
+	session=$(extract_session "$host_regex")
+	remember=$(extract_remember "$host_regex")
+	cookies="$remember; $session" 
+	ab -C "$cookies" $*
+}
+
+genkey () {
+	python -c "
+from string import ascii_lowercase
+from os import urandom
+key = ''.join(map(lambda char: ascii_lowercase[char % (len(ascii_lowercase)-1)], urandom(512)))
+print(key)
+"
+}
+
+delete_test_dbs () {
+	psql -l | awk '/rebase_test_/ { print $1}' | xargs -I {} dropdb {}
 }
