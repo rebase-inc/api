@@ -26,6 +26,7 @@ def create_app(testing=False):
     app.config.from_object(environ['APP_SETTINGS'])
     toolbar = DebugToolbarExtension(app)
     app.config['SQLALCHEMY_DATABASE_URI'] = environ['TEST_URL'] if testing else environ['DATABASE_URL']
+    #print('Database URL: {}'.format(app.config['SQLALCHEMY_DATABASE_URI']))
     setup_cors(app)
     setup_admin(app, DB.session)
     setup_login(app)
