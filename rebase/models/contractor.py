@@ -1,3 +1,5 @@
+from random import randint
+
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import aliased
 
@@ -12,6 +14,7 @@ class Contractor(Role):
 
     id =            DB.Column(DB.Integer, DB.ForeignKey('role.id'), primary_key=True)
     busyness =      DB.Column(DB.Integer, nullable=False, default=1)
+    rating =        DB.Column(DB.Float, nullable=False) # this will probably end up being a composite of the users reviews, but I needed something temporarily
 
     clearances =          DB.relationship('CodeClearance',     backref='contractor', cascade='all, delete-orphan', passive_deletes=True)
     skill_set =           DB.relationship('SkillSet',          uselist=False, backref='contractor', cascade='all, delete-orphan', passive_deletes=True)
@@ -29,6 +32,7 @@ class Contractor(Role):
             raise ValueError('{} field on {} must be {} not {}'.format('user', self.__tablename__, User, type(user)))
         self.user = user
         self.busyness = 1
+        self.rating = randint(20, 50)/10
 
     @hybrid_property
     def auctions_approved_for(self):

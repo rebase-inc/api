@@ -10,11 +10,11 @@ class GithubTicket(RemoteTicket):
 
     __mapper_args__ = { 'polymorphic_identity': 'github_ticket' }
 
-    def __init__(self, project, number):
+    def __init__(self, project, number, title='NOTIMPLEMENTED', description='NOTIMPLEMENTED'):
         self.project = project
         self.number = number
-        self.title = 'NOTIMPLEMENTED' #this should be pulled from github
-        self.description = 'NOTIMPLEMENTED' #this should be pulled from github
+        self.title = title #this should be pulled from github
+        self.description = title #this should be pulled from github
 
     @classmethod
     def query_by_user(cls, user):

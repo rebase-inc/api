@@ -1,4 +1,6 @@
 
+from random import randint
+
 from rebase.common.database import DB, PermissionMixin
 from rebase.models import Nomination
 
@@ -7,7 +9,7 @@ class JobFit(DB.Model, PermissionMixin):
 
     contractor_id = DB.Column(DB.Integer,  primary_key=True)
     ticket_set_id = DB.Column(DB.Integer,  primary_key=True)
-    score =                    DB.Column(DB.Integer, nullable=False, default=0)
+    score =         DB.Column(DB.Integer, nullable=False, default=0)
 
     ticket_matches = DB.relationship('TicketMatch', backref='job_fit', cascade="all")
 
@@ -27,6 +29,7 @@ class JobFit(DB.Model, PermissionMixin):
             raise ValueError(msg)
         self.nomination = nomination
         self.ticket_matches = ticket_matches
+        self.score = randint(0, 100) # obviously temporary
 
     def __repr__(self):
         return '<JobFit[contractor({}), auction({})] score={}>'.format(self.contractor_id, self.nomination.auction, self.score)

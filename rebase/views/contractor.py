@@ -6,7 +6,8 @@ from rebase.views.nomination import NominationSchema
 class ContractorSchema(RebaseSchema):
     id =                    fields.Integer()
     busyness =              fields.Integer()
-    user =                  SecureNestedField('UserSchema',              only=('id',))
+    rating =                fields.Integer()
+    user =                  SecureNestedField('UserSchema',              only=('id','first_name', 'last_name'))
     work_offers =           SecureNestedField('WorkOfferSchema',         only=('id',), many=True)
     bank_account =          SecureNestedField('BankAccountSchema',       only=('id',), default=None)
     remote_work_history =   SecureNestedField('RemoteWorkHistorySchema', only=('id',))

@@ -9,8 +9,8 @@ class NominationSchema(RebaseSchema):
     contractor_id =             fields.Integer()
     ticket_set_id =             fields.Integer()
 
-    job_fit =    SecureNestedField('JobFitSchema',       only=('contractor_id', 'ticket_set_id'), default=None)
-    contractor = SecureNestedField('ContractorSchema',   only=('id',), default=None)
+    job_fit =    SecureNestedField('JobFitSchema',       only=('contractor_id', 'ticket_set_id', 'score'), default=None)
+    contractor = SecureNestedField('ContractorSchema',   only=('id','user', 'rating'), default=None)
     ticket_set = SecureNestedField('TicketSetSchema',    only=('id',), default=None)
     auction =    SecureNestedField('AuctionSchema',    only=('id',), default=None)
 

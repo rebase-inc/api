@@ -1,4 +1,6 @@
-from flask import render_template, session
+import os
+
+from flask import render_template, session, send_from_directory
 from flask.ext.login import current_user
 
 from rebase.models.user import User
@@ -22,3 +24,7 @@ def register_home(app):
             )
         else:
             return render_template('login.html')
+
+    @app.route('/app/<path:path>')
+    def send_app(path):
+        return send_from_directory(os.path.expanduser('~/src/rebase/react-app/'), path)

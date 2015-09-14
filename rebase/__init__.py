@@ -1,7 +1,7 @@
 import sys
 from os import environ, urandom
 
-from flask import Flask, request
+from flask import Flask, request, redirect
 from flask.ext.restful import Api
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.engine import Engine
