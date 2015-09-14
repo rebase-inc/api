@@ -1,4 +1,3 @@
-import atexit
 from os import getpid, environ
 from subprocess import check_output, check_call, call
 
@@ -16,8 +15,8 @@ def all_test_databases():
 def exists(db_name):
     return any(map(lambda database_name: database_name.startswith(db_name), all_databases()))
 
-@atexit.register
 def delete_all_test_databases():
+    print('DELETING ALL TEST DATABASE!!')
     for test_db in all_test_databases():
         call(['dropdb', test_db])
 
@@ -25,11 +24,9 @@ def make_one_test_database_for_this_process():
     db_name = '{}_{}'.format(TEST_DATABASE_PREFIX, getpid())
     test_url='{}/{}'.format(DB_URL_PREFIX, db_name)
     if not exists(db_name):
-        #print(db_name+' does not exists, let\'s create it.')
+        print(db_name+' does not exists, let\'s create it.')
         check_call(['createdb', db_name])
         environ['TEST_URL'] = test_url
     else:
-        #print(db_name+' already exists.')
+        print(db_name+' already exists.')
         pass
-
-make_one_test_database_for_this_process()

@@ -104,5 +104,8 @@ from os import urandom
 key = ''.join(map(lambda char: ascii_lowercase[char % (len(ascii_lowercase)-1)], urandom(512)))
 print(key)
 "
+}
 
+delete_test_dbs () {
+	psql -l | awk '/rebase_test_/ { print $1}' | xargs -I {} dropdb {}
 }

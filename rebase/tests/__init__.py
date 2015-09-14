@@ -1,11 +1,12 @@
 from unittest import TestCase
 
 from rebase import create_app
+import rebase.tests.database.cleanup
 
 class RebaseTestCase(TestCase):
 
     def setUp(self):
-        import rebase.tests.database
+        import rebase.tests.database.create
         self.app, self.app_context, self.db = create_app(testing=True)
         self.db.create_all()
         self.db.session.commit()
