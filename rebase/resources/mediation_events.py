@@ -8,13 +8,10 @@ from rebase.common.database import DB
 from rebase.models import Mediation
 from rebase.views.mediation import (
     serializer,
-    initialize_event_deserializer,
     dev_answer_event_deserializer,
     client_answer_event_deserializer,
     timeout_event_deserializer,
     timeout_answer_event_deserializer,
-    agree_event_deserializer,
-    arbitrate_event_deserializer,
 )
 
 class Event(Resource):
@@ -36,23 +33,23 @@ class Event(Resource):
         return response
 
 
-class MediationInitializeEvents(Event):
+class MediationDevAnswerEvents(Event):
 
     @login_required
     def post(self, id):
-        return self._post(serializer, initialize_event_deserializer, id)
+        return self._post(serializer, dev_answer_event_deserializer, id)
 
         #mediation_instance = Mediation.query.get(id)
         #if not mediation_instance:
             #raise NotFoundError(Mediation.__tablename__, id)
-        #initialize_event = mediation_view.initialize_event_deserializer.load(request.form or request.json).data
+        #dev_answer_event = dev_answer_event_deserializer.load(request.form or request.json).data
 
         #with ManagedState():
-            #mediation_instance.machine.send(*initialize_event)
+            #mediation_instance.machine.send(*dev_answer_event)
 
         #DB.session.commit()
 
-        #response = jsonify(mediation = mediation_view.serializer.dump(mediation_instance).data)
+        #response = jsonify(mediation = serializer.dump(mediation_instance).data)
         #response.status_code = 201
         #return response
 
@@ -63,15 +60,15 @@ class MediationDevAnswerEvents(Resource):
         mediation_instance = Mediation.query.get(id)
         if not mediation_instance:
             raise NotFoundError(Mediation.__tablename__, id)
-        dev_answer_event = mediation_view.dev_answer_event_deserializer.load(request.form or request.json).data
+        dev_answer_event = dev_answer_event_deserializer.load(request.form or request.json).data
 
         with ManagedState():
-            mediation_instance.machine.send(dev_answer_event)
+            mediation_instance.machine.send(*dev_answer_event)
 
         DB.session.commit()
 
-        mediation_view.serializer.context = dict(current_user = current_user)
-        response = jsonify(mediation_view = mediation_view.serializer.dump(mediation_instance).data)
+        serializer.context = dict(current_user = current_user)
+        response = jsonify(mediation = serializer.dump(mediation_instance).data)
         response.status_code = 201
         return response
 
@@ -82,14 +79,14 @@ class MediationClientAnswerEvents(Resource):
         mediation_instance = Mediation.query.get(id)
         if not mediation_instance:
             raise NotFoundError(Mediation.__tablename__, id)
-        review_event = mediation_view.client_answer_event_deserializer.load(request.form or request.json).data
+        client_answer_event = client_answer_event_deserializer.load(request.form or request.json).data
 
         with ManagedState():
-            mediation_instance.machine.send(review_event)
+            mediation_instance.machine.send(*client_answer_event)
 
         DB.session.commit()
 
-        response = jsonify(mediation_view = mediation_view.serializer.dump(mediation_instance).data)
+        response = jsonify(mediation = serializer.dump(mediation_instance).data)
         response.status_code = 201
         return response
 
@@ -100,14 +97,14 @@ class MediationTimeoutEvents(Resource):
         mediation_instance = Mediation.query.get(id)
         if not mediation_instance:
             raise NotFoundError(Mediation.__tablename__, id)
-        review_event = mediation_view.timeout_event_deserializer.load(request.form or request.json).data
+        review_event = timeout_event_deserializer.load(request.form or request.json).data
 
         with ManagedState():
             mediation_instance.machine.send(review_event)
 
         DB.session.commit()
 
-        response = jsonify(mediation_view = mediation_view.serializer.dump(mediation_instance).data)
+        response = jsonify(mediation = serializer.dump(mediation_instance).data)
         response.status_code = 201
         return response
 
@@ -118,50 +115,14 @@ class MediationTimeoutAnswerEvents(Resource):
         mediation_instance = Mediation.query.get(id)
         if not mediation_instance:
             raise NotFoundError(Mediation.__tablename__, id)
-        review_event = mediation_view.timeout_answer_event_deserializer.load(request.form or request.json).data
+        review_event = timeout_answer_event_deserializer.load(request.form or request.json).data
 
         with ManagedState():
             mediation_instance.machine.send(review_event)
 
         DB.session.commit()
 
-        mediation_view.serializer.context = dict(current_user = current_user)
-        response = jsonify(mediation_view = mediation_view.serializer.dump(mediation_instance).data)
-        response.status_code = 201
-        return response
-
-class MediationAgreeEvents(Resource):
-
-    @login_required
-    def post(self, id):
-        mediation_instance = Mediation.query.get(id)
-        if not mediation_instance:
-            raise NotFoundError(Mediation.__tablename__, id)
-        review_event = mediation_view.agree_event_deserializer.load(request.form or request.json).data
-
-        with ManagedState():
-            mediation_instance.machine.send(review_event)
-
-        DB.session.commit()
-
-        response = jsonify(mediation = mediation_view.serializer.dump(mediation_instance).data)
-        response.status_code = 201
-        return response
-
-class MediationArbitrateEvents(Resource):
-
-    @login_required
-    def post(self, id):
-        mediation_instance = Mediation.query.get(id)
-        if not mediation_instance:
-            raise NotFoundError(Mediation.__tablename__, id)
-        review_event = mediation_view.arbitrate_event_deserializer.load(request.form or request.json).data
-
-        with ManagedState():
-            mediation_instance.machine.send(review_event)
-
-        DB.session.commit()
-
-        response = jsonify(mediation = mediation_view.serializer.dump(mediation_instance).data)
+        serializer.context = dict(current_user = current_user)
+        response = jsonify(mediation = serializer.dump(mediation_instance).data)
         response.status_code = 201
         return response

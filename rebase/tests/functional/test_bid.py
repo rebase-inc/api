@@ -1,5 +1,3 @@
-from functools import partialmethod
-
 from . import PermissionTestCase
 
 from rebase.models import Bid, Contractor, Manager

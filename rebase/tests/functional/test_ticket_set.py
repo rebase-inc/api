@@ -1,5 +1,3 @@
-from functools import partialmethod
-
 from . import PermissionTestCase
 from rebase.common.utils import ids
 from rebase.tests.common.ticket_set import (

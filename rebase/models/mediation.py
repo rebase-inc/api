@@ -74,6 +74,7 @@ class Mediation(DB.Model, PermissionMixin):
         return value
 
 class MediationStateMachine(StateMachine):
+    valid_answers = ['resume_work', 'complete', 'fail']
 
     def set_state(self, _, new_state):
         self.mediation.state = new_state.__name__
@@ -82,36 +83,35 @@ class MediationStateMachine(StateMachine):
         pass
 
     def waiting_for_client(self, dev_answer):
-        if dev_answer not in ['resume_work', 'complete', 'fail']:
+        if dev_answer not in self.valid_answers:
             raise ValueError('Invalid dev answer')
-        self.dev_answer = dev_answer
-        pass
+        self.mediation.dev_answer = dev_answer
 
     def waiting_for_dev(self, client_answer):
-        if client_answer not in ['resume_work', 'complete', 'fail']:
+        if client_answer not in self.valid_answers:
             raise ValueError('Invalid dev answer')
-        self.client_answer = client_answer
+        self.mediation.client_answer = client_answer
 
     def decision(self, remaining_answer):
         if hasattr(self, 'client_answer'):
-            self.dev_answer = remaining_answer
+            self.mediation.dev_answer = remaining_answer
         else:
-            self.client_answer = remaining_answer
+            self.mediation.client_answer = remaining_answer
 
-        if self.client_answer == self.dev_answer:
+        if self.mediation.client_answer == self.mediation.dev_answer:
             self.send('agree')
         else:
             self.send('arbitrate')
 
     def timed_out(self):
         if hasattr(self, 'client_answer'):
-            self.send('timeout_answer', self.client_answer)
+            self.send('timeout_answer', self.mediation.client_answer)
         else:
-            self.send('timeout_answer', self.dev_answer)
+            self.send('timeout_answer', self.mediation.dev_answer)
         pass
 
     def agreement(self):
-        self.mediation.work.machine.send(self.dev_answer)
+        self.mediation.work.machine.send(self.mediation.dev_answer)
 
     def arbitration(self):
         pass
@@ -120,9 +120,6 @@ class MediationStateMachine(StateMachine):
         self.mediation = mediation_instance
         StateMachine.__init__(self, initial_state = getattr(self, initial_state))
 
-        self.add_event_transitions('initialize',    {
-            None: self.discussion
-        })
         self.add_event_transitions('dev_answer',    {
             self.discussion:        self.waiting_for_client,
             self.waiting_for_dev:   self.decision

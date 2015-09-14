@@ -1,6 +1,4 @@
-import unittest
 from datetime import datetime, timedelta
-from functools import partialmethod
 from math import floor
 
 from . import PermissionTestCase, RebaseRestTestCase

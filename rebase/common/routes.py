@@ -26,7 +26,6 @@ def register_routes(api):
     api.add_resource(WorkFailEvents, '/work/<int:id>/fail_events')
 
     from rebase.resources.mediation_events import (
-        MediationInitializeEvents,
         MediationDevAnswerEvents,
         MediationClientAnswerEvents,
         MediationTimeoutEvents,
@@ -34,7 +33,6 @@ def register_routes(api):
         MediationAgreeEvents,
         MediationArbitrateEvents
     )
-    api.add_resource(MediationInitializeEvents,     '/mediation/<int:id>/initialize_events')
     api.add_resource(MediationDevAnswerEvents,      '/mediation/<int:id>/dev_answer_events')
     api.add_resource(MediationClientAnswerEvents,   '/mediation/<int:id>/client_answer_events')
     api.add_resource(MediationTimeoutEvents,        '/mediation/<int:id>/timeout_events')

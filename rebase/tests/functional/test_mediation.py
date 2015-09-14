@@ -1,4 +1,5 @@
 from datetime import timedelta
+from functools import partialmethod
 
 from . import RebaseRestTestCase
 
@@ -35,6 +36,38 @@ class TestMediation(PermissionTestCase):
         self.assertIsInstance(mediation.pop('state'), str)
         self.assertIsInstance(mediation.pop('work'), int)
         self.assertIsInstance(mediation.pop('comments'), list)
+
+
+    def _send_answer(self, role, mediation_id, answer, expected_state):
+        response = self.post_resource(
+            'mediation/'+str(mediation_id)+'/'+role+'_answer_events',
+            {
+                role+'_answer': answer
+            }
+        )
+        self.assertIn('mediation', response)
+        new_mediation = response['mediation']
+        self.assertIn('state', new_mediation)
+        self.assertEqual(new_mediation['state'], expected_state)
+        self.assertIn(role+'_answer', new_mediation)
+        self.assertEqual(new_mediation[role+'_answer'], answer)
+
+    send_dev_answer = partialmethod(_send_answer, 'dev')
+    send_client_answer = partialmethod(_send_answer, 'client')
+
+    def test_events_agreement(self):
+        _, mediation = self._run(self.case.user_1_as_mgr, 'manager')
+        self.assertEqual(mediation.state, 'discussion')
+
+        self.send_dev_answer(mediation.id, 'complete', 'waiting_for_client')
+        self.send_client_answer(mediation.id, 'complete', 'agreement')
+
+    def test_events_arbitration(self):
+        _, mediation = self._run(self.case.user_1_as_mgr, 'manager')
+        self.assertEqual(mediation.state, 'discussion')
+
+        self.send_dev_answer(mediation.id, 'complete', 'waiting_for_client')
+        self.send_client_answer(mediation.id, 'resume_work', 'arbitration')
         
     def test_user_1_as_mgr_collection(self):
         self.collection(self.case.user_1_as_mgr, 'manager')

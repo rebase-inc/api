@@ -1,5 +1,3 @@
-from functools import partialmethod
-
 from . import RebaseRestTestCase, PermissionTestCase
 from rebase.common.utils import RebaseResource, ids
 from rebase.models import Contract, Bid, Contractor, Manager
