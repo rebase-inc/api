@@ -15,6 +15,7 @@ class RebaseRestTestCase(RebaseTestCase):
 
     def setUp(self):
         super().setUp()
+        self.client = self.app.test_client()
         if self.create_mock_data:
             create_the_world(self.db)
             self.admin_user = create_admin_user(self.db, password='foo')
