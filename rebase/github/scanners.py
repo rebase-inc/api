@@ -6,11 +6,10 @@ from rebase.models.skill_set import SkillSet
 from rebase.models.contractor import Contractor
 
 def save_languages(user_id, languages, db):
-    user = User.query.filter(User.id==user_id).first()
+    user = User.query.get_or_404(user_id)
     skill_set = SkillSet.query.join(Contractor).filter(Contractor.user == user).first()
     if not skill_set:
         raise RuntimeError('This contractor should have an associated SkillSet already')
-
     skill_set.skills = languages
     db.session.add(skill_set)
     db.session.commit()
@@ -37,7 +36,7 @@ def detect_languages(user_id, github, username, db):
 def read_repo(user_id, github_username):
     from rebase import create_app
     app, _, db = create_app()
-    user = User.query.filter(User.id==user_id).first()
+    user = User.query.get_or_404(user_id)
     github_account = GithubAccount.query_by_user(user).filter(GithubAccount.user_name==github_username).first()
     github_access_token = (github_account.auth_token, '')
     if not github_account:
