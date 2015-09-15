@@ -29,7 +29,7 @@ class TestAuction(PermissionTestCase):
             'redundancy':       auction.redundancy,
         }
 
-    def update(_, auction):
+    def update(self, auction):
         updated_auction = ids(auction)
         updated_auction.update({
             'duration': 2*auction.duration,
@@ -40,7 +40,17 @@ class TestAuction(PermissionTestCase):
 
     def validate_view(self, auction):
         self.assertTrue(auction)
-        fields = ['id', 'duration', 'finish_work_by', 'ticket_set', 'bids', 'term_sheet', 'redundancy', 'state']
+        fields = [
+            'id',
+            'duration',
+            'finish_work_by',
+            'ticket_set',
+            'bids',
+            'term_sheet',
+            'redundancy',
+            'state',
+            'approved_talents'
+        ]
         for field in fields:
             self.assertIn(field, auction)
         self.assertEqual(auction['state'], 'created')

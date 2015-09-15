@@ -57,8 +57,7 @@ class ForcedError(ClientError):
     def __init__(self, error, data):
         if not isinstance(error, marsh_exc.ForcedError):
             raise ValueError('error parameter must be of type {}'.format(marsh_exc.ForcedError))
-        error_message = "Forced error: '{}' while validating: {}"
-        error_message = error_message.format(error.field_name, data)
+        error_message = str(error)
         super().__init__(400, error_message)
 
 
