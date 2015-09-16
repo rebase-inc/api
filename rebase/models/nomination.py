@@ -14,7 +14,7 @@ class Nomination(DB.Model, PermissionMixin):
     def organization(self):
         return self.ticket_set.bid_limits[0].ticket_snapshot.ticket.organization
 
-    def __init__(self, contractor, ticket_set):
+    def __init__(self, contractor, ticket_set, auction=None):
         from rebase.models import Contractor, TicketSet
         if not isinstance(contractor, Contractor):
             raise ValueError('contractor must be of Contractor type!')
@@ -22,6 +22,8 @@ class Nomination(DB.Model, PermissionMixin):
             raise ValueError('ticket_set must be of TicketSet type!')
         self.contractor = contractor
         self.ticket_set = ticket_set
+        if auction:
+            self.auction = auction
 
     def allowed_to_be_created_by(self, user):
         if user.is_admin():

@@ -337,7 +337,7 @@ class ManagerUserStory(object):
         for auction, ticket in zip(the_auctions, the_tickets):
             for contractor in the_contractors:
                 match = create_ticket_matches(db, [ticket], contractor)
-                nomination = create_one_nomination(db, auction, contractor, True)
+                nomination = create_one_nomination(db, auction, contractor, False)
                 job_fit = create_one_job_fit(db, nomination, match)
 
 def create_the_world(db):

@@ -1,7 +1,8 @@
 import json
 
 from rebase.common.mock import create_the_world, create_admin_user, create_one_user
-from rebase.common.utils import RebaseResource, validate_resource_collection, ids
+from rebase.common.utils import RebaseResource, validate_resource_collection
+from rebase.common.database import ids
 from rebase.models import (
     User,
     Contractor,

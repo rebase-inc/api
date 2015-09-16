@@ -41,6 +41,7 @@ from rebase.models.manager import *
 from rebase.models.bid import *
 from rebase.models.job_fit import *
 
+# TODO simplify this with inspect.getmembers (see example in common.utils.RebaseResource.all_models)
 models = modules[__name__]
 loaded_references = models.__dict__.copy()
 for klass_name, klass in loaded_references.items():

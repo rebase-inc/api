@@ -3,7 +3,8 @@ from math import floor
 
 from . import PermissionTestCase, RebaseRestTestCase
 from rebase.common import mock
-from rebase.common.utils import ids, RebaseResource
+from rebase.common.database import ids
+from rebase.common.utils import RebaseResource
 from rebase.tests.common.auction import (
     case_contractor,
     case_mgr,

@@ -6,7 +6,7 @@ from keyword import kwlist
 
 from sqlalchemy.inspection import inspect
 
-import rebase.models
+from rebase.common.database import get_model_primary_keys, make_collection_url, ids
 
 def plural(text):
     known_forms = {
@@ -17,33 +17,6 @@ def plural(text):
         return text[0:-1]+known_forms[text[-1]]
     else:
         return text+'s'
-
-def get_model_primary_keys(model):
-    ''' returns the tuple of names of components of the primary key
-    e.g get_model_primary_keys(Foo<('id1', 'id2')>)  => ('id1', 'id2')
-    '''
-    return tuple(map(lambda key: key.name, inspect(model).primary_key))
-
-def primary_key(instance):
-    ''' given an instance, returns the value of the primary key
-    e.g Foo<('id1':1, 'id2':5)>  => (1, 5)
-    '''
-    return inspect(instance).identity
-
-def ids(instance):
-    ''' return a dictionary of with the ids of instance
-    e.g. ids(some_db_class) => {'a': 1, 'b':3} where (a, b) is the primary key of some_db_class
-    '''
-    return dict(zip(get_model_primary_keys(type(instance)), primary_key(instance)))
-
-def make_collection_url(model):
-    return '/'+ model.__pluralname__
-
-def make_resource_url(model):
-    keyspace_format = ''
-    for primary_key in get_model_primary_keys(model):
-        keyspace_format += '/<int:{}>'.format(primary_key)
-    return make_collection_url(model) + keyspace_format
 
 def resource_url(model, use_flask_format=False):
     '''
@@ -78,9 +51,13 @@ to second:
 first[{key}] != second[{key}]
 {e}'''
 
+def get_all_models():
+    import rebase.models
+    return dict(getmembers(rebase.models, predicate=isclass))
+
 class RebaseResource(object):
 
-    all_models = dict(getmembers(rebase.models, predicate=isclass))
+    all_models = get_all_models() 
 
     def __init__(self, test, resource):
         '''
