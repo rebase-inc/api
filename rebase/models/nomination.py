@@ -14,6 +14,18 @@ class Nomination(DB.Model, PermissionMixin):
     def organization(self):
         return self.ticket_set.bid_limits[0].ticket_snapshot.ticket.organization
 
+    @property
+    def auction(self):
+        return self._auction
+
+    @auction.setter
+    def auction(self, value):
+        from rebase.models import CodeClearance
+        project = value.ticket_set.bid_limits[0].ticket_snapshot.ticket.project
+        if not CodeClearance.query.filter(CodeClearance.contractor_id == self.contractor_id).filter(CodeClearance.project_id == project.id).first():
+            CodeClearance(project, self.contractor)
+        self._auction = value
+
     def __init__(self, contractor, ticket_set, auction=None):
         from rebase.models import Contractor, TicketSet
         if not isinstance(contractor, Contractor):

@@ -17,7 +17,7 @@ class AuctionSchema(RebaseSchema):
     feedbacks =        SecureNestedField('FeedbackSchema', only='id')
     bids =             SecureNestedField('BidSchema', only=('id','contract'), many=True)
     organization =     SecureNestedField('OrganizationSchema', only=('id',), required=True)
-    approved_talents = SecureNestedField('NominationSchema', only=('contractor', 'ticket_set'), many=True)
+    approved_talents = SecureNestedField('NominationSchema', only=('contractor', 'ticket_set', 'job_fit'), many=True)
 
     def make_object(self, data):
         from rebase.models import Auction

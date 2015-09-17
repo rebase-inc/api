@@ -295,7 +295,7 @@ class DeveloperUserStory(object):
         self.password = password
 
         from rebase.models import Comment
-        self.user = create_one_user(db, self.first_name, self.last_name, self.email, self.password, admin=True)
+        self.user = create_one_user(db, self.first_name, self.last_name, self.email, self.password, admin=False)
         user_ted = create_one_user(db, 'Ted', 'Crisp', 'tedcrisp@joinrebase.com')
         org_veridian = create_one_organization(db, 'veridian', user_ted)
         manager_ted = create_one_manager(db, user_ted, org_veridian)
@@ -305,9 +305,10 @@ class DeveloperUserStory(object):
             for fake_comment in FAKE_COMMENTS:
                 Comment(fake_comment, ticket=ticket)
         self.contractor = create_one_contractor(db, self.user)
+        code_clearance = create_one_code_clearance(db, project_matchmaker, self.contractor)
         the_matches = create_ticket_matches(db, the_tickets, self.contractor)
         the_auctions = [create_one_auction(db, [ticket]) for ticket in the_tickets]
-        the_nominations = [create_one_nomination(db, auction, self.contractor, True) for auction in the_auctions]
+        the_nominations = [create_one_nomination(db, auction, self.contractor, False) for auction in the_auctions]
         the_job_fits = [create_one_job_fit(db, nomination, [match]) for nomination, match in zip(the_nominations, the_matches)]
 
 class ManagerUserStory(object):
@@ -318,7 +319,7 @@ class ManagerUserStory(object):
         self.password = password
 
         from rebase.models import Comment
-        self.user = create_one_user(db, self.first_name, self.last_name, self.email, self.password, admin=True)
+        self.user = create_one_user(db, self.first_name, self.last_name, self.email, self.password, admin=False)
         dev1 = create_one_user(db, 'Andy', 'Dwyer', 'andy@joinrebase.com')
         dev2 = create_one_user(db, 'April', 'Ludgate', 'april@joinrebase.com')
         dev3 = create_one_user(db, 'Leslie', 'Knope', 'leslie@joinrebase.com')

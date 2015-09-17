@@ -101,14 +101,15 @@ class WorkStateMachine(StateMachine):
         pass
 
     def in_review(self):
-        from rebase.models.review import Review
-        review = Review(self.work)
-        DB.session.add(review)
+        pass
 
     def in_mediation(self):
         self.work.start_mediation()
 
     def complete(self):
+        from rebase.models.review import Review
+        review = Review(self.work)
+        DB.session.add(review)
         pass
 
     def failed(self):
