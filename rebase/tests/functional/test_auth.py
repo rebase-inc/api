@@ -50,11 +50,23 @@ class TestAuth(RebaseNoMockRestTestCase):
         self._role('manager')
 
     def test_bogus_email(self):
-        response = self.post_resource(
+        self.post_resource(
             '/auth',
             {
-                'user': {'email': ' '},
+                'user': {'email': ''},
                 'password': 'foo',
+                'role': 'contractor'
+            },
+            expected_code = 401
+        )
+
+    def test_bogus_password(self):
+        user = create_user(self.db)
+        self.post_resource(
+            '/auth',
+            {
+                'user': {'email': user.email},
+                'password': '',
                 'role': 'contractor'
             },
             expected_code = 401
