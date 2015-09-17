@@ -8,7 +8,7 @@ from flask.ext.login import (
     current_app,
     current_user
 )
-from rebase.common.exceptions import UnmarshallingError
+from rebase.common.exceptions import UnmarshallingError, ValidationError
 
 from rebase.views import auth, user
 from rebase.common.database import DB
@@ -22,6 +22,7 @@ from rebase.common.rest import (
 
 class AuthCollection(Resource):
     url = '/auth'
+    bad_credentials = 'Wrong credentials!\nVerify that both the email and the password you entered are correct.'
 
     # TODO: Refactor this to look like other REST endpoints
     def post(self):
@@ -32,7 +33,7 @@ class AuthCollection(Resource):
             role = auth_data.get('role', '')
             if not auth_user.check_password(password):
                 logout_user()
-                response = jsonify(message = 'Incorrect password!')
+                response = jsonify(message=self.bad_credentials)
                 response.status_code = 401
                 return response
             else:
@@ -46,6 +47,11 @@ class AuthCollection(Resource):
         except UnmarshallingError as e:
             logout_user()
             response = jsonify(message = 'No credentials provided!')
+            response.status_code = 401
+            return response
+        except ValidationError as e:
+            logout_user()
+            response = jsonify(message=self.bad_credentials)
             response.status_code = 401
             return response
 

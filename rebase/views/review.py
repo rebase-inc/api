@@ -19,5 +19,5 @@ class ReviewSchema(RebaseSchema):
 serializer = ReviewSchema()
 deserializer = ReviewSchema(only=('work',), skip_missing=True)
 
-update_deserializer = ReviewSchema(only=('id', 'rating'))
+update_deserializer = ReviewSchema(only=('rating',))
 update_deserializer.make_object = lambda data: data

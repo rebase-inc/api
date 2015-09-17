@@ -71,6 +71,14 @@ class TestUserResource(RebaseRestTestCase):
 
         user = self._create_user(validate=validate_user)
 
+    def test_create_missing_fields(self):
+        resp = self.post_resource(
+            'users',
+            {'password': 'foo'},
+            expected_code=400
+        )
+        print(resp)
+
     def test_update_unauthorized(self):
         user = self._create_user()
         user['last_name'] = 'Badman'

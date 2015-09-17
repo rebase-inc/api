@@ -1,5 +1,4 @@
 import datetime
-import itertools
 
 from flask.ext.login import login_user, logout_user
 from sqlalchemy.ext.hybrid import hybrid_property

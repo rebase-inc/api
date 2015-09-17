@@ -100,3 +100,9 @@ class TestReview(PermissionTestCase):
 
     def test_admin_create(self):
         self.create(self.case.admin, 'contractor', True, delete_first=True)
+
+    def test_deserialization(self):
+        _, review = self._run(self.case.user_1_as_mgr, 'manager')
+        self.post_resource('reviews', expected_code=400)
+        response = self.post_resource('reviews', {'foo':'bar'}, expected_code=400)
+        print(response)
