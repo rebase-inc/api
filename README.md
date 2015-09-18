@@ -25,6 +25,9 @@ Supervisord is used to managed rqworker processes.
 ## Testing
 ```bash
 nosetests rebase/tests
+
+# running the tests in parallel:
+nosetests --processes=-1 --process-timeout=999 rebase/tests
 ```
 # GitHub Integration
 ## Register a new GitHub application
