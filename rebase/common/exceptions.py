@@ -50,8 +50,7 @@ class MarshallingError(ServerError):
     def __init__(self, error, data):
         if not isinstance(error, marsh_exc.MarshallingError):
             raise ValueError('error parameter must be of type {}'.format(marsh_exc.MarshallingError))
-        error_message = "Missing field '{}' while serializing: {}"
-        error_message = error_message.format(error.field_name, data)
+        error_message = '{}\nin data:\n{}'.format(str(error), data)
         super().__init__(message=error_message, more_data=data)
 
 
@@ -59,8 +58,7 @@ class UnmarshallingError(ClientError):
     def __init__(self, error, data):
         if not isinstance(error, marsh_exc.UnmarshallingError):
             raise ValueError('error parameter must be of type {}'.format(marsh_exc.UnmarshallingError))
-        error_message = "Missing field: '{}' while deserializing: {}"
-        error_message = error_message.format(error.field_name, data)
+        error_message = '{}\nin data:\n{}'.format(str(error), data)
         super().__init__(message=error_message, more_data=data)
 
 
