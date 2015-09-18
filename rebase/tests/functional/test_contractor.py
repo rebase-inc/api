@@ -1,6 +1,7 @@
 from unittest import skip
 
 from . import RebaseRestTestCase, RebaseNoMockRestTestCase
+from rebase.common.mock import create_one_user
 from rebase.common.utils import RebaseResource, validate_resource_collection
 from rebase.tests.common.contractor import (
     case_cleared_contractors,
@@ -52,12 +53,6 @@ class TestContractorResource(RebaseRestTestCase):
             code_clearance_resource.delete(**clearance)
         self.assertFalse(self.contractor_resource.get(contractor)['clearances'])
 
-    def test_create(self):
-        self.login_admin()
-        user_resource = RebaseResource(self, 'User')
-        user = user_resource.just_ids(user_resource.get_any())
-        self.contractor_resource.create(user=user)
-
     def test_update(self):
         self.login_admin()
         contractor = self.contractor_resource.get_any()
@@ -79,17 +74,51 @@ class TestContractorResource(RebaseRestTestCase):
         self.db.session.add(user)
         self.db.session.commit()
         self.login(user.email, 'foo')
-        contractor = self.post_resource('contractors', dict(user={'id': user.id}))['contractor']
+        contractor = self.post_resource(
+            'contractors',
+            dict(
+                user={
+                    'id': user.id,
+                    'first_name': user.first_name,
+                    'last_name': user.last_name
+                }
+            )
+        )['contractor']
         self.logout()
         self.login_as_new_user()
         self.delete_resource('contractors/{id}'.format(**contractor), 401)
         self.login(user.email, 'foo')
         self.delete_resource('contractors/{id}'.format(**contractor))
 
-class TestContractorNoMock(RebaseNoMockRestTestCase):
+class TestContractor(RebaseNoMockRestTestCase):
     def setUp(self):
         super().setUp()
         self.resource = RebaseResource(self, 'Contractor')
+
+    def test_admin_create(self):
+        admin_user = create_one_user(self.db, admin=True)
+        other_user = create_one_user(self.db)
+        self.login(admin_user.email, 'foo')
+        _user = {
+            'id': other_user.id,
+            'first_name': other_user.first_name,
+            'last_name': other_user.last_name
+        }
+        self.resource.create(
+            user=_user
+        )
+
+    def test_user_create(self):
+        user = create_one_user(self.db)
+        logged_user = self.login(user.email, 'foo')
+        _user = {
+            'id': logged_user['id'],
+            'first_name': logged_user['first_name'],
+            'last_name': logged_user['last_name']
+        }
+        self.resource.create(
+            user=_user
+        )
 
     def test_get_all_cleared_contractors_as_manager(self):
         mgr_user, expected_resources = self._run(case_cleared_contractors, 'manager')
