@@ -10,7 +10,7 @@ class GithubTicket(RemoteTicket):
 
     __mapper_args__ = { 'polymorphic_identity': 'github_ticket' }
 
-    def __init__(self, project, url):
+    def __init__(self, project, number, title='NOTIMPLEMENTED', description='NOTIMPLEMENTED'):
         self.project = project
         self.number = number
         self.title = title #this should be pulled from github
