@@ -12,9 +12,7 @@ class WorkHaltEvents(Resource):
 
     @login_required
     def post(self, id):
-        work_instance = Work.query.get(id)
-        if not work_instance:
-            raise NotFoundError(Work.__tablename__, id)
+        work_instance = Work.query.get_or_404(id)
         halt_event = work.halt_event_deserializer.load(request.form or request.json).data
 
         with ManagedState():
@@ -30,9 +28,7 @@ class WorkReviewEvents(Resource):
 
     @login_required
     def post(self, id):
-        work_instance = Work.query.get(id)
-        if not work_instance:
-            raise NotFoundError(Work.__tablename__, id)
+        work_instance = Work.query.get_or_404(id)
         review_event = work.review_event_deserializer.load(request.form or request.json).data
 
         with ManagedState():
@@ -49,9 +45,7 @@ class WorkMediateEvents(Resource):
 
     @login_required
     def post(self, id):
-        work_instance = Work.query.get(id)
-        if not work_instance:
-            raise NotFoundError(Work.__tablename__, id)
+        work_instance = Work.query.get_or_404(id)
         review_event = work.mediate_event_deserializer.load(request.form or request.json).data
 
         with ManagedState():
@@ -67,9 +61,7 @@ class WorkCompleteEvents(Resource):
 
     @login_required
     def post(self, id):
-        work_instance = Work.query.get(id)
-        if not work_instance:
-            raise NotFoundError(Work.__tablename__, id)
+        work_instance = Work.query.get_or_404(id)
         review_event = work.complete_event_deserializer.load(request.form or request.json).data
 
         with ManagedState():
@@ -85,9 +77,7 @@ class WorkResumeEvents(Resource):
 
     @login_required
     def post(self, id):
-        work_instance = Work.query.get(id)
-        if not work_instance:
-            raise NotFoundError(Work.__tablename__, id)
+        work_instance = Work.query.get_or_404(id)
         review_event = work.resume_event_deserializer.load(request.form or request.json).data
 
         with ManagedState():
@@ -104,9 +94,7 @@ class WorkFailEvents(Resource):
 
     @login_required
     def post(self, id):
-        work_instance = Work.query.get(id)
-        if not work_instance:
-            raise NotFoundError(Work.__tablename__, id)
+        work_instance = Work.query.get_or_404(id)
         review_event = work.fail_event_deserializer.load(request.form or request.json).data
 
         with ManagedState():

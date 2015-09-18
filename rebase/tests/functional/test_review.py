@@ -2,6 +2,7 @@ from . import PermissionTestCase
 from rebase.common.utils import ids
 from rebase.tests.common.review import ReviewUseCase
 
+
 class TestReview(PermissionTestCase):
     model = 'Review'
 

@@ -18,12 +18,12 @@ def register_routes(api):
     api.add_resource(AuctionFailEvents, '/auctions/<int:id>/fail_events', endpoint='auction_fail_events')
 
     from rebase.resources.work_events import WorkHaltEvents, WorkReviewEvents, WorkMediateEvents, WorkCompleteEvents, WorkResumeEvents, WorkFailEvents
-    api.add_resource(WorkHaltEvents, '/work/<int:id>/halt_events')
-    api.add_resource(WorkReviewEvents, '/work/<int:id>/review_events')
-    api.add_resource(WorkMediateEvents, '/work/<int:id>/mediate_events')
-    api.add_resource(WorkCompleteEvents, '/work/<int:id>/complete_events')
-    api.add_resource(WorkResumeEvents, '/work/<int:id>/resume_events')
-    api.add_resource(WorkFailEvents, '/work/<int:id>/fail_events')
+    api.add_resource(WorkHaltEvents, '/works/<int:id>/halt')
+    api.add_resource(WorkReviewEvents, '/works/<int:id>/review')
+    api.add_resource(WorkMediateEvents, '/works/<int:id>/mediate')
+    api.add_resource(WorkCompleteEvents, '/works/<int:id>/complete')
+    api.add_resource(WorkResumeEvents, '/works/<int:id>/resume')
+    api.add_resource(WorkFailEvents, '/works/<int:id>/fail')
 
     from rebase.resources.mediation_events import (
         MediationDevAnswerEvents,

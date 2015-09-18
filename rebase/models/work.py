@@ -7,7 +7,7 @@ from rebase.common.database import DB, PermissionMixin
 from rebase.common.state import StateMachine
 
 class Work(DB.Model, PermissionMixin):
-    __pluralname__ = 'work'
+    __pluralname__ = 'works'
 
     id =    DB.Column(DB.Integer, primary_key=True)
     state = DB.Column(DB.String, nullable=False, default='in_progress')
