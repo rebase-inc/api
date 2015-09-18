@@ -40,6 +40,7 @@ from rebase.models.work_offer import *
 from rebase.models.manager import *
 from rebase.models.bid import *
 from rebase.models.job_fit import *
+from rebase.models.photo import *
 
 # TODO simplify this with inspect.getmembers (see example in common.utils.RebaseResource.all_models)
 models = modules[__name__]
