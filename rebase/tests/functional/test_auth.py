@@ -32,7 +32,7 @@ class TestAuth(RebaseNoMockRestTestCase):
         self.assertIn('current_role', user)
         current_role = user['current_role']
 
-        self.assertEqual(current_role, 'contractor')
+        self.assertEqual(current_role['type'], 'contractor')
 
         self.get_resource('users')
         response = self.get_resource('auctions')
@@ -41,7 +41,7 @@ class TestAuth(RebaseNoMockRestTestCase):
     def _role(self, current_role):
         user = create_user(self.db)
         logged_user = self.login(user.email, 'foo', role=current_role)
-        self.assertEqual(current_role, logged_user['current_role'])
+        self.assertEqual(current_role, logged_user['current_role']['type'])
 
     def test_contractor(self):
         self._role('contractor')

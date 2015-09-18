@@ -14,7 +14,7 @@ class UserSchema(RebaseSchema):
     password =      fields.String(required=True)
     last_seen =     fields.DateTime(required=True)
     admin =         fields.Boolean(default=False)
-    current_role =  SecureNestedField('RoleSchema', only='type')
+    current_role =  SecureNestedField('RoleSchema', required=True)
 
     roles = SecureNestedField('RoleSchema', exclude=('user',), many=True)
 
