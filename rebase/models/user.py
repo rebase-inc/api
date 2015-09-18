@@ -21,6 +21,7 @@ class User(DB.Model, PermissionMixin):
     hashed_password =   DB.Column(DB.String,    nullable=False)
     last_seen =         DB.Column(DB.DateTime,  nullable=False)
     roles =             DB.relationship('Role', backref='user', cascade='all, delete-orphan', lazy='dynamic')
+    photo =             DB.relationship('Photo', backref='user', cascade="all, delete-orphan", passive_deletes=True, uselist=False)
     # TODO add a persistent current role
     #current_role =      DB.relationship('Role', backref='current_user', userlist=False, cascade='all, delete-orphan', passive_deletes=True)
     admin =             DB.Column(DB.Boolean,   nullable=False, default=False)

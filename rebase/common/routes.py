@@ -9,6 +9,10 @@ def register_routes(api):
     from rebase.resources.auth import AuthCollection
     api.add_resource(AuthCollection, AuthCollection.url)
 
+    from rebase.resources.uploads import UploadCollection, UploadResource
+    api.add_resource(UploadCollection, UploadCollection.url)
+    api.add_resource(UploadResource, UploadResource.url)
+
     from rebase.resources.auction import AuctionCollection, AuctionResource
     from rebase.resources.auction import AuctionBidEvents, AuctionEndEvents, AuctionFailEvents
     api.add_resource(AuctionCollection, '/auctions', endpoint='auctions')

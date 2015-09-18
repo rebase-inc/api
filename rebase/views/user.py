@@ -4,6 +4,10 @@ from rebase.common.schema import RebaseSchema
 from rebase.common.database import get_or_make_object, SecureNestedField
 from rebase.views.role import RoleSchema
 
+class PhotoSchema(RebaseSchema):
+    id =  fields.Integer()
+    url = fields.String(required=True)
+
 class UserSchema(RebaseSchema):
     id =            fields.Integer()
     first_name =    fields.String(required=True)
@@ -13,6 +17,7 @@ class UserSchema(RebaseSchema):
     last_seen =     fields.DateTime(required=True)
     admin =         fields.Boolean(default=False)
     current_role =  SecureNestedField('RoleSchema', only='type')
+    photo =         SecureNestedField(PhotoSchema, only='url')
 
     roles = SecureNestedField('RoleSchema', exclude=('user',), many=True)
 
@@ -23,7 +28,7 @@ class UserSchema(RebaseSchema):
             return User.query.filter(User.email == data.get('email')).one()
         return get_or_make_object(User, data)
 
-serializer = UserSchema(only=('id','admin','first_name','last_name','email','last_seen','roles', 'current_role'))
+serializer = UserSchema(only=('id','admin','first_name','last_name','email','last_seen','roles', 'current_role','photo'))
 
 deserializer = UserSchema(only=('first_name','last_name','email','password'), strict=True)
 
