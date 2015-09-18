@@ -1,3 +1,4 @@
+from copy import copy
 from datetime import datetime, timedelta
 from math import floor
 
@@ -91,6 +92,56 @@ class TestAuction(PermissionTestCase):
         bid = self._make_bid(user, auction, 0.8)
         auction_blob = self.post_resource('auctions/{}/bid_events'.format(auction.id), bid)['auction']
         self.assertEqual(auction_blob['state'], 'ended')
+
+    def test_contractor_bid_on_invalid_auction(self):
+        user, auction = self._run(case_contractor, 'contractor')
+
+        bid = self._make_bid(user, auction, 0.8)
+        self.post_resource(
+            'auctions/{}/bid_events'.format(1000000000),
+            bid,
+            expected_code=404
+        )
+
+    def test_contractor_bad_bid_no_work_offers(self):
+        user, auction = self._run(case_contractor, 'contractor')
+
+        good_bid = self._make_bid(user, auction, 0.8)
+
+        bad_bid = copy(good_bid)
+        bad_bid['bid']['work_offers'].clear()
+        self.post_resource(
+            'auctions/{}/bid_events'.format(auction.id),
+            bad_bid,
+            expected_code=400
+        )
+
+    def test_contractor_bad_bid_wrong_snapshot(self):
+        user, auction = self._run(case_contractor, 'contractor')
+
+        good_bid = self._make_bid(user, auction, 0.8)
+
+        bad_bid = copy(good_bid)
+        bad_bid['bid']['work_offers'][0]['ticket_snapshot']['id'] = 99999999
+        self.post_resource(
+            'auctions/{}/bid_events'.format(auction.id),
+            bad_bid,
+            expected_code=404
+        )
+
+    def test_contractor_bad_bid_no_contractor(self):
+        user, auction = self._run(case_contractor, 'contractor')
+
+        good_bid = self._make_bid(user, auction, 0.8)
+
+        bad_bid = copy(good_bid)
+        del bad_bid['bid']['contractor']
+        response = self.post_resource(
+            'auctions/{}/bid_events'.format(auction.id),
+            bad_bid,
+            expected_code=400
+        )
+        print(response)
 
     def test_fail_event(self):
         user, auction = self._run(case_admin, 'manager')

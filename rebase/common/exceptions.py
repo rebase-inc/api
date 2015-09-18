@@ -114,6 +114,10 @@ class AsContractorPathUndefined(TypeError):
     def __init__(self, klass):
         super().__init__(error_message.format(klass.__name__))
 
+class BadBid(ClientError):
+    error_message = 'bid didnt match expected tickets! we needed {} but got {}'
+    def __init__(self, required_tickets, bid_tickets):
+        super().__init__(message=self.error_message.format(required_tickets, bid_tickets))
 
 @contextmanager
 def marshmallow_exceptions(data=None):

@@ -56,6 +56,10 @@ def get_or_make_object(model, data, id_fields=None):
     return model(**data)
 
 class SecureNestedField(fields.Nested):
+    def __init__(self, nested, strict=False, *args, **kwargs):
+        self.strict = strict
+        super().__init__(nested, *args, **kwargs)
+
     def _serialize(self, nested_obj, attr, obj):
         if not nested_obj:
             if self.many:
@@ -70,6 +74,13 @@ class SecureNestedField(fields.Nested):
             nested_obj = nested_obj if nested_obj.allowed_to_be_viewed_by(current_user) else None
         self.schema.context = self.context
         return super()._serialize(nested_obj, attr, obj)
+
+    @property
+    def schema(self):
+        _schema = fields.Nested.schema.fget(self)
+        _schema.strict = self.strict
+        return _schema
+
 
 class PermissionMixin(object):
     as_contractor_path = None

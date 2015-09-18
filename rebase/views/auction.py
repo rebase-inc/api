@@ -24,7 +24,7 @@ class AuctionSchema(RebaseSchema):
         return get_or_make_object(Auction, data)
 
 class BidEventSchema(RebaseSchema):
-    bid = SecureNestedField('BidSchema', required=True)
+    bid = SecureNestedField('BidSchema', required=True, strict=True)
     def make_object(self, data):
         return 'bid', data.pop('bid')
 
@@ -44,7 +44,7 @@ deserializer.declared_fields['ticket_set'].only = None
 update_deserializer = AuctionSchema(only=('id', 'duration', 'term_sheet', 'redundancy', 'approved_talents'), strict=True)
 update_deserializer.make_object = lambda data: data
 
-bid_event_deserializer = BidEventSchema(strict=True)
+bid_event_deserializer = BidEventSchema(only=('bid',), strict=True)
 end_event_deserializer = EndEventSchema()
 fail_event_deserializer = FailEventSchema()
 

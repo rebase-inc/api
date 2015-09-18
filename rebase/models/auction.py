@@ -5,7 +5,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy import or_, sql
 
 from rebase.common.database import DB, PermissionMixin
-from rebase.common.exceptions import NoRole, UnknownRole
+from rebase.common.exceptions import NoRole, UnknownRole, BadBid
 from rebase.common.query import query_from_class_to_user
 from rebase.common.state import StateMachine
 from rebase.models import BidLimit, Contract, Bid
@@ -103,7 +103,7 @@ class AuctionStateMachine(StateMachine):
         required_tickets = set([bid_limit.ticket_snapshot for bid_limit in self.auction.ticket_set.bid_limits])
         bid_tickets = set([work_offer.ticket_snapshot for work_offer in bid.work_offers.all()])
         if required_tickets ^ bid_tickets:
-            raise Exception('bid didnt match expected tickets! we needed {} but got {}'.format(required_tickets, bid_tickets))
+            raise BadBid(required_tickets, bid_tickets)
         self.auction.bids.append(bid)
 
         # check to see if overbid or underbid
