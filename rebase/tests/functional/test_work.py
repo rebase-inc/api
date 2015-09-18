@@ -70,7 +70,7 @@ class TestWorkResource(RebaseRestTestCase):
         state = self.post_resource('works/{}/review'.format(work.id))['work']['state']
         self.assertEqual(state, 'in_review')
 
-        state = self.post_resource('works/{}/complete'.format(work.id))['works']['state']
+        state = self.post_resource('works/{}/complete'.format(work.id))['work']['state']
         self.assertEqual(state, 'complete')
 
 
