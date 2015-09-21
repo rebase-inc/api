@@ -32,6 +32,12 @@ class Auction(DB.Model, PermissionMixin):
         self.duration = duration
         self.finish_work_by = finish_work_by
         self.redundancy = redundancy
+        # Hack to nominate all contractors during development
+        from flask.ext.login import current_app
+        if current_app.config['NOMINATE_ALL_CONTRACTORS']:
+            from rebase.models.contractor import Contractor
+            from rebase.models.nomination import Nomination
+            nominations = [ Nomination(contractor, self.ticket_set) for contractor in Contractor.query.all() ]
 
     def __repr__(self):
         return '<Auction[id:{}] finish_work_by={}>'.format(self.id, self.finish_work_by)

@@ -14,6 +14,7 @@ class Config(object):
     GITHUB_CLIENT_SECRET = environ['GITHUB_CLIENT_SECRET']
     SQLALCHEMY_POOL_SIZE = int(environ['CONNECTION_POOL_SIZE_PER_WORKER'])
     SQLALCHEMY_MAX_OVERFLOW = 1
+    NOMINATE_ALL_CONTRACTORS = False
 
 
 class ProductionConfig(Config):
@@ -33,6 +34,7 @@ class DevelopmentConfig(Config):
     DEBUG = True
     DEBUG_TB_INTERCEPT_REDIRECTS = False
     FLASK_LOGIN_SESSION_PROTECTION = "basic"
+    NOMINATE_ALL_CONTRACTORS = True
 
 
 class TestingConfig(Config):

@@ -33,6 +33,12 @@ class Contractor(Role):
         self.user = user
         self.busyness = 1
         self.rating = randint(20, 50)/10
+        # Hack to nominate all contractors during development
+        from flask.ext.login import current_app
+        if current_app.config['NOMINATE_ALL_CONTRACTORS']:
+            from rebase.models.auction import Auction
+            from rebase.models.nomination import Nomination
+            nominations = [ Nomination(self, auction.ticket_set) for auction in Auction.query.all() ]
 
     @hybrid_property
     def auctions_approved_for(self):

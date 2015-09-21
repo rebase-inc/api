@@ -6,6 +6,7 @@ from rebase.models import User
 
 class AnonymousUser(object):
     is_active = False
+    admin = False
     def is_authenticated(self): return False
     def is_anonymous(self): return True
     def get_id(self): return None

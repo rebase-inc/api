@@ -200,7 +200,12 @@ def create_one_nomination(db, auction=None, contractor=None, approved=False):
     from rebase.models import Nomination
     auction = auction or create_one_auction(db)
     contractor = contractor or create_one_contractor(db)
-    nomination = Nomination(contractor, auction.ticket_set)
+    # verify it doesn't already exist..
+    nomination = Nomination.query.filter(Nomination.contractor==contractor and Nomination.ticket_set==auction.ticket_set).first()
+    if not nomination:
+        nomination = Nomination(contractor, auction.ticket_set)
+    else:
+        print('Found existing nomination: {}'.format(nomination))
     if approved:
         auction.approved_talents.append(nomination)
     db.session.add(nomination)
