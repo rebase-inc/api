@@ -1,6 +1,7 @@
 from functools import lru_cache, partialmethod
 
 from sqlalchemy.inspection import inspect
+from sqlalchemy.orm.collections import InstrumentedList
 
 from marshmallow import fields
 from flask.ext.login import current_user
@@ -56,6 +57,19 @@ def get_or_make_object(model, data, id_fields=None):
     elif not data:
         raise BadDataError(model_name=model.__tablename__)
     return model(**data)
+
+
+# TODO implement incremental hashing
+def _setitem(ilist, index, element):
+    current_hash = getattr(ilist, '__current_hash__', 0)
+
+def _hash(ilist):
+    pile = ''
+    for elt in ilist:
+        pile = pile+str(elt)
+    return hash(pile)
+
+setattr(InstrumentedList, '__hash__', _hash)
 
 class SecureNestedField(fields.Nested):
     def __init__(self, nested, strict=False, *args, **kwargs):
