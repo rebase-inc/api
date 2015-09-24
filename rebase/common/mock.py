@@ -204,8 +204,6 @@ def create_one_nomination(db, auction=None, contractor=None, approved=False):
     nomination = Nomination.query.filter(Nomination.contractor==contractor and Nomination.ticket_set==auction.ticket_set).first()
     if not nomination:
         nomination = Nomination(contractor, auction.ticket_set)
-    else:
-        print('Found existing nomination: {}'.format(nomination))
     if approved:
         auction.approved_talents.append(nomination)
     db.session.add(nomination)
