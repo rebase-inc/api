@@ -1,4 +1,4 @@
-from os import environ
+from os import environ, path
 
 class Config(object):
     DEBUG = False
@@ -17,6 +17,8 @@ class Config(object):
     SQLALCHEMY_MAX_OVERFLOW = 1
     NOMINATE_ALL_CONTRACTORS = False
     LOG_FILE = '/tmp/rebase_web.log'
+    UPLOAD_FOLDER = path.expanduser('~/uploads/')
+    MAX_CONTENT_LENGTH = 1024 * 1024
 
 
 class ProductionConfig(Config):
