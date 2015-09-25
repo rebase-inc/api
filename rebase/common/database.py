@@ -1,4 +1,7 @@
+from functools import lru_cache, partialmethod
+
 from sqlalchemy.inspection import inspect
+from sqlalchemy.orm.collections import InstrumentedList
 
 from marshmallow import fields
 from flask.ext.login import current_user
@@ -55,25 +58,41 @@ def get_or_make_object(model, data, id_fields=None):
         raise BadDataError(model_name=model.__tablename__)
     return model(**data)
 
+
+# TODO implement incremental hashing
+def _setitem(ilist, index, element):
+    current_hash = getattr(ilist, '__current_hash__', 0)
+
+def _hash(ilist):
+    pile = ''
+    for elt in ilist:
+        pile = pile+str(elt)
+    return hash(pile)
+
+setattr(InstrumentedList, '__hash__', _hash)
+
 class SecureNestedField(fields.Nested):
     def __init__(self, nested, strict=False, *args, **kwargs):
         self.strict = strict
         super().__init__(nested, *args, **kwargs)
 
-    def _serialize(self, nested_obj, attr, obj):
+    @lru_cache(maxsize=None)
+    def _serialize_with_user(self, nested_obj, attr, obj, user):
         if not nested_obj:
             if self.many:
                 return []
             else:
                 return None
-        if not current_user:
-            raise ValueError('current_user not supplied to {} nested on {}'.format(nested_obj, obj))
+        if not user:
+            raise ValueError('Current user not supplied to {} nested on {}'.format(nested_obj, obj))
         if self.many:
-            nested_obj = [elem for elem in nested_obj if elem.allowed_to_be_viewed_by(current_user)]
+            nested_obj = [elem for elem in nested_obj if elem.allowed_to_be_viewed_by(user)]
         else:
-            nested_obj = nested_obj if nested_obj.allowed_to_be_viewed_by(current_user) else None
+            nested_obj = nested_obj if nested_obj.allowed_to_be_viewed_by(user) else None
         self.schema.context = self.context
         return super()._serialize(nested_obj, attr, obj)
+
+    _serialize = partialmethod(_serialize_with_user, user=current_user)
 
     @property
     def schema(self):

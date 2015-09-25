@@ -151,7 +151,15 @@ class Comment(DB.Model, PermissionMixin):
     def allowed_to_be_viewed_by(self, user):
         if user.admin:
             return True
-        return self.get_all(user, self).all()
+        if self.review:
+            return self.review.allowed_to_be_viewed_by(user)
+        if self.mediation:
+            return self.mediation.allowed_to_be_viewed_by(user)
+        if self.ticket:
+            return self.ticket.allowed_to_be_viewed_by(user)
+        if self.feedback:
+            return self.feedback.allowed_to_be_viewed_by(user)
+        raise ValueError('Invalid Comment object')
 
     def __repr__(self):
         abbreviated_content = self.content[0:15]

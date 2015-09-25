@@ -24,15 +24,10 @@ class InternalTicket(Ticket):
         return super(cls, cls).role_to_query_fn(user)(user, project_type='project')
 
     def allowed_to_be_created_by(self, user):
-        if user.admin:
-            return True
         return self.project.allowed_to_be_modified_by(user)
 
     allowed_to_be_modified_by = allowed_to_be_created_by
     allowed_to_be_deleted_by = allowed_to_be_created_by
 
     def allowed_to_be_viewed_by(self, user):
-        if user.admin:
-            return True
-        query = self.role_to_query_fn(user)(user, ticket_id=self.id, project_type='project')
-        return query.first()
+        return self.project.allowed_to_be_viewed_by(user)
