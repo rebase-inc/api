@@ -1,6 +1,7 @@
 from copy import copy
 from datetime import datetime, timedelta
 from math import floor
+from unittest import skip
 
 from . import PermissionTestCase, RebaseRestTestCase
 from rebase.common import mock
@@ -190,3 +191,18 @@ class TestAuction(PermissionTestCase):
 
     def test_admin_collection(self):
         self.collection(case_admin_collection, 'manager')
+
+    @skip
+    def test_profile(self):
+        from cProfile import Profile
+        from pstats import Stats
+        mock.DeveloperUserStory(self.db, 'Phil', 'Meyman', 'philmeyman@joinrebase.com', 'lem')
+        mock.ManagerUserStory(self.db, 'Ron', 'Swanson', 'ron@joinrebase.com', 'ron')
+        self.db.session.commit()
+        self.login('ron@joinrebase.com', 'ron', 'manager')
+        profile = Profile()
+        profile.runcall(self.get_resource, '/auctions')
+        stats = Stats(profile)
+        stats.sort_stats('cumulative')
+        stats.print_stats(.1, 'repo\/api') # print first 10% and only show my code
+        import pdb; pdb.set_trace()
