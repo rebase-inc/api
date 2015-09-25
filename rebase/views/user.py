@@ -18,7 +18,7 @@ class UserSchema(RebaseSchema):
     password =      fields.String(required=True)
     last_seen =     fields.DateTime(required=True)
     admin =         fields.Boolean(default=False)
-    current_role =  SecureNestedField('RoleSchema', required=True)
+    current_role =  SecureNestedField('RoleSchema')
     photo =         SecureNestedField(PhotoSchema, only='url')
 
     roles = SecureNestedField('RoleSchema', exclude=('user',), many=True)
@@ -33,7 +33,7 @@ class UserSchema(RebaseSchema):
                 raise marsh.ValidationError('Bad email')
         return get_or_make_object(User, data)
 
-serializer = UserSchema(only=('id','admin','first_name','last_name','email','last_seen','roles', 'current_role','photo'))
+serializer = UserSchema(only=('id','admin','first_name','last_name','email','last_seen','roles', 'current_role', 'photo'))
 
 deserializer = UserSchema(only=('first_name','last_name','email','password'), strict=True)
 

@@ -1,6 +1,6 @@
 from rq import Worker, Queue, Connection
 
-from rebase.setup.rq import get_connection, queues
+from rebase.features.rq import get_connection, queues
 
 conn = get_connection()
 

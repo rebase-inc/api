@@ -112,13 +112,13 @@ class PermissionMixin(object):
 
     @classmethod
     def as_contractor(cls, user):
-        if not cls.as_contractor_path:
+        if cls.as_contractor_path == None:
             raise AsContractorPathUndefined(cls)
         return cls.query_from_class_to_user(cls.as_contractor_path, user)
 
     @classmethod
     def as_manager(cls, user):
-        if not cls.as_manager_path:
+        if cls.as_manager_path == None:
             raise AsManagerPathUndefined(cls)
         return cls.query_from_class_to_user(cls.as_manager_path, user)
 

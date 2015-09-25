@@ -16,6 +16,7 @@ from rebase.models.debit import *
 from rebase.models.feedback import *
 from rebase.models.github_project import *
 from rebase.models.github_account import *
+from rebase.models.github_repository import *
 from rebase.models.internal_ticket import *
 from rebase.models.remote_ticket import *
 from rebase.models.github_ticket import *
@@ -45,6 +46,6 @@ from rebase.models.photo import *
 # TODO simplify this with inspect.getmembers (see example in common.utils.RebaseResource.all_models)
 models = modules[__name__]
 loaded_references = models.__dict__.copy()
-for klass_name, klass in loaded_references.items():
+for klass in loaded_references.values():
     if isclass(klass) and issubclass(klass, PermissionMixin):
         klass.setup_queries(models)

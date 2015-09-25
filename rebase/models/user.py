@@ -24,6 +24,7 @@ class User(DB.Model, PermissionMixin):
     # TODO add a persistent current role
     #current_role =      DB.relationship('Role', backref='current_user', userlist=False, cascade='all, delete-orphan', passive_deletes=True)
     admin =             DB.Column(DB.Boolean,   nullable=False, default=False)
+    github_accounts =   DB.relationship('GithubAccount', backref='user', cascade='all, delete-orphan', lazy='dynamic')
 
     def __init__(self, first_name, last_name, email, password):
         from rebase.models.contractor import Contractor
