@@ -64,12 +64,7 @@ class TicketSet(DB.Model, PermissionMixin):
         return query.filter(TicketSet.id==self.id)
 
     def allowed_to_be_viewed_by(self, user):
-        return query_by_user_or_id(
-            TicketSet,
-            TicketSet._all,
-            TicketSet.filter_by_id,
-            user, self
-        ).limit(1).all()
+        return self.bid_limits[0].allowed_to_be_viewed_by(user)
         
 
     def __repr__(self):
