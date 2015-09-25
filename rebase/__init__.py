@@ -13,9 +13,9 @@ from rebase.home.routes import register_home
 from rebase.features import install
 
 
-def create_core_app(testing=False):
+def create_app(testing=False):
     '''
-    Use create_core_app when you need an app to interact with the database
+    Use create_app when you need an app to interact with the database
     or Flask at a very low level and basically don't really care abot the routes and widgets.
     Example: in the parsers, in run-workers.
     '''
@@ -28,13 +28,7 @@ def create_core_app(testing=False):
     app.config.from_object(environ['APP_SETTINGS'])
     toolbar = DebugToolbarExtension(app)
     app.config['SQLALCHEMY_DATABASE_URI'] = environ['TEST_URL'] if testing else environ['DATABASE_URL']
-    return app, app_context, DB
 
-def create_app(testing=False):
-    '''
-    The returned (app, app_context, DB) tuple is used by the website or functional tests.
-    '''
-    app, app_context, DB = create_core_app(testing)
     install(app)
     api = Api(app)
     register_home(app)

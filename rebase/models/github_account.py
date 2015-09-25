@@ -6,19 +6,21 @@ class GithubAccount(DB.Model, PermissionMixin):
 
     id =            DB.Column(DB.Integer, primary_key=True)
     user_id =       DB.Column(DB.Integer, DB.ForeignKey('user.id', ondelete='CASCADE'))
+    account_id =    DB.Column(DB.Integer, nullable=False, unique=True)
     login =         DB.Column(DB.String, nullable=False)
     access_token =  DB.Column(DB.String, nullable=False)
 
-    work_history =  DB.relationship('GithubRepository', lazy='dynamic', backref='work_history', cascade='all, delete-orphan', passive_deletes=True)
-    managing =      DB.relationship('GithubRepository', lazy='dynamic', backref='managing', cascade='all, delete-orphan', passive_deletes=True)
+    contributed_to_repos =  DB.relationship('GithubRepository', lazy='dynamic', backref='contributed_to_repos', cascade='all, delete-orphan', passive_deletes=True)
+    orgs = DB.relationship('GithubOrganization', lazy='dynamic', backref='account', cascade='all, delete-orphan', passive_deletes=True)
 
-    def __init__(self, user, login, access_token):
+    def __init__(self, user, account_id, login, access_token):
         ''' 
         user: a User object
         login: Github login field from the authenticated user
         access_token: the secret OAuth token TODO: encrypt
         '''
         self.user = user
+        self.account_id = account_id
         self.login = login
         self.access_token = access_token
 

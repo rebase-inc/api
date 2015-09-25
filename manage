@@ -8,10 +8,10 @@ from flask.ext.migrate import Migrate, MigrateCommand
 
 from inflection import underscore
 
-from rebase import create_core_app
+from rebase import create_app
 import rebase.models
 
-app, _, db = create_core_app()
+app, _, db = create_app()
 migrate = Migrate(app, db)
 manager = Manager(app)
 

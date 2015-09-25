@@ -15,7 +15,7 @@ def save_access_token(github_user, logged_in_user, access_token, db):
     user = User.query.filter(User.id==logged_in_user.id).first()
     github_account = GithubAccount.query_by_user(user).filter(GithubAccount.login==github_user['login']).first()
     if not github_account:
-        github_account = GithubAccount(logged_in_user, github_user['login'], access_token)
+        github_account = GithubAccount(logged_in_user, github_user['id'], github_user['login'], access_token)
     github_account.access_token = access_token
     db.session.add(github_account)
     db.session.commit()
