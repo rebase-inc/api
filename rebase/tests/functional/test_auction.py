@@ -192,7 +192,6 @@ class TestAuction(PermissionTestCase):
     def test_admin_collection(self):
         self.collection(case_admin_collection, 'manager')
 
-    @skip
     def test_profile(self):
         from cProfile import Profile
         from pstats import Stats
@@ -205,4 +204,4 @@ class TestAuction(PermissionTestCase):
         stats = Stats(profile)
         stats.sort_stats('cumulative')
         stats.print_stats(.1, 'repo\/api') # print first 10% and only show my code
-        import pdb; pdb.set_trace()
+        #import pdb; pdb.set_trace()
