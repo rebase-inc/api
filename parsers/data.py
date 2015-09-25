@@ -1,11 +1,25 @@
-from flask.ext.script import Manager, prompt_bool
+from subprocess import check_call
 
+from flask.ext.script import Manager, prompt_bool
 
 from rebase import create_app
 from rebase.common import mock
 _, _, db = create_app()
 
 data = Manager(usage="Manage the data inside the database.")
+
+@data.command
+def wipe_out():
+    '''
+    Deletes and recreates the entire database using psql directly.
+    Use it if 'data recreate' fails because the database needs to be migrated.
+
+    Recommended: run './manage data create' followed by './manage data populate' afterwards...
+    '''
+    database_name = 'rebase_web'
+    check_call(['dropdb', database_name])
+    check_call(['createdb', database_name])
+
 
 @data.command
 def drop():
