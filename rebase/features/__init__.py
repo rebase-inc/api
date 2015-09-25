@@ -14,4 +14,3 @@ def install(app):
     setup_rq(app)
     setup_cache(app)
     setup_logger(app)
-
