@@ -1,4 +1,4 @@
-from flask import session, abort
+from flask import session, request
 from flask.ext.login import LoginManager
 
 from rebase.common.exceptions import NoRole
@@ -25,4 +25,8 @@ def setup_login(app):
         user = User.query.get(user_id)
         if 'role' in session:
             user.set_role(session['role'])
+        else:
+            role = request.cookies.get('role')
+            current_role = user.set_role(role)
+            session['role'] = current_role.type
         return user

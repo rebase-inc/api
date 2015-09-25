@@ -46,6 +46,7 @@ class AuthCollection(Resource):
                     'message': 'success!'
                 })
                 response.status_code = 201
+                response.set_cookie('role', current_role.type)
                 return response
         except UnmarshallingError as e:
             logout_user()
