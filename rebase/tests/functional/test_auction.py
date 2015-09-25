@@ -203,5 +203,5 @@ class TestAuction(PermissionTestCase):
         profile.runcall(self.get_resource, '/auctions')
         stats = Stats(profile)
         stats.sort_stats('cumulative')
-        stats.print_stats(.1, 'repo\/api') # print first 10% and only show my code
+        stats.print_stats(.1, 'api\/rebase') # print first 10% and only show my code
         #import pdb; pdb.set_trace()
