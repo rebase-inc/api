@@ -8,7 +8,7 @@ class TicketSetSchema(RebaseSchema):
     id =          fields.Integer()
     bid_limits =  SecureNestedField(BidLimitSchema, exclude=('ticket_set',), only=('id', 'price', 'ticket_snapshot'), many=True)
     auction =     SecureNestedField('AuctionSchema', only=('id',))
-    nominations = SecureNestedField('NominationSchema', only=('contractor', 'ticket_set', 'job_fit'), many=True)
+    nominations = SecureNestedField('NominationSchema', only=('contractor', 'ticket_set', 'job_fit', 'auction'), many=True)
 
     def make_object(self, data):
         from rebase.models import TicketSet

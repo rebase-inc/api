@@ -204,8 +204,6 @@ def create_one_nomination(db, auction=None, contractor=None, approved=False):
     nomination = Nomination.query.filter(Nomination.contractor==contractor and Nomination.ticket_set==auction.ticket_set).first()
     if not nomination:
         nomination = Nomination(contractor, auction.ticket_set)
-    else:
-        print('Found existing nomination: {}'.format(nomination))
     if approved:
         auction.approved_talents.append(nomination)
     db.session.add(nomination)
@@ -332,7 +330,7 @@ class ManagerUserStory(object):
         dev5 = create_one_user(db, 'Tom', 'Haverford', 'tom@joinrebase.com')
         organization = create_one_organization(db, 'Parks and Recreation', self.user)
         project = create_one_project(db, organization, 'Lot 48')
-        the_tickets = [create_one_internal_ticket(db, fake_ticket, project=project) for fake_ticket in FAKE_TICKETS]
+        the_tickets = [create_one_internal_ticket(db, fake_ticket + ' (AUCTIONED)', project=project) for fake_ticket in FAKE_TICKETS]
         for ticket in the_tickets:
             for fake_comment in FAKE_COMMENTS:
                 Comment(fake_comment, ticket=ticket)
@@ -345,6 +343,11 @@ class ManagerUserStory(object):
                 match = create_ticket_matches(db, [ticket], contractor)
                 nomination = create_one_nomination(db, auction, contractor, False)
                 job_fit = create_one_job_fit(db, nomination, match)
+
+        the_new_tickets = [create_one_internal_ticket(db, fake_ticket + ' (NEW)', project=project) for fake_ticket in FAKE_TICKETS]
+        for ticket in the_new_tickets:
+            for fake_comment in FAKE_COMMENTS:
+                Comment(fake_comment, ticket=ticket)
 
 def create_the_world(db):
     andrew = create_one_user(db, 'Andrew', 'Millspaugh', 'andrew@manager.rebase.io')
