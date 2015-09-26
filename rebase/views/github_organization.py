@@ -1,8 +1,8 @@
 from marshmallow import fields
+
+from rebase.common.database import get_or_make_object, SecureNestedField
 from rebase.common.schema import RebaseSchema
 from rebase.models.github_organization import GithubOrganization
-from rebase.views.github_repository import GithubRepositorySchema
-from rebase.common.database import get_or_make_object, SecureNestedField
 
 class GithubOrganizationSchema(RebaseSchema):
     id =            fields.Integer()
