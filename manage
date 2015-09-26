@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
+from glob import glob
 from importlib import import_module
-from pathlib import Path
+from os.path import basename, isfile, splitext
 
 from flask.ext.script import Manager, Command
 from flask.ext.migrate import Migrate, MigrateCommand
@@ -17,9 +18,10 @@ manager = Manager(app)
 
 manager.add_command('db', MigrateCommand)
 
-for entry in Path('parsers').glob('*.py'):
-    if entry.is_file() and not entry.name.startswith('__'):
-        module = import_module('parsers.'+entry.stem)
+for entry in glob('parsers/*.py'):
+    if isfile(entry) and not basename(entry).startswith('__'):
+        name = 'parsers.'+splitext(basename(entry))[0]
+        module = import_module(name)
         for attribute in dir(module):
             command = getattr(module, attribute)
             try:

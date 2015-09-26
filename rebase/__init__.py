@@ -12,6 +12,9 @@ from rebase.github.routes import register_github_routes
 from rebase.home.routes import register_home
 from rebase.features import install
 
+from psycopg2cffi import compat
+compat.register()
+
 
 def create_app(testing=False):
     '''

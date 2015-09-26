@@ -1,4 +1,4 @@
-from functools import lru_cache, partialmethod
+from functools import lru_cache
 
 from sqlalchemy.inspection import inspect
 from sqlalchemy.orm.collections import InstrumentedList
@@ -92,7 +92,8 @@ class SecureNestedField(fields.Nested):
         self.schema.context = self.context
         return super()._serialize(nested_obj, attr, obj)
 
-    _serialize = partialmethod(_serialize_with_user, user=current_user)
+    def _serialize(self, nested_obj, attr, obj):
+        self._serialize_with_user(nested_obj, attr, obj, current_user)
 
     @property
     def schema(self):
