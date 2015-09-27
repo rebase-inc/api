@@ -6,6 +6,7 @@ from unittest import skip
 from . import PermissionTestCase, RebaseRestTestCase
 from rebase.common import mock
 from rebase.common.database import ids
+from rebase.common.profile import profiling
 from rebase.common.utils import RebaseResource
 from rebase.tests.common.auction import (
     case_contractor,
@@ -14,7 +15,6 @@ from rebase.tests.common.auction import (
     case_admin_collection,
     case_anonymous,
 )
-
 
 
 class TestAuction(PermissionTestCase):
@@ -193,15 +193,9 @@ class TestAuction(PermissionTestCase):
         self.collection(case_admin_collection, 'manager')
 
     def test_profile(self):
-        from cProfile import Profile
-        from pstats import Stats
         mock.DeveloperUserStory(self.db, 'Phil', 'Meyman', 'philmeyman@joinrebase.com', 'lem')
         mock.ManagerUserStory(self.db, 'Ron', 'Swanson', 'ron@joinrebase.com', 'ron')
         self.db.session.commit()
         self.login('ron@joinrebase.com', 'ron', 'manager')
-        profile = Profile()
-        profile.runcall(self.get_resource, '/auctions')
-        stats = Stats(profile)
-        stats.sort_stats('cumulative')
-        stats.print_stats(.1, 'api\/rebase') # print first 10% and only show my code
-        #import pdb; pdb.set_trace()
+        with profiling():
+            self.get_resource('/auctions')
