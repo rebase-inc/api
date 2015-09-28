@@ -1,24 +1,14 @@
 
-from flask import jsonify, make_response, request, redirect, session
+from flask import jsonify, request, session
 from flask.ext.restful import Resource
 from flask.ext.login import (
-    login_required,
     login_user,
     logout_user,
-    current_app,
     current_user
 )
 from rebase.common.exceptions import UnmarshallingError, ValidationError
 
 from rebase.views import auth, user
-from rebase.common.database import DB
-from rebase.common.rest import (
-    get_collection,
-    add_to_collection,
-    get_resource,
-    update_resource,
-    delete_resource
-)
 
 class AuthCollection(Resource):
     url = '/auth'
