@@ -23,7 +23,6 @@ class GithubAccountCollection(Resource):
         def fetch_account_info(accounts):
             for account in accounts:
                 get_github_account_info(account)
-                print(account.orgs)
             return accounts
         return get_collection(self.model, self.serializer, pre_serialization=fetch_account_info)
 

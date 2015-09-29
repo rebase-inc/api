@@ -50,7 +50,10 @@ def extract_repos_info(session):
                 # first verify this repo isn't imported already:
                 imported_repo = GithubRepository.query.filter(GithubRepository.repo_id==repo['id']).first()
                 if imported_repo:
-                    continue
+                    if any(map(lambda mgr: mgr.user == session.user, imported_repo.project.organization.managers)):
+                        continue
+                    else:
+                        imported_repo.project.organization.managers.append(session.user)
                 if not github_org:
                     github_org = GithubOrganization(
                         org['login'],
