@@ -37,31 +37,6 @@ def make_github_interface(user_id, role, login):
         raise RuntimeError('User[id={}] has no GitHub account'.format(user.id))
     return make_session(github_account, app, user, db)
 
-def save_languages(user, languages, db):
-    skill_set = SkillSet.query.join(Contractor).filter(Contractor.user == user).first()
-    if not skill_set:
-        raise RuntimeError('This contractor should have an associated SkillSet already')
-    skill_set.skills = languages
-    db.session.add(skill_set)
-    db.session.commit()
-
-def detect_languages(session):
-    ''' returns a list of all languages spoken by this user '''
-    owned_repos = session.api.get('/user/repos').data
-    commit_paths = []
-    for repo in owned_repos:
-        commits = github.get(repo['url']+'/commits', data={ 'author': session.login}).data
-        for commit in commits:
-            languages = []
-            paths = []
-            tree = github.get(commit['commit']['tree']['url']).data
-            for path_obj in tree['tree']:
-                paths.append(path_obj['path'])
-            commit_paths.append(paths)
-    found_languages = path_to_languages(commit_paths)
-    save_languages(session.user, found_languages, session.db)
-    return found_languages
-
 def extract_repos_info(session):
     ''' returns a list of all languages spoken by this user '''
     orgs = session.api.get('/user/orgs').data
@@ -127,13 +102,3 @@ def import_github_repos(user_id, role, login, repos):
     session = make_github_interface(user_id, role, login)
     import_repos(session, repos)
     return 'OK'
-
-
-def load_repo_info(user_id, role, login):
-    session = make_github_interface(user_id, role, login)
-    extract_repos_info(session)
-    return 'OK'
-
-def read_repo(user_id, login):
-    session = make_github_interface(user_id, login)
-    return detect_languages(session)

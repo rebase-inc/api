@@ -5,7 +5,7 @@ from flask.ext.login import login_required, current_user
 
 from rebase.common.database import DB
 from rebase.github import create_github_app
-from rebase.github.scanners import load_repo_info, import_github_repos
+from rebase.github.scanners import import_github_repos
 from rebase.models.contractor import Contractor
 from rebase.models.github_account import GithubAccount
 from rebase.models.remote_work_history import RemoteWorkHistory
