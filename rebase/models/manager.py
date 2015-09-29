@@ -1,5 +1,7 @@
 from sqlalchemy.orm import validates
 
+from werkzeug.local import LocalProxy
+
 from rebase.models.role import Role
 from rebase.models.user import User
 from rebase.models.contractor import Contractor
@@ -16,12 +18,15 @@ class Manager(Role):
 
     def __init__(self, user, organization):
         if not isinstance(user, User):
-            raise ValueError('{} field on {} must be {} not {}'.format(
-                'user',
-                self.__tablename__,
-                User,
-                type(user)
-            ))
+            if isinstance(user, LocalProxy) and isinstance(user._get_current_object(), User):
+                pass
+            else:
+                raise ValueError('{} field on {} must be {} not {}'.format(
+                    'user',
+                    self.__tablename__,
+                    User,
+                    type(user._get_current_object())
+                ))
         if not isinstance(organization, rebase.models.organization.Organization):
             raise ValueError(
                 '{} field on {} must be {} not {}'.format(

@@ -6,13 +6,13 @@ from rebase.models.github_organization import GithubOrganization
 
 class GithubOrganizationSchema(RebaseSchema):
     id =            fields.Integer()
-    account_id =    fields.Integer()
     org_id =        fields.Integer()
     login =         fields.String()
     url =           fields.String()
     description =   fields.String()
 
-    repos =  SecureNestedField('GithubRepositorySchema', many=True)
+    repos =  fields.Nested('GithubRepositorySchema', many=True, nullable=True)
+    account = fields.Nested('GithubAccountSchema', only=('id',), nullable=True)
 
     def make_object(self, data):
         from rebase.models import GithubOrganization

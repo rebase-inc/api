@@ -3,9 +3,18 @@ from flask.ext.login import current_user, current_app
 from rebase.common.exceptions import NotFoundError
 from rebase.common.database import DB
 
-def get_collection(model, serializer):
+def get_collection(model, serializer, pre_serialization=None):
+    '''
+    model is the rebase resource to be queried and serialized
+    serializer is a marshmallow Schema
+    pre_serialization is an optional handler called just before serialization.
+    It takes as input the queries list of instances of that resource
+    and returns a list of potentially updated instances.
+    '''
     query = model.query_by_user(current_user)
     all_instances = query.limit(100).all()
+    if pre_serialization:
+        all_instances = pre_serialization(all_instances)
     serializer.context = dict(current_user = current_user)
     return jsonify(**{model.__pluralname__: serializer.dump(all_instances, many=True).data})
 

@@ -5,7 +5,13 @@ class CodeRepository(DB.Model, PermissionMixin):
     __pluralname__ = 'code_repositories'
 
     id =   DB.Column(DB.Integer, DB.ForeignKey('project.id', ondelete='CASCADE'), primary_key=True)
+    type = DB.Column(DB.String)
     url =  DB.Column(DB.String, nullable=True)
+
+    __mapper_args__ = {
+        'polymorphic_identity': 'code_repository',
+        'polymorphic_on': type
+    }
 
     def __init__(self, project, url=None):
         self.project = project

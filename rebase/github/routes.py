@@ -1,10 +1,11 @@
+from functools import wraps
 
 from flask import redirect, url_for, session, request, jsonify
 from flask.ext.login import login_required, current_user
 
 from rebase.common.database import DB
 from rebase.github import create_github_app
-from rebase.github.scanners import load_repo_info
+from rebase.github.scanners import load_repo_info, import_github_repos
 from rebase.models.contractor import Contractor
 from rebase.models.github_account import GithubAccount
 from rebase.models.remote_work_history import RemoteWorkHistory
@@ -24,14 +25,20 @@ def register_github_routes(app):
 
     github = create_github_app(app)
 
+    def github_oauth(fn):
+        @wraps(fn)
+        def _oauthed_fn(*args, **kwargs):
+            if 'github_token' in session:
+                return fn(*args, **kwargs)
+            return github.authorize(callback=url_for('github_authorized', _external=True))
+        return _oauthed_fn
+
     @app.route('/github')
     @login_required
+    @github_oauth
     def github_root():
-        if 'github_token' in session:
-            github_user = github.get('user').data
-            _ = app.default_queue.enqueue(load_repo_info, current_user.id, current_user.current_role.type, github_user['login'])
-            return redirect('/app/app.html')
-        return github.authorize(callback=url_for('github_authorized', _external=True))
+        github_user = github.get('user').data
+        return redirect('/app/app.html')
 
     @app.route('/github/verify')
     @login_required
@@ -83,3 +90,12 @@ def register_github_routes(app):
     @github.tokengetter
     def get_github_oauth_token():
         return session.get('github_token')
+
+    @app.route('/github/import_repos', methods=['POST'])
+    @login_required
+    @github_oauth
+    def import_repos():
+        app.logger.debug(request.json)
+        github_user = github.get('user').data
+        app.default_queue.enqueue(import_github_repos, current_user.id, current_user.current_role.type, github_user['login'], request.json['repos'])
+        return jsonify({'success': True})

@@ -8,6 +8,7 @@ class Organization(DB.Model, PermissionMixin):
     __pluralname__ = 'organizations'
 
     id =   DB.Column(DB.Integer, primary_key=True)
+    type = DB.Column(DB.String)
     name = DB.Column(DB.String)
 
     managers =      DB.relationship('Manager', backref=DB.backref('organization', lazy='joined', uselist=False), cascade='all, delete-orphan', passive_deletes=True, innerjoin=True)
@@ -21,6 +22,11 @@ class Organization(DB.Model, PermissionMixin):
             secondaryjoin='Project.id == Ticket.project_id',
             backref=DB.backref('organization', uselist=False),
             viewonly=True)
+
+    __mapper_args__ = {
+        'polymorphic_identity': 'organization',
+        'polymorphic_on': type
+    }
 
     def __init__(self, name, user):
         self.name = name

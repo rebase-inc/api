@@ -21,6 +21,10 @@ def register_routes(api):
     api.add_resource(AuctionEndEvents, '/auctions/<int:id>/end_events', endpoint='auction_end_events')
     api.add_resource(AuctionFailEvents, '/auctions/<int:id>/fail_events', endpoint='auction_fail_events')
 
+    from rebase.resources.github_account import GithubAccountCollection, GithubAccountResource
+    api.add_resource(GithubAccountCollection, '/github_accounts', endpoint='github_accounts')
+    api.add_resource(GithubAccountResource, '/github_accounts/<int:id>', endpoint='github_account')
+
     from rebase.resources.work_events import WorkHaltEvents, WorkReviewEvents, WorkMediateEvents, WorkCompleteEvents, WorkResumeEvents, WorkFailEvents
     api.add_resource(WorkHaltEvents, '/works/<int:id>/halt')
     api.add_resource(WorkReviewEvents, '/works/<int:id>/review')
@@ -135,10 +139,6 @@ def register_routes(api):
     from rebase.models.nomination import Nomination
     import rebase.views.nomination as n_view
     add_restful_endpoint(api, Nomination, n_view.serializer, n_view.deserializer, n_view.update_deserializer)
-
-    from rebase.models.github_account import GithubAccount
-    import rebase.views.github_account as ga_view
-    add_restful_endpoint(api, GithubAccount, ga_view.serializer, ga_view.deserializer, ga_view.update_deserializer, None)
 
     from rebase.models.remote_work_history import RemoteWorkHistory
     import rebase.views.remote_work_history as rwh_view

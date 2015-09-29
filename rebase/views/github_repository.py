@@ -7,14 +7,12 @@ from rebase.views.github_organization import GithubOrganizationSchema
 
 class GithubRepositorySchema(RebaseSchema):
     id =            fields.Integer()
-    account_id =    fields.Integer()
-    org_id =        fields.Integer()
     repo_id =       fields.Integer()
     name =          fields.String()
     url =           fields.String()
     description =   fields.String()
 
-    org =           SecureNestedField('GithubOrganizationSchema', only=('login',))
+    org =           fields.Nested('GithubOrganizationSchema', only=('org_id', 'login', 'url', 'description', 'account'), nullable=True)
 
     def make_object(self, data):
         from rebase.models import GithubRepository

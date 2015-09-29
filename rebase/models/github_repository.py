@@ -1,28 +1,22 @@
 
 from rebase.common.database import DB, PermissionMixin
+from rebase.models import CodeRepository
 
-class GithubRepository(DB.Model, PermissionMixin):
+class GithubRepository(CodeRepository):
     __pluralname__ = 'github_repositories'
 
-    id =            DB.Column(DB.Integer, primary_key=True)
-    account_id =    DB.Column(DB.Integer, DB.ForeignKey('github_account.id', ondelete='CASCADE'), nullable=True)
-    org_id =        DB.Column(DB.Integer, DB.ForeignKey('github_organization.id', ondelete='CASCADE'), nullable=True)
+    id =            DB.Column(DB.Integer, DB.ForeignKey('code_repository.id', ondelete='CASCADE'), primary_key=True)
     name =          DB.Column(DB.String, nullable=False)
     repo_id =       DB.Column(DB.Integer, nullable=False, unique=True)
-    url =           DB.Column(DB.String, nullable=False)
     description =   DB.Column(DB.String, nullable=True)
 
-    def __init__(self, name, repo_id, repo_url, description=None, account=None, org=None):
+    __mapper_args__ = { 'polymorphic_identity': 'github_repository' }
+
+    def __init__(self, project, name, repo_id, repo_url, description):
         self.name = name
         self.repo_id = repo_id
-        self.url = repo_url
         self.description = description
-        if account and org:
-            raise ValueError('Pick either an account or an org as the owner of this repo')
-        if not account and not org:
-            raise ValueError('There must be an owner for this repo, either a Github user or an organization')
-        self.account = account
-        self.org = org
+        super().__init__(project, repo_url)
 
     def allowed_to_be_created_by(self, user):
         return user.is_admin()
@@ -43,6 +37,14 @@ class GithubRepository(DB.Model, PermissionMixin):
 
     @classmethod
     def setup_queries(cls, models):
-        cls.as_manager_path = cls.as_contractor_path = [
-            models.GithubAccount
+        # TODO fix as_contractor_path for permissions
+        cls.as_contractor_path = [
+            models.Project,
+            models.Organization,
+            models.Manager
+        ]
+        cls.as_manager_path = [
+            models.Project,
+            models.Organization,
+            models.Manager
         ]
