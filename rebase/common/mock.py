@@ -90,13 +90,6 @@ def create_one_remote_work_history(db, contractor=None):
     db.session.add(remote_work_history)
     return remote_work_history
 
-def create_one_github_account(db, remote_work_history=None, user_name='ravioli'):
-    from rebase.models import GithubAccount
-    remote_work_history = remote_work_history or create_one_remote_work_history(db)
-    github_account = GithubAccount(remote_work_history, user_name)
-    db.session.add(github_account)
-    return github_account
-
 def create_one_project(db, organization=None, project_name=None):
     from rebase.models import Organization, Project, CodeRepository
     organization = organization or create_one_organization(db)
@@ -380,8 +373,6 @@ def create_the_world(db):
     create_one_code_clearance(db, internal_project, steve_contractor, pre_approved=True)
     create_one_bank_account(db, rapha_contractor)
     rapha_rwh = create_one_remote_work_history(db, rapha_contractor)
-    create_one_github_account(db, rapha_rwh, 'rapha.opensource')
-    create_one_github_account(db, rapha_rwh, 'rapha-la-mitraille')
     create_one_feedback(db)
     create_one_feedback(db)
     create_one_contract(db)

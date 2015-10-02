@@ -1,4 +1,5 @@
-from rebase.resources import add_restful_endpoint
+from rebase.resources import add_restful_endpoint, RestfulResource
+from rebase.common.database import make_resource_url
 
 def register_routes(api):
 
@@ -21,9 +22,12 @@ def register_routes(api):
     api.add_resource(AuctionEndEvents, '/auctions/<int:id>/end_events', endpoint='auction_end_events')
     api.add_resource(AuctionFailEvents, '/auctions/<int:id>/fail_events', endpoint='auction_fail_events')
 
-    from rebase.resources.github_account import GithubAccountCollection, GithubAccountResource
+    from rebase.resources.github_account import GithubAccountCollection
     api.add_resource(GithubAccountCollection, '/github_accounts', endpoint='github_accounts')
-    api.add_resource(GithubAccountResource, '/github_accounts/<int:id>', endpoint='github_account')
+    import rebase.views.github_account as gh_account_views
+    from rebase.models import GithubAccount
+    github_account_resource = RestfulResource(GithubAccount, gh_account_views.serializer, gh_account_views.deserializer, gh_account_views.update_deserializer)
+    api.add_resource(github_account_resource, make_resource_url(GithubAccount), endpoint = GithubAccount.__pluralname__ + '_resource')
 
     from rebase.resources.work_events import WorkHaltEvents, WorkReviewEvents, WorkMediateEvents, WorkCompleteEvents, WorkResumeEvents, WorkFailEvents
     api.add_resource(WorkHaltEvents, '/works/<int:id>/halt')
