@@ -11,10 +11,10 @@ from rebase.models import (
     GithubOrganization,
     GithubProject,
     User,
-    SkillSet
 )
-from rebase.models.skill_set import SkillSet
-from rebase.models.contractor import Contractor
+from rebase.views.organization import serializer as org_serializer
+from rebase.views.project import serializer as project_serializer
+from rebase.views.code_repository import serializer as repo_serializer
 
 GithubSession = namedtuple('GithubSession', ['api', 'account', 'user', 'DB'])
 
@@ -38,7 +38,7 @@ def make_github_interface(user_id, role, login):
     return make_session(github_account, app, user, db)
 
 def extract_repos_info(session):
-    ''' returns a list of all languages spoken by this user '''
+    ''' returns a list of all repos managed by this user '''
     orgs = session.api.get('/user/orgs').data
     with session.DB.session.no_autoflush:
         for org in orgs:
@@ -47,13 +47,6 @@ def extract_repos_info(session):
         repos = session.api.get(org['repos_url']).data
         for repo in repos:
             if repo['permissions']['admin'] and not repo['fork']:
-                # first verify this repo isn't imported already:
-                imported_repo = GithubRepository.query.filter(GithubRepository.repo_id==repo['id']).first()
-                if imported_repo:
-                    if any(map(lambda mgr: mgr.user == session.user, imported_repo.project.organization.managers)):
-                        continue
-                    else:
-                        imported_repo.project.organization.managers.append(session.user)
                 if not github_org:
                     github_org = GithubOrganization(
                         org['login'],
@@ -76,7 +69,15 @@ def extract_repos_info(session):
                 setattr(github_repo, 'org', github_org)
                 github_org.repos.append(github_repo)
 
-def import_repos(session, repos):
+def import_github_repos(repos, user, db_session):
+    '''
+        Imports the 'repos' and returns an object with the created or updated CodeRepository, Project and Organization instances
+    '''
+    new_data = {
+        'repos':        [],
+        'projects':    [],
+        'orgs':         [],
+    }
     orgs = {}
     for repo_id, repo in repos.items():
         _org = repo['org']
@@ -85,12 +86,13 @@ def import_repos(session, repos):
             if not gh_org:
                 gh_org = GithubOrganization(
                     _org['login'],
-                    session.user,
+                    user,
                     _org['org_id'],
                     _org['url'],
                     _org['description'],
                 )
-                session.DB.session.add(gh_org)
+                db_session.add(gh_org)
+            new_data['orgs'].append(gh_org)
             orgs[gh_org.org_id] = gh_org
         else:
             gh_org = orgs[_org['org_id']]
@@ -98,10 +100,19 @@ def import_repos(session, repos):
         if not _repo:
             _project = GithubProject(gh_org, repo['name'])
             _repo = GithubRepository(_project, repo['name'], repo_id, repo['url'], repo['description'])
-    session.DB.session.commit()
+        else:
+            # the repo already exists, so just add this user to the repo's managers
+            if any(map(lambda mgr: mgr.user == user, _repo.project.organization.managers)):
+                continue
+            else:
+                _repo.project.organization.managers.append(user)
+        new_data['projects'].append(_repo.project)
+        new_data['repos'].append(_repo)
 
-def import_github_repos(user_id, role, login, repos):
-    ''' Given a list of Github Repository ids, import them, creating the organization as needed '''
-    session = make_github_interface(user_id, role, login)
-    import_repos(session, repos)
-    return 'OK'
+    db_session.commit()
+
+    # serialize the new data
+    new_data['projects'] = list(map(lambda prj: project_serializer.dump(prj).data, new_data['projects']))
+    new_data['orgs'] = list(map(lambda org: org_serializer.dump(org).data, new_data['orgs']))
+    new_data['repos'] = list(map(lambda repo: repo_serializer.dump(repo).data, new_data['repos']))
+    return new_data

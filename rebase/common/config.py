@@ -39,6 +39,7 @@ class DevelopmentConfig(Config):
     DEBUG_TB_INTERCEPT_REDIRECTS = False
     FLASK_LOGIN_SESSION_PROTECTION = "basic"
     NOMINATE_ALL_CONTRACTORS = True
+    SEND_FILE_MAX_AGE_DEFAULT = 0
 
 
 class TestingConfig(Config):

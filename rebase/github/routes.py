@@ -93,9 +93,6 @@ def register_github_routes(app):
 
     @app.route('/github/import_repos', methods=['POST'])
     @login_required
-    @github_oauth
     def import_repos():
-        app.logger.debug(request.json)
-        github_user = github.get('user').data
-        app.default_queue.enqueue(import_github_repos, current_user.id, current_user.current_role.type, github_user['login'], request.json['repos'])
-        return jsonify({'success': True})
+        new_data = import_github_repos(request.json['repos'], current_user, DB.session)
+        return jsonify(new_data);

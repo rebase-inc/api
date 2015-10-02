@@ -27,4 +27,4 @@ def register_home(app):
 
     @app.route('/app/<path:path>')
     def send_app(path):
-        return send_from_directory(os.path.abspath('../react-app/'), path)
+        return send_from_directory(os.path.abspath('../react-app/'), path, cache_timeout=None)

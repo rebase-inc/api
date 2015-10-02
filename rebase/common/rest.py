@@ -19,7 +19,7 @@ def get_collection(model, serializer, pre_serialization=None):
     return jsonify(**{model.__pluralname__: serializer.dump(all_instances, many=True).data})
 
 def add_to_collection(model, deserializer, serializer):
-    new_instance = deserializer.load(request.form or request.json).data
+    new_instance = deserializer.load(request.json or request.form).data
     DB.session.add(new_instance)
     if not new_instance.allowed_to_be_created_by(current_user):
         return current_app.login_manager.unauthorized()

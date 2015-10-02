@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 
 from flask import jsonify, request, session
 from flask.ext.restful import Resource
@@ -36,7 +37,7 @@ class AuthCollection(Resource):
                     'message': 'success!'
                 })
                 response.status_code = 201
-                response.set_cookie('role', current_role.type)
+                response.set_cookie('role', current_role.type, path='/auth', expires=datetime.now()+timedelta(days=1))
                 return response
         except UnmarshallingError as e:
             logout_user()
@@ -54,5 +55,7 @@ class AuthCollection(Resource):
         logout_user()
         response = jsonify(message = 'Logged out')
         response.status_code = 200
+        response.set_cookie('role', expires=0)
+        response.set_cookie('user', expires=0)
         return response
 
