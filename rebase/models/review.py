@@ -58,6 +58,5 @@ class Review(DB.Model, PermissionMixin):
             models.TicketSnapshot,
             models.Ticket,
             models.Project,
-            models.Organization,
             models.Manager,
         ]

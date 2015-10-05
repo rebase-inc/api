@@ -1,8 +1,5 @@
 from rebase.common.database import DB, PermissionMixin
-import rebase.models.manager
-#from rebase.models.project import Project
-#from rebase.models.code_clearance import CodeClearance
-#from rebase.models.contractor import Contractor
+import rebase.models.owner
 
 class Organization(DB.Model, PermissionMixin):
     __pluralname__ = 'organizations'
@@ -11,7 +8,7 @@ class Organization(DB.Model, PermissionMixin):
     type = DB.Column(DB.String)
     name = DB.Column(DB.String)
 
-    managers =      DB.relationship('Manager', backref=DB.backref('organization', lazy='joined', uselist=False), cascade='all, delete-orphan', passive_deletes=True, innerjoin=True)
+    owners =        DB.relationship('Owner', backref=DB.backref('organization', lazy='joined', uselist=False), cascade='all, delete-orphan', passive_deletes=True, innerjoin=True)
     projects =      DB.relationship('Project', backref='organization', lazy='joined', cascade="all, delete-orphan", passive_deletes=True)
     bank_account =  DB.relationship('BankAccount', backref='organization', uselist=False, cascade='all, delete-orphan', passive_deletes=True)
 
@@ -30,7 +27,7 @@ class Organization(DB.Model, PermissionMixin):
 
     def __init__(self, name, user):
         self.name = name
-        self.managers.append(rebase.models.manager.Manager(user, self)) # you must have at least one manager
+        self.owners.append(rebase.models.owner.Owner(user, self)) # you must have at least one owner
 
     @property
     def ticket_snapshots(self):
@@ -70,10 +67,10 @@ class Organization(DB.Model, PermissionMixin):
     def query_by_user(cls, user):
         if user.admin:
             return cls.query
-        return cls.get_all_as_manager(user).union(cls.get_all_as_contractor(user))
+        return cls.get_all_as_owner(user).union(cls.get_all_as_contractor(user))
 
     def get_all_as_manager(user):
-        return Organization.query.filter(Organization.managers.any(rebase.models.manager.Manager.user == user))
+        return Organization.query.filter(Organization.owners.any(rebase.models.owner.owner.user == user))
 
     def get_all_as_contractor(user):
         return Organization.query\
@@ -85,13 +82,13 @@ class Organization(DB.Model, PermissionMixin):
     def allowed_to_be_created_by(self, user):
         return True
     
-    def in_managers(self, user):
-        return Organization.get_all_as_manager(user).filter(Organization.id == self.id)
+    def in_owners(self, user):
+        return Organization.get_all_as_owner(user).filter(Organization.id == self.id)
 
     def allowed_to_be_modified_by(self, user):
         if user.admin:
             return True
-        return self.in_managers(user).limit(100).all()
+        return self.in_owners(user).limit(100).all()
 
     def allowed_to_be_deleted_by(self, user):
         return self.allowed_to_be_modified_by(user)
@@ -99,7 +96,7 @@ class Organization(DB.Model, PermissionMixin):
     def allowed_to_be_viewed_by(self, user):
         if user.admin:
             return True
-        return self.in_managers(user)\
+        return self.in_owners(user)\
             .union(Organization.get_all_as_contractor(user).filter(Organization.id==self.id))\
             .limit(100).all()
 
