@@ -334,8 +334,8 @@ class ManagerUserStory(object):
         skill_sets = []
         for contractor in the_contractors:
             skills = sample(FAKE_SKILLS, randint(3,6))
-            approx_difficulty = uniform(0.3, 1.0) # this is so the ticket looks roughly uniformly difficult
-            skill_sets.append(SkillSet(contractor, {skill: uniform(min(0.0, approx_difficulty - 0.2), min(1.0, approx_difficulty, + 0.2)) for skill in skills}))
+            approx_skill = uniform(0.3, 1.0)
+            skill_sets.append(SkillSet(contractor, {skill: uniform(min(0.0, approx_skill - 0.2), min(1.0, approx_skill, + 0.2)) for skill in skills}))
         organization = create_one_organization(db, 'Parks and Recreation', self.user)
         project = create_one_project(db, organization, 'Lot 48')
         the_tickets = [create_one_internal_ticket(db, fake_ticket + ' (AUCTIONED)', project=project) for fake_ticket in FAKE_TICKETS]
@@ -344,7 +344,6 @@ class ManagerUserStory(object):
             for fake_comment in FAKE_COMMENTS:
                 Comment(fake_comment, ticket=ticket)
             skills_required = sample(FAKE_SKILLS, randint(3,6))
-
             approx_skill = uniform(0.3, 1.0) # this is so the dev looks roughly uniformly skilled
             skill_reqs.append(SkillRequirement(ticket, {skill: uniform(min(0.0, approx_skill - 0.2), min(1.0, approx_skill, + 0.2)) for skill in skills_required}))
 
@@ -361,6 +360,9 @@ class ManagerUserStory(object):
         for ticket in the_new_tickets:
             for fake_comment in FAKE_COMMENTS:
                 Comment(fake_comment, ticket=ticket)
+            skills_required = sample(FAKE_SKILLS, randint(3,6))
+            approx_skill = uniform(0.3, 1.0) # this is so the dev looks roughly uniformly skilled
+            skill_reqs.append(SkillRequirement(ticket, {skill: uniform(min(0.0, approx_skill - 0.2), min(1.0, approx_skill, + 0.2)) for skill in skills_required}))
 
 def create_the_world(db):
     andrew = create_one_user(db, 'Andrew', 'Millspaugh', 'andrew@manager.rebase.io')

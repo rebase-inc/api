@@ -32,6 +32,7 @@ class JobFitSchema(RebaseSchema):
             return 0
         else:
             cosine_similarity = dot_product / (sqrt(skill_set_magnitude) * sqrt(skill_requirement_magnitude))
+            cosine_similarity *= min(sqrt(skill_set_magnitude/skill_requirement_magnitude), 1)
             return (1 + cosine_similarity) / 2
 
     def get_score(self, obj):
