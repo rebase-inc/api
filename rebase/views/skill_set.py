@@ -34,7 +34,7 @@ class DictField(fields.Field):
 
 class SkillSetSchema(RebaseSchema):
     id =            fields.Integer()
-    skills =        DictField(fields.Str(), fields.Integer(), default={})
+    skills =        DictField(fields.Str(), fields.Float(), default={})
     contractor =    SecureNestedField(ContractorSchema,  only=('id',))
 
     def make_object(self, data):

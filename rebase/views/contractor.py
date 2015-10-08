@@ -11,7 +11,7 @@ class ContractorSchema(RebaseSchema):
     work_offers =           SecureNestedField('WorkOfferSchema',         only=('id',), many=True)
     bank_account =          SecureNestedField('BankAccountSchema',       only=('id',), default=None)
     remote_work_history =   SecureNestedField('RemoteWorkHistorySchema', only=('id',))
-    skill_set =             SecureNestedField('SkillSetSchema',          only=('id',), default=None)
+    skill_set =             SecureNestedField('SkillSetSchema',          only=('id','skills'), default=None)
     clearances =            SecureNestedField('CodeClearanceSchema',     only=('id', 'project', 'pre_approved'), many=True)
     nominations =           SecureNestedField('NominationSchema',        only='id', many=True, default=None)
 

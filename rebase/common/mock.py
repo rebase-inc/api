@@ -1,6 +1,6 @@
 import datetime
 import uuid
-from random import randint, randrange
+from random import randint, randrange, sample, random, uniform
 from .utils import (
     pick_a_word,
     pick_a_first_name,
@@ -13,6 +13,8 @@ FAKE_COMMENTS = [
     'What do you mean? Is this not correct (from job_fit model)? ```__table_args__ = ( DB.ForeignKeyConstraint( [contractor_id, ticket_set_id], [Nomination.contractor_id, Nomination.ticket_set_id], ondelete=\'CASCADE\'), {})```',
     'Hmm, that does look correct. The one I was looking at is in the bid model. It indirectly references the auction and contractor ids through the nomination model, though it doesn’t specifically reference the nomination model. This should instead be switched to a reference like above. I guess I should\'ve actually looked into the places where this was happening.',
 ]
+
+FAKE_SKILLS = ['Python', 'SQLAlchemy', 'd3js', 'Marshmallow', 'unittest', 'Javascript', 'ES6']
 
 FAKE_TICKETS = [
     'Abstract out state machine event resource creation',
@@ -201,7 +203,7 @@ def create_one_nomination(db, auction=None, contractor=None, approved=False):
     auction = auction or create_one_auction(db)
     contractor = contractor or create_one_contractor(db)
     # verify it doesn't already exist..
-    nomination = Nomination.query.filter(Nomination.contractor==contractor and Nomination.ticket_set==auction.ticket_set).first()
+    nomination = Nomination.query.filter(Nomination.contractor==contractor).filter(Nomination.ticket_set==auction.ticket_set).first()
     if not nomination:
         nomination = Nomination(contractor, auction.ticket_set)
     if approved:
@@ -321,28 +323,39 @@ class ManagerUserStory(object):
         self.email = email
         self.password = password
 
-        from rebase.models import Comment
+        from rebase.models import Comment, SkillSet, SkillRequirement, TicketMatch, JobFit
         self.user = create_one_user(db, self.first_name, self.last_name, self.email, self.password, admin=False)
         dev1 = create_one_user(db, 'Andy', 'Dwyer', 'andy@joinrebase.com')
         dev2 = create_one_user(db, 'April', 'Ludgate', 'april@joinrebase.com')
         dev3 = create_one_user(db, 'Leslie', 'Knope', 'leslie@joinrebase.com')
         dev4 = create_one_user(db, 'Donna', 'Meagle', 'donna@joinrebase.com')
         dev5 = create_one_user(db, 'Tom', 'Haverford', 'tom@joinrebase.com')
+        the_contractors = [create_one_contractor(db, user) for user in [dev1, dev2, dev3, dev4, dev5]]
+        skill_sets = []
+        for contractor in the_contractors:
+            skills = sample(FAKE_SKILLS, randint(3,6))
+            approx_difficulty = uniform(0.3, 1.0) # this is so the ticket looks roughly uniformly difficult
+            skill_sets.append(SkillSet(contractor, {skill: uniform(min(0.0, approx_difficulty - 0.2), min(1.0, approx_difficulty, + 0.2)) for skill in skills}))
         organization = create_one_organization(db, 'Parks and Recreation', self.user)
         project = create_one_project(db, organization, 'Lot 48')
         the_tickets = [create_one_internal_ticket(db, fake_ticket + ' (AUCTIONED)', project=project) for fake_ticket in FAKE_TICKETS]
+        skill_reqs = []
         for ticket in the_tickets:
             for fake_comment in FAKE_COMMENTS:
                 Comment(fake_comment, ticket=ticket)
+            skills_required = sample(FAKE_SKILLS, randint(3,6))
 
-        the_contractors = [create_one_contractor(db, user) for user in [dev1, dev2, dev3, dev4, dev5]]
+            approx_skill = uniform(0.3, 1.0) # this is so the dev looks roughly uniformly skilled
+            skill_reqs.append(SkillRequirement(ticket, {skill: uniform(min(0.0, approx_skill - 0.2), min(1.0, approx_skill, + 0.2)) for skill in skills_required}))
+
         the_auctions = [create_one_auction(db, [ticket]) for ticket in the_tickets]
 
         for auction, ticket in zip(the_auctions, the_tickets):
             for contractor in the_contractors:
-                match = create_ticket_matches(db, [ticket], contractor)
                 nomination = create_one_nomination(db, auction, contractor, False)
-                job_fit = create_one_job_fit(db, nomination, match)
+                match = TicketMatch(contractor.skill_set, ticket.skill_requirement)
+                job_fit = JobFit(nomination, [match])
+                db.session.add(job_fit)
 
         the_new_tickets = [create_one_internal_ticket(db, fake_ticket + ' (NEW)', project=project) for fake_ticket in FAKE_TICKETS]
         for ticket in the_new_tickets:

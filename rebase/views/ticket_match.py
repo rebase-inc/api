@@ -8,10 +8,9 @@ from rebase.views.job_fit import JobFitSchema
 class TicketMatchSchema(RebaseSchema):
     skill_requirement_id =  fields.Integer()
     skill_set_id =          fields.Integer()
-    score =                 fields.Integer()
 
-    skill_requirement = SecureNestedField('SkillRequirementSchema',   only=('id',))
-    skill_set =         SecureNestedField('SkillSetSchema',           only=('id',))
+    skill_requirement = SecureNestedField('SkillRequirementSchema',   only=('id','skills'))
+    skill_set =         SecureNestedField('SkillSetSchema',           only=('id','skills'))
     job_fit =           SecureNestedField('JobFitSchema',             only=('contractor_id', 'ticket_set_id'), default=None)
 
     _primary_keys = get_model_primary_keys(TicketMatch)

@@ -20,7 +20,7 @@ class TicketMatch(DB.Model, PermissionMixin):
             ondelete='SET NULL'
         ), {})
 
-    def __init__(self, skill_set, skill_requirement, score):
+    def __init__(self, skill_set, skill_requirement, score=-1):
         self.skill_requirement = skill_requirement
         self.skill_set = skill_set
         self.score = score

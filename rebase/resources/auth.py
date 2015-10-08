@@ -22,7 +22,7 @@ from rebase.common.rest import (
 
 class AuthCollection(Resource):
     url = '/auth'
-    bad_credentials = 'Wrong credentials!\nVerify that both the email and the password you entered are correct.'
+    bad_credentials = 'Invalid credentials!\nVerify that both the email and the password you entered are correct.'
 
     # TODO: Refactor this to look like other REST endpoints
     def post(self):
