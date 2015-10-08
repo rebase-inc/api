@@ -5,80 +5,32 @@ from werkzeug.local import LocalProxy
 from rebase.models.role import Role
 from rebase.models.user import User
 from rebase.models.contractor import Contractor
-import rebase.models.organization
 
 from rebase.common.database import DB, PermissionMixin
 
 class Manager(Role):
     __pluralname__ = 'managers'
-    id =                DB.Column(DB.Integer, DB.ForeignKey('role.id', ondelete='CASCADE'), primary_key=True)
-    organization_id =   DB.Column(DB.Integer, DB.ForeignKey('organization.id', ondelete='CASCADE'))
+    id =            DB.Column(DB.Integer, DB.ForeignKey('role.id', ondelete='CASCADE'), primary_key=True)
+    project_id =    DB.Column(DB.Integer, DB.ForeignKey('project.id', ondelete='CASCADE'), nullable=False)
 
     __mapper_args__ = { 'polymorphic_identity': 'manager' }
 
-    def __init__(self, user, organization):
-        if not isinstance(user, User):
-            if isinstance(user, LocalProxy) and isinstance(user._get_current_object(), User):
-                pass
-            else:
-                raise ValueError('{} field on {} must be {} not {}'.format(
-                    'user',
-                    self.__tablename__,
-                    User,
-                    type(user._get_current_object())
-                ))
-        if not isinstance(organization, rebase.models.organization.Organization):
-            raise ValueError(
-                '{} field on {} must be {} not {}'.format(
-                    'organization',
-                    self.__tablename__,
-                    rebase.models.organization.Organization,
-                    type(organization))
-            )
+    def __init__(self, user, project):
         self.user = user
-        self.organization = organization
+        self.project = project
 
     def __repr__(self):
         return '<Manager[{}] {} {} (org {})>'.format(
             self.id,
             self.user.first_name,
             self.user.last_name,
-            self.organization_id
+            self.project_id
         )
-
-    @classmethod
-    def query_by_user(cls, user):
-        if user.admin:
-            return cls.query
-        return cls.get_all_as_manager(user).union(cls.get_cleared_managers(user))
-
-    @classmethod
-    def get_all_as_manager(cls, user, manager_id=None):
-        query = cls.query.filter(Manager.user==user)
-        query = query\
-            .join(rebase.models.organization.Organization)\
-            .join(rebase.models.manager.Manager)
-        if manager_id:
-            query = query.filter_by(id=manager_id)
-        return query
-
-    @classmethod
-    def get_cleared_managers(cls, user, manager_id=None):
-        ''' Return all managers for which user has a clearance '''
-        query = cls.query
-        if manager_id:
-            query = query.filter_by(id=manager_id)
-        return query\
-            .join(rebase.models.organization.Organization)\
-            .join(rebase.models.project.Project)\
-            .join(rebase.models.code_clearance.CodeClearance)\
-            .join(rebase.models.contractor.Contractor)\
-            .filter(rebase.models.contractor.Contractor.user == user)
 
     def allowed_to_be_created_by(self, user):
         if user.admin:
             return True
-        return Manager.get_all_as_manager(user, self.id).limit(100).all()
+        return Manager.as_owner(user).limit(1).first()
 
     def allowed_to_be_modified_by(self, user):
         return self.allowed_to_be_created_by(user)
@@ -89,7 +41,22 @@ class Manager(Role):
     def allowed_to_be_viewed_by(self, user):
         if user.admin:
             return True
-        return Manager.get_all_as_manager(user, self.id)\
-            .union(Manager.get_cleared_managers(user, self.id))\
-            .limit(100).all()
+        return self.project.allowed_to_be_viewed_by(user)
 
+    @classmethod
+    def setup_queries(cls, models):
+        cls.as_owner_path = [
+            models.Project,
+            models.Organization,
+            models.Owner,
+        ]
+        cls.as_contractor_path = [
+            models.Project,
+            models.CodeClearance,
+            models.Contractor,
+        ]
+
+        cls.as_manager_path = [
+            models.Project,
+            models.Manager
+        ]

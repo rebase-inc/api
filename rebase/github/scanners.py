@@ -96,16 +96,17 @@ def import_github_repos(repos, user, db_session):
             orgs[gh_org.org_id] = gh_org
         else:
             gh_org = orgs[_org['org_id']]
+            gh_org.owners.append(user)
         _repo = GithubRepository.query.filter(GithubRepository.repo_id==repo_id).first()
         if not _repo:
             _project = GithubProject(gh_org, repo['name'])
             _repo = GithubRepository(_project, repo['name'], repo_id, repo['url'], repo['description'])
         else:
-            # the repo already exists, so just add this user to the repo's managers
+            # the repo already exists, so just add this user to the repo's ow
             if any(map(lambda mgr: mgr.user == user, _repo.project.organization.managers)):
                 continue
             else:
-                _repo.project.organization.managers.append(user)
+                _repo.project.managers.append(user)
         new_data['projects'].append(_repo.project)
         new_data['repos'].append(_repo)
 

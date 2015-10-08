@@ -46,13 +46,21 @@ def create_one_user(db, first_name=None, last_name=None, email=None, password='f
     db.session.add(user)
     return user
 
-def create_one_manager(db, user=None, org=None):
+def create_one_manager(db, user=None, project=None):
     from rebase.models import Manager
     user = user or create_one_user(db)
-    organization = org or create_one_organization(db)
-    manager = Manager(user, organization)
+    project = project or create_one_project(db)
+    manager = Manager(user, project)
     db.session.add(manager)
     return manager
+
+def create_one_owner(db, user=None, org=None):
+    from rebase.models import Owner
+    user = user or create_one_user(db)
+    org = org or create_one_organization(db)
+    owner = Owner(user, org)
+    db.session.add(owner)
+    return owner
 
 def create_one_contractor(db, user=None):
     from rebase.models import Contractor, SkillSet
@@ -91,9 +99,9 @@ def create_one_remote_work_history(db, contractor=None):
     return remote_work_history
 
 def create_one_project(db, organization=None, project_name=None):
-    from rebase.models import Organization, Project, CodeRepository
+    from rebase.models import Organization, InternalProject, CodeRepository
     organization = organization or create_one_organization(db)
-    project = Project(organization, project_name or pick_a_word().capitalize()+' Project')
+    project = InternalProject(organization, project_name or pick_a_word().capitalize()+' Project')
     code_repo = CodeRepository(project)
     db.session.add(code_repo)
     return project
@@ -294,8 +302,8 @@ class DeveloperUserStory(object):
         self.user = create_one_user(db, self.first_name, self.last_name, self.email, self.password, admin=False)
         user_ted = create_one_user(db, 'Ted', 'Crisp', 'tedcrisp@joinrebase.com')
         org_veridian = create_one_organization(db, 'veridian', user_ted)
-        manager_ted = create_one_manager(db, user_ted, org_veridian)
-        project_matchmaker = create_one_project(db, manager_ted.organization, 'matchmaker')
+        project_matchmaker = create_one_project(db, org_veridian, 'matchmaker')
+        manager_ted = create_one_manager(db, user_ted, project_matchmaker)
         the_tickets = [create_one_internal_ticket(db, fake_ticket, project=project_matchmaker) for fake_ticket in FAKE_TICKETS]
         for ticket in the_tickets:
             for fake_comment in FAKE_COMMENTS:
@@ -323,6 +331,7 @@ class ManagerUserStory(object):
         dev5 = create_one_user(db, 'Tom', 'Haverford', 'tom@joinrebase.com')
         organization = create_one_organization(db, 'Parks and Recreation', self.user)
         project = create_one_project(db, organization, 'Lot 48')
+        mgr = create_one_manager(db, user=self.user, project=project)
         the_tickets = [create_one_internal_ticket(db, fake_ticket + ' (AUCTIONED)', project=project) for fake_ticket in FAKE_TICKETS]
         for ticket in the_tickets:
             for fake_comment in FAKE_COMMENTS:

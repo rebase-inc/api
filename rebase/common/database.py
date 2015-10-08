@@ -7,10 +7,11 @@ from marshmallow import fields
 from flask.ext.login import current_user
 from flask.ext.sqlalchemy import SQLAlchemy
 from rebase.common.exceptions import (
-    BadDataError,
-    NotFoundError,
     AsContractorPathUndefined,
     AsManagerPathUndefined,
+    AsOwnerPathUndefined,
+    BadDataError,
+    NotFoundError,
 )
 from rebase.common.query import query_from_class_to_user
 
@@ -102,8 +103,15 @@ class SecureNestedField(fields.Nested):
 
 
 class PermissionMixin(object):
+    '''
+    as_XXX_path are query paths that go from a queried model all the way up the role
+    of the user doing the query.
+    Therefore these paths must be either empty list (if the model queried is itself a role) or
+    a non-empty list whose last element is the role type)
+    '''
     as_contractor_path = None
     as_manager_path = None
+    as_owner_path = None
 
     def allowed_to_be_created_by(self, user):
         msg = 'allowed_to_be_created_by not implemented for {}'
@@ -126,7 +134,10 @@ class PermissionMixin(object):
         query = klass.query
         for node in path:
             query = query.join(node)
-        query = query.filter((path[-1].user if path else klass.user) == user)
+        if path:
+            query = query.filter(path[-1].id == user.current_role.id)
+        else:
+            query = query.filter(klass.id == user.current_role.id)
         return query
 
     @classmethod

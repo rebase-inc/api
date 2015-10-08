@@ -60,3 +60,5 @@ class Review(DB.Model, PermissionMixin):
             models.Project,
             models.Manager,
         ]
+
+        cls.as_owner_path = cls.as_manager_path

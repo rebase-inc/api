@@ -100,6 +100,10 @@ def register_routes(api):
     import rebase.views.github_project as gp_view
     add_restful_endpoint(api, GithubProject, gp_view.serializer, gp_view.deserializer, gp_view.update_deserializer)
 
+    from rebase.models.internal_project import InternalProject
+    import rebase.views.internal_project as gp_view
+    add_restful_endpoint(api, InternalProject, gp_view.serializer, gp_view.deserializer, gp_view.update_deserializer)
+
     from rebase.models.code_repository import CodeRepository
     import rebase.views.code_repository as cr_view
     add_restful_endpoint(api, CodeRepository, cr_view.serializer, cr_view.deserializer, cr_view.update_deserializer)

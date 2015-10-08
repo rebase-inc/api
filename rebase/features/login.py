@@ -23,10 +23,8 @@ def setup_login(app):
     @login_manager.user_loader
     def load_user(user_id):
         user = User.query.get(user_id)
-        if 'role' in session:
-            user.set_role(session['role'])
+        if 'role_id' in session:
+            user.set_role(session['role_id'])
         else:
-            role = request.cookies.get('role')
-            current_role = user.set_role(role)
-            session['role'] = current_role.type
+            session['role_id'] = user.set_role(int(request.cookies.get('role_id', 0))).id
         return user

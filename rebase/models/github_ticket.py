@@ -17,27 +17,19 @@ class GithubTicket(RemoteTicket):
         self.description = title #this should be pulled from github
 
     @classmethod
-    def query_by_user(cls, user):
-        if user.admin:
-            return cls.query
-        return super(cls, cls).role_to_query_fn(user)(user, project_type='github_project')
+    def setup_queries(cls, models):
+        cls.as_contractor_path = [
+            models.GithubProject,
+            models.CodeClearance,
+            models.Contractor,
+        ]
 
-    def allowed_to_be_created_by(self, user):
-        if user.admin:
-            return True
-        return self.project.allowed_to_be_modified_by(user)
+        cls.as_manager_path = [
+            models.GithubProject,
+            models.Manager,
+        ]
 
-    def allowed_to_be_modified_by(self, user):
-        return self.allowed_to_be_created_by(user)
-
-    def allowed_to_be_deleted_by(self, user):
-        return self.allowed_to_be_created_by(user)
-
-    def allowed_to_be_viewed_by(self, user):
-        if user.admin:
-            return True
-        query = self.role_to_query_fn(user)(user, self.id, 'github_project')
-        return query.first()
+        cls.as_owner_path = cls.as_manager_path
 
     def __repr__(self):
         return '<GithubTicket[id:{}] number={}>'.format(self.id, self.number)

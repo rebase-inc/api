@@ -1,4 +1,4 @@
 cdproject
 . env/setup.sh
-. env/github_setup
 . env/utils
+. .github_setup

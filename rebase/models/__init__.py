@@ -19,14 +19,17 @@ from rebase.models.github_account import *
 from rebase.models.github_repository import *
 from rebase.models.github_organization import *
 from rebase.models.internal_ticket import *
+from rebase.models.internal_project import *
 from rebase.models.remote_ticket import *
 from rebase.models.github_ticket import *
 from rebase.models.mediation import *
 from rebase.models.organization import *
+from rebase.models.owner import *
 from rebase.models.project import *
 from rebase.models.remote_project import *
 from rebase.models.remote_work_history import *
 from rebase.models.review import *
+from rebase.models.role import *
 from rebase.models.skill_requirement import *
 from rebase.models.skill_set import *
 from rebase.models.nomination import *

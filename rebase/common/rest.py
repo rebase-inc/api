@@ -38,7 +38,7 @@ def get_resource(model, instance_id, serializer):
     serializer.context = dict(current_user = current_user)
     return jsonify(**{model.__tablename__: serializer.dump(instance).data})
 
-def update_resource(model, instance_id, update_deserializer, serializer):
+def update_resource(model, instance_id, update_deserializer, serializer, pre_serialization=None):
     instance = model.query.get(instance_id)
     if not instance:
         raise NotFoundError(model.__tablename__, instance_id)
@@ -51,6 +51,8 @@ def update_resource(model, instance_id, update_deserializer, serializer):
     DB.session.add(instance)
     DB.session.commit()
     serializer.context = dict(current_user = current_user)
+    if pre_serialization:
+        instance = pre_serialization(instance)
     return jsonify(**{model.__tablename__: serializer.dump(instance).data})
 
 def delete_resource(model, instance_id):

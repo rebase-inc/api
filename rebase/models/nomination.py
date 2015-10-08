@@ -41,7 +41,7 @@ class Nomination(DB.Model, PermissionMixin):
         if user.is_admin():
             return True
         organization_id = self.ticket_set.bid_limits[0].ticket_snapshot.ticket.organization.id
-        return bool(organization_id in user.manager_for_organizations)
+        return bool(organization_id in user.manager_for_projects)
 
     def allowed_to_be_modified_by(self, user):
         return self.allowed_to_be_created_by(user)
@@ -58,14 +58,14 @@ class Nomination(DB.Model, PermissionMixin):
         query = cls.query
         if user.is_admin():
             return query
-        elif user.manager_for_organizations:
+        elif user.manager_for_projects:
             query = query.join(cls.ticket_set)
             query = query.join(TicketSet.bid_limits)
             query = query.join(BidLimit.ticket_snapshot)
             query = query.join(TicketSnapshot.ticket)
             query = query.join(Ticket.project)
             query = query.join(Project.organization)
-            query = query.filter(Organization.id.in_(user.manager_for_organizations))
+            query = query.filter(Organization.id.in_(user.manager_for_projects))
             return query
         else:
             return query.filter(sql.false())

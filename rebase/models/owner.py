@@ -2,9 +2,10 @@ from sqlalchemy.orm import validates
 
 from werkzeug.local import LocalProxy
 
-from rebase.models.role import Role
-from rebase.models.user import User
-from rebase.models.organization import Organization
+from rebase.models import (
+    Role,
+    User,
+)
 
 from rebase.common.database import DB, PermissionMixin
 
@@ -16,24 +17,6 @@ class Owner(Role):
     __mapper_args__ = { 'polymorphic_identity': 'owner' }
 
     def __init__(self, user, org):
-        if not isinstance(user, User):
-            if isinstance(user, LocalProxy) and isinstance(user._get_current_object(), User):
-                pass
-            else:
-                raise ValueError('{} field on {} must be {} not {}'.format(
-                    'user',
-                    self.__tablename__,
-                    User,
-                    type(user._get_current_object())
-                ))
-        if not isinstance(org, Organization):
-            raise ValueError(
-                '{} field on {} must be {} not {}'.format(
-                    'organization',
-                    self.__tablename__,
-                    Organization,
-                    type(org))
-            )
         self.user = user
         self.organization = org
 
@@ -59,12 +42,10 @@ class Owner(Role):
     def allowed_to_be_viewed_by(self, user):
         if user.admin:
             return True
-        return Owner.get_all_as_owner(user, self.id)\
-            .union(Owner.get_cleared_owners(user, self.id))\
-            .limit(100).all()
+        return self.query_by_user(user).limit(1).first()
 
     @classmethod
-    def setup_queries(cls, _):
+    def setup_queries(cls, models):
         cls.as_owner_path = [
             models.Organization,
             models.Owner,

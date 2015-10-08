@@ -55,9 +55,10 @@ class Auction(DB.Model, PermissionMixin):
             models.TicketSnapshot,
             models.Ticket,
             models.Project,
-            models.Organization,
             models.Manager,
         ]
+
+        cls.as_owner_path = cls.as_manager_path
 
     def allowed_to_be_created_by(self, user):
         if user.is_admin():

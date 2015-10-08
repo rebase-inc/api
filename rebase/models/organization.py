@@ -1,5 +1,5 @@
 from rebase.common.database import DB, PermissionMixin
-import rebase.models.owner
+
 
 class Organization(DB.Model, PermissionMixin):
     __pluralname__ = 'organizations'
@@ -26,8 +26,9 @@ class Organization(DB.Model, PermissionMixin):
     }
 
     def __init__(self, name, user):
+        from rebase.models.owner import Owner
         self.name = name
-        self.owners.append(rebase.models.owner.Owner(user, self)) # you must have at least one owner
+        Owner(user, self)
 
     @property
     def ticket_snapshots(self):
@@ -63,32 +64,13 @@ class Organization(DB.Model, PermissionMixin):
                 auctions.append(auction)
         return auctions
 
-    @classmethod
-    def query_by_user(cls, user):
-        if user.admin:
-            return cls.query
-        return cls.get_all_as_owner(user).union(cls.get_all_as_contractor(user))
-
-    def get_all_as_manager(user):
-        return Organization.query.filter(Organization.owners.any(rebase.models.owner.owner.user == user))
-
-    def get_all_as_contractor(user):
-        return Organization.query\
-            .join(rebase.models.project.Project)\
-            .join(rebase.models.code_clearance.CodeClearance)\
-            .join(rebase.models.contractor.Contractor)\
-            .filter(rebase.models.contractor.Contractor.user==user)
-
     def allowed_to_be_created_by(self, user):
         return True
     
-    def in_owners(self, user):
-        return Organization.get_all_as_owner(user).filter(Organization.id == self.id)
-
     def allowed_to_be_modified_by(self, user):
         if user.admin:
             return True
-        return self.in_owners(user).limit(100).all()
+        return self.as_owner(user).one()
 
     def allowed_to_be_deleted_by(self, user):
         return self.allowed_to_be_modified_by(user)
@@ -96,10 +78,23 @@ class Organization(DB.Model, PermissionMixin):
     def allowed_to_be_viewed_by(self, user):
         if user.admin:
             return True
-        return self.in_owners(user)\
-            .union(Organization.get_all_as_contractor(user).filter(Organization.id==self.id))\
-            .limit(100).all()
+        return self.query_by_user(user).first()
 
     def __repr__(self):
         return '<Organization[{}] "{}" >'.format(self.id, self.name)
 
+    @classmethod
+    def setup_queries(cls, models):
+        cls.as_owner_path = [
+            models.Owner,
+        ]
+        cls.as_contractor_path = [
+            models.Project,
+            models.CodeClearance,
+            models.Contractor,
+        ]
+
+        cls.as_manager_path = [
+            models.Project,
+            models.Manager
+        ]

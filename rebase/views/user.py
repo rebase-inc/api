@@ -37,5 +37,5 @@ serializer = UserSchema(only=('id','admin','first_name','last_name','email','las
 
 deserializer = UserSchema(only=('first_name','last_name','email','password'), strict=True)
 
-update_deserializer = UserSchema(only=('first_name','last_name','email','password'))
+update_deserializer = UserSchema(only=('first_name','last_name','email','password', 'current_role'))
 update_deserializer.make_object = lambda data: data

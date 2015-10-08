@@ -28,4 +28,3 @@ class GithubProject(RemoteProject):
 
     def __repr__(self):
         return '<GithubProject[id:{} "{}"]>'.format(self.id, self.name)
-

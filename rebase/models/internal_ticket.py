@@ -18,16 +18,16 @@ class InternalTicket(Ticket):
         return '<InternalTicket[id:{}]>'.format(self.id)
 
     @classmethod
-    def query_by_user(cls, user):
-        if user.admin:
-            return cls.query
-        return super(cls, cls).role_to_query_fn(user)(user, project_type='project')
+    def setup_queries(cls, models):
+        cls.as_contractor_path = [
+            models.InternalProject,
+            models.CodeClearance,
+            models.Contractor,
+        ]
 
-    def allowed_to_be_created_by(self, user):
-        return self.project.allowed_to_be_modified_by(user)
+        cls.as_manager_path = [
+            models.InternalProject,
+            models.Manager,
+        ]
 
-    allowed_to_be_modified_by = allowed_to_be_created_by
-    allowed_to_be_deleted_by = allowed_to_be_created_by
-
-    def allowed_to_be_viewed_by(self, user):
-        return self.project.allowed_to_be_viewed_by(user)
+        cls.as_owner_path = cls.as_manager_path

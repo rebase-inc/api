@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from flask import jsonify, request, session
 from flask.ext.restful import Resource
 from flask.ext.login import (
+    login_required,
     login_user,
     logout_user,
     current_user
@@ -21,7 +22,7 @@ class AuthCollection(Resource):
             auth_data = auth.deserializer.load(request.form or request.json).data
             auth_user = auth_data['user']
             password = auth_data['password']
-            role = auth_data.get('role', '')
+            role_id = int(request.cookies.get('role_id', 0))
             if not auth_user.check_password(password):
                 logout_user()
                 response = jsonify(message=self.bad_credentials)
@@ -29,15 +30,15 @@ class AuthCollection(Resource):
                 return response
             else:
                 login_user(auth_user, remember=True)
-                current_role = current_user.set_role(role)
-                session['role'] = current_role.type
+                current_role = current_user.set_role(role_id)
+                session['role_id'] = current_role.id
                 user.serializer.context = dict(current_user = current_user)
                 response = jsonify(**{
                     'user': user.serializer.dump(auth_user).data,
                     'message': 'success!'
                 })
                 response.status_code = 201
-                response.set_cookie('role', current_role.type, path='/auth', expires=datetime.now()+timedelta(days=1))
+                response.set_cookie('role_id', str(current_role.id), expires=datetime.now()+timedelta(days=1))
                 return response
         except UnmarshallingError as e:
             logout_user()
@@ -55,7 +56,7 @@ class AuthCollection(Resource):
         logout_user()
         response = jsonify(message = 'Logged out')
         response.status_code = 200
-        response.set_cookie('role', expires=0)
+        response.set_cookie('role_id', expires=0)
         response.set_cookie('user', expires=0)
         return response
 

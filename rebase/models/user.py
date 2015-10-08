@@ -7,8 +7,6 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 from rebase.common.database import DB, PermissionMixin, query_by_user_or_id
 from rebase.common.query import query_from_class_to_user
-import rebase.models.organization
-import rebase.models.manager
 
 class User(DB.Model, PermissionMixin):
     __pluralname__ = 'users'
@@ -21,8 +19,6 @@ class User(DB.Model, PermissionMixin):
     last_seen =         DB.Column(DB.DateTime,  nullable=False)
     roles =             DB.relationship('Role', backref='user', cascade='all, delete-orphan', lazy='dynamic')
     photo =             DB.relationship('Photo', backref='user', cascade="all, delete-orphan", passive_deletes=True, uselist=False)
-    # TODO add a persistent current role
-    #current_role =      DB.relationship('Role', backref='current_user', userlist=False, cascade='all, delete-orphan', passive_deletes=True)
     admin =             DB.Column(DB.Boolean,   nullable=False, default=False)
     github_accounts =   DB.relationship('GithubAccount', backref='user', cascade='all, delete-orphan', lazy='dynamic')
 
@@ -41,10 +37,12 @@ class User(DB.Model, PermissionMixin):
     def check_password(self, password):
         return check_password_hash(self.hashed_password, password)
 
-    def set_role(self, role):
+    def set_role(self, role_id):
         from rebase.models.contractor import Contractor
+        from rebase.models.role import Role
+        role = Role.query.get(role_id)
         if role:
-            self.current_role = self.roles.filter_by(type=role).first()
+            self.current_role = role
         else:
             self.current_role = self.roles.first()
         if not self.current_role:
@@ -73,9 +71,9 @@ class User(DB.Model, PermissionMixin):
     def as_manager(cls, current_user, user_id=None):
         '''
         As a manager, there are 3 types of users you can read:
-        - other managers in your org
-        - cleared contractors for all projects in your org
-        - nominated contractors for all projects in your org
+        - other managers in your project
+        - cleared contractors for all projects in your project
+        - nominated contractors for all projects in your project
         '''
         return cls.as_manager_get_other_managers(current_user, user_id)\
             .union(cls.as_manager_get_cleared_contractors(current_user, user_id))\
@@ -85,9 +83,9 @@ class User(DB.Model, PermissionMixin):
     def as_manager_get_other_managers(cls, user, user_id=None):
         import rebase.models
         query = query_from_class_to_user(User, [
-            rebase.models.manager.Manager,
-            rebase.models.organization.Organization,
-            rebase.models.manager.Manager,
+            rebase.models.Manager,
+            rebase.models.Project,
+            rebase.models.Manager,
         ], user)
         if user_id:
             query = query.filter(User.id==user_id)
@@ -97,11 +95,10 @@ class User(DB.Model, PermissionMixin):
     def as_manager_get_cleared_contractors(cls, user, user_id=None):
         import rebase.models
         query = query_from_class_to_user(User, [
-            rebase.models.contractor.Contractor,
-            rebase.models.code_clearance.CodeClearance,
-            rebase.models.project.Project,
-            rebase.models.organization.Organization,
-            rebase.models.manager.Manager,
+            rebase.models.Contractor,
+            rebase.models.CodeClearance,
+            rebase.models.Project,
+            rebase.models.Manager,
         ], user)
         if user_id:
             query = query.filter(User.id==user_id)
@@ -111,15 +108,14 @@ class User(DB.Model, PermissionMixin):
     def as_manager_get_nominated_users(cls, user, user_id=None):
         import rebase.models
         query = query_from_class_to_user(User, [
-            rebase.models.contractor.Contractor,
-            rebase.models.nomination.Nomination,
-            rebase.models.ticket_set.TicketSet,
-            rebase.models.bid_limit.BidLimit,
-            rebase.models.ticket_snapshot.TicketSnapshot,
-            rebase.models.ticket.Ticket,
-            rebase.models.project.Project,
-            rebase.models.organization.Organization,
-            rebase.models.manager.Manager,
+            rebase.models.Contractor,
+            rebase.models.Nomination,
+            rebase.models.TicketSet,
+            rebase.models.BidLimit,
+            rebase.models.TicketSnapshot,
+            rebase.models.Ticket,
+            rebase.models.Project,
+            rebase.models.Manager,
         ], user)
         if user_id:
             query = query.filter(User.id==user_id)
@@ -136,11 +132,10 @@ class User(DB.Model, PermissionMixin):
         UserAlias = aliased(User)
         query = DB.session.query(UserAlias)\
             .select_from(User)\
-            .join(rebase.models.contractor.Contractor)\
-            .join(rebase.models.code_clearance.CodeClearance)\
-            .join(rebase.models.project.Project)\
-            .join(rebase.models.organization.Organization)\
-            .join(rebase.models.manager.Manager)\
+            .join(rebase.models.Contractor)\
+            .join(rebase.models.CodeClearance)\
+            .join(rebase.models.Project)\
+            .join(rebase.models.Manager)\
             .join(UserAlias)
         if user_id:
             query = query.filter(UserAlias.id == user_id)
@@ -154,9 +149,9 @@ class User(DB.Model, PermissionMixin):
         ContractorAlias = aliased(rebase.models.Contractor)
         query = DB.session.query(UserAlias)\
             .select_from(User)\
-            .join(rebase.models.contractor.Contractor)\
-            .join(rebase.models.code_clearance.CodeClearance)\
-            .join(rebase.models.project.Project)\
+            .join(rebase.models.Contractor)\
+            .join(rebase.models.CodeClearance)\
+            .join(rebase.models.Project)\
             .join(CodeClearanceAlias)\
             .join(ContractorAlias)\
             .join(UserAlias)
@@ -199,8 +194,8 @@ class User(DB.Model, PermissionMixin):
         return self.roles.filter_by(type = 'contractor')
 
     @property
-    def manager_for_organizations(self):
-        return [manager.organization.id for manager in self.manager_roles]
+    def manager_for_projects(self):
+        return [manager.project.id for manager in self.manager_roles]
 
     def __repr__(self):
         return '<User[id:{}] first_name={} last_name={} email={}>'.format(self.id, self.first_name, self.last_name, self.email)

@@ -60,7 +60,6 @@ class CodeClearance(DB.Model, PermissionMixin):
     def in_managers(self, user_id):
         return CodeClearance.query\
             .join(Project, Project.id == self.project_id)\
-            .join(Organization)\
             .join(Manager, Manager.user_id == user_id)\
 
     def is_contractor(self, user_id):
