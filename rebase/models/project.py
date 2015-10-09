@@ -33,7 +33,7 @@ class Project(DB.Model, PermissionMixin):
     def allowed_to_be_created_by(self, user):
         if user.is_admin():
             return True
-        return Project.as_owner(user).one()
+        return Project.as_owner(user).first()
 
     allowed_to_be_modified_by = allowed_to_be_created_by
     allowed_to_be_deleted_by = allowed_to_be_created_by
