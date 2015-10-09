@@ -112,6 +112,7 @@ class PermissionMixin(object):
     as_contractor_path = None
     as_manager_path = None
     as_owner_path = None
+    filter_based_on_current_role = True
 
     def allowed_to_be_created_by(self, user):
         msg = 'allowed_to_be_created_by not implemented for {}'
@@ -134,10 +135,11 @@ class PermissionMixin(object):
         query = klass.query
         for node in path:
             query = query.join(node)
-        if path:
-            query = query.filter(path[-1].id == user.current_role.id)
+        role_model = path[-1] if path else klass
+        if klass.filter_based_on_current_role:
+            query = query.filter(role_model.id == user.current_role.id)
         else:
-            query = query.filter(klass.id == user.current_role.id)
+            query = query.filter(role_model.user == user)
         return query
 
     @classmethod
