@@ -37,7 +37,6 @@ class SkillSet(DB.Model, PermissionMixin):
             rebase.models.contractor.Contractor,
             rebase.models.code_clearance.CodeClearance,
             rebase.models.project.Project,
-            rebase.models.organization.Organization,
             rebase.models.manager.Manager,
         ], user)
 

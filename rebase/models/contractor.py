@@ -54,7 +54,6 @@ class Contractor(Role):
         query = cls.query\
             .join(rebase.models.code_clearance.CodeClearance)\
             .join(rebase.models.project.Project)\
-            .join(rebase.models.organization.Organization)\
             .join(rebase.models.manager.Manager)\
             .filter(rebase.models.manager.Manager.user==current_user)
         return query
@@ -72,7 +71,6 @@ class Contractor(Role):
                 rebase.models.ticket_snapshot.TicketSnapshot,
                 rebase.models.ticket.Ticket,
                 rebase.models.project.Project,
-                rebase.models.organization.Organization,
                 rebase.models.manager.Manager,
             ]
         for klass in cls.nominated_path:

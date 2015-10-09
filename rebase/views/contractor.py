@@ -5,6 +5,7 @@ from rebase.views.nomination import NominationSchema
 
 class ContractorSchema(RebaseSchema):
     id =                    fields.Integer()
+    type =                  fields.String()
     busyness =              fields.Integer()
     rating =                fields.Integer()
     user =                  SecureNestedField('UserSchema',              only=('id', 'first_name', 'last_name'))

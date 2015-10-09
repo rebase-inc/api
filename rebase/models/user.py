@@ -44,7 +44,11 @@ class User(DB.Model, PermissionMixin):
         if role:
             self.current_role = role
         else:
-            self.current_role = self.roles.first()
+            self.current_role = next(filter(lambda role: role.type == 'manager', self.roles))
+            if not self.current_role:
+                self.current_role = next(filter(lambda role: role.type == 'contractor', self.roles))
+            if not self.current_role:
+                self.current_role = next(filter(lambda role: role.type == 'owner', self.roles))
         if not self.current_role:
             # TODO raise instead when user doesn't have a role
             # we should first create a Role instance and then add the role as a param of the User __init__

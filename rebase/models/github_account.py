@@ -21,6 +21,11 @@ class GithubAccount(DB.Model, PermissionMixin):
         self.login = login
         self.access_token = access_token
 
+    def query_by_user(user):
+        if user.is_admin():
+            return GithubAccount.query
+        return GithubAccount.query.filter(GithubAccount.user==user)
+
     def allowed_to_be_created_by(self, user):
         return user.is_admin()
 

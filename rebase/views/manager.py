@@ -3,13 +3,14 @@ from rebase.common.schema import RebaseSchema
 from rebase.common.database import DB
 from rebase.models.manager import Manager
 from rebase.models.user import User
-from rebase.models.organization import Organization
+from rebase.models.project import Project
 from rebase.common.database import get_or_make_object, SecureNestedField
 
 class ManagerSchema(RebaseSchema):
-    id =           fields.Integer()
-    organization = SecureNestedField('OrganizationSchema',  only=('id','name'), allow_null=True)
-    user =         SecureNestedField('UserSchema',          only=('id',), allow_null=True)
+    id =        fields.Integer()
+    type =      fields.String()
+    project =   SecureNestedField('ProjectSchema',  only=('id','name', 'organization'))
+    user =      SecureNestedField('UserSchema',     only=('id',))
 
     def make_object(self, data):
         from rebase.models import Manager

@@ -10,6 +10,8 @@ from rebase.models import (
     GithubRepository,
     GithubOrganization,
     GithubProject,
+    Manager,
+    Owner,
     User,
 )
 from rebase.views.organization import serializer as org_serializer
@@ -43,31 +45,31 @@ def extract_repos_info(session):
     with session.DB.session.no_autoflush:
         for org in orgs:
             setattr(session.account, 'orgs', InstrumentedList())
-        github_org = None
-        repos = session.api.get(org['repos_url']).data
-        for repo in repos:
-            if repo['permissions']['admin'] and not repo['fork']:
-                if not github_org:
-                    github_org = GithubOrganization(
-                        org['login'],
-                        session.user,
-                        org['id'],
-                        org['url'],
-                        org['description']
+            github_org = None
+            repos = session.api.get(org['repos_url']).data
+            for repo in repos:
+                if repo['permissions']['admin'] and not repo['fork']:
+                    if not github_org:
+                        github_org = GithubOrganization(
+                            org['login'],
+                            session.user,
+                            org['id'],
+                            org['url'],
+                            org['description']
+                        )
+                        setattr(github_org, 'repos', InstrumentedList())
+                        setattr(github_org, 'account', session.account)
+                        session.account.orgs.append(github_org)
+                    github_project = GithubProject(github_org, repo['name'])
+                    github_repo = GithubRepository(
+                        github_project,
+                        repo['name'],
+                        repo['id'],
+                        repo['url'],
+                        repo['description']
                     )
-                    setattr(github_org, 'repos', InstrumentedList())
-                    setattr(github_org, 'account', session.account)
-                    session.account.orgs.append(github_org)
-                github_project = GithubProject(github_org, repo['name'])
-                github_repo = GithubRepository(
-                    github_project,
-                    repo['name'],
-                    repo['id'],
-                    repo['url'],
-                    repo['description']
-                )
-                setattr(github_repo, 'org', github_org)
-                github_org.repos.append(github_repo)
+                    setattr(github_repo, 'org', github_org)
+                    github_org.repos.append(github_repo)
 
 def import_github_repos(repos, user, db_session):
     '''
@@ -96,17 +98,19 @@ def import_github_repos(repos, user, db_session):
             orgs[gh_org.org_id] = gh_org
         else:
             gh_org = orgs[_org['org_id']]
-            gh_org.owners.append(user)
+            owner = Owner(user, gh_org)
+            gh_org.owners.append(owner)
+            db_session.add(gh_org)
         _repo = GithubRepository.query.filter(GithubRepository.repo_id==repo_id).first()
         if not _repo:
             _project = GithubProject(gh_org, repo['name'])
             _repo = GithubRepository(_project, repo['name'], repo_id, repo['url'], repo['description'])
+        if any(map(lambda mgr: mgr.user == user, _repo.project.managers)):
+            continue
         else:
-            # the repo already exists, so just add this user to the repo's ow
-            if any(map(lambda mgr: mgr.user == user, _repo.project.organization.managers)):
-                continue
-            else:
-                _repo.project.managers.append(user)
+            mgr = Manager(user, _repo.project)
+            _repo.project.managers.append(mgr)
+            db_session.add(_repo)
         new_data['projects'].append(_repo.project)
         new_data['repos'].append(_repo)
 
