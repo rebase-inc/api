@@ -19,21 +19,21 @@ from rebase.tests.common.comment import (
 class TestCommentModel(RebaseModelTestCase):
 
     def test_create(self):
-        review = mock.create_one_work_review(self.db, 4, 'Hello')
+        review = mock.create_one_work_review(self.db, mock.create_one_user(self.db), 4, 'Hello')
         self.db.session.commit()
 
         self.assertEqual(review.comments.one().content, 'Hello')
         self.db.session.commit()
 
     def test_delete(self):
-        review = mock.create_one_work_review(self.db, 4, 'Bye')
+        review = mock.create_one_work_review(self.db,mock.create_one_user(self.db), 4, 'Bye')
         self.db.session.commit()
 
         self.delete_instance(review.comments.one())
         self.assertNotEqual(models.Review.query.get(review.id), None)
 
     def test_update(self):
-        comment = mock.create_one_work_review(self.db, 4, 'Foo').comments.one()
+        comment = mock.create_one_work_review(self.db, mock.create_one_user(self.db), 4, 'Foo').comments.one()
         self.db.session.commit()
 
         comment.content = 'Bar'

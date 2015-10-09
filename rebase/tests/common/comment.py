@@ -21,14 +21,14 @@ def base_scenario(db, make_ticket_comment=False, make_mediation_comment=False, m
         review =        models.Review(work)
         review.rating = randrange(1,5)
 
-    comment_text = "I say: "+pick_a_word()+" to you sir!"
+    comment_text = "I say: " + pick_a_word() + " to you sir!"
 
     if make_ticket_comment:
-        comment = models.Comment(comment_text, ticket=ticket)
+        comment = models.Comment(mgr_user, comment_text, ticket=ticket)
     if make_mediation_comment:
-        comment = models.Comment(comment_text, mediation=mediation)
+        comment = models.Comment(mgr_user, comment_text, mediation=mediation)
     if make_review_comment:
-        comment = models.Comment(comment_text, review=review)
+        comment = models.Comment(mgr_user, comment_text, review=review)
     if make_feedback_comment:
         feedback =      mock.create_one_feedback(db, auction, contractor)
         comment = feedback.comment

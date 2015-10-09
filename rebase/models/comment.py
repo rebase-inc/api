@@ -12,7 +12,11 @@ class Comment(DB.Model, PermissionMixin):
     ticket_id =     DB.Column(DB.Integer, DB.ForeignKey('ticket.id',    ondelete='CASCADE'),    nullable=True)
     feedback_id =   DB.Column(DB.Integer, DB.ForeignKey('feedback.id',  ondelete='CASCADE'),    nullable=True)
 
-    def __init__(self, content=None, review=None, mediation=None, ticket=None, feedback=None):
+    user_id = DB.Column(DB.Integer, DB.ForeignKey('user.id'))
+    user = DB.relationship('User', uselist=False)
+
+    def __init__(self, user, content, review=None, mediation=None, ticket=None, feedback=None):
+        self.user = user
         self.content = content
         self.review = review
         self.mediation = mediation

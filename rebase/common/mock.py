@@ -230,7 +230,7 @@ def create_one_feedback(db, auction=None, contractor=None, comment=None):
         auction or create_one_auction(db),
         contractor or create_one_contractor(db)
     )
-    Comment(comment or 'Your auction sucks', feedback=feedback)
+    Comment(contractor.user, comment or 'Your auction sucks', feedback=feedback)
     db.session.add(feedback)
     return feedback
 
@@ -277,12 +277,12 @@ def create_some_work(db, review=False, debit_credit=True, mediation=True, arbitr
         db.session.add(work)
     return works
 
-def create_one_work_review(db, rating, comment):
+def create_one_work_review(db, user, rating, comment):
     from rebase.models import Review, Comment
     work = create_some_work(db, review=False).pop()
     review = Review(work)
     review.rating = rating
-    comment = Comment(comment, review=review)
+    comment = Comment(user, comment, review=review)
     db.session.add(review)
     return review
 
@@ -308,7 +308,7 @@ class DeveloperUserStory(object):
         the_tickets = [create_one_internal_ticket(db, fake_ticket, project=project_matchmaker) for fake_ticket in FAKE_TICKETS]
         for ticket in the_tickets:
             for fake_comment in FAKE_COMMENTS:
-                Comment(fake_comment, ticket=ticket)
+                Comment(user_ted, fake_comment, ticket=ticket)
         self.contractor = create_one_contractor(db, self.user)
         code_clearance = create_one_code_clearance(db, project_matchmaker, self.contractor)
         the_matches = create_ticket_matches(db, the_tickets, self.contractor)
@@ -342,7 +342,7 @@ class ManagerUserStory(object):
         skill_reqs = []
         for ticket in the_tickets:
             for fake_comment in FAKE_COMMENTS:
-                Comment(fake_comment, ticket=ticket)
+                Comment(self.user, fake_comment, ticket=ticket)
             skills_required = sample(FAKE_SKILLS, randint(3,6))
             approx_skill = uniform(0.3, 1.0) # this is so the dev looks roughly uniformly skilled
             skill_reqs.append(SkillRequirement(ticket, {skill: uniform(min(0.0, approx_skill - 0.2), min(1.0, approx_skill, + 0.2)) for skill in skills_required}))
@@ -359,7 +359,7 @@ class ManagerUserStory(object):
         the_new_tickets = [create_one_internal_ticket(db, fake_ticket + ' (NEW)', project=project) for fake_ticket in FAKE_TICKETS]
         for ticket in the_new_tickets:
             for fake_comment in FAKE_COMMENTS:
-                Comment(fake_comment, ticket=ticket)
+                Comment(self.user, fake_comment, ticket=ticket)
             skills_required = sample(FAKE_SKILLS, randint(3,6))
             approx_skill = uniform(0.3, 1.0) # this is so the dev looks roughly uniformly skilled
             skill_reqs.append(SkillRequirement(ticket, {skill: uniform(min(0.0, approx_skill - 0.2), min(1.0, approx_skill, + 0.2)) for skill in skills_required}))
@@ -406,5 +406,5 @@ def create_the_world(db):
     create_some_work(db, mediation=False)
     create_some_work(db, arbitration=False)
     create_some_work(db, debit_credit=False)
-    create_one_work_review(db, 5, 'It was amazing')
-    create_one_work_review(db, 3, 'Meh')
+    create_one_work_review(db, andrew, 5, 'It was amazing')
+    create_one_work_review(db, andrew, 3, 'Meh')
