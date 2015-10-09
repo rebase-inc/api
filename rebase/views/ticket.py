@@ -5,6 +5,7 @@ from rebase.common.database import get_or_make_object, SecureNestedField
 
 class TicketSchema(RebaseSchema):
     id =            fields.Integer()
+    created =       fields.DateTime()
     title =         fields.String()
     description =   fields.String()
     discriminator = fields.String()

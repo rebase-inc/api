@@ -15,6 +15,7 @@ class GithubTicket(RemoteTicket):
         self.number = number
         self.title = title #this should be pulled from github
         self.description = title #this should be pulled from github
+        self.created = datetime.datetime.now() #this should be pulled from github
 
     @classmethod
     def query_by_user(cls, user):

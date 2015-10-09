@@ -1,3 +1,5 @@
+import datetime
+
 from sqlalchemy.orm import validates
 
 from rebase.common.database import DB, PermissionMixin
@@ -5,8 +7,9 @@ from rebase.common.database import DB, PermissionMixin
 class Review(DB.Model, PermissionMixin):
     __pluralname__ = 'reviews'
 
-    id =      DB.Column(DB.Integer, primary_key=True)
-    _rating =  DB.Column(DB.Integer)
+    id = DB.Column(DB.Integer, primary_key=True)
+    _rating = DB.Column(DB.Integer)
+    created = DB.Column(DB.DateTime, nullable=False)
     work_id = DB.Column(DB.Integer, DB.ForeignKey('work.id', ondelete='CASCADE'), nullable=False)
 
     comments = DB.relationship('Comment', lazy='dynamic', backref='review', cascade='all, delete-orphan', passive_deletes=True)
@@ -16,6 +19,7 @@ class Review(DB.Model, PermissionMixin):
             raise ValueError('Work is already reviewed!')
         self.work = work
         self._rating = 0
+        self.created = datetime.datetime.now()
 
     @property
     def rating(self):

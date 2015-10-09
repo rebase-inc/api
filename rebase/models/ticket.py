@@ -1,4 +1,3 @@
-
 from rebase.common.database import DB, PermissionMixin
 from rebase.common.exceptions import NoRole, UnknownRole
 import rebase.models.organization
@@ -9,6 +8,7 @@ class Ticket(DB.Model, PermissionMixin):
     __pluralname__ = 'tickets'
 
     id =            DB.Column(DB.Integer, primary_key=True)
+    created =       DB.Column(DB.DateTime, nullable=False)
     title =         DB.Column(DB.String, nullable=False)
     description =   DB.Column(DB.String, nullable=False)
     project_id =    DB.Column(DB.Integer, DB.ForeignKey('project.id', ondelete='CASCADE'), nullable=False)

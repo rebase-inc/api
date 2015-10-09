@@ -1,3 +1,4 @@
+import datetime
 
 from rebase.common.database import DB
 from rebase.models.ticket import Ticket
@@ -13,6 +14,7 @@ class InternalTicket(Ticket):
         self.project = project
         self.title = title
         self.description = description
+        self.created = datetime.datetime.now()
 
     def __repr__(self):
         return '<InternalTicket[id:{}]>'.format(self.id)

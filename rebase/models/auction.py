@@ -14,6 +14,8 @@ class Auction(DB.Model, PermissionMixin):
     __pluralname__ = 'auctions'
 
     id =              DB.Column(DB.Integer,   primary_key=True)
+    created =         DB.Column(DB.DateTime, nullable=False)
+    expires =         DB.Column(DB.DateTime, nullable=False)
     duration =        DB.Column(DB.Integer,   nullable=False)
     finish_work_by =  DB.Column(DB.DateTime,  nullable=False)
     redundancy =      DB.Column(DB.Integer,   nullable=False)
@@ -32,6 +34,8 @@ class Auction(DB.Model, PermissionMixin):
         self.duration = duration
         self.finish_work_by = finish_work_by
         self.redundancy = redundancy
+        self.created = datetime.now()
+        self.expires = datetime.now() + timedelta(days = 3)
         # Hack to nominate all contractors during development
         from flask.ext.login import current_app
         if current_app.config['NOMINATE_ALL_CONTRACTORS']:

@@ -1,6 +1,6 @@
 import datetime
 import uuid
-from random import randint, randrange, sample, random, uniform
+from random import randint, randrange, sample, uniform
 from .utils import (
     pick_a_word,
     pick_a_first_name,
@@ -185,12 +185,12 @@ def create_one_snapshot(db, ticket=None):
     db.session.add(ts)
     return ts
 
-def create_one_auction(db, tickets=None, duration=1000, finish_work_by=None, redundancy=1):
+def create_one_auction(db, tickets=None, duration=1000, finish_work_by=None, redundancy=1, price=200):
     finish_work_by = finish_work_by or datetime.datetime.now() + datetime.timedelta(days=2)
     from rebase.models import Auction, TicketSet, BidLimit, TicketSnapshot, TermSheet
     tickets = tickets or create_some_tickets(db)
     ticket_snaps = [TicketSnapshot(ticket) for ticket in tickets]
-    bid_limits = [BidLimit(ticket_snap, 200) for ticket_snap in ticket_snaps]
+    bid_limits = [BidLimit(ticket_snap, price) for ticket_snap in ticket_snaps]
     term_sheet = TermSheet('Some legal mumbo-jumbo')
     ticket_set = TicketSet(bid_limits)
     organization = tickets[0].project.organization
@@ -347,7 +347,7 @@ class ManagerUserStory(object):
             approx_skill = uniform(0.3, 1.0) # this is so the dev looks roughly uniformly skilled
             skill_reqs.append(SkillRequirement(ticket, {skill: uniform(min(0.0, approx_skill - 0.2), min(1.0, approx_skill, + 0.2)) for skill in skills_required}))
 
-        the_auctions = [create_one_auction(db, [ticket]) for ticket in the_tickets]
+        the_auctions = [create_one_auction(db, [ticket], price=randrange(200, 2000, 20)) for ticket in the_tickets]
 
         for auction, ticket in zip(the_auctions, the_tickets):
             for contractor in the_contractors:
