@@ -33,10 +33,19 @@ rebase-curl () {
 
 #
 ## GET something from Rebase
-# $ rebase-get /skill_set
+# $ rebase-get skill_sets
 #
 rebase-get () {
 	rebase-curl GET "{}" $1
+}
+
+
+#
+# DELETE from Rebase
+#  rebase-rm users/3
+#
+rebase-rm () {
+    rebase-curl DELETE "" $1
 }
 
 #

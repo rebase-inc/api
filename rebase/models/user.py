@@ -17,10 +17,10 @@ class User(DB.Model, PermissionMixin):
     email =             DB.Column(DB.String,    nullable=False, unique=True)
     hashed_password =   DB.Column(DB.String,    nullable=False)
     last_seen =         DB.Column(DB.DateTime,  nullable=False)
-    roles =             DB.relationship('Role', backref='user', cascade='all, delete-orphan', lazy='dynamic')
+    roles =             DB.relationship('Role', backref='user', cascade='all, delete-orphan', passive_deletes=True)
     photo =             DB.relationship('Photo', backref='user', cascade="all, delete-orphan", passive_deletes=True, uselist=False)
     admin =             DB.Column(DB.Boolean,   nullable=False, default=False)
-    github_accounts =   DB.relationship('GithubAccount', backref='user', cascade='all, delete-orphan', lazy='dynamic')
+    github_accounts =   DB.relationship('GithubAccount', backref='user', cascade='all, delete-orphan', passive_deletes=True)
 
     def __init__(self, first_name, last_name, email, password):
         from rebase.models.contractor import Contractor
