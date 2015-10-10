@@ -350,6 +350,7 @@ class ManagerUserStory(object):
         the_auctions = [create_one_auction(db, [ticket], price=randrange(200, 2000, 20)) for ticket in the_tickets]
 
         for auction, ticket in zip(the_auctions, the_tickets):
+            auction.expires = auction.expires + datetime.timedelta(seconds = randrange(-24*60*60, 24*60*60, 1))
             for contractor in the_contractors:
                 nomination = create_one_nomination(db, auction, contractor, False)
                 match = TicketMatch(contractor.skill_set, ticket.skill_requirement)

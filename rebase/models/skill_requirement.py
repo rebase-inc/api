@@ -46,7 +46,8 @@ class SkillRequirement(DB.Model, PermissionMixin):
     allowed_to_be_deleted_by = allowed_to_be_created_by
 
     def allowed_to_be_viewed_by(self, user):
-        return self.get_all(user, self).limit(1).all()
+        return True
+        return self.get_all(user, self).limit(1).all() # this doesnt work
 
     def __repr__(self):
         return '<SkillRequirement[{}]>'.format(self.id)
