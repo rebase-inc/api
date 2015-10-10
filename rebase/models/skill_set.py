@@ -12,7 +12,7 @@ class SkillSet(DB.Model, PermissionMixin):
 
     def __init__(self, contractor, skills=None):
         self.contractor = contractor
-        self.skills = skills
+        self.skills = skills or {}
 
     @classmethod
     def query_by_user(cls, user):

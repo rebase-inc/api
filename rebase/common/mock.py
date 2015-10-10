@@ -353,9 +353,9 @@ class ManagerUserStory(object):
             auction.expires = auction.expires + datetime.timedelta(seconds = randrange(-24*60*60, 24*60*60, 1))
             for contractor in the_contractors:
                 nomination = create_one_nomination(db, auction, contractor, False)
-                match = TicketMatch(contractor.skill_set, ticket.skill_requirement)
-                job_fit = JobFit(nomination, [match])
-                db.session.add(job_fit)
+                #match = TicketMatch(contractor.skill_set, ticket.skill_requirement)
+                #job_fit = JobFit(nomination, [match])
+                #db.session.add(job_fit)
 
         the_new_tickets = [create_one_internal_ticket(db, fake_ticket + ' (NEW)', project=project) for fake_ticket in FAKE_TICKETS]
         for ticket in the_new_tickets:

@@ -33,6 +33,8 @@ class Contractor(Role):
         self.user = user
         self.busyness = 1
         self.rating = randint(20, 50)/10
+        from rebase.models.skill_set import SkillSet
+        SkillSet(self)
         # Hack to nominate all contractors during development
         from flask.ext.login import current_app
         if current_app.config['NOMINATE_ALL_CONTRACTORS']:
