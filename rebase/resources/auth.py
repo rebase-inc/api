@@ -1,12 +1,12 @@
 from datetime import datetime, timedelta
 
-from flask import jsonify, request, session
+from flask import jsonify, request, session, current_app
 from flask.ext.restful import Resource
 from flask.ext.login import (
     login_required,
     login_user,
     logout_user,
-    current_user
+    current_user,
 )
 from rebase.common.exceptions import UnmarshallingError, ValidationError
 
@@ -58,5 +58,8 @@ class AuthCollection(Resource):
         response.status_code = 200
         response.set_cookie('role_id', expires=0)
         response.set_cookie('user', expires=0)
+        if 'github_token' in session:
+            del session['github_token']
+        current_app.logger.debug(session)
         return response
 

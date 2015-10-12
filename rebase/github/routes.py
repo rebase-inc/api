@@ -38,6 +38,7 @@ def register_github_routes(app):
     @github_oauth
     def github_root():
         github_user = github.get('user').data
+        app.logger.info('Found github user: {}', github_user)
         return redirect('/app/app.html')
 
     @app.route('/github/verify')
