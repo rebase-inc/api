@@ -58,8 +58,7 @@ class AuthCollection(Resource):
         response.status_code = 200
         response.set_cookie('role_id', expires=0)
         response.set_cookie('user', expires=0)
-        if 'github_token' in session:
-            del session['github_token']
+        session.pop('github_token', None)
         current_app.logger.debug(session)
         return response
 
