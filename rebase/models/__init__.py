@@ -18,6 +18,7 @@ from rebase.models.github_project import *
 from rebase.models.github_account import *
 from rebase.models.github_repository import *
 from rebase.models.github_organization import *
+from rebase.models.github_org_account import *
 from rebase.models.internal_ticket import *
 from rebase.models.internal_project import *
 from rebase.models.remote_ticket import *

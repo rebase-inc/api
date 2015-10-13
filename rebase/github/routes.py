@@ -83,9 +83,7 @@ def register_github_routes(app):
                 return redirect(url_for('github_login'))
         session['github_token'] = (resp['access_token'], '')
         github_user = github.get('user').data
-
         save_access_token(github_user, current_user, resp['access_token'], DB)
-
         return redirect('/app/app.html')
 
     @github.tokengetter

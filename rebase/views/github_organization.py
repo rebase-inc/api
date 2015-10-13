@@ -11,12 +11,13 @@ class GithubOrganizationSchema(RebaseSchema):
     url =           fields.String()
     description =   fields.String()
 
-    repos =  fields.Nested('GithubRepositorySchema', many=True, nullable=True)
-    account = fields.Nested('GithubAccountSchema', only=('id',), nullable=True)
+    projects =      SecureNestedField('GithubProjectSchema', many=True)
+    accounts =      SecureNestedField('GithubOrgAccountSchema', only=('account_id',), many=True)
 
     def make_object(self, data):
         from rebase.models import GithubOrganization
         return get_or_make_object(GithubOrganization, data)
+
 
 serializer =            GithubOrganizationSchema()
 deserializer =          GithubOrganizationSchema(exclude=('id'), strict=True)

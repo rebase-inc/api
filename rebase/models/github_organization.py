@@ -11,6 +11,8 @@ class GithubOrganization(Organization):
     url =           DB.Column(DB.String, nullable=False)
     description =   DB.Column(DB.String, nullable=True)
 
+    accounts = DB.relationship('GithubOrgAccount', backref='org', cascade="all, delete-orphan", passive_deletes=True)
+
     __mapper_args__ = { 'polymorphic_identity': 'github_organization' }
 
     def __init__(self, login, user, org_id, url, description):

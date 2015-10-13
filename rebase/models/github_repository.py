@@ -25,12 +25,7 @@ class GithubRepository(CodeRepository):
     allowed_to_be_deleted_by = allowed_to_be_created_by
 
     def allowed_to_be_viewed_by(self, user):
-        if user.is_admin():
-            return True
-        if hasattr(self, 'account'):
-            return self.account.user == user
-        if hasattr(self, 'org'):
-            return self.org.account.user == user
+        self.project.allowed_to_be_viewed_by(user)
 
     def __repr__(self):
         return '<GithubRepository[{}]>'.format(self.id)

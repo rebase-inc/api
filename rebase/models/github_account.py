@@ -10,6 +10,8 @@ class GithubAccount(DB.Model, PermissionMixin):
     login =         DB.Column(DB.String, nullable=False)
     access_token =  DB.Column(DB.String, nullable=False)
 
+    orgs = DB.relationship('GithubOrgAccount', backref='account', cascade="all, delete-orphan", passive_deletes=True)
+
     def __init__(self, user, account_id, login, access_token):
         ''' 
         user: a User object

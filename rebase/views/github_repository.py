@@ -12,7 +12,7 @@ class GithubRepositorySchema(RebaseSchema):
     url =           fields.String()
     description =   fields.String()
 
-    org =           fields.Nested('GithubOrganizationSchema', only=('org_id', 'login', 'url', 'description', 'account'), nullable=True)
+    project =       fields.Nested('GithubProjectSchema', only=('organization', ))
 
     def make_object(self, data):
         from rebase.models import GithubRepository
