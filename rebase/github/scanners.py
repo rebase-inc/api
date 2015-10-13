@@ -12,6 +12,7 @@ from rebase.models import (
     GithubOrganization,
     GithubProject,
     GithubOrgAccount,
+    GithubTicket,
     Manager,
     Owner,
     User,
@@ -37,16 +38,14 @@ def make_session(github_account, app, user, db):
         return (github_account.access_token, '')
     return GithubSession(github, github_account, user, db)
 
-def make_github_interface(user_id, role, login):
+def make_admin_github_session(account_id):
     from rebase import create_app
     app, _, db = create_app()
-    user = User.query.get_or_404(user_id)
-    user.set_role(role)
-    github_account = GithubAccount.query_by_user(user).filter(GithubAccount.login==login).first()
+    user = User('RQ', 'RQ', 'RQ', 'RQ')
+    user.admin = True
+    github_account = GithubAccount.query.filter(GithubAccount.id==account_id).first()
     if not github_account:
-        raise RuntimeError('Could not find a GithubAccount with login \'{}\' for user id:{}'.format(login, user_id))
-    if not github_account:
-        raise RuntimeError('User[id={}] has no GitHub account'.format(user.id))
+        raise RuntimeError('Could not find a GithubAccount with id \'{}\''.format(account_id))
     return make_session(github_account, app, user, db)
 
 def extract_repos_info(session):
@@ -81,14 +80,19 @@ def extract_repos_info(session):
                         )
         return session.account
 
-def import_tickets(user_id, project_id):
+def import_tickets(project_id, account_id):
+    session = make_admin_github_session(account_id)
     project = GithubProject.query.filter(GithubProject.id==project_id).first()
-    user = User.query.filter(User.id==user_id).first()
     if not project:
         return 'Unknow project with id: {}'.format(project_id)
-    if not user:
-        return 'Unknow user with id: {}'.format(user_id)
-    return user_id, project_id
+    issues = session.api.get('/repos/{}/{}/issues'.format(project.organization.name, project.name)).data
+    tickets = []
+    for issue in issues:
+        ticket = GithubTicket(project, issue['number'], issue['title'])
+        session.DB.session.add(ticket)
+        tickets.append(ticket)
+    session.DB.session.commit()
+    return tickets
 
 def import_github_repos(repos, user, db_session):
     # TODO add GithubOrgAccount instance for each imported GithubOrganization
@@ -154,7 +158,7 @@ def import_github_repos(repos, user, db_session):
     
     # start a background task to pull tickets from Github for each repo
     for project in new_data['projects']:
-        current_app.default_queue.enqueue(import_tickets, user.id,  project.id)
+        current_app.default_queue.enqueue(import_tickets, project.id, project.organization.accounts[0].account.id)
 
     # serialize the new data
     return { key: list(map(lambda elt: _serializers[key].dump(elt).data, value)) for key, value in new_data.items() }

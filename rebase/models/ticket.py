@@ -6,7 +6,6 @@ class Ticket(DB.Model, PermissionMixin):
 
     id =            DB.Column(DB.Integer, primary_key=True)
     title =         DB.Column(DB.String, nullable=False)
-    description =   DB.Column(DB.String, nullable=False)
     project_id =    DB.Column(DB.Integer, DB.ForeignKey('project.id', ondelete='CASCADE'), nullable=False)
     discriminator = DB.Column(DB.String)
 

@@ -10,11 +10,10 @@ class GithubTicket(RemoteTicket):
 
     __mapper_args__ = { 'polymorphic_identity': 'github_ticket' }
 
-    def __init__(self, project, number, title='NOTIMPLEMENTED', description='NOTIMPLEMENTED'):
+    def __init__(self, project, number, title):
         self.project = project
         self.number = number
-        self.title = title #this should be pulled from github
-        self.description = title #this should be pulled from github
+        self.title = title
 
     @classmethod
     def setup_queries(cls, models):
