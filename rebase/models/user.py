@@ -196,11 +196,11 @@ class User(DB.Model, PermissionMixin):
 
     @property
     def manager_roles(self):
-        return self.roles.filter_by(type = 'manager')
+        return filter(lambda role: role.type=='manager', self.roles)
 
     @property
     def contractor_roles(self):
-        return self.roles.filter_by(type = 'contractor')
+        return filter(lambda role: role.type=='contractor', self.roles)
 
     @property
     def manager_for_projects(self):

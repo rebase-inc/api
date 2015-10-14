@@ -31,7 +31,7 @@ class Feedback(DB.Model, PermissionMixin):
 
         all_filters = []
         if auctions_approved_for:
-            all_filters.append(Feedback.auction.organization_id.in_(user.manager_for_organizations))
+            all_filters.append(Feedback.auction.organization_id.in_(user.manager_for_projects))
         all_filters.append(User.id == user.id)
         return query.filter(or_(*all_filters))
 
@@ -46,7 +46,7 @@ class Feedback(DB.Model, PermissionMixin):
     def allowed_to_be_viewed_by(self, user):
         if user.is_admin():
             return True
-        return (self.auction.organization.id in user.manager_for_organizations) or (self.contractor.user == user)
+        return (self.auction.organization.id in user.manager_for_projects) or (self.contractor.user == user)
 
     def __repr__(self):
         return '<Feedback[auction({}), contractor({})] >'.format(self.auction_id, self.contractor_id)
