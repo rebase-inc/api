@@ -8,6 +8,7 @@ class CommentSchema(RebaseSchema):
     id =        fields.Integer()
     content =   fields.String()
 
+    user =      SecureNestedField('UserSchema',       only=('id','first_name', 'last_name', 'photo'), default=None)
     ticket =    SecureNestedField('TicketSchema',     only=('id',), default=None)
     review =    SecureNestedField('ReviewSchema',     only=('id',), default=None)
     mediation = SecureNestedField('MediationSchema',  only=('id',), default=None)

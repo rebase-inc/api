@@ -12,7 +12,7 @@ class SkillSet(DB.Model, PermissionMixin):
 
     def __init__(self, contractor, skills=None):
         self.contractor = contractor
-        self.skills = skills
+        self.skills = skills or {}
 
     @classmethod
     def query_by_user(cls, user):
@@ -54,6 +54,7 @@ class SkillSet(DB.Model, PermissionMixin):
     allowed_to_be_deleted_by = allowed_to_be_created_by
 
     def allowed_to_be_viewed_by(self, user):
+        return True
         return self.get_all(user, self).limit(1).all()
 
     def __repr__(self):

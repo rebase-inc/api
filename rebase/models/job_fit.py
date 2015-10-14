@@ -29,7 +29,7 @@ class JobFit(DB.Model, PermissionMixin):
             raise ValueError(msg)
         self.nomination = nomination
         self.ticket_matches = ticket_matches
-        self.score = randint(0, 100) # obviously temporary
+        self.score = -1 # obviously temporary
 
     def __repr__(self):
         return '<JobFit[contractor({}), auction({})] score={}>'.format(self.contractor_id, self.nomination.auction, self.score)
@@ -49,6 +49,3 @@ class JobFit(DB.Model, PermissionMixin):
 
     def allowed_to_be_viewed_by(self, user):
         return self.allowed_to_be_created_by(user)
-
-    def __repr__(self):
-        return '<Ticket[{}] title="{}">'.format(self.id, self.title)

@@ -8,6 +8,7 @@ from rebase.common.database import get_or_make_object, SecureNestedField
 
 class ReviewSchema(RebaseSchema):
     id = fields.Integer()
+    created = fields.DateTime()
     rating = fields.Integer()
     work = SecureNestedField('WorkSchema', exclude=('review',))
     comments = SecureNestedField(CommentSchema, only=('id',), many=True, default=None)

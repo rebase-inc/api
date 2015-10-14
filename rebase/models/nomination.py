@@ -27,7 +27,7 @@ class Nomination(DB.Model, PermissionMixin):
         self._auction = value
 
     def __init__(self, contractor, ticket_set, auction=None):
-        from rebase.models import Contractor, TicketSet
+        from rebase.models import Contractor, TicketSet, TicketMatch, JobFit
         if not isinstance(contractor, Contractor):
             raise ValueError('contractor must be of Contractor type!')
         if not isinstance(ticket_set, TicketSet):
@@ -36,8 +36,16 @@ class Nomination(DB.Model, PermissionMixin):
         self.ticket_set = ticket_set
         if auction:
             self.auction = auction
+        ticket_matches = []
+        for bid_limit in ticket_set.bid_limits:
+            skill_requirement = bid_limit.ticket_snapshot.ticket.skill_requirement
+            ticket_match = TicketMatch.query.get((skill_requirement.id, contractor.skill_set.id))
+            ticket_match = ticket_match or TicketMatch(contractor.skill_set, skill_requirement)            
+            ticket_matches.append(ticket_match)
+        job_fits = JobFit(self, ticket_matches)
 
     def allowed_to_be_created_by(self, user):
+        return True
         if user.is_admin():
             return True
         organization_id = self.ticket_set.bid_limits[0].ticket_snapshot.ticket.organization.id

@@ -8,6 +8,8 @@ from rebase.common.database import get_or_make_object, SecureNestedField
 
 class AuctionSchema(RebaseSchema):
     id =               fields.Integer()
+    created =          fields.DateTime()
+    expires =          fields.DateTime()
     duration =         fields.Integer()
     finish_work_by =   fields.DateTime()
     redundancy =       fields.Integer()
