@@ -7,6 +7,7 @@ from sqlalchemy.orm.collections import InstrumentedList
 from rebase.github import create_github_app
 from rebase.github.languages import path_to_languages
 from rebase.models import (
+    Comment,
     GithubAccount,
     GithubRepository,
     GithubOrganization,
@@ -85,14 +86,28 @@ def import_tickets(project_id, account_id):
     project = GithubProject.query.filter(GithubProject.id==project_id).first()
     if not project:
         return 'Unknow project with id: {}'.format(project_id)
-    issues = session.api.get('/repos/{}/{}/issues'.format(project.organization.name, project.name)).data
+    issues = session.api.get('/repos/{owner}/{repo}/issues'.format(
+        owner=project.organization.name,
+        repo=project.name
+    )).data
     tickets = []
+    komments = []
     for issue in issues:
         ticket = GithubTicket(project, issue['number'], issue['title'])
-        session.DB.session.add(ticket)
         tickets.append(ticket)
+        body = Comment(content=issue['body'], ticket=ticket)
+        komments.append(body)
+        comments = session.api.get('/repos/{owner}/{repo}/issues/{number}/comments'.format(
+            owner=project.organization.name,
+            repo=project.name,
+            number=issue['number']
+        )).data
+        for comment in comments:
+            ticket_comment = Comment(content=comment['body'], ticket=ticket)
+            komments.append(ticket_comment)
+        session.DB.session.add(ticket)
     session.DB.session.commit()
-    return tickets
+    return tickets, komments
 
 def import_github_repos(repos, user, db_session):
     # TODO add GithubOrgAccount instance for each imported GithubOrganization
