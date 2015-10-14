@@ -1,6 +1,7 @@
 import datetime
 
 from flask.ext.login import login_user, logout_user
+from sqlalchemy import and_
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import aliased
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -44,15 +45,13 @@ class User(DB.Model, PermissionMixin):
         if role:
             self.current_role = role
         else:
-            self.current_role = next(filter(lambda role: role.type == 'manager', self.roles))
+            self.current_role = Role.query.filter(and_(Role.type=='manager', Role.user==self)).first()
             if not self.current_role:
-                self.current_role = next(filter(lambda role: role.type == 'contractor', self.roles))
-            if not self.current_role:
-                self.current_role = next(filter(lambda role: role.type == 'owner', self.roles))
-        if not self.current_role:
-            # TODO raise instead when user doesn't have a role
-            # we should first create a Role instance and then add the role as a param of the User __init__
-            self.current_role = Contractor(self)
+                self.current_role = Role.query.filter(and_(Role.type=='contractor', Role.user==self)).first()
+                if not self.current_role:
+                    # TODO raise instead when user doesn't have a role
+                    # we should first create a Role instance and then add the role as a param of the User __init__
+                    self.current_role = Contractor(self)
         return self.current_role
 
     @classmethod
