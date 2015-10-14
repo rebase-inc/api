@@ -1,15 +1,10 @@
-from sqlalchemy.orm import validates
-
-from werkzeug.local import LocalProxy
 
 from rebase.models.role import Role
-from rebase.models.user import User
-from rebase.models.contractor import Contractor
-
-from rebase.common.database import DB, PermissionMixin
+from rebase.common.database import DB
 
 class Manager(Role):
     __pluralname__ = 'managers'
+
     id =            DB.Column(DB.Integer, DB.ForeignKey('role.id', ondelete='CASCADE'), primary_key=True)
     project_id =    DB.Column(DB.Integer, DB.ForeignKey('project.id', ondelete='CASCADE'), nullable=False)
 
