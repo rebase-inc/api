@@ -10,10 +10,9 @@ class InternalTicket(Ticket):
 
     __mapper_args__ = { 'polymorphic_identity': 'internal_ticket' }
 
-    def __init__(self, project, title, description=''):
+    def __init__(self, project, title):
         self.project = project
         self.title = title
-        self.description = description
         self.created = datetime.datetime.now()
 
     def __repr__(self):

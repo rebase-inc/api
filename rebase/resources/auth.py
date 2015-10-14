@@ -59,6 +59,5 @@ class AuthCollection(Resource):
         response.set_cookie('role_id', expires=0)
         response.set_cookie('user', expires=0)
         session.pop('github_token', None)
-        current_app.logger.debug(session)
         return response
 

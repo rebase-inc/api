@@ -129,17 +129,9 @@ def create_one_internal_ticket(db, title=None, description=None, project=None):
     project = project or create_one_project(db)
     title = title or ' '.join(pick_a_word() for i in range(5))
     description = description or ' '.join(pick_a_word() for i in range(5))
-    ticket = InternalTicket(project, title, description)
-    SkillRequirement(ticket)
-    db.session.add(ticket)
-    return ticket
-
-def create_one_remote_ticket(db, title=None, description=None, project=None):
-    from rebase.models import RemoteTicket, SkillRequirement
-    project = project or create_one_project(db)
-    title = title or ' '.join(pick_a_word() for i in range(5))
-    description = description or ' '.join(pick_a_word() for i in range(15))
-    ticket = RemoteTicket(project, title, description)
+    ticket = InternalTicket(project, title)
+    user = create_one_user(db)
+    Comment(user, description, ticket=ticket)
     SkillRequirement(ticket)
     db.session.add(ticket)
     return ticket

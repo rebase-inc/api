@@ -6,7 +6,6 @@ from rebase.common.database import get_or_make_object, SecureNestedField
 class InternalTicketSchema(RebaseSchema):
     id =            fields.Integer()
     title =         fields.String(required=True)
-    description =   fields.String(required=True)
     discriminator = fields.String()
 
 

@@ -9,7 +9,6 @@ from flask.ext.restful import abort
 class RemoteTicketSchema(RebaseSchema):
     id =          fields.Integer(required=True)
     title =       fields.String()
-    description = fields.String()
     number =      fields.Integer()
 
     project =           SecureNestedField('ProjectSchema', only=('id',))
