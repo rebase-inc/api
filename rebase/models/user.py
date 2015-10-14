@@ -13,6 +13,7 @@ class User(DB.Model, PermissionMixin):
     __pluralname__ = 'users'
 
     id =                DB.Column(DB.Integer,   primary_key=True)
+    type =              DB.Column(DB.String)
     first_name =        DB.Column(DB.String,    nullable=False)
     last_name =         DB.Column(DB.String,    nullable=False)
     email =             DB.Column(DB.String,    nullable=False, unique=True)
@@ -22,6 +23,11 @@ class User(DB.Model, PermissionMixin):
     photo =             DB.relationship('Photo', backref='user', cascade="all, delete-orphan", passive_deletes=True, uselist=False)
     admin =             DB.Column(DB.Boolean,   nullable=False, default=False)
     github_accounts =   DB.relationship('GithubAccount', backref='user', cascade='all, delete-orphan', passive_deletes=True)
+
+    __mapper_args__ = {
+        'polymorphic_identity': 'user',
+        'polymorphic_on': type
+    }
 
     def __init__(self, first_name, last_name, email, password):
         from rebase.models.contractor import Contractor

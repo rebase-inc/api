@@ -27,15 +27,10 @@ class Manager(Role):
             return True
         return Manager.as_owner(user).limit(1).first()
 
-    def allowed_to_be_modified_by(self, user):
-        return self.allowed_to_be_created_by(user)
-
-    def allowed_to_be_deleted_by(self, user):
-        return self.allowed_to_be_created_by(user)
+    allowed_to_be_modified_by = allowed_to_be_created_by
+    allowed_to_be_deleted_by = allowed_to_be_created_by
 
     def allowed_to_be_viewed_by(self, user):
-        if user.admin:
-            return True
         return self.project.allowed_to_be_viewed_by(user)
 
     @classmethod

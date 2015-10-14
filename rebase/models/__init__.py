@@ -41,6 +41,7 @@ from rebase.models.ticket_match import *
 from rebase.models.ticket_set import *
 from rebase.models.ticket_snapshot import *
 from rebase.models.user import *
+from rebase.models.github_user import *
 from rebase.models.work import *
 from rebase.models.work_offer import *
 from rebase.models.manager import *

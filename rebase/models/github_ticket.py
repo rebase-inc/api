@@ -11,10 +11,11 @@ class GithubTicket(RemoteTicket):
 
     __mapper_args__ = { 'polymorphic_identity': 'github_ticket' }
 
-    def __init__(self, project, number, title):
+    def __init__(self, project, number, title, created):
         self.project = project
-        self.number = number
         self.title = title
+        self.number = number
+        self.created = created
 
     @classmethod
     def setup_queries(cls, models):

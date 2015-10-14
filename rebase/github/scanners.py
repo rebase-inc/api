@@ -1,4 +1,6 @@
 from collections import namedtuple
+from datetime import datetime
+from functools import lru_cache
 
 from flask import current_app
 from sqlalchemy import and_
@@ -14,8 +16,10 @@ from rebase.models import (
     GithubProject,
     GithubOrgAccount,
     GithubTicket,
+    GithubUser,
     Manager,
     Owner,
+    SkillRequirement,
     User,
 )
 from rebase.views.github_organization import serializer as org_serializer
@@ -30,7 +34,20 @@ _serializers = {
     'managers': mgr_serializer
 }
 
-GithubSession = namedtuple('GithubSession', ['api', 'account', 'user', 'DB'])
+_gh_datetime_format = '%Y-%m-%dT%H:%M:%SZ'
+
+class GithubSession(object):
+    def __init__(self, api, account, user, DB):
+        self.api = api
+        self.account = account
+        self.user = user
+        self.DB = DB
+
+    def __hash__(self):
+        return hash('{account_id}_{user_id}'.format(
+            account_id=self.account.id, 
+            user_id=self.user.id
+        ))
 
 def make_session(github_account, app, user, db):
     github = create_github_app(app)
@@ -81,6 +98,19 @@ def extract_repos_info(session):
                         )
         return session.account
 
+@lru_cache(maxsize=None)
+def get_or_make_user(session, user_id, user_login):
+    '''
+    return a User or GithubUser instance for the 'user_id' and 'user_login' provided
+    '''
+    account = GithubAccount.query.filter(GithubAccount.account_id==user_id).first()
+    if not account:
+        gh_user = session.api.get('/users/{username}'.format(username=user_login)).data
+        _user = GithubUser(user_id, user_login, gh_user['name'])
+    else:
+        _user = account.user
+    return _user
+
 def import_tickets(project_id, account_id):
     session = make_admin_github_session(account_id)
     project = GithubProject.query.filter(GithubProject.id==project_id).first()
@@ -93,9 +123,19 @@ def import_tickets(project_id, account_id):
     tickets = []
     komments = []
     for issue in issues:
-        ticket = GithubTicket(project, issue['number'], issue['title'])
+        ticket = GithubTicket(project, issue['number'], issue['title'], datetime.strptime(issue['created_at'], _gh_datetime_format))
+        skill_requirement = SkillRequirement(ticket)
         tickets.append(ticket)
-        body = Comment(content=issue['body'], ticket=ticket)
+        issue_user = issue['user']
+        body = Comment(
+            get_or_make_user(
+                session,
+                issue_user['id'],
+                issue_user['login'],
+            ),
+            issue['body'],
+            ticket=ticket
+        )
         komments.append(body)
         comments = session.api.get('/repos/{owner}/{repo}/issues/{number}/comments'.format(
             owner=project.organization.name,
@@ -103,7 +143,16 @@ def import_tickets(project_id, account_id):
             number=issue['number']
         )).data
         for comment in comments:
-            ticket_comment = Comment(content=comment['body'], ticket=ticket)
+            comment_user = comment['user']
+            ticket_comment = Comment(
+                get_or_make_user(
+                    session,
+                    comment_user['id'],
+                    comment_user['login'],
+                ),
+                comment['body'],
+                ticket=ticket
+            )
             komments.append(ticket_comment)
         session.DB.session.add(ticket)
     session.DB.session.commit()
