@@ -12,10 +12,12 @@ class GithubTicket(RemoteTicket):
     __mapper_args__ = { 'polymorphic_identity': 'github_ticket' }
 
     def __init__(self, project, number, title, created):
+        from rebase.models.skill_requirement import SkillRequirement
         self.project = project
         self.title = title
         self.number = number
         self.created = created
+        self.skill_requirement = SkillRequirement(self)
 
     @classmethod
     def setup_queries(cls, models):
