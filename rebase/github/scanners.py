@@ -105,8 +105,10 @@ def get_or_make_user(session, user_id, user_login):
     '''
     account = GithubAccount.query.filter(GithubAccount.account_id==user_id).first()
     if not account:
-        gh_user = session.api.get('/users/{username}'.format(username=user_login)).data
-        _user = GithubUser(user_id, user_login, gh_user['name'])
+        _user = GithubUser.query.filter(GithubUser.github_id==user_id).first()
+        if not _user:
+            gh_user = session.api.get('/users/{username}'.format(username=user_login)).data
+            _user = GithubUser(user_id, user_login, gh_user['name'])
     else:
         _user = account.user
     return _user
