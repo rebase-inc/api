@@ -13,7 +13,7 @@ class Project(DB.Model, PermissionMixin):
     code_repository =   DB.relationship('CodeRepository',   backref='project', cascade="all, delete-orphan", passive_deletes=True, uselist=False)
     tickets =           DB.relationship('Ticket',           backref='project', cascade="all, delete-orphan", passive_deletes=True)
     clearances =        DB.relationship('CodeClearance',    backref='project', cascade="all, delete-orphan", passive_deletes=True)
-    managers =          DB.relationship('Manager',          backref='project', cascade='all, delete-orphan', passive_deletes=True)
+    managers =          DB.relationship('Manager',          backref='project', cascade='all, delete-orphan', passive_deletes=False)
 
     __mapper_args__ = {
         'polymorphic_identity': 'project',
