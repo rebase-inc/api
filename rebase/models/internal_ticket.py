@@ -11,9 +11,11 @@ class InternalTicket(Ticket):
     __mapper_args__ = { 'polymorphic_identity': 'internal_ticket' }
 
     def __init__(self, project, title):
+        from rebase.models.skill_requirement import SkillRequirement
         self.project = project
         self.title = title
         self.created = datetime.datetime.now()
+        self.skill_requirement = SkillRequirement(self)
 
     def __repr__(self):
         return '<InternalTicket[id:{}]>'.format(self.id)
