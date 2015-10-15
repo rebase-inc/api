@@ -6,7 +6,7 @@ class GithubAccount(DB.Model, PermissionMixin):
 
     id =            DB.Column(DB.Integer, primary_key=True)
     user_id =       DB.Column(DB.Integer, DB.ForeignKey('user.id', ondelete='CASCADE'))
-    account_id =    DB.Column(DB.Integer, nullable=False, unique=True)
+    account_id =    DB.Column(DB.Integer, nullable=False)
     login =         DB.Column(DB.String, nullable=False)
     access_token =  DB.Column(DB.String, nullable=False)
 
