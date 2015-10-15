@@ -1,16 +1,11 @@
-
 from rebase.common.database import DB, PermissionMixin
-from rebase.common.exceptions import NoRole, UnknownRole
-import rebase.models.organization
-import rebase.models.manager
-import rebase.models.project
 
 class Ticket(DB.Model, PermissionMixin):
     __pluralname__ = 'tickets'
 
     id =            DB.Column(DB.Integer, primary_key=True)
+    created =       DB.Column(DB.DateTime, nullable=False)
     title =         DB.Column(DB.String, nullable=False)
-    description =   DB.Column(DB.String, nullable=False)
     project_id =    DB.Column(DB.Integer, DB.ForeignKey('project.id', ondelete='CASCADE'), nullable=False)
     discriminator = DB.Column(DB.String)
 
@@ -27,61 +22,30 @@ class Ticket(DB.Model, PermissionMixin):
         raise NotImplementedError('Ticket is abstract')
 
     @classmethod
-    def role_to_query_fn(cls, user):
-        if user.current_role.type == 'manager':
-            return cls.get_all_as_manager
-        elif user.current_role.type == 'contractor':
-            return cls.get_cleared_projects
-        else:
-            raise UnknownRole(user.current_role)
+    def setup_queries(cls, models):
+        cls.as_contractor_path = [
+            models.Project,
+            models.CodeClearance,
+            models.Contractor,
+        ]
 
-    @classmethod
-    def query_by_user(cls, user):
-        if user.admin:
-            return cls.query
-        return cls.role_to_query_fn(user)(user, project_type='project')
+        cls.as_manager_path = [
+            models.Project,
+            models.Manager,
+        ]
 
-    @classmethod
-    def get_all_as_manager(cls, user, ticket_id=None, project_type=None):
-        query = cls.query
-        if ticket_id:
-            query = query.filter_by(id=ticket_id)
-        query = query.join(rebase.models.project.Project)
-        if project_type:
-            query = query.filter(rebase.models.project.Project.type == project_type)
-        return query\
-            .join(rebase.models.organization.Organization)\
-            .join(rebase.models.manager.Manager)\
-            .filter(rebase.models.manager.Manager.user == user)
-
-    @classmethod
-    def get_cleared_projects(cls, user, ticket_id=None, project_type=None):
-        ''' Return all projects for which user has a clearance '''
-        query = cls.query
-        if ticket_id:
-            query = query.filter_by(id=ticket_id)
-        query = query.join(rebase.models.project.Project)
-        if project_type:
-            query = query.filter(rebase.models.project.Project.type == project_type)
-        return query\
-            .join(rebase.models.code_clearance.CodeClearance)\
-            .join(rebase.models.contractor.Contractor)\
-            .filter(rebase.models.contractor.Contractor.user == user)
+        cls.as_owner_path = cls.as_manager_path
 
     def allowed_to_be_created_by(self, user):
-        if user.admin:
-            return True
-        query = Ticket.role_to_query_fn(user)(user, ticket_id=self.id)
-        return query.limit(1).all()
+        return self.project.allowed_to_be_modified_by(user)
 
-    allowed_to_be_modified_by = allowed_to_be_created_by
-    allowed_to_be_deleted_by = allowed_to_be_created_by
+    def allowed_to_be_modified_by(self, user):
+        return self.query_by_user(user).limit(1).first()
 
     def allowed_to_be_viewed_by(self, user):
-        if user.admin:
-            return True
-        query = self.role_to_query_fn(user)(user, self.id, 'project')
-        return query.first()
+        return self.project.allowed_to_be_viewed_by(user)
+
+    allowed_to_be_deleted_by = allowed_to_be_created_by
         
     def __repr__(self):
         return '<Ticket[{}] title="{}">'.format(self.id, self.title)

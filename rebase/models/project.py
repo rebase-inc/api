@@ -1,9 +1,6 @@
 
 from rebase.common.database import DB, PermissionMixin
 from rebase.common.exceptions import NoRole, UnknownRole
-import rebase.models.manager
-import rebase.models.contractor
-import rebase.models.code_clearance
 
 class Project(DB.Model, PermissionMixin):
     __pluralname__ = 'projects'
@@ -16,6 +13,7 @@ class Project(DB.Model, PermissionMixin):
     code_repository =   DB.relationship('CodeRepository',   backref='project', cascade="all, delete-orphan", passive_deletes=True, uselist=False)
     tickets =           DB.relationship('Ticket',           backref='project', cascade="all, delete-orphan", passive_deletes=True)
     clearances =        DB.relationship('CodeClearance',    backref='project', cascade="all, delete-orphan", passive_deletes=True)
+    managers =          DB.relationship('Manager',          backref='project', cascade='all, delete-orphan', passive_deletes=True)
 
     __mapper_args__ = {
         'polymorphic_identity': 'project',
@@ -23,41 +21,19 @@ class Project(DB.Model, PermissionMixin):
     }
 
     def __init__(self, organization, name):
-        self.organization = organization
+        from rebase.models.manager import Manager
         self.name = name
+        self.organization = organization
+        for owner in organization.owners:
+            Manager(owner.user, self)
 
     def __repr__(self):
         return '<Project[{}] "{}" for "{}" >'.format(self.id, self.name, self.organization)
 
-    @classmethod
-    def query_by_user(cls, user):
-        if user.admin:
-            return cls.query
-        return cls.get_all_as_manager(user).union(cls.get_cleared_projects(user))
-
-    @classmethod
-    def get_all_as_manager(cls, user):
-        return cls.query\
-            .join(rebase.models.organization.Organization)\
-            .join(rebase.models.manager.Manager)\
-            .filter(rebase.models.manager.Manager.user == user)
-
-    @classmethod
-    def get_cleared_projects(cls, user):
-        ''' Return all projects for which user has a clearance '''
-        return cls.query\
-            .join(rebase.models.code_clearance.CodeClearance)\
-            .join(rebase.models.contractor.Contractor)\
-            .filter(rebase.models.contractor.Contractor.user == user)
-
     def allowed_to_be_created_by(self, user):
         if user.is_admin():
             return True
-        return rebase.models.organization.Organization.query\
-            .filter(rebase.models.organization.Organization.id == self.organization.id)\
-            .join(rebase.models.manager.Manager)\
-            .filter(rebase.models.manager.Manager.user == user)\
-            .first()
+        return Project.as_owner(user).first()
 
     allowed_to_be_modified_by = allowed_to_be_created_by
     allowed_to_be_deleted_by = allowed_to_be_created_by
@@ -65,7 +41,21 @@ class Project(DB.Model, PermissionMixin):
     def allowed_to_be_viewed_by(self, user):
         if user.is_admin():
             return True
-        return Project.get_all_as_manager(user)\
-            .union(Project.get_cleared_projects(user))\
-            .filter(Project.id == self.id)\
-            .first()
+        return Project.query_by_user(user).limit(1).first()
+
+    @classmethod
+    def setup_queries(cls, models):
+        cls.filter_based_on_current_role = False
+
+        cls.as_owner_path = [
+            models.Organization,
+            models.Owner,
+        ]
+        cls.as_contractor_path = [
+            models.CodeClearance,
+            models.Contractor,
+        ]
+
+        cls.as_manager_path = [
+            models.Manager
+        ]

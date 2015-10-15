@@ -31,8 +31,8 @@ class TestCreditResource(RebaseRestTestCase):
     def test_create_new(self):
         self.login_admin()
         ''' admin only '''
-        response = self.get_resource('work')
-        work = [w for w in response['work'] if 'credit' not in w][0]
+        response = self.get_resource('works')
+        work = [w for w in response['works'] if 'credit' not in w][0]
         credit = dict(work={'id': work.get('id')}, price=1234)
         response = self.post_resource('credits', credit)['credit']
 

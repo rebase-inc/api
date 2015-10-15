@@ -3,6 +3,7 @@ import unittest
 from . import RebaseModelTestCase
 from rebase import models
 from rebase.common import mock
+from rebase.tests.common.organization import OrganizationUseCase
 
 class TestOrganizationModel(RebaseModelTestCase):
 
@@ -84,32 +85,29 @@ class TestOrganizationModel(RebaseModelTestCase):
             self.assertTrue(auction.organization)
         self.assertEqual(set(reported_auction_ids), set([first_auction.id, second_auction.id, third_auction.id]))
 
-    #@unittest.skip('Havent built this yet')
-    #def test_create(self):
-        #arbitration = mock.create_some_work(self.db).pop().mediation_rounds[0].arbitration
-        #self.db.session.commit()
 
-        #self.assertIsInstance(arbitration.mediation.work.offer.price, int)
+class TestOrg(RebaseModelTestCase):
 
-    #@unittest.skip('Havent built this yet')
-    #def test_delete(self):
-        #arbitration = mock.create_some_work(self.db).pop().mediation_rounds[0].arbitration
-        #self.db.session.commit()
-        #self.delete_instance(arbitration)
-        #self.assertEqual(models.Arbitration.query.get(arbitration.id), None)
+    def setUp(self):
+        self.case = OrganizationUseCase(self.db)
+        super().setUp()
 
-    #@unittest.skip('Havent built this yet')
-    #def test_update(self):
-        #arbitration = self.create_arbitration()
-        #self.db.session.commit()
+    def test_contractor(self):
+        validate_query_fn(
+            self,
+            Organization,
+            self.case.user_2_as_contractor,
+            Organization.as_contractor,
+            'contractor',
+            False, False, False, True
+        )
 
-        #arbitration.outcome = 4
-        #self.db.session.commit()
-
-        #modified_arbitration = models.Arbitration.query.get(arbitration.id)
-        #self.assertEqual(modified_arbitration.outcome, 4)
-
-    #@unittest.skip('Havent built this yet')
-    #def test_bad_create(self):
-        #with self.assertRaises(ValueError):
-            #self.create_model(models.Arbitration, 'foo')
+    def test_mgr(self):
+        validate_query_fn(
+            self,
+            Organization,
+            self.case.user_1_as_mgr,
+            Organization.as_manager,
+            'manager',
+            False, False, False, True
+        )

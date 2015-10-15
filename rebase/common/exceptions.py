@@ -101,16 +101,26 @@ class UnknownRole(ServerError):
         super().__init__(message=UnknownRole.error_message.format(role))
 
 
-class AsManagerPathUndefined(TypeError):
-    error_message = 'You need to provide a valid list for RoleBasedPermissions.as_manager_path'
+class QueryPathUndefined(TypeError):
+    path_field_name = None
+    error_message = 'You need to provide a valid list for {}.{}'
     def __init__(self, klass):
-        super().__init__(error_message.format(klass.__name__))
+        if not self.path_field_name:
+            raise NotImplementedError('Invalid exception {}, missing value for class field path_field_name'.format(self.__class__.__name__))
+        super().__init__(self.error_message.format(klass.__name__, self.path_field_name))
 
 
-class AsContractorPathUndefined(TypeError):
-    error_message = 'You need to provide a valid list for {}.as_contractor_path'
-    def __init__(self, klass):
-        super().__init__(error_message.format(klass.__name__))
+class AsManagerPathUndefined(QueryPathUndefined):
+    path_field_name = 'as_manager_path'
+
+
+class AsContractorPathUndefined(QueryPathUndefined):
+    path_field_name = 'as_contractor_path'
+
+
+class AsOwnerPathUndefined(QueryPathUndefined):
+    path_field_name = 'as_owner_path'
+
 
 class BadBid(ClientError):
     error_message = 'bid didnt match expected tickets! we needed {} but got {}'

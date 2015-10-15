@@ -33,10 +33,19 @@ rebase-curl () {
 
 #
 ## GET something from Rebase
-# $ rebase-get /skill_set
+# $ rebase-get skill_sets
 #
 rebase-get () {
 	rebase-curl GET "{}" $1
+}
+
+
+#
+# DELETE from Rebase
+#  rebase-rm users/3
+#
+rebase-rm () {
+    rebase-curl DELETE "" $1
 }
 
 #
@@ -46,6 +55,15 @@ rebase-get () {
 #
 rebase-post () {
 	rebase-curl POST "$1" $2
+}
+
+#
+# PUT to rebase
+# e.g.:
+# rebase-put "{\"first_name\": \"$1\", \"last_name\":\"$2\", \"email\":\"$3\", \"password\":\"$4\"}" users
+#
+rebase-put () {
+	rebase-curl PUT "$1" $2
 }
 
 #
@@ -76,6 +94,16 @@ rebase-logout () {
 	rebase-get auth
 	echo
 	echo "Goodbye!"
+}
+
+#
+# Set the current role for the current user
+# $ rebase-role <role-id>
+# 
+rebase-role () {
+	rebase-put \
+	"{ \"current_role\": { \"id\": \"$2\"} }" \
+	users/$1
 }
 
 extract_session () {

@@ -1,6 +1,6 @@
 import datetime
 import uuid
-from random import randint, randrange
+from random import randint, randrange, sample, uniform
 from .utils import (
     pick_a_word,
     pick_a_first_name,
@@ -13,6 +13,8 @@ FAKE_COMMENTS = [
     'What do you mean? Is this not correct (from job_fit model)? ```__table_args__ = ( DB.ForeignKeyConstraint( [contractor_id, ticket_set_id], [Nomination.contractor_id, Nomination.ticket_set_id], ondelete=\'CASCADE\'), {})```',
     'Hmm, that does look correct. The one I was looking at is in the bid model. It indirectly references the auction and contractor ids through the nomination model, though it doesn’t specifically reference the nomination model. This should instead be switched to a reference like above. I guess I should\'ve actually looked into the places where this was happening.',
 ]
+
+FAKE_SKILLS = ['Python', 'SQLAlchemy', 'd3js', 'Marshmallow', 'unittest', 'Javascript', 'ES6']
 
 FAKE_TICKETS = [
     'Abstract out state machine event resource creation',
@@ -46,13 +48,21 @@ def create_one_user(db, first_name=None, last_name=None, email=None, password='f
     db.session.add(user)
     return user
 
-def create_one_manager(db, user=None, org=None):
+def create_one_manager(db, user=None, project=None):
     from rebase.models import Manager
     user = user or create_one_user(db)
-    organization = org or create_one_organization(db)
-    manager = Manager(user, organization)
+    project = project or create_one_project(db)
+    manager = Manager(user, project)
     db.session.add(manager)
     return manager
+
+def create_one_owner(db, user=None, org=None):
+    from rebase.models import Owner
+    user = user or create_one_user(db)
+    org = org or create_one_organization(db)
+    owner = Owner(user, org)
+    db.session.add(owner)
+    return owner
 
 def create_one_contractor(db, user=None):
     from rebase.models import Contractor, SkillSet
@@ -90,17 +100,10 @@ def create_one_remote_work_history(db, contractor=None):
     db.session.add(remote_work_history)
     return remote_work_history
 
-def create_one_github_account(db, remote_work_history=None, user_name='ravioli'):
-    from rebase.models import GithubAccount
-    remote_work_history = remote_work_history or create_one_remote_work_history(db)
-    github_account = GithubAccount(remote_work_history, user_name)
-    db.session.add(github_account)
-    return github_account
-
 def create_one_project(db, organization=None, project_name=None):
-    from rebase.models import Organization, Project, CodeRepository
+    from rebase.models import Organization, InternalProject, CodeRepository
     organization = organization or create_one_organization(db)
-    project = Project(organization, project_name or pick_a_word().capitalize()+' Project')
+    project = InternalProject(organization, project_name or pick_a_word().capitalize()+' Project')
     code_repo = CodeRepository(project)
     db.session.add(code_repo)
     return project
@@ -126,17 +129,9 @@ def create_one_internal_ticket(db, title=None, description=None, project=None):
     project = project or create_one_project(db)
     title = title or ' '.join(pick_a_word() for i in range(5))
     description = description or ' '.join(pick_a_word() for i in range(5))
-    ticket = InternalTicket(project, title, description)
-    SkillRequirement(ticket)
-    db.session.add(ticket)
-    return ticket
-
-def create_one_remote_ticket(db, title=None, description=None, project=None):
-    from rebase.models import RemoteTicket, SkillRequirement
-    project = project or create_one_project(db)
-    title = title or ' '.join(pick_a_word() for i in range(5))
-    description = description or ' '.join(pick_a_word() for i in range(15))
-    ticket = RemoteTicket(project, title, description)
+    ticket = InternalTicket(project, title)
+    user = create_one_user(db)
+    Comment(user, description, ticket=ticket)
     SkillRequirement(ticket)
     db.session.add(ticket)
     return ticket
@@ -183,12 +178,12 @@ def create_one_snapshot(db, ticket=None):
     db.session.add(ts)
     return ts
 
-def create_one_auction(db, tickets=None, duration=1000, finish_work_by=None, redundancy=1):
+def create_one_auction(db, tickets=None, duration=1000, finish_work_by=None, redundancy=1, price=200):
     finish_work_by = finish_work_by or datetime.datetime.now() + datetime.timedelta(days=2)
     from rebase.models import Auction, TicketSet, BidLimit, TicketSnapshot, TermSheet
     tickets = tickets or create_some_tickets(db)
     ticket_snaps = [TicketSnapshot(ticket) for ticket in tickets]
-    bid_limits = [BidLimit(ticket_snap, 200) for ticket_snap in ticket_snaps]
+    bid_limits = [BidLimit(ticket_snap, price) for ticket_snap in ticket_snaps]
     term_sheet = TermSheet('Some legal mumbo-jumbo')
     ticket_set = TicketSet(bid_limits)
     organization = tickets[0].project.organization
@@ -200,7 +195,10 @@ def create_one_nomination(db, auction=None, contractor=None, approved=False):
     from rebase.models import Nomination
     auction = auction or create_one_auction(db)
     contractor = contractor or create_one_contractor(db)
-    nomination = Nomination(contractor, auction.ticket_set)
+    # verify it doesn't already exist..
+    nomination = Nomination.query.filter(Nomination.contractor==contractor).filter(Nomination.ticket_set==auction.ticket_set).first()
+    if not nomination:
+        nomination = Nomination(contractor, auction.ticket_set)
     if approved:
         auction.approved_talents.append(nomination)
     db.session.add(nomination)
@@ -225,7 +223,7 @@ def create_one_feedback(db, auction=None, contractor=None, comment=None):
         auction or create_one_auction(db),
         contractor or create_one_contractor(db)
     )
-    Comment(comment or 'Your auction sucks', feedback=feedback)
+    Comment(contractor.user, comment or 'Your auction sucks', feedback=feedback)
     db.session.add(feedback)
     return feedback
 
@@ -272,12 +270,12 @@ def create_some_work(db, review=False, debit_credit=True, mediation=True, arbitr
         db.session.add(work)
     return works
 
-def create_one_work_review(db, rating, comment):
+def create_one_work_review(db, user, rating, comment):
     from rebase.models import Review, Comment
     work = create_some_work(db, review=False).pop()
     review = Review(work)
     review.rating = rating
-    comment = Comment(comment, review=review)
+    comment = Comment(user, comment, review=review)
     db.session.add(review)
     return review
 
@@ -298,12 +296,12 @@ class DeveloperUserStory(object):
         self.user = create_one_user(db, self.first_name, self.last_name, self.email, self.password, admin=False)
         user_ted = create_one_user(db, 'Ted', 'Crisp', 'tedcrisp@joinrebase.com')
         org_veridian = create_one_organization(db, 'veridian', user_ted)
-        manager_ted = create_one_manager(db, user_ted, org_veridian)
-        project_matchmaker = create_one_project(db, manager_ted.organization, 'matchmaker')
+        project_matchmaker = create_one_project(db, org_veridian, 'matchmaker')
+        manager_ted = create_one_manager(db, user_ted, project_matchmaker)
         the_tickets = [create_one_internal_ticket(db, fake_ticket, project=project_matchmaker) for fake_ticket in FAKE_TICKETS]
         for ticket in the_tickets:
             for fake_comment in FAKE_COMMENTS:
-                Comment(fake_comment, ticket=ticket)
+                Comment(user_ted, fake_comment, ticket=ticket)
         self.contractor = create_one_contractor(db, self.user)
         code_clearance = create_one_code_clearance(db, project_matchmaker, self.contractor)
         the_matches = create_ticket_matches(db, the_tickets, self.contractor)
@@ -318,28 +316,48 @@ class ManagerUserStory(object):
         self.email = email
         self.password = password
 
-        from rebase.models import Comment
+        from rebase.models import Comment, SkillSet, SkillRequirement, TicketMatch, JobFit
         self.user = create_one_user(db, self.first_name, self.last_name, self.email, self.password, admin=False)
         dev1 = create_one_user(db, 'Andy', 'Dwyer', 'andy@joinrebase.com')
         dev2 = create_one_user(db, 'April', 'Ludgate', 'april@joinrebase.com')
         dev3 = create_one_user(db, 'Leslie', 'Knope', 'leslie@joinrebase.com')
         dev4 = create_one_user(db, 'Donna', 'Meagle', 'donna@joinrebase.com')
         dev5 = create_one_user(db, 'Tom', 'Haverford', 'tom@joinrebase.com')
+        the_contractors = [create_one_contractor(db, user) for user in [dev1, dev2, dev3, dev4, dev5]]
+        skill_sets = []
+        for contractor in the_contractors:
+            skills = sample(FAKE_SKILLS, randint(3,6))
+            approx_skill = uniform(0.3, 1.0)
+            skill_sets.append(SkillSet(contractor, {skill: uniform(min(0.0, approx_skill - 0.2), min(1.0, approx_skill, + 0.2)) for skill in skills}))
         organization = create_one_organization(db, 'Parks and Recreation', self.user)
         project = create_one_project(db, organization, 'Lot 48')
-        the_tickets = [create_one_internal_ticket(db, fake_ticket, project=project) for fake_ticket in FAKE_TICKETS]
+        mgr = create_one_manager(db, user=self.user, project=project)
+        the_tickets = [create_one_internal_ticket(db, fake_ticket + ' (AUCTIONED)', project=project) for fake_ticket in FAKE_TICKETS]
+        skill_reqs = []
         for ticket in the_tickets:
             for fake_comment in FAKE_COMMENTS:
-                Comment(fake_comment, ticket=ticket)
+                Comment(self.user, fake_comment, ticket=ticket)
+            skills_required = sample(FAKE_SKILLS, randint(3,6))
+            approx_skill = uniform(0.3, 1.0) # this is so the dev looks roughly uniformly skilled
+            skill_reqs.append(SkillRequirement(ticket, {skill: uniform(min(0.0, approx_skill - 0.2), min(1.0, approx_skill, + 0.2)) for skill in skills_required}))
 
-        the_contractors = [create_one_contractor(db, user) for user in [dev1, dev2, dev3, dev4, dev5]]
-        the_auctions = [create_one_auction(db, [ticket]) for ticket in the_tickets]
+        the_auctions = [create_one_auction(db, [ticket], price=randrange(200, 2000, 20)) for ticket in the_tickets]
 
         for auction, ticket in zip(the_auctions, the_tickets):
+            auction.expires = auction.expires + datetime.timedelta(seconds = randrange(-24*60*60, 24*60*60, 1))
             for contractor in the_contractors:
-                match = create_ticket_matches(db, [ticket], contractor)
                 nomination = create_one_nomination(db, auction, contractor, False)
-                job_fit = create_one_job_fit(db, nomination, match)
+                #match = TicketMatch(contractor.skill_set, ticket.skill_requirement)
+                #job_fit = JobFit(nomination, [match])
+                #db.session.add(job_fit)
+
+        the_new_tickets = [create_one_internal_ticket(db, fake_ticket + ' (NEW)', project=project) for fake_ticket in FAKE_TICKETS]
+        for ticket in the_new_tickets:
+            for fake_comment in FAKE_COMMENTS:
+                Comment(self.user, fake_comment, ticket=ticket)
+            skills_required = sample(FAKE_SKILLS, randint(3,6))
+            approx_skill = uniform(0.3, 1.0) # this is so the dev looks roughly uniformly skilled
+            skill_reqs.append(SkillRequirement(ticket, {skill: uniform(min(0.0, approx_skill - 0.2), min(1.0, approx_skill, + 0.2)) for skill in skills_required}))
 
 def create_the_world(db):
     andrew = create_one_user(db, 'Andrew', 'Millspaugh', 'andrew@manager.rebase.io')
@@ -372,8 +390,6 @@ def create_the_world(db):
     create_one_code_clearance(db, internal_project, steve_contractor, pre_approved=True)
     create_one_bank_account(db, rapha_contractor)
     rapha_rwh = create_one_remote_work_history(db, rapha_contractor)
-    create_one_github_account(db, rapha_rwh, 'rapha.opensource')
-    create_one_github_account(db, rapha_rwh, 'rapha-la-mitraille')
     create_one_feedback(db)
     create_one_feedback(db)
     create_one_contract(db)
@@ -383,5 +399,5 @@ def create_the_world(db):
     create_some_work(db, mediation=False)
     create_some_work(db, arbitration=False)
     create_some_work(db, debit_credit=False)
-    create_one_work_review(db, 5, 'It was amazing')
-    create_one_work_review(db, 3, 'Meh')
+    create_one_work_review(db, andrew, 5, 'It was amazing')
+    create_one_work_review(db, andrew, 3, 'Meh')

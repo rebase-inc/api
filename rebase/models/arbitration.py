@@ -34,7 +34,7 @@ class Arbitration(DB.Model, PermissionMixin):
         query_contractor = query_contractor.join(Contractor.user)
         query_contractor = query_contractor.filter(User.id == user.id)
 
-        if user.manager_for_organizations:
+        if user.manager_for_projects:
             query_manager = query.join(cls.mediation)
             query_manager = query_manager.join(Mediation.work)
             query_manager = query_manager.join(Work.offer)
@@ -45,7 +45,7 @@ class Arbitration(DB.Model, PermissionMixin):
             query_manager = query_manager.join(BidLimit.ticket_snapshot)
             query_manager = query_manager.join(TicketSnapshot.ticket)
             query_manager = query_manager.join(Ticket.organization)
-            query_manager = query_manager.filter(Organization.id.in_(user.manager_for_organizations))
+            query_manager = query_manager.filter(Organization.id.in_(user.manager_for_projects))
             query_contractor = query_contractor.union(query_manager)
 
         return query_contractor
@@ -64,7 +64,7 @@ class Arbitration(DB.Model, PermissionMixin):
             return True
         elif self.mediation.work.offer.contractor.user == user:
             return True
-        elif self.mediation.work.offer.bid.auction.organization.id in user.manager_for_organizations:
+        elif self.mediation.work.offer.bid.auction.organization.id in user.manager_for_projects:
             return True
         else:
             return False

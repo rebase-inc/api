@@ -1,4 +1,4 @@
-from os import environ
+from os import environ, path
 
 class Config(object):
     DEBUG = False
@@ -12,8 +12,13 @@ class Config(object):
     if 'GITHUB_CLIENT_SECRET' not in environ:
         raise KeyError('Missing GITHUB_CLIENT_SECRET from environment. Please follow README.md instructions.')
     GITHUB_CLIENT_SECRET = environ['GITHUB_CLIENT_SECRET']
+    CLONING_SERVER_URL = 'http://ec2-52-21-89-158.compute-1.amazonaws.com:5001/'
     SQLALCHEMY_POOL_SIZE = int(environ['CONNECTION_POOL_SIZE_PER_WORKER'])
     SQLALCHEMY_MAX_OVERFLOW = 1
+    NOMINATE_ALL_CONTRACTORS = False
+    LOG_FILE = '/tmp/rebase_web.log'
+    UPLOAD_FOLDER = path.expanduser('~/uploads/')
+    MAX_CONTENT_LENGTH = 1024 * 1024
 
 
 class ProductionConfig(Config):
@@ -33,6 +38,8 @@ class DevelopmentConfig(Config):
     DEBUG = True
     DEBUG_TB_INTERCEPT_REDIRECTS = False
     FLASK_LOGIN_SESSION_PROTECTION = "basic"
+    NOMINATE_ALL_CONTRACTORS = True
+    SEND_FILE_MAX_AGE_DEFAULT = 0
 
 
 class TestingConfig(Config):

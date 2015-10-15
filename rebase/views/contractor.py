@@ -5,13 +5,14 @@ from rebase.views.nomination import NominationSchema
 
 class ContractorSchema(RebaseSchema):
     id =                    fields.Integer()
+    type =                  fields.String()
     busyness =              fields.Integer()
     rating =                fields.Integer()
     user =                  SecureNestedField('UserSchema',              only=('id', 'first_name', 'last_name'))
     work_offers =           SecureNestedField('WorkOfferSchema',         only=('id',), many=True)
     bank_account =          SecureNestedField('BankAccountSchema',       only=('id',), default=None)
     remote_work_history =   SecureNestedField('RemoteWorkHistorySchema', only=('id',))
-    skill_set =             SecureNestedField('SkillSetSchema',          only=('id',), default=None)
+    skill_set =             SecureNestedField('SkillSetSchema',          only=('id','skills'), default=None)
     clearances =            SecureNestedField('CodeClearanceSchema',     only=('id', 'project', 'pre_approved'), many=True)
     nominations =           SecureNestedField('NominationSchema',        only='id', many=True, default=None)
 

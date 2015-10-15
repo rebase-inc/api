@@ -37,7 +37,7 @@ class WorkOffer(DB.Model, PermissionMixin):
         query_contractor = query_contractor.join(Contractor.user)
         query_contractor = query_contractor.filter(User.id == user.id)
 
-        if user.manager_for_organizations:
+        if user.manager_for_projects:
             query_manager = query.join(cls.bid)
             query_manager = query_manager.join(Bid.auction)
             query_manager = query_manager.join(Auction.ticket_set)
@@ -45,7 +45,7 @@ class WorkOffer(DB.Model, PermissionMixin):
             query_manager = query_manager.join(BidLimit.ticket_snapshot)
             query_manager = query_manager.join(TicketSnapshot.ticket)
             query_manager = query_manager.join(Ticket.organization)
-            query_manager = query_manager.filter(Organization.id.in_(user.manager_for_organizations))
+            query_manager = query_manager.filter(Organization.id.in_(user.manager_for_projects))
             query_contractor = query_contractor.union(query_manager)
 
         return query_contractor
@@ -64,7 +64,7 @@ class WorkOffer(DB.Model, PermissionMixin):
     def allowed_to_be_viewed_by(self, user):
         if user.is_admin():
             return True
-        return (self.bid and self.bid.auction.organization.id in user.manager_for_organizations) or (self.contractor.user == user)
+        return (self.bid and self.bid.auction.organization.id in user.manager_for_projects) or (self.contractor.user == user)
 
     def __repr__(self):
         return 'Work Offer: {}'.format(self.__dict__)

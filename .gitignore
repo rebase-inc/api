@@ -1,6 +1,7 @@
 .DS_Store
 .github_setup
 github_setup
+github_setup.sh
 venv/
 *.pyc
 *.swp

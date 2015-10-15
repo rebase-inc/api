@@ -1,8 +1,35 @@
-from . import RebaseRestTestCase
-from rebase.common.utils import RebaseResource
-from unittest import skip
 
+from . import RebaseRestTestCase, PermissionTestCase
+from rebase.common.utils import RebaseResource, ids
 from rebase.models import Contractor, RemoteWorkHistory, GithubAccount
+from rebase.tests.common.github_account import GithubAccountUseCase
+
+
+class TestGithubAccount(PermissionTestCase):
+    model = 'GithubAccount'
+
+    def setUp(self):
+        super().setUp()
+        self.case = GithubAccountUseCase()
+
+    def validate_view(self, github_account):
+        self.assertIsInstance(github_account.pop('id'), int)
+        self.assertIsInstance(github_account.pop('user_name'), str)
+        self.assertIsInstance(github_account.pop('oauth_token'), str)
+
+    def update(_, github_account):
+        updated_github_account = ids(github_account)
+        updated_github_account.update(access_token=github_account.access_token)
+        return updated_github_account
+
+    def new(_, account):
+        return {
+            'user_name': account.user_name,
+            'access_token': account.access_token
+        }
+
+    def test_view(self):
+        user, account = self._run(self.case.user_account, 'manager')
 
 
 class TestGithubAccountResource(RebaseRestTestCase):

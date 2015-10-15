@@ -6,7 +6,7 @@ def base_scenario(db):
     auction = mock.create_one_auction(db, [ticket])
     contractor = mock.create_one_contractor(db)
     nomination = mock.create_one_nomination(db, auction, contractor, approved=True)
-    mgr_user = ticket.project.organization.managers[0].user
+    mgr_user = ticket.project.managers[0].user
 
     # now let's make the mgr a contractor and the contractor a mgr
     org_2 = mock.create_one_organization(db, user=contractor.user)

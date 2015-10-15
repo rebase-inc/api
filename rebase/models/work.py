@@ -36,7 +36,7 @@ class Work(DB.Model, PermissionMixin):
         query_contractor = query_contractor.join(Contractor.user)
         query_contractor = query_contractor.filter(User.id == user.id)
 
-        if user.manager_for_organizations:
+        if user.manager_for_projects:
             query_manager = query.join(cls.offer)
             query_manager = query_manager.join(WorkOffer.bid)
             query_manager = query_manager.join(Bid.auction)
@@ -45,7 +45,7 @@ class Work(DB.Model, PermissionMixin):
             query_manager = query_manager.join(BidLimit.ticket_snapshot)
             query_manager = query_manager.join(TicketSnapshot.ticket)
             query_manager = query_manager.join(Ticket.organization)
-            query_manager = query_manager.filter(Organization.id.in_(user.manager_for_organizations))
+            query_manager = query_manager.filter(Organization.id.in_(user.manager_for_projects))
             query_contractor = query_contractor.union(query_manager)
 
         return query_contractor
@@ -65,7 +65,7 @@ class Work(DB.Model, PermissionMixin):
             return True
         elif self.offer.contractor.user == user:
             return True
-        elif self.offer.bid and self.offer.bid.auction.organization.id in user.manager_for_organizations:
+        elif self.offer.bid and self.offer.bid.auction.organization.id in user.manager_for_projects:
             return True
         else:
             return False

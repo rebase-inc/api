@@ -5,11 +5,13 @@ class SkillRequirement(DB.Model, PermissionMixin):
     __pluralname__ = 'skill_requirements'
 
     id = DB.Column(DB.Integer, DB.ForeignKey('ticket.id', ondelete='CASCADE'), primary_key=True)
+    skills = DB.Column(DB.PickleType, nullable=True)
 
     ticket_matches = DB.relationship('TicketMatch', backref='skill_requirement', cascade="all, delete-orphan", passive_deletes=True)
 
-    def __init__(self, ticket):
+    def __init__(self, ticket, skills=None):
         self.ticket = ticket
+        self.skills = skills or {}
 
     @classmethod
     def query_by_user(cls, user):
@@ -44,7 +46,8 @@ class SkillRequirement(DB.Model, PermissionMixin):
     allowed_to_be_deleted_by = allowed_to_be_created_by
 
     def allowed_to_be_viewed_by(self, user):
-        return self.get_all(user, self).limit(1).all()
+        return True
+        return self.get_all(user, self).limit(1).all() # this doesnt work
 
     def __repr__(self):
         return '<SkillRequirement[{}]>'.format(self.id)

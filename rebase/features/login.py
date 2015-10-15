@@ -1,4 +1,4 @@
-from flask import session, abort
+from flask import session, request
 from flask.ext.login import LoginManager
 
 from rebase.common.exceptions import NoRole
@@ -6,6 +6,7 @@ from rebase.models import User
 
 class AnonymousUser(object):
     is_active = False
+    admin = False
     def is_authenticated(self): return False
     def is_anonymous(self): return True
     def get_id(self): return None
@@ -22,6 +23,8 @@ def setup_login(app):
     @login_manager.user_loader
     def load_user(user_id):
         user = User.query.get(user_id)
-        if 'role' in session:
-            user.set_role(session['role'])
+        if 'role_id' in session:
+            user.set_role(session['role_id'])
+        else:
+            session['role_id'] = user.set_role(int(request.cookies.get('role_id', 0))).id
         return user

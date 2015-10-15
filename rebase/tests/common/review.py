@@ -9,7 +9,7 @@ class ReviewUseCase(UseCase):
     def base_scenario(self, db):
         ticket = mock.create_one_github_ticket(db)
         contractor = mock.create_one_contractor(db)
-        user_1 = ticket.project.organization.managers[0].user
+        user_1 = ticket.project.managers[0].user
         user_2 = contractor.user
         auction = mock.create_one_auction(db, [ticket])
         auction.state = 'ended'

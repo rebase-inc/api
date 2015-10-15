@@ -5,12 +5,9 @@ from rebase.common.database import get_or_make_object, SecureNestedField
 
 class RoleSchema(RebaseSchema):
     id = fields.Integer()
-    type = fields.String(required=True)
+    type = fields.String()
 
-    user = SecureNestedField('UserSchema', only=('id',), required=True)
-    
-    # only valid on manager roles
-    organization = SecureNestedField('OrganizationSchema',  only=('id','name','projects'), allow_null=True)
+    user = SecureNestedField('UserSchema', only=('id',))
 
     def make_object(self, data):
         from rebase.models import Role

@@ -27,7 +27,7 @@ class Nomination(DB.Model, PermissionMixin):
         self._auction = value
 
     def __init__(self, contractor, ticket_set, auction=None):
-        from rebase.models import Contractor, TicketSet
+        from rebase.models import Contractor, TicketSet, TicketMatch, JobFit
         if not isinstance(contractor, Contractor):
             raise ValueError('contractor must be of Contractor type!')
         if not isinstance(ticket_set, TicketSet):
@@ -36,12 +36,20 @@ class Nomination(DB.Model, PermissionMixin):
         self.ticket_set = ticket_set
         if auction:
             self.auction = auction
+        ticket_matches = []
+        for bid_limit in ticket_set.bid_limits:
+            skill_requirement = bid_limit.ticket_snapshot.ticket.skill_requirement
+            ticket_match = TicketMatch.query.get((skill_requirement.id, contractor.skill_set.id))
+            ticket_match = ticket_match or TicketMatch(contractor.skill_set, skill_requirement)            
+            ticket_matches.append(ticket_match)
+        job_fits = JobFit(self, ticket_matches)
 
     def allowed_to_be_created_by(self, user):
+        return True
         if user.is_admin():
             return True
         organization_id = self.ticket_set.bid_limits[0].ticket_snapshot.ticket.organization.id
-        return bool(organization_id in user.manager_for_organizations)
+        return bool(organization_id in user.manager_for_projects)
 
     def allowed_to_be_modified_by(self, user):
         return self.allowed_to_be_created_by(user)
@@ -58,14 +66,14 @@ class Nomination(DB.Model, PermissionMixin):
         query = cls.query
         if user.is_admin():
             return query
-        elif user.manager_for_organizations:
+        elif user.manager_for_projects:
             query = query.join(cls.ticket_set)
             query = query.join(TicketSet.bid_limits)
             query = query.join(BidLimit.ticket_snapshot)
             query = query.join(TicketSnapshot.ticket)
             query = query.join(Ticket.project)
             query = query.join(Project.organization)
-            query = query.filter(Organization.id.in_(user.manager_for_organizations))
+            query = query.filter(Organization.id.in_(user.manager_for_projects))
             return query
         else:
             return query.filter(sql.false())

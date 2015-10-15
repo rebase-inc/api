@@ -5,14 +5,14 @@ from sqlalchemy.orm import aliased
 
 from rebase.models.role import Role
 from rebase.models.user import User
-from rebase.common.database import DB, PermissionMixin, query_by_user_or_id
+from rebase.common.database import DB, query_by_user_or_id
 from rebase.common.query import query_from_class_to_user
 import rebase.models
 
 class Contractor(Role):
     __pluralname__ = 'contractors'
 
-    id =            DB.Column(DB.Integer, DB.ForeignKey('role.id'), primary_key=True)
+    id =            DB.Column(DB.Integer, DB.ForeignKey('role.id', ondelete='CASCADE'), primary_key=True)
     busyness =      DB.Column(DB.Integer, nullable=False, default=1)
     rating =        DB.Column(DB.Float, nullable=False) # this will probably end up being a composite of the users reviews, but I needed something temporarily
 
@@ -33,6 +33,14 @@ class Contractor(Role):
         self.user = user
         self.busyness = 1
         self.rating = randint(20, 50)/10
+        from rebase.models.skill_set import SkillSet
+        SkillSet(self)
+        # Hack to nominate all contractors during development
+        from flask.ext.login import current_app
+        if current_app.config['NOMINATE_ALL_CONTRACTORS']:
+            from rebase.models.auction import Auction
+            from rebase.models.nomination import Nomination
+            nominations = [ Nomination(self, auction.ticket_set) for auction in Auction.query.all() ]
 
     @hybrid_property
     def auctions_approved_for(self):
@@ -48,7 +56,6 @@ class Contractor(Role):
         query = cls.query\
             .join(rebase.models.code_clearance.CodeClearance)\
             .join(rebase.models.project.Project)\
-            .join(rebase.models.organization.Organization)\
             .join(rebase.models.manager.Manager)\
             .filter(rebase.models.manager.Manager.user==current_user)
         return query
@@ -66,7 +73,6 @@ class Contractor(Role):
                 rebase.models.ticket_snapshot.TicketSnapshot,
                 rebase.models.ticket.Ticket,
                 rebase.models.project.Project,
-                rebase.models.organization.Organization,
                 rebase.models.manager.Manager,
             ]
         for klass in cls.nominated_path:

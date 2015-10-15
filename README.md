@@ -11,6 +11,7 @@ Supervisord is used to managed rqworker processes.
 2. ```createdb rebase_web```
 3. ```createdb rebase_test```
 4. ```brew install redis```
+4. ```brew install libmagic```
 5. ```launchctl load ~/Library/LaunchAgents/homebrew.mxcl.redis.plist```
 6. ```easy_install supervisor```
 7. ```supervisord -c etc/supervisord.conf```
@@ -25,6 +26,9 @@ Supervisord is used to managed rqworker processes.
 ## Testing
 ```bash
 nosetests rebase/tests
+
+# running the tests in parallel:
+nosetests --processes=-1 --process-timeout=999 rebase/tests
 ```
 # GitHub Integration
 ## Register a new GitHub application

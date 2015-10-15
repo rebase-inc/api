@@ -4,6 +4,7 @@ from .admin import setup_admin
 from .cache import setup_cache
 from .cors import setup_cors
 from .login import setup_login
+from .logger import setup_logger
 from .rq import setup_rq
 
 def install(app):
@@ -12,4 +13,4 @@ def install(app):
     setup_login(app)
     setup_rq(app)
     setup_cache(app)
-
+    setup_logger(app)

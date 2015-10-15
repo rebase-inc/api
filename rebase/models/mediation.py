@@ -35,19 +35,19 @@ class Mediation(DB.Model, PermissionMixin):
     @classmethod
     def setup_queries(cls, models):
         cls.as_contractor_path = [
-            models.work.Work,
-            models.work_offer.WorkOffer,
-            models.contractor.Contractor,
+            models.Work,
+            models.WorkOffer,
+            models.Contractor,
         ]
 
         cls.as_manager_path = [
-            models.work.Work,
-            models.work_offer.WorkOffer,
-            models.ticket_snapshot.TicketSnapshot,
-            models.ticket.Ticket,
-            models.project.Project,
-            models.organization.Organization,
-            models.manager.Manager,
+            models.Work,
+            models.WorkOffer,
+            models.TicketSnapshot,
+            models.Ticket,
+            models.Project,
+            models.Organization,
+            models.Manager,
         ]
 
     def allowed_to_be_created_by(self, user):

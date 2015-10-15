@@ -16,7 +16,10 @@ class TestContract(PermissionTestCase):
 
     def new(self, old_contract):
         return {
-            'bid': ids(old_contract.bid),
+            'bid': {
+                'id': old_contract.bid.id,
+                'work_offers': [ids(offer) for offer in old_contract.bid.work_offers],
+            }
         }
 
     def validate_view(self, contract):

@@ -1,10 +1,12 @@
 from copy import copy
 from datetime import datetime, timedelta
 from math import floor
+from unittest import skip
 
 from . import PermissionTestCase, RebaseRestTestCase
 from rebase.common import mock
 from rebase.common.database import ids
+from rebase.common.profile import profiling
 from rebase.common.utils import RebaseResource
 from rebase.tests.common.auction import (
     case_contractor,
@@ -13,7 +15,6 @@ from rebase.tests.common.auction import (
     case_admin_collection,
     case_anonymous,
 )
-
 
 
 class TestAuction(PermissionTestCase):
@@ -190,3 +191,11 @@ class TestAuction(PermissionTestCase):
 
     def test_admin_collection(self):
         self.collection(case_admin_collection, 'manager')
+
+    def test_profile(self):
+        mock.DeveloperUserStory(self.db, 'Phil', 'Meyman', 'philmeyman@joinrebase.com', 'lem')
+        mock.ManagerUserStory(self.db, 'Ron', 'Swanson', 'ron@joinrebase.com', 'ron')
+        self.db.session.commit()
+        self.login('ron@joinrebase.com', 'ron', 'manager')
+        with profiling():
+            self.get_resource('/auctions')

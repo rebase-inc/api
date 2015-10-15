@@ -16,15 +16,21 @@ from rebase.models.debit import *
 from rebase.models.feedback import *
 from rebase.models.github_project import *
 from rebase.models.github_account import *
+from rebase.models.github_repository import *
+from rebase.models.github_organization import *
+from rebase.models.github_org_account import *
 from rebase.models.internal_ticket import *
+from rebase.models.internal_project import *
 from rebase.models.remote_ticket import *
 from rebase.models.github_ticket import *
 from rebase.models.mediation import *
 from rebase.models.organization import *
+from rebase.models.owner import *
 from rebase.models.project import *
 from rebase.models.remote_project import *
 from rebase.models.remote_work_history import *
 from rebase.models.review import *
+from rebase.models.role import *
 from rebase.models.skill_requirement import *
 from rebase.models.skill_set import *
 from rebase.models.nomination import *
@@ -35,6 +41,7 @@ from rebase.models.ticket_match import *
 from rebase.models.ticket_set import *
 from rebase.models.ticket_snapshot import *
 from rebase.models.user import *
+from rebase.models.github_user import *
 from rebase.models.work import *
 from rebase.models.work_offer import *
 from rebase.models.manager import *
@@ -45,6 +52,6 @@ from rebase.models.photo import *
 # TODO simplify this with inspect.getmembers (see example in common.utils.RebaseResource.all_models)
 models = modules[__name__]
 loaded_references = models.__dict__.copy()
-for klass_name, klass in loaded_references.items():
+for klass in loaded_references.values():
     if isclass(klass) and issubclass(klass, PermissionMixin):
         klass.setup_queries(models)

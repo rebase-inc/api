@@ -1,7 +1,7 @@
 
 from flask.ext.login import login_required, current_user
 from flask.ext.restful import Resource
-from flask import jsonify, make_response, request
+from flask import jsonify, request, session
 
 from rebase.models import User, Manager
 from rebase.views import user
@@ -40,7 +40,14 @@ class UserResource(Resource):
 
     @login_required
     def put(self, id):
-        return update_resource(self.model, id, self.update_deserializer, self.serializer)
+        def update_current_role(user):
+            if user == current_user:
+                role_id = str(user.current_role.id)
+                session['role_id'] = role_id
+            return user
+        response = update_resource(self.model, id, self.update_deserializer, self.serializer, pre_serialization=update_current_role)
+        response.set_cookie('role_id', session['role_id'])
+        return response
 
     @login_required
     def delete(self, id):

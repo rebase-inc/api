@@ -1,5 +1,6 @@
-from flask.ext.script import Manager, prompt_bool
+from subprocess import check_call
 
+from flask.ext.script import Manager, prompt_bool
 
 from rebase import create_app
 from rebase.common import mock
@@ -10,7 +11,7 @@ data = Manager(usage="Manage the data inside the database.")
 @data.command
 def drop():
     "Drops database tables"
-    if prompt_bool("Are you sure you want to lose all your data"):
+    if prompt_bool("Are you sure you want to lose all your data?"):
         db.drop_all()
 
 

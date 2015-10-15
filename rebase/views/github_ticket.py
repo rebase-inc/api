@@ -6,7 +6,6 @@ from rebase.common.database import get_or_make_object, SecureNestedField
 class GithubTicketSchema(RebaseSchema):
     id =            fields.Integer()
     title =         fields.String()
-    description =   fields.String()
     number =        fields.Integer()
     discriminator = fields.String()
 

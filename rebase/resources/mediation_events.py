@@ -20,9 +20,7 @@ class Event(Resource):
 
     @staticmethod
     def _post(model, view, event_deserializer, *_id):
-        instance = model.query.get(_id)
-        if not instance:
-            raise NotFoundError(model.__tablename__, _id)
+        instance = model.query.get_or_404(_id)
         initialize_event = event_deserializer.load(request.form or request.json).data
 
         with ManagedState():
@@ -41,9 +39,7 @@ class MediationDevAnswerEvents(Event):
     def post(self, id):
         return self._post(serializer, dev_answer_event_deserializer, id)
 
-        #mediation_instance = Mediation.query.get(id)
-        #if not mediation_instance:
-            #raise NotFoundError(Mediation.__tablename__, id)
+        #mediation_instance = Mediation.query.get_or_404(id)
         #dev_answer_event = dev_answer_event_deserializer.load(request.form or request.json).data
 
         #with ManagedState():
@@ -59,9 +55,7 @@ class MediationDevAnswerEvents(Resource):
 
     @login_required
     def post(self, id):
-        mediation_instance = Mediation.query.get(id)
-        if not mediation_instance:
-            raise NotFoundError(Mediation.__tablename__, id)
+        mediation_instance = Mediation.query.get_or_404(id)
         dev_answer_event = dev_answer_event_deserializer.load(request.form or request.json).data
 
         with ManagedState():
@@ -78,9 +72,7 @@ class MediationClientAnswerEvents(Resource):
 
     @login_required
     def post(self, id):
-        mediation_instance = Mediation.query.get(id)
-        if not mediation_instance:
-            raise NotFoundError(Mediation.__tablename__, id)
+        mediation_instance = Mediation.query.get_or_404(id)
         client_answer_event = client_answer_event_deserializer.load(request.form or request.json).data
 
         with ManagedState():
@@ -96,9 +88,7 @@ class MediationTimeoutEvents(Resource):
 
     @login_required
     def post(self, id):
-        mediation_instance = Mediation.query.get(id)
-        if not mediation_instance:
-            raise NotFoundError(Mediation.__tablename__, id)
+        mediation_instance = Mediation.query.get_or_404(id)
         review_event = timeout_event_deserializer.load(request.form or request.json).data
 
         with ManagedState():
@@ -114,9 +104,7 @@ class MediationTimeoutAnswerEvents(Resource):
 
     @login_required
     def post(self, id):
-        mediation_instance = Mediation.query.get(id)
-        if not mediation_instance:
-            raise NotFoundError(Mediation.__tablename__, id)
+        mediation_instance = Mediation.query.get_or_404(id)
         review_event = timeout_answer_event_deserializer.load(request.form or request.json).data
 
         with ManagedState():
@@ -133,9 +121,7 @@ class MediationAgreeEvents(Resource):
 
     @login_required
     def post(self, id):
-        mediation_instance = Mediation.query.get(id)
-        if not mediation_instance:
-            raise NotFoundError(Mediation.__tablename__, id)
+        mediation_instance = Mediation.query.get_or_404(id)
         agree_event = agree_event_deserializer.load(request.form or request.json).data
 
         with ManagedState():
@@ -152,9 +138,7 @@ class MediationArbitrateEvents(Resource):
 
     @login_required
     def post(self, id):
-        mediation_instance = Mediation.query.get(id)
-        if not mediation_instance:
-            raise NotFoundError(Mediation.__tablename__, id)
+        mediation_instance = Mediation.query.get_or_404(id)
         arbitrate_event = arbitrate_event_deserializer.load(request.form or request.json).data
 
         with ManagedState():

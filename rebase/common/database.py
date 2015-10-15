@@ -1,13 +1,17 @@
+from functools import lru_cache, partialmethod
+
 from sqlalchemy.inspection import inspect
+from sqlalchemy.orm.collections import InstrumentedList
 
 from marshmallow import fields
 from flask.ext.login import current_user
 from flask.ext.sqlalchemy import SQLAlchemy
 from rebase.common.exceptions import (
-    BadDataError,
-    NotFoundError,
     AsContractorPathUndefined,
     AsManagerPathUndefined,
+    AsOwnerPathUndefined,
+    BadDataError,
+    NotFoundError,
 )
 from rebase.common.query import query_from_class_to_user
 
@@ -55,25 +59,41 @@ def get_or_make_object(model, data, id_fields=None):
         raise BadDataError(model_name=model.__tablename__)
     return model(**data)
 
+
+# TODO implement incremental hashing
+def _setitem(ilist, index, element):
+    current_hash = getattr(ilist, '__current_hash__', 0)
+
+def _hash(ilist):
+    pile = ''
+    for elt in ilist:
+        pile = pile+str(elt)
+    return hash(pile)
+
+setattr(InstrumentedList, '__hash__', _hash)
+
 class SecureNestedField(fields.Nested):
     def __init__(self, nested, strict=False, *args, **kwargs):
         self.strict = strict
         super().__init__(nested, *args, **kwargs)
 
-    def _serialize(self, nested_obj, attr, obj):
+    @lru_cache(maxsize=None)
+    def _serialize_with_user(self, nested_obj, attr, obj, user):
         if not nested_obj:
             if self.many:
                 return []
             else:
                 return None
-        if not current_user:
-            raise ValueError('current_user not supplied to {} nested on {}'.format(nested_obj, obj))
+        if not user:
+            raise ValueError('Current user not supplied to {} nested on {}'.format(nested_obj, obj))
         if self.many:
-            nested_obj = [elem for elem in nested_obj if elem.allowed_to_be_viewed_by(current_user)]
+            nested_obj = [elem for elem in nested_obj if elem.allowed_to_be_viewed_by(user)]
         else:
-            nested_obj = nested_obj if nested_obj.allowed_to_be_viewed_by(current_user) else None
+            nested_obj = nested_obj if nested_obj.allowed_to_be_viewed_by(user) else None
         self.schema.context = self.context
         return super()._serialize(nested_obj, attr, obj)
+
+    _serialize = partialmethod(_serialize_with_user, user=current_user)
 
     @property
     def schema(self):
@@ -83,8 +103,16 @@ class SecureNestedField(fields.Nested):
 
 
 class PermissionMixin(object):
+    '''
+    as_XXX_path are query paths that go from a queried model all the way up the role
+    of the user doing the query.
+    Therefore these paths must be either empty list (if the model queried is itself a role) or
+    a non-empty list whose last element is the role type)
+    '''
     as_contractor_path = None
     as_manager_path = None
+    as_owner_path = None
+    filter_based_on_current_role = True
 
     def allowed_to_be_created_by(self, user):
         msg = 'allowed_to_be_created_by not implemented for {}'
@@ -107,18 +135,28 @@ class PermissionMixin(object):
         query = klass.query
         for node in path:
             query = query.join(node)
-        query = query.filter((path[-1].user if path else klass.user) == user)
+        role_model = path[-1] if path else klass
+        if klass.filter_based_on_current_role:
+            query = query.filter(role_model.id == user.current_role.id)
+        else:
+            query = query.filter(role_model.user == user)
         return query
 
     @classmethod
+    def as_owner(cls, user):
+        if cls.as_owner_path == None:
+            raise AsOwnerPathUndefined(cls)
+        return cls.query_from_class_to_user(cls.as_owner_path, user)
+
+    @classmethod
     def as_contractor(cls, user):
-        if not cls.as_contractor_path:
+        if cls.as_contractor_path == None:
             raise AsContractorPathUndefined(cls)
         return cls.query_from_class_to_user(cls.as_contractor_path, user)
 
     @classmethod
     def as_manager(cls, user):
-        if not cls.as_manager_path:
+        if cls.as_manager_path == None:
             raise AsManagerPathUndefined(cls)
         return cls.query_from_class_to_user(cls.as_manager_path, user)
 
@@ -126,6 +164,8 @@ class PermissionMixin(object):
     def role_to_query_fn(cls, user):
         if user.current_role.type == 'manager':
             return cls.as_manager
+        elif user.current_role.type == 'owner':
+            return cls.as_owner
         elif user.current_role.type == 'contractor':
             return cls.as_contractor
         else:
