@@ -4,7 +4,7 @@ class Role(DB.Model, PermissionMixin):
     __pluralname__ = 'roles'
 
     id =      DB.Column(DB.Integer, primary_key=True)
-    user_id = DB.Column(DB.Integer, DB.ForeignKey('user.id'), nullable=False)
+    user_id = DB.Column(DB.Integer, DB.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
     type =    DB.Column(DB.String)
 
     __mapper_args__ = {
