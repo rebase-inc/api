@@ -7,7 +7,6 @@ from sqlalchemy import and_
 from sqlalchemy.orm.collections import InstrumentedList
 
 from rebase.github import create_github_app
-from rebase.github.languages import path_to_languages
 from rebase.models import (
     Comment,
     GithubAccount,
@@ -118,14 +117,17 @@ def import_tickets(project_id, account_id):
     project = GithubProject.query.filter(GithubProject.id==project_id).first()
     if not project:
         return 'Unknow project with id: {}'.format(project_id)
-    issues = session.api.get('/repos/{owner}/{repo}/issues'.format(
+    repo_url = '/repos/{owner}/{repo}'.format(
         owner=project.organization.name,
         repo=project.name
-    )).data
+    )
+    languages = session.api.get(repo_url+'/languages').data
+    issues = session.api.get(repo_url+'/issues').data
     tickets = []
     komments = []
     for issue in issues:
         ticket = GithubTicket(project, issue['number'], issue['title'], datetime.strptime(issue['created_at'], _gh_datetime_format))
+        ticket.skill_requirement.skills = languages
         tickets.append(ticket)
         issue_user = issue['user']
         body = Comment(
@@ -138,11 +140,7 @@ def import_tickets(project_id, account_id):
             ticket=ticket
         )
         komments.append(body)
-        comments = session.api.get('/repos/{owner}/{repo}/issues/{number}/comments'.format(
-            owner=project.organization.name,
-            repo=project.name,
-            number=issue['number']
-        )).data
+        comments = session.api.get(issue['url']+'/comments').data
         for comment in comments:
             comment_user = comment['user']
             ticket_comment = Comment(
