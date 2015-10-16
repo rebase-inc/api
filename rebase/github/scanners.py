@@ -124,7 +124,6 @@ def import_tickets(project_id, account_id):
     komments = []
     for issue in issues:
         ticket = GithubTicket(project, issue['number'], issue['title'], datetime.strptime(issue['created_at'], _gh_datetime_format))
-        skill_requirement = SkillRequirement(ticket)
         tickets.append(ticket)
         issue_user = issue['user']
         body = Comment(
