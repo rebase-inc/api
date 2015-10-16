@@ -92,9 +92,8 @@ def register_routes(api):
     import rebase.views.review as r_view
     add_restful_endpoint(api, Review, r_view.serializer, r_view.deserializer, r_view.update_deserializer)
 
-    from rebase.models.project import Project
-    import rebase.views.project as p_view
-    add_restful_endpoint(api, Project, p_view.serializer, p_view.deserializer, p_view.update_deserializer)
+    from rebase.resources.project import add_project_resource
+    add_project_resource(api)
 
     from rebase.models.github_project import GithubProject
     import rebase.views.github_project as gp_view
@@ -150,40 +149,40 @@ def register_routes(api):
 
     from rebase.models.remote_work_history import RemoteWorkHistory
     import rebase.views.remote_work_history as rwh_view
-    add_restful_endpoint(api, RemoteWorkHistory, rwh_view.serializer, rwh_view.deserializer, rwh_view.update_deserializer, None)
+    add_restful_endpoint(api, RemoteWorkHistory, rwh_view.serializer, rwh_view.deserializer, rwh_view.update_deserializer)
 
     from rebase.models.skill_requirement import SkillRequirement
     import rebase.views.skill_requirement as sr_view
-    add_restful_endpoint(api, SkillRequirement, sr_view.serializer, sr_view.deserializer, sr_view.update_deserializer, None)
+    add_restful_endpoint(api, SkillRequirement, sr_view.serializer, sr_view.deserializer, sr_view.update_deserializer)
 
     from rebase.models.remote_ticket import RemoteTicket
     import rebase.views.remote_ticket as rt_view
-    add_restful_endpoint(api, RemoteTicket, rt_view.serializer, rt_view.deserializer, rt_view.update_deserializer, None)
+    add_restful_endpoint(api, RemoteTicket, rt_view.serializer, rt_view.deserializer, rt_view.update_deserializer)
 
     from rebase.models.code_clearance import CodeClearance
     import rebase.views.code_clearance as cc_view
-    add_restful_endpoint(api, CodeClearance, cc_view.serializer, cc_view.deserializer, cc_view.update_deserializer, None)
+    add_restful_endpoint(api, CodeClearance, cc_view.serializer, cc_view.deserializer, cc_view.update_deserializer)
 
     from rebase.models.skill_set import SkillSet
     import rebase.views.skill_set as ss_view
-    add_restful_endpoint(api, SkillSet, ss_view.serializer, ss_view.deserializer, ss_view.update_deserializer, None)
+    add_restful_endpoint(api, SkillSet, ss_view.serializer, ss_view.deserializer, ss_view.update_deserializer)
 
     from rebase.models.contractor import Contractor
     import rebase.views.contractor as c_view
-    add_restful_endpoint(api, Contractor, c_view.serializer, c_view.deserializer, c_view.update_deserializer, None)
+    add_restful_endpoint(api, Contractor, c_view.serializer, c_view.deserializer, c_view.update_deserializer)
 
     from rebase.models.term_sheet import TermSheet
     import rebase.views.term_sheet as ts_view
-    add_restful_endpoint(api, TermSheet, ts_view.serializer, ts_view.deserializer, ts_view.update_deserializer, None)
+    add_restful_endpoint(api, TermSheet, ts_view.serializer, ts_view.deserializer, ts_view.update_deserializer)
 
     from rebase.models.contract import Contract
     import rebase.views.contract as c_view
-    add_restful_endpoint(api, Contract, c_view.serializer, c_view.deserializer, c_view.update_deserializer, None)
+    add_restful_endpoint(api, Contract, c_view.serializer, c_view.deserializer, c_view.update_deserializer)
 
     from rebase.models.feedback import Feedback
     import rebase.views.feedback as f_view
-    add_restful_endpoint(api, Feedback, f_view.serializer, f_view.deserializer, f_view.update_deserializer, None)
+    add_restful_endpoint(api, Feedback, f_view.serializer, f_view.deserializer, f_view.update_deserializer)
 
     from rebase.models.comment import Comment
     import rebase.views.comment as c_view
-    add_restful_endpoint(api, Comment, c_view.serializer, c_view.deserializer, c_view.update_deserializer, None)
+    add_restful_endpoint(api, Comment, c_view.serializer, c_view.deserializer, c_view.update_deserializer)

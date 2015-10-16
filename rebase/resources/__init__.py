@@ -33,7 +33,7 @@ def RestfulResource(model, serializer, deserializer, update_deserializer):
 
     return CustomRestfulResource
 
-def add_restful_endpoint(api, model, serializer, deserializer, update_deserializer, foo=None):
+def add_restful_endpoint(api, model, serializer, deserializer, update_deserializer):
     restful_collection = RestfulCollection(model, serializer, deserializer)
     restful_resource = RestfulResource(model, serializer, deserializer, update_deserializer)
     api.add_resource(restful_collection, make_collection_url(model), endpoint = model.__pluralname__)

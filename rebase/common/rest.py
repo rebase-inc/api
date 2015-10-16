@@ -55,7 +55,7 @@ def update_resource(model, instance_id, update_deserializer, serializer, pre_ser
         instance = pre_serialization(instance)
     return jsonify(**{model.__tablename__: serializer.dump(instance).data})
 
-def delete_resource(model, instance_id):
+def delete_resource(model, instance_id, modify_response=None):
     instance = model.query.get(instance_id)
     if not instance:
         raise NotFoundError(model.__tablename__, instance_id)
@@ -66,4 +66,6 @@ def delete_resource(model, instance_id):
 
     response = jsonify(message = '{} succesfully deleted'.format(model.__tablename__))
     response.status_code = 200
+    if modify_response:
+        response = modify_response(response)
     return response
