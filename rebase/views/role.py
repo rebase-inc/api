@@ -8,6 +8,7 @@ class RoleSchema(RebaseSchema):
     type = fields.String()
 
     user = SecureNestedField('UserSchema', only=('id',))
+    project = SecureNestedField('ProjectSchema', only=('id','type','name','organization'))
 
     def make_object(self, data):
         from rebase.models import Role
