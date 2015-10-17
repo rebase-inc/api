@@ -122,6 +122,11 @@ def import_tickets(project_id, account_id):
         repo=project.name
     )
     languages = session.api.get(repo_url+'/languages').data
+    # Normalize the language values by dividing by the sum of values.
+    # Ultimately we want a level of difficulty per language, not a relative distribution of the quantity of code.
+    # But this will do for now.
+    total = sum(languages.values())
+    languages = { language: code_size/total for language, code_size in languages.items() }
     issues = session.api.get(repo_url+'/issues').data
     tickets = []
     komments = []
