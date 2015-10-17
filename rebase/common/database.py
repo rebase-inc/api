@@ -178,6 +178,17 @@ class PermissionMixin(object):
         return cls.role_to_query_fn(user)(user)
 
     @classmethod
+    def found(cls, self, user):
+        '''
+        Returns True is 'user' can retrieve 'self' via one of the permitted paths (i.e. as_owner_path, as_contractor_path or as_manager_path).
+        The permission path used is the one for the current_role of the 'user'.
+        If 'user' is an admin, found always returns True.
+        '''
+        if user.admin:
+            return True
+        return self.query_by_user(user).filter(cls.id==self.id).limit(1).first()
+
+    @classmethod
     def setup_queries(cls, _):
         msg = 'setup_queries is not implemented for {}'
         #raise NotImplemented(msg.format(cls.__name__))

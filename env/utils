@@ -98,7 +98,7 @@ rebase-logout () {
 
 #
 # Set the current role for the current user
-# $ rebase-role <role-id>
+# $ rebase-role <user-id> <role-id>
 # 
 rebase-role () {
 	rebase-put \

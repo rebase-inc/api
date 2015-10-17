@@ -39,9 +39,7 @@ class Project(DB.Model, PermissionMixin):
     allowed_to_be_deleted_by = allowed_to_be_created_by
 
     def allowed_to_be_viewed_by(self, user):
-        if user.is_admin():
-            return True
-        return Project.query_by_user(user).limit(1).first()
+        return self.found(self, user)
 
     @classmethod
     def setup_queries(cls, models):

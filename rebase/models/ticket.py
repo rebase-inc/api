@@ -40,7 +40,7 @@ class Ticket(DB.Model, PermissionMixin):
         return self.project.allowed_to_be_modified_by(user)
 
     def allowed_to_be_modified_by(self, user):
-        return self.query_by_user(user).limit(1).first()
+        return self.found(self, user)
 
     def allowed_to_be_viewed_by(self, user):
         return self.project.allowed_to_be_viewed_by(user)

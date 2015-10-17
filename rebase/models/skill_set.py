@@ -1,6 +1,6 @@
+from functools import partialmethod
 
-from rebase.common.database import DB, PermissionMixin, query_by_user_or_id
-from rebase.common.query import query_from_class_to_user
+from rebase.common.database import DB, PermissionMixin
 
 class SkillSet(DB.Model, PermissionMixin):
     __pluralname__ = 'skill_sets'
@@ -15,37 +15,23 @@ class SkillSet(DB.Model, PermissionMixin):
         self.skills = skills or {}
 
     @classmethod
-    def query_by_user(cls, user):
-        return cls.get_all(user)
-
-    def filter_by_id(self, query):
-        return query.filter(SkillSet.id==self.id)
-
-    @classmethod
-    def get_all(cls, user, skill_set=None):
-        return query_by_user_or_id(
-            cls,
-            lambda user: cls.as_manager(user).union(cls.as_contractor(user)),
-            cls.filter_by_id,
-            user, skill_set
-        )
-
-    @classmethod
-    def as_manager(cls, user):
-        import rebase.models
-        return query_from_class_to_user(SkillSet, [
-            rebase.models.contractor.Contractor,
-            rebase.models.code_clearance.CodeClearance,
-            rebase.models.project.Project,
-            rebase.models.manager.Manager,
-        ], user)
-
-    @classmethod
-    def as_contractor(cls, user):
-        import rebase.models
-        return query_from_class_to_user(SkillSet, [
-            rebase.models.contractor.Contractor,
-        ], user)
+    def setup_queries(cls, models):
+        cls.as_owner_path = [
+            models.Contractor,
+            models.CodeClearance,
+            models.Project,
+            models.Organization,
+            models.Owner,
+        ]
+        cls.as_contractor_path = [
+            models.Contractor,
+        ]
+        cls.as_manager_path = [
+            models.Contractor,
+            models.CodeClearance,
+            models.Project,
+            models.Manager
+        ]
 
     def allowed_to_be_created_by(self, user):
         return user.admin
@@ -54,8 +40,7 @@ class SkillSet(DB.Model, PermissionMixin):
     allowed_to_be_deleted_by = allowed_to_be_created_by
 
     def allowed_to_be_viewed_by(self, user):
-        return True
-        return self.get_all(user, self).limit(1).all()
+        return self.found(self, user)
 
     def __repr__(self):
         return '<SkillSet[{}]>'.format(self.id)

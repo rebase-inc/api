@@ -32,7 +32,11 @@ class GithubTicket(RemoteTicket):
             models.Manager,
         ]
 
-        cls.as_owner_path = cls.as_manager_path
+        cls.as_owner_path = [
+            models.GithubProject,
+            models.GithubOrganization,
+            models.Owner
+        ]
 
     def __repr__(self):
         return '<GithubTicket[id:{}] number={}>'.format(self.id, self.number)
