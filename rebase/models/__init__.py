@@ -1,6 +1,7 @@
 from inspect import isclass
 from sys import modules
 
+from rebase.common.database import DB
 from rebase.models.bid_limit import *
 from rebase.models.contract import *
 from rebase.models.bid import *
@@ -55,3 +56,8 @@ loaded_references = models.__dict__.copy()
 for klass in loaded_references.values():
     if isclass(klass) and issubclass(klass, PermissionMixin):
         klass.setup_queries(models)
+    if isclass(klass) and issubclass(klass, DB.Model):
+        getattr(klass, 'allowed_to_be_viewed_by')
+        getattr(klass, 'allowed_to_be_created_by')
+        getattr(klass, 'allowed_to_be_modified_by')
+        getattr(klass, 'allowed_to_be_deleted_by')
