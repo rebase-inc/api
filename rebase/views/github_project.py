@@ -8,10 +8,11 @@ class GithubProjectSchema(RebaseSchema):
 
     id =                fields.Integer()
     name =              fields.String()
+    imported =          fields.Boolean()
     organization =      SecureNestedField('GithubOrganizationSchema',   only=('id', 'org_id', 'login', 'url', 'description', 'accounts'), allow_null=True)
     clearances =        SecureNestedField('CodeClearanceSchema',        only=('id',), many=True)
     tickets =           SecureNestedField('GithubTicketSchema',         only=('id',), many=True)
-    code_repository =   fields.Nested(GithubRepositorySchema,           only=('id', 'repo_id', 'name', 'url', 'description', 'project'))
+    code_repository =   SecureNestedField(GithubRepositorySchema,       only=('id', 'repo_id', 'name', 'url', 'description', 'project'))
 
     def make_object(self, data):
         return get_or_make_object(GithubProject, data)

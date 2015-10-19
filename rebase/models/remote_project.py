@@ -13,6 +13,7 @@ class RemoteProject(Project):
     def __init__(self, organization, name):
         self.organization = organization
         self.name = name
+        self.imported = False
 
     def __repr__(self):
         return '<RemoteProject[{}] "{}" for "{}">'.format(self.id, self.name, self.organization.name)

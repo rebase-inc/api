@@ -5,7 +5,7 @@ from flask.ext.login import login_required, current_user
 
 from rebase.common.database import DB
 from rebase.github import create_github_app
-from rebase.github.scanners import import_github_repos
+from rebase.github.scanners import import_github_projects
 from rebase.models.contractor import Contractor
 from rebase.models.github_account import GithubAccount
 from rebase.models.remote_work_history import RemoteWorkHistory
@@ -90,8 +90,8 @@ def register_github_routes(app):
     def get_github_oauth_token():
         return session.get('github_token')
 
-    @app.route('/github/import_repos', methods=['POST'])
+    @app.route('/github/import_projects', methods=['POST'])
     @login_required
-    def import_repos():
-        new_data = import_github_repos(request.json['repos'], current_user, DB.session)
+    def import_projects():
+        new_data = import_github_projects(request.json['projects'], current_user, DB.session)
         return jsonify(new_data);

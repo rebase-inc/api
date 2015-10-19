@@ -7,6 +7,7 @@ class ProjectSchema(RebaseSchema):
 
     id =                fields.Integer()
     name =              fields.String()
+    imported =          fields.Boolean()
     organization =      SecureNestedField('OrganizationSchema',     only=('id','name'))
     clearances =        SecureNestedField('CodeClearanceSchema',    only=('id',), many=True)
     tickets =           SecureNestedField('TicketSchema',           only=('id',), many=True)

@@ -9,6 +9,7 @@ class Project(DB.Model, PermissionMixin):
     name =              DB.Column(DB.String, nullable=False)
     organization_id =   DB.Column(DB.Integer, DB.ForeignKey('organization.id', ondelete='CASCADE'), nullable=False)
     type =              DB.Column(DB.String)
+    imported =          DB.Column(DB.Boolean)
 
     code_repository =   DB.relationship('CodeRepository',   backref='project', cascade="all, delete-orphan", passive_deletes=True, uselist=False)
     tickets =           DB.relationship('Ticket',           backref='project', cascade="all, delete-orphan", passive_deletes=True)
@@ -22,6 +23,7 @@ class Project(DB.Model, PermissionMixin):
 
     def __init__(self, organization, name):
         from rebase.models.manager import Manager
+        self.imported = False
         self.name = name
         self.organization = organization
         for owner in organization.owners:
@@ -39,9 +41,7 @@ class Project(DB.Model, PermissionMixin):
     allowed_to_be_deleted_by = allowed_to_be_created_by
 
     def allowed_to_be_viewed_by(self, user):
-        if user.is_admin():
-            return True
-        return Project.query_by_user(user).limit(1).first()
+        return self.found(self, user)
 
     @classmethod
     def setup_queries(cls, models):

@@ -68,34 +68,37 @@ def make_admin_github_session(account_id):
 def extract_repos_info(session):
     ''' returns a list of all repos managed by this user '''
     orgs = session.api.get('/user/orgs').data
-    with session.DB.session.no_autoflush:
-        for org in orgs:
-            github_org = None
-            repos = session.api.get(org['repos_url']).data
-            for repo in repos:
-                if repo['permissions']['admin'] and not repo['fork']:
+    for org in orgs:
+        github_org = None
+        repos = session.api.get(org['repos_url']).data
+        for repo in repos:
+            if repo['permissions']['admin'] and not repo['fork']:
+                if not github_org:
+                    github_org = GithubOrganization.query.filter(GithubOrganization.org_id==org['id']).first()
                     if not github_org:
-                        github_org = GithubOrganization.query.filter(GithubOrganization.org_id==org['id']).first()
-                        if not github_org:
-                            github_org = GithubOrganization(
-                                org['login'],
-                                session.user,
-                                org['id'],
-                                org['url'],
-                                org['description']
-                            )
-                            GithubOrgAccount(github_org, session.account)
-                    _repo = GithubRepository.query.filter(GithubRepository.repo_id==repo['id']).first()
-                    if not _repo:
-                        github_project = GithubProject(github_org, repo['name'])
-                        _repo = GithubRepository(
-                            github_project,
-                            repo['name'],
-                            repo['id'],
-                            repo['url'],
-                            repo['description']
+                        github_org = GithubOrganization(
+                            org['login'],
+                            session.user,
+                            org['id'],
+                            org['url'],
+                            org['description']
                         )
-        return session.account
+                        GithubOrgAccount(github_org, session.account)
+                        session.DB.session.add(github_org)
+                    Owner(session.user, github_org)
+                _repo = GithubRepository.query.filter(GithubRepository.repo_id==repo['id']).first()
+                if not _repo:
+                    github_project = GithubProject(github_org, repo['name'])
+                    _repo = GithubRepository(
+                        github_project,
+                        repo['name'],
+                        repo['id'],
+                        repo['url'],
+                        repo['description']
+                    )
+                session.DB.session.add(Manager(session.user, _repo.project))
+    session.DB.session.commit()
+    return session.account
 
 @lru_cache(maxsize=None)
 def get_or_make_user(session, user_id, user_login):
@@ -159,74 +162,17 @@ def import_tickets(project_id, account_id):
             )
             komments.append(ticket_comment)
         session.DB.session.add(ticket)
+    project.imported = True
     session.DB.session.commit()
     return tickets, komments
 
-def import_github_repos(repos, user, db_session):
-    # TODO add GithubOrgAccount instance for each imported GithubOrganization
-    '''
-        Imports the 'repos' and returns an object with the created or updated GithubRepository, GithubProject and GithubOrganization instances
-    '''
-    # in new_data we will store the newly created object, e.g. Managers, Organizations, GithubProjects, etc.
-    new_data = { k: [] for k in _serializers.keys() }
-    orgs = {}
-    accounts = {}
-    for repo_id, repo in repos.items():
-        _org = repo['project']['organization']
-        if _org['org_id'] not in orgs:
-            gh_org = GithubOrganization.query.filter(GithubOrganization.org_id==_org['org_id']).first()
-            if not gh_org:
-                gh_org = GithubOrganization(
-                    _org['login'],
-                    user,
-                    _org['org_id'],
-                    _org['url'],
-                    _org['description'],
-                )
-                db_session.add(gh_org)
-            # go through the GithubOrgAccounts and create them if need be
-            _org_accounts = _org['accounts']
-            for _account in _org_accounts:
-                _account_id = _account['account_id']
-                _org_account = GithubOrgAccount.query.filter(
-                    and_(
-                        GithubOrgAccount.account_id==_account_id,
-                        GithubOrgAccount.org_id==_org['id'],
-                    )
-                ).first()
-                if not _org_account:
-                    if _account_id not in accounts:
-                        account = GithubAccount.query.filter(GithubAccount.id==_account_id).first()
-                        if not account:
-                            raise ValueError('GithubAccount with id: {} is not found in the database'.format(_account_id))
-                        accounts[account.id] = account
-                    GithubOrgAccount(gh_org, account)
-            new_data['orgs'].append(gh_org)
-            orgs[gh_org.org_id] = gh_org
+def import_github_projects(project_ids, user, db_session):
+    for project_id in project_ids:
+        project = GithubProject.query.filter(GithubProject.id==project_id)
+        if project:
+            if project.imported:
+                current_app.logger.info('Project with id {} is already imported.'.format(project.id))
+            else:
+                current_app.default_queue.enqueue(import_tickets, project.id, project.organization.accounts[0].account.id)
         else:
-            gh_org = orgs[_org['org_id']]
-            owner = Owner(user, gh_org)
-            gh_org.owners.append(owner)
-            db_session.add(gh_org)
-        _repo = GithubRepository.query.filter(GithubRepository.repo_id==repo_id).first()
-        if not _repo:
-            _project = GithubProject(gh_org, repo['name'])
-            _repo = GithubRepository(_project, repo['name'], repo_id, repo['url'], repo['description'])
-        if any(map(lambda mgr: mgr.user == user, _repo.project.managers)):
-            continue
-        else:
-            mgr = Manager(user, _repo.project)
-            _repo.project.managers.append(mgr)
-            db_session.add(_repo)
-            new_data['managers'].append(mgr)
-        new_data['projects'].append(_repo.project)
-        new_data['repos'].append(_repo)
-
-    db_session.commit()
-    
-    # start a background task to pull tickets from Github for each repo
-    for project in new_data['projects']:
-        current_app.default_queue.enqueue(import_tickets, project.id, project.organization.accounts[0].account.id)
-
-    # serialize the new data
-    return { key: list(map(lambda elt: _serializers[key].dump(elt).data, value)) for key, value in new_data.items() }
+            current_app.logger.info('Project with id {} does not exists in Rebase, not importing.'.format(project.id))
