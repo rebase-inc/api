@@ -22,20 +22,39 @@ class Debit(DB.Model, PermissionMixin):
         self.paid = True
 
     @classmethod
-    def query_by_user(cls, user):
-        return cls.query
+    def setup_queries(cls, models):
+        cls.as_owner_path = [
+            models.Work,
+            models.WorkOffer,
+            models.TicketSnapshot,
+            models.Ticket,
+            models.Project,
+            models.Organization,
+            models.Owner,
+        ]
+        cls.as_contractor_path = [
+            models.Work,
+            models.WorkOffer,
+            models.Bid,
+            models.Contractor,
+        ]
+        cls.as_manager_path = [
+            models.Work,
+            models.WorkOffer,
+            models.TicketSnapshot,
+            models.Ticket,
+            models.Project,
+            models.Manager
+        ]
 
     def allowed_to_be_created_by(self, user):
-        return True
+        return self.work.allowed_to_be_created_by(user)
 
-    def allowed_to_be_modified_by(self, user):
-        return self.allowed_to_be_created_by(user)
-
-    def allowed_to_be_deleted_by(self, user):
-        return self.allowed_to_be_created_by(user)
+    allowed_to_be_deleted_by = allowed_to_be_created_by
+    allowed_to_be_modified_by = allowed_to_be_created_by
 
     def allowed_to_be_viewed_by(self, user):
-        return self.allowed_to_be_created_by(user)
+        return self.work.allowed_to_be_viewed_by(user)
 
     def __repr__(self):
         return '<Debit for {} {}>'.format(self.price, 'dollars')

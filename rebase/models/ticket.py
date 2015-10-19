@@ -34,7 +34,11 @@ class Ticket(DB.Model, PermissionMixin):
             models.Manager,
         ]
 
-        cls.as_owner_path = cls.as_manager_path
+        cls.as_owner_path = [
+            models.Project,
+            models.Organization,
+            models.Owner
+        ]
 
     def allowed_to_be_created_by(self, user):
         return self.project.allowed_to_be_modified_by(user)

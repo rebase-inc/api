@@ -51,8 +51,7 @@ class Work(DB.Model, PermissionMixin):
         return query_contractor
 
     def allowed_to_be_created_by(self, user):
-        if user.is_admin():
-            return True
+        return user.is_admin()
 
     def allowed_to_be_modified_by(self, user):
         return self.allowed_to_be_created_by(user)
