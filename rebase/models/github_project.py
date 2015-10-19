@@ -10,21 +10,5 @@ class GithubProject(RemoteProject):
     
     __mapper_args__ = { 'polymorphic_identity': 'github_project' }
 
-    @classmethod
-    def query_by_user(cls, user):
-        return super(cls, cls).query_by_user(user)
-
-    def allowed_to_be_created_by(self, user):
-        return super().allowed_to_be_created_by(user)
-
-    def allowed_to_be_modified_by(self, user):
-        return super().allowed_to_be_modified_by(user)
-
-    def allowed_to_be_deleted_by(self, user):
-        return super().allowed_to_be_deleted_by(user)
-
-    def allowed_to_be_viewed_by(self, user):
-        return super().allowed_to_be_viewed_by(user)
-
     def __repr__(self):
         return '<GithubProject[id:{} "{}"]>'.format(self.id, self.name)

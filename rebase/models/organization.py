@@ -76,9 +76,7 @@ class Organization(DB.Model, PermissionMixin):
         return self.allowed_to_be_modified_by(user)
 
     def allowed_to_be_viewed_by(self, user):
-        if user.admin:
-            return True
-        return self.query_by_user(user).first()
+        return self.found(self, user)
 
     def __repr__(self):
         return '<Organization[{}] "{}" >'.format(self.id, self.name)

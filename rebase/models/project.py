@@ -46,7 +46,6 @@ class Project(DB.Model, PermissionMixin):
     @classmethod
     def setup_queries(cls, models):
         cls.filter_based_on_current_role = False
-
         cls.as_owner_path = [
             models.Organization,
             models.Owner,
@@ -55,7 +54,6 @@ class Project(DB.Model, PermissionMixin):
             models.CodeClearance,
             models.Contractor,
         ]
-
         cls.as_manager_path = [
             models.Manager
         ]

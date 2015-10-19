@@ -18,28 +18,5 @@ class GithubRepository(CodeRepository):
         self.description = description
         super().__init__(project, repo_url)
 
-    def allowed_to_be_created_by(self, user):
-        return user.is_admin()
-
-    allowed_to_be_modified_by = allowed_to_be_created_by
-    allowed_to_be_deleted_by = allowed_to_be_created_by
-
-    def allowed_to_be_viewed_by(self, user):
-        self.project.allowed_to_be_viewed_by(user)
-
     def __repr__(self):
         return '<GithubRepository[{}]>'.format(self.id)
-
-    @classmethod
-    def setup_queries(cls, models):
-        # TODO fix as_contractor_path for permissions
-        cls.as_contractor_path = [
-            models.Project,
-            models.Organization,
-            models.Manager
-        ]
-        cls.as_manager_path = [
-            models.Project,
-            models.Organization,
-            models.Manager
-        ]

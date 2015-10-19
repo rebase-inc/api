@@ -96,7 +96,15 @@ def extract_repos_info(session):
                         repo['url'],
                         repo['description']
                     )
-                session.DB.session.add(Manager(session.user, _repo.project))
+                    session.DB.session.add(_repo)
+                mgr = Manager.query.filter(
+                    and_(
+                        Manager.user==session.user,
+                        Manager.project==_repo.project
+                    )
+                ).first()
+                if not mgr:
+                    session.DB.session.add(Manager(session.user, _repo.project))
     session.DB.session.commit()
     return session.account
 
@@ -166,9 +174,9 @@ def import_tickets(project_id, account_id):
     session.DB.session.commit()
     return tickets, komments
 
-def import_github_projects(project_ids, user, db_session):
-    for project_id in project_ids:
-        project = GithubProject.query.filter(GithubProject.id==project_id)
+def import_github_repos(repos, user, db_session):
+    for repo_id, repo in repos.items():
+        project = GithubProject.query.filter(GithubProject.id==repo['project']['id']).first()
         if project:
             if project.imported:
                 current_app.logger.info('Project with id {} is already imported.'.format(project.id))

@@ -1,5 +1,4 @@
-from rebase.common.database import DB, PermissionMixin, query_by_user_or_id
-from rebase.common.query import query_from_class_to_user
+from rebase.common.database import DB, PermissionMixin
 
 class CodeRepository(DB.Model, PermissionMixin):
     __pluralname__ = 'code_repositories'
@@ -18,47 +17,31 @@ class CodeRepository(DB.Model, PermissionMixin):
         self.url = url
 
     @classmethod
-    def query_by_user(cls, user):
-        return cls.get_all(user)
-
-    def filter_by_id(self, query):
-        return query.filter(CodeRepository.id==self.id)
-
-    @classmethod
-    def get_all(cls, user, repo=None):
-        return query_by_user_or_id(
-            cls,
-            lambda user: cls.as_manager(user).union(cls.as_contractor(user)),
-            cls.filter_by_id,
-            user, repo
-        )
-
-    @classmethod
-    def as_manager(cls, user):
-        import rebase.models.project
-        return query_from_class_to_user(CodeRepository, [
-            rebase.models.project.Project,
-            rebase.models.organization.Organization,
-            rebase.models.manager.Manager,
-        ], user)
-
-    @classmethod
-    def as_contractor(cls, user, id=None):
-        import rebase.models.project
-        return query_from_class_to_user(CodeRepository, [
-            rebase.models.project.Project,
-            rebase.models.code_clearance.CodeClearance,
-            rebase.models.contractor.Contractor,
-        ], user)
+    def setup_queries(cls, models):
+        cls.filter_based_on_current_role = False
+        cls.as_owner_path = [
+            models.Project,
+            models.Organization,
+            models.Owner,
+        ]
+        cls.as_contractor_path = [
+            models.Project,
+            models.CodeClearance,
+            models.Contractor,
+        ]
+        cls.as_manager_path = [
+            models.Project,
+            models.Manager
+        ]
 
     def allowed_to_be_created_by(self, user):
-        return self.project.allowed_to_be_modified_by(user)
+        return self.project.allowed_to_be_created_by(user)
 
     allowed_to_be_modified_by = allowed_to_be_created_by
     allowed_to_be_deleted_by = allowed_to_be_created_by
 
     def allowed_to_be_viewed_by(self, user):
-        return self.get_all(user, self).all()
+        return self.project.allowed_to_be_viewed_by(user)
 
     def __repr__(self):
         return '<CodeRepository[id:{}]>'.format(self.id)

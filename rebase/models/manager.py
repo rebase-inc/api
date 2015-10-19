@@ -15,11 +15,11 @@ class Manager(Role):
         self.project = project
 
     def __repr__(self):
-        return '<Manager[{}] {} {} (org {})>'.format(
+        return '<Manager[{}, [{}]] {} {})>'.format(
             self.id,
+            self.project.name,
             self.user.first_name,
             self.user.last_name,
-            self.project_id
         )
 
     def allowed_to_be_created_by(self, user):
