@@ -3,7 +3,7 @@ from rebase.common.database import DB, PermissionMixin
 from rebase.models import Manager, Organization
 
 class GithubOrganization(Organization):
-    __pluralname__ = 'github_repositories'
+    __pluralname__ = 'github_organizations'
 
     id =            DB.Column(DB.Integer, DB.ForeignKey('organization.id', ondelete='CASCADE'), primary_key=True)
     login =         DB.Column(DB.String, nullable=False)
