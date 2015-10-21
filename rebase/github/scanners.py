@@ -1,6 +1,7 @@
 from collections import namedtuple
 from datetime import datetime
 from functools import lru_cache
+from pprint import pprint
 
 from flask import current_app
 from sqlalchemy import and_
@@ -66,47 +67,27 @@ def make_admin_github_session(account_id):
     return make_session(github_account, app, user, db)
 
 def extract_repos_info(session):
-    ''' returns a list of all repos managed by this user '''
+    ''' returns a list of importable Github repos for the account in session '''
+    importable = []
     orgs = session.api.get('/user/orgs').data
     for org in orgs:
-        github_org = None
         repos = session.api.get(org['repos_url']).data
         for repo in repos:
             if repo['permissions']['admin'] and not repo['fork']:
-                if not github_org:
-                    github_org = GithubOrganization.query.filter(GithubOrganization.org_id==org['id']).first()
-                    if not github_org:
-                        github_org = GithubOrganization(
-                            org['login'],
-                            session.user,
-                            org['id'],
-                            org['url'],
-                            org['description']
-                        )
-                        GithubOrgAccount(github_org, session.account)
-                        session.DB.session.add(github_org)
-                    Owner(session.user, github_org)
                 _repo = GithubRepository.query.filter(GithubRepository.repo_id==repo['id']).first()
                 if not _repo:
-                    github_project = GithubProject(github_org, repo['name'])
-                    _repo = GithubRepository(
-                        github_project,
-                        repo['name'],
-                        repo['id'],
-                        repo['url'],
-                        repo['description']
-                    )
-                    session.DB.session.add(_repo)
-                mgr = Manager.query.filter(
-                    and_(
-                        Manager.user==session.user,
-                        Manager.project==_repo.project
-                    )
-                ).first()
-                if not mgr:
-                    session.DB.session.add(Manager(session.user, _repo.project))
-    session.DB.session.commit()
-    return session.account
+                    importable.append(repo)
+                else:
+                    # this repo already exists, so is this user a manager for the repo already?
+                    mgr = Manager.query.filter(
+                        and_(
+                            Manager.user==session.user,
+                            Manager.project==_repo.project
+                        )
+                    ).first()
+                    if not mgr:
+                        importable.append(repo)
+    return importable
 
 @lru_cache(maxsize=None)
 def get_or_make_user(session, user_id, user_login):
