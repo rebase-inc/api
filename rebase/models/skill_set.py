@@ -1,5 +1,7 @@
 from functools import partialmethod
 
+from sqlalchemy.orm import aliased
+
 from rebase.common.database import DB, PermissionMixin
 
 class SkillSet(DB.Model, PermissionMixin):
@@ -23,12 +25,21 @@ class SkillSet(DB.Model, PermissionMixin):
             models.Organization,
             models.Owner,
         ]
+        OtherContractorsCodeClearance = aliased(models.CodeClearance)
         cls.as_contractor_path = [
             models.Contractor,
+            models.CodeClearance,
+            models.Project,
+            OtherContractorsCodeClearance,
+            models.Contractor
         ]
         cls.as_manager_path = [
             models.Contractor,
-            models.CodeClearance,
+            models.Nomination,
+            models.TicketSet,
+            models.BidLimit,
+            models.TicketSnapshot,
+            models.Ticket,
             models.Project,
             models.Manager
         ]
