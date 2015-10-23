@@ -25,7 +25,7 @@ class Manager(Role):
     def allowed_to_be_created_by(self, user):
         if user.admin:
             return True
-        return Manager.as_owner(user).limit(1).first()
+        return Manager.as_manager(user).limit(1).first()
 
     allowed_to_be_modified_by = allowed_to_be_created_by
     allowed_to_be_deleted_by = allowed_to_be_created_by

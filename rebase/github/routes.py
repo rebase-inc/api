@@ -1,16 +1,17 @@
 from functools import wraps
 
-from flask import redirect, url_for, session, request, jsonify
+from flask import redirect, url_for, session, request, jsonify, current_app
 from flask.ext.login import login_required, current_user
 
 from rebase.common.database import DB
 from rebase.github import create_github_app
-from rebase.github.scanners import import_github_repos
+from rebase.github.scanners import import_github_repos, make_session, extract_repos_info
 from rebase.models.contractor import Contractor
 from rebase.models.github_account import GithubAccount
 from rebase.models.remote_work_history import RemoteWorkHistory
 from rebase.models.skill_set import SkillSet
 from rebase.models.user import User
+
 
 def save_access_token(github_user, logged_in_user, access_token, db):
     user = User.query.filter(User.id==logged_in_user.id).first()
@@ -93,5 +94,13 @@ def register_github_routes(app):
     @app.route('/github/import_repos', methods=['POST'])
     @login_required
     def import_repos():
-        import_github_repos(request.json['repos'], current_user, DB.session)
-        return jsonify({'result': 'success'});
+        new_mgr_roles = import_github_repos(request.json['repos'], current_user, DB.session)
+        return jsonify({'roles': new_mgr_roles});
+
+    @app.route('/github_accounts/<int:github_account_id>/importable_repos')
+    @login_required
+    def importable_repos(github_account_id):
+        account = GithubAccount.query.get_or_404(github_account_id)
+        session = make_session(account, current_app, current_user, DB)
+        return jsonify({ 'repos': extract_repos_info(session) })
+

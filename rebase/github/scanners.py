@@ -1,4 +1,3 @@
-from collections import namedtuple
 from datetime import datetime
 from functools import lru_cache
 
@@ -21,17 +20,7 @@ from rebase.models import (
     SkillRequirement,
     User,
 )
-from rebase.views.github_organization import serializer as org_serializer
-from rebase.views.github_project import serializer as project_serializer
 from rebase.views.manager import serializer as mgr_serializer
-from rebase.views.github_repository import serializer as repo_serializer
-
-_serializers = {
-    'repos':    repo_serializer,
-    'projects': project_serializer,
-    'orgs':     org_serializer,
-    'managers': mgr_serializer
-}
 
 _gh_datetime_format = '%Y-%m-%dT%H:%M:%SZ'
 
@@ -66,47 +55,29 @@ def make_admin_github_session(account_id):
     return make_session(github_account, app, user, db)
 
 def extract_repos_info(session):
-    ''' returns a list of all repos managed by this user '''
+    ''' returns a list of importable Github repos for the account in session '''
+    importable = []
     orgs = session.api.get('/user/orgs').data
     for org in orgs:
-        github_org = None
         repos = session.api.get(org['repos_url']).data
         for repo in repos:
+            repo['owner']['description'] = org['description']
+            repo['github_account_id'] = session.account.id
             if repo['permissions']['admin'] and not repo['fork']:
-                if not github_org:
-                    github_org = GithubOrganization.query.filter(GithubOrganization.org_id==org['id']).first()
-                    if not github_org:
-                        github_org = GithubOrganization(
-                            org['login'],
-                            session.user,
-                            org['id'],
-                            org['url'],
-                            org['description']
-                        )
-                        GithubOrgAccount(github_org, session.account)
-                        session.DB.session.add(github_org)
-                    Owner(session.user, github_org)
                 _repo = GithubRepository.query.filter(GithubRepository.repo_id==repo['id']).first()
                 if not _repo:
-                    github_project = GithubProject(github_org, repo['name'])
-                    _repo = GithubRepository(
-                        github_project,
-                        repo['name'],
-                        repo['id'],
-                        repo['url'],
-                        repo['description']
-                    )
-                    session.DB.session.add(_repo)
-                mgr = Manager.query.filter(
-                    and_(
-                        Manager.user==session.user,
-                        Manager.project==_repo.project
-                    )
-                ).first()
-                if not mgr:
-                    session.DB.session.add(Manager(session.user, _repo.project))
-    session.DB.session.commit()
-    return session.account
+                    importable.append(repo)
+                else:
+                    # this repo already exists, so is this user a manager for the repo already?
+                    mgr = Manager.query.filter(
+                        and_(
+                            Manager.user==session.user,
+                            Manager.project==_repo.project
+                        )
+                    ).first()
+                    if not mgr:
+                        importable.append(repo)
+    return importable
 
 @lru_cache(maxsize=None)
 def get_or_make_user(session, user_id, user_login):
@@ -170,17 +141,39 @@ def import_tickets(project_id, account_id):
             )
             komments.append(ticket_comment)
         session.DB.session.add(ticket)
-    project.imported = True
     session.DB.session.commit()
     return tickets, komments
 
 def import_github_repos(repos, user, db_session):
+    new_mgr_roles = []
     for repo_id, repo in repos.items():
-        project = GithubProject.query.filter(GithubProject.id==repo['project']['id']).first()
-        if project:
-            if project.imported:
-                current_app.logger.info('Project with id {} is already imported.'.format(project.id))
-            else:
-                current_app.default_queue.enqueue(import_tickets, project.id, project.organization.accounts[0].account.id)
+        github_account = GithubAccount.query.filter(GithubAccount.id==repo['github_account_id']).first()
+        if not github_account:
+            current_app.logger.debug('Cannot find GithubAccount[{}], so we cannot import repo[{}, {}]'.format(
+                repo['github_account_id'],
+                repo['id'],
+                repo['name']
+            ))
+            continue
+
+        rebase_repo = GithubRepository.query.filter(GithubRepository.repo_id==repo['id']).first()
+        if rebase_repo:
+            new_mgr = Manager(user, rebase_repo.project)
+            db_session.add(new_mgr)
+            new_mgr_roles.append(new_mgr)
         else:
-            current_app.logger.info('Project with id {} does not exists in Rebase, not importing.'.format(project.id))
+            rebase_org = GithubOrganization.query.filter(GithubOrganization.org_id==repo['owner']['id']).first()
+            if not rebase_org:
+                org = repo['owner']
+                rebase_org = GithubOrganization(org['login'], user, org['id'], org['url'], org['description'])
+                project_account = GithubOrgAccount(rebase_org, github_account)
+                db_session.add(project_account)
+            rebase_project = GithubProject(rebase_org, repo['name'])
+            rebase_repo = GithubRepository(rebase_project, repo['name'], repo['id'], repo['url'], repo['description'])
+            new_mgr = Manager(user, rebase_project)
+            db_session.add(rebase_repo)
+            new_mgr_roles.append(new_mgr)
+    db_session.commit()
+    for role in new_mgr_roles:
+        current_app.default_queue.enqueue(import_tickets, role.project.id, role.project.organization.accounts[0].account.id)
+    return mgr_serializer.dump(new_mgr_roles, many=True).data
