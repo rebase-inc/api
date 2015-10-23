@@ -12,6 +12,7 @@ from rebase.models.remote_work_history import RemoteWorkHistory
 from rebase.models.skill_set import SkillSet
 from rebase.models.user import User
 
+
 def save_access_token(github_user, logged_in_user, access_token, db):
     user = User.query.filter(User.id==logged_in_user.id).first()
     github_account = GithubAccount.query_by_user(user).filter(GithubAccount.login==github_user['login']).first()
@@ -93,8 +94,8 @@ def register_github_routes(app):
     @app.route('/github/import_repos', methods=['POST'])
     @login_required
     def import_repos():
-        import_github_repos(request.json['repos'], current_user, DB.session)
-        return jsonify({'result': 'success'});
+        new_mgr_roles = import_github_repos(request.json['repos'], current_user, DB.session)
+        return jsonify({'roles': new_mgr_roles});
 
     @app.route('/github_accounts/<int:github_account_id>/importable_repos')
     @login_required
