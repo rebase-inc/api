@@ -5,9 +5,9 @@ from flask.ext.restful import abort
 from rebase.common.database import get_or_make_object, SecureNestedField
 
 class RemoteWorkHistorySchema(RebaseSchema):
-    id =                fields.Integer()
-    contractor = SecureNestedField('ContractorSchema', only=('id'))
-    github_accounts = SecureNestedField('GithubAccountSchema', only=('id', 'user_name'), many=True)
+    id =            fields.Integer()
+    contractor =    SecureNestedField('ContractorSchema', only=('id'))
+    github_repos =  SecureNestedField('GithubContributedRepoSchema', only=('id', 'github_id', 'name', 'owner'), many=True)
 
     def make_object(self, data):
         from rebase.models import RemoteWorkHistory

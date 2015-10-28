@@ -101,6 +101,12 @@ class UnknownRole(ServerError):
         super().__init__(message=UnknownRole.error_message.format(role))
 
 
+class InvalidGithubAccessToken(ServerError):
+    error_message = 'Invalid Github Access Token for {} for Github login: {}'
+    def __init__(self, user, login):
+        super().__init__(message=self.error_message.format(user, login))
+
+
 class QueryPathUndefined(TypeError):
     path_field_name = None
     error_message = 'You need to provide a valid list for {}.{}'

@@ -7,7 +7,9 @@ from .contractor import Contractor
 class RemoteWorkHistory(DB.Model, PermissionMixin):
     __pluralname__ = 'remote_work_histories'
 
-    id = DB.Column(DB.Integer, DB.ForeignKey('contractor.id', ondelete='CASCADE'), primary_key=True, nullable=False)
+    id = DB.Column(DB.Integer, DB.ForeignKey('contractor.id', ondelete='CASCADE'), primary_key=True)
+
+    github_repos = DB.relationship('GithubContributedRepo', backref='remote_work_history', cascade="all, delete-orphan", passive_deletes=True)
 
     def __init__(self, contractor):
         self.contractor = contractor
@@ -19,25 +21,32 @@ class RemoteWorkHistory(DB.Model, PermissionMixin):
         return value
 
     @classmethod
-    def query_by_user(cls, user):
-        from rebase.models import Contractor
-        if user.admin:
-            return cls.query
-        return cls.query.join(Contractor).filter(Contractor.user == user)
+    def setup_queries(cls, models):
+        cls.as_owner_path = [
+            models.Contractor,
+            models.CodeClearance,
+            models.Project,
+            models.Organization,
+            models.Owner,
+        ]
+        cls.as_contractor_path = [
+            models.Contractor,
+        ]
+        cls.as_manager_path = [
+            models.Contractor,
+            models.CodeClearance,
+            models.Project,
+            models.Manager
+        ]
 
     def allowed_to_be_created_by(self, user):
-        if user.is_admin():
-            return True
-        return RemoteWorkHistory.query_by_user(user).first()
+        return self.contractor.allowed_to_be_created_by(user)
 
-    def allowed_to_be_modified_by(self, user):
-        return self.allowed_to_be_created_by(user)
-
-    def allowed_to_be_deleted_by(self, user):
-        return self.allowed_to_be_created_by(user)
+    allowed_to_be_modified_by = allowed_to_be_created_by
+    allowed_to_be_deleted_by = allowed_to_be_created_by
 
     def allowed_to_be_viewed_by(self, user):
-        return self.allowed_to_be_created_by(user)
+        return self.contractor.allowed_to_be_viewed_by(user)
 
     def __repr__(self):
         return '<RemoteWorkHistory[{}] >'.format(self.id)
