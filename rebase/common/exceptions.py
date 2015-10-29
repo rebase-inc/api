@@ -127,6 +127,12 @@ class BadBid(ClientError):
     def __init__(self, required_tickets, bid_tickets):
         super().__init__(message=self.error_message.format(required_tickets, bid_tickets))
 
+class AlreadyBid(ClientError):
+    error_message = '{} already bid for {}'
+    
+    def __init__(self, contractor, ticket_snapshot):
+        super().__init__(code=409, message=self.error_message.format(contractor, ticket_snapshot))
+
 @contextmanager
 def marshmallow_exceptions(data=None):
     try:
