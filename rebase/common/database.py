@@ -186,7 +186,8 @@ class PermissionMixin(object):
         '''
         if user.admin:
             return True
-        return self.query_by_user(user).filter(cls.id==self.id).limit(1).first()
+        import pdb; pdb.set_trace()
+        return self.query_by_user(user).filter_by(**ids(self))
 
     @classmethod
     def setup_queries(cls, _):

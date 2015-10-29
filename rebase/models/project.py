@@ -31,11 +31,11 @@ class Project(DB.Model, PermissionMixin):
         return '<Project[{}] "{}" for "{}" >'.format(self.id, self.name, self.organization)
 
     def allowed_to_be_created_by(self, user):
-        if user.is_admin():
-            return True
-        return Project.as_owner(user).first()
+        return self.organization.found(self, user)
 
-    allowed_to_be_modified_by = allowed_to_be_created_by
+    def allowed_to_be_modified_by(self, user):
+        return self.found(self, user)
+
     allowed_to_be_deleted_by = allowed_to_be_created_by
 
     def allowed_to_be_viewed_by(self, user):
