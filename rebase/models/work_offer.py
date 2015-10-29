@@ -4,6 +4,7 @@ from sqlalchemy import or_, sql
 import rebase
 
 from rebase.common.database import DB, PermissionMixin
+from rebase.common.exceptions import AlreadyBid
 
 class WorkOffer(DB.Model, PermissionMixin):
     __pluralname__ = 'work_offers'
@@ -20,7 +21,7 @@ class WorkOffer(DB.Model, PermissionMixin):
     def __init__(self, contractor, ticket_snapshot, price):
         # TODO: Get rid of this horrible hack by using composite primary key
         if WorkOffer.query.filter(WorkOffer.contractor == contractor, WorkOffer.ticket_snapshot == ticket_snapshot).all():
-            raise ValueError('such a work offer already exists!')
+            raise AlreadyBid(contractor, ticket_snapshot)
         self.contractor = contractor
         self.ticket_snapshot = ticket_snapshot
         self.price = price
