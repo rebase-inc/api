@@ -56,8 +56,6 @@ class AuthCollection(Resource):
         logout_user()
         response = jsonify(message = 'Logged out')
         response.status_code = 200
-        response.set_cookie('role_id', expires=0)
-        response.set_cookie('user', expires=0)
         session.pop('github_token', None)
         return response
 

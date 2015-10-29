@@ -48,7 +48,7 @@ class User(DB.Model, PermissionMixin):
         from rebase.models.contractor import Contractor
         from rebase.models.role import Role
         role = Role.query.get(role_id)
-        if role:
+        if role and role.user == self:
             self.current_role = role
         else:
             self.current_role = Role.query.filter(and_(Role.type=='manager', Role.user==self)).first()
