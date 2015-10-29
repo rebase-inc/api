@@ -131,7 +131,7 @@ class AlreadyBid(ClientError):
     error_message = 'Contractor "{}" already bid for Ticket "{}"'
     
     def __init__(self, contractor, ticket_snapshot):
-        super().__init__(code=409, message=self.error_message.format(contractor.first_name+' '+contractor.last_name, ticket_snapshot.ticket.title))
+        super().__init__(code=409, message=self.error_message.format(contractor.user.first_name+' '+contractor.user.last_name, ticket_snapshot.title))
 
 @contextmanager
 def marshmallow_exceptions(data=None):
