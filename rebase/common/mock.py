@@ -68,7 +68,6 @@ def create_one_contractor(db, user=None):
     from rebase.models import Contractor, SkillSet
     user = user or create_one_user(db)
     contractor = Contractor(user)
-    SkillSet(contractor)
     db.session.add(contractor)
     return contractor
 
@@ -136,11 +135,12 @@ def create_one_internal_ticket(db, title=None, description=None, project=None):
     db.session.add(ticket)
     return ticket
 
-def create_one_github_ticket(db, number=None, project=None):
+def create_one_github_ticket(db, number=None, title=None, project=None):
     from rebase.models import GithubTicket, SkillRequirement
     number = number or randrange(1, 99999)
     project = project or create_one_github_project(db)
-    ticket = GithubTicket(project, number)
+    title = title or pick_a_word().capitalize()+' '+' '.join([pick_a_word() for i in range(5)])
+    ticket = GithubTicket(project, number, title=title, created=datetime.datetime.now())
     SkillRequirement(ticket)
 
     db.session.add(ticket)
@@ -223,7 +223,7 @@ def create_one_feedback(db, auction=None, contractor=None, comment=None):
         auction or create_one_auction(db),
         contractor or create_one_contractor(db)
     )
-    Comment(contractor.user, comment or 'Your auction sucks', feedback=feedback)
+    Comment(feedback.contractor.user, comment or 'Your auction sucks', feedback=feedback)
     db.session.add(feedback)
     return feedback
 
@@ -364,18 +364,13 @@ def create_the_world(db):
     rapha = create_one_user(db, 'Raphael', 'Goyran', 'raphael@rebase.io')
     joe = create_one_user(db, 'Joe', 'Pesci', 'joe@rebase.io')
     tim = create_one_user(db, 'Tim', 'Pesci', 'tim@rebase.io')
-    create_one_snapshot(db)
-    create_one_snapshot(db)
     steve = create_one_user(db, 'Steve', 'Gildred', 'steve@rebase.io')
-    manager_andrew = create_one_manager(db, andrew) # also creates an organization
-    manager_rapha = create_one_manager(db, rapha)
-    bigdough_project = create_one_github_project(db, manager_rapha.organization, 'Big Dough')
-
-    internal_project = create_one_project(db, manager_rapha.organization)
+    bigdough_project = create_one_github_project(db, project_name='Big Dough')
+    internal_project = create_one_project(db)
     internal_project_tickets = [create_one_internal_ticket(db, 'Issue #{}'.format(i), project=internal_project) for i in range(10)]
 
-    manhattan_project = create_one_github_project(db, manager_andrew.organization, 'Manhattan')
-    manhattan_tickets = [ create_one_github_ticket(db, ticket_number, manhattan_project) for ticket_number in range(10) ]
+    manhattan_project = create_one_github_project(db, project_name='Manhattan')
+    manhattan_tickets = [ create_one_github_ticket(db, number=ticket_number, project=manhattan_project) for ticket_number in range(10) ]
     rapha_contractor = create_one_contractor(db, rapha)
     steve_contractor = create_one_contractor(db, steve)
     tim_contractor = create_one_contractor(db, tim)
