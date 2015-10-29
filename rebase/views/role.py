@@ -9,6 +9,7 @@ class RoleSchema(RebaseSchema):
 
     user = SecureNestedField('UserSchema', only=('id',))
     project = SecureNestedField('ProjectSchema', only=('id','type','name','organization', 'imported'))
+    remote_work_history = SecureNestedField('RemoteWorkHistorySchema', only=('github_repos',))
 
     def make_object(self, data):
         from rebase.models import Role

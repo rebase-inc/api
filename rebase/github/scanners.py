@@ -5,10 +5,12 @@ from flask import current_app
 from sqlalchemy import and_
 from sqlalchemy.orm.collections import InstrumentedList
 
-from rebase.github import create_github_app
+from rebase.github.session import GithubSession, make_session, make_admin_github_session
 from rebase.models import (
     Comment,
+    Contractor,
     GithubAccount,
+    GithubContributedRepo,
     GithubRepository,
     GithubOrganization,
     GithubProject,
@@ -18,41 +20,11 @@ from rebase.models import (
     Manager,
     Owner,
     SkillRequirement,
-    User,
 )
 from rebase.views.manager import serializer as mgr_serializer
+from rebase.views.github_contributed_repo import serializer as contributed_repo_serializer
 
 _gh_datetime_format = '%Y-%m-%dT%H:%M:%SZ'
-
-class GithubSession(object):
-    def __init__(self, api, account, user, DB):
-        self.api = api
-        self.account = account
-        self.user = user
-        self.DB = DB
-
-    def __hash__(self):
-        return hash('{account_id}_{user_id}'.format(
-            account_id=self.account.id, 
-            user_id=self.user.id
-        ))
-
-def make_session(github_account, app, user, db):
-    github = create_github_app(app)
-    @github.tokengetter
-    def get_github_oauth_token():
-        return (github_account.access_token, '')
-    return GithubSession(github, github_account, user, db)
-
-def make_admin_github_session(account_id):
-    from rebase import create_app
-    app, _, db = create_app()
-    user = User('RQ', 'RQ', 'RQ', 'RQ')
-    user.admin = True
-    github_account = GithubAccount.query.filter(GithubAccount.id==account_id).first()
-    if not github_account:
-        raise RuntimeError('Could not find a GithubAccount with id \'{}\''.format(account_id))
-    return make_session(github_account, app, user, db)
 
 def extract_repos_info(session):
     ''' returns a list of importable Github repos for the account in session '''
@@ -177,3 +149,4 @@ def import_github_repos(repos, user, db_session):
     for role in new_mgr_roles:
         current_app.default_queue.enqueue(import_tickets, role.project.id, role.project.organization.accounts[0].account.id)
     return mgr_serializer.dump(new_mgr_roles, many=True).data
+

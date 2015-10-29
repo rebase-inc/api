@@ -11,6 +11,7 @@ class GithubAccount(DB.Model, PermissionMixin):
     access_token =  DB.Column(DB.String, nullable=False)
 
     orgs = DB.relationship('GithubOrgAccount', backref='account', cascade="all, delete-orphan", passive_deletes=True)
+    contributed_repos = DB.relationship('GithubContributedRepo', backref='account', cascade="all, delete-orphan", passive_deletes=True)
 
     def __init__(self, user, account_id, login, access_token):
         ''' 

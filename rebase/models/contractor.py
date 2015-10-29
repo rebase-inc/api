@@ -28,8 +28,6 @@ class Contractor(Role):
     __mapper_args__ = { 'polymorphic_identity': 'contractor' }
 
     def __init__(self, user):
-        if not isinstance(user, User):
-            raise ValueError('{} field on {} must be {} not {}'.format('user', self.__tablename__, User, type(user)))
         self.user = user
         self.busyness = 1
         self.rating = randint(20, 50)/10
