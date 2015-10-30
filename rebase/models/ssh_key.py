@@ -53,4 +53,4 @@ def get_fingerprint(key):
         f.write(key)
     _fingerprint =  check_output(['ssh-keygen', '-l', '-f', key_path])
     remove(key_path)
-    return _fingerprint.decode('utf-8')
+    return _fingerprint[:-1].decode('utf-8')
