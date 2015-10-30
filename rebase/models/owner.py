@@ -1,6 +1,3 @@
-from sqlalchemy.orm import validates
-
-from werkzeug.local import LocalProxy
 
 from rebase.models import (
     Role,
@@ -31,18 +28,13 @@ class Owner(Role):
     def allowed_to_be_created_by(self, user):
         if user.admin:
             return True
-        return Owner.get_all_as_owner(user, self.id).limit(100).all()
+        return Owner.as_owner(user).limit(1).first()
 
-    def allowed_to_be_modified_by(self, user):
-        return self.allowed_to_be_created_by(user)
-
-    def allowed_to_be_deleted_by(self, user):
-        return self.allowed_to_be_created_by(user)
+    allowed_to_be_modified_by = allowed_to_be_created_by
+    allowed_to_be_deleted_by  = allowed_to_be_created_by
 
     def allowed_to_be_viewed_by(self, user):
-        if user.admin:
-            return True
-        return self.query_by_user(user).limit(1).first()
+        return self.found(self, user)
 
     @classmethod
     def setup_queries(cls, models):
