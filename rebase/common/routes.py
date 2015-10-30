@@ -95,6 +95,9 @@ def register_routes(api):
     from rebase.resources.project import add_project_resource
     add_project_resource(api)
 
+    from rebase.resources.ssh_key import add_ssh_key_resource
+    add_ssh_key_resource(api)
+
     from rebase.models.github_project import GithubProject
     import rebase.views.github_project as gp_view
     add_restful_endpoint(api, GithubProject, gp_view.serializer, gp_view.deserializer, gp_view.update_deserializer)

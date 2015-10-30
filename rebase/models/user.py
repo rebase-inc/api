@@ -23,6 +23,7 @@ class User(DB.Model, PermissionMixin):
     photo =             DB.relationship('Photo', backref='user', cascade="all, delete-orphan", passive_deletes=True, uselist=False)
     admin =             DB.Column(DB.Boolean,   nullable=False, default=False)
     github_accounts =   DB.relationship('GithubAccount', backref='user', cascade='all, delete-orphan', passive_deletes=True)
+    ssh_public_keys =   DB.relationship('SSHKey', backref='user', cascade='all, delete-orphan', passive_deletes=True)
 
     __mapper_args__ = {
         'polymorphic_identity': 'user',

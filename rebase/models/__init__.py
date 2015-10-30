@@ -34,6 +34,7 @@ from rebase.models.review import *
 from rebase.models.role import *
 from rebase.models.skill_requirement import *
 from rebase.models.skill_set import *
+from rebase.models.ssh_key import *
 from rebase.models.nomination import *
 from rebase.models.talent_pool import *
 from rebase.models.term_sheet import *

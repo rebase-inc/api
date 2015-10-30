@@ -81,9 +81,8 @@ rebase-new-user () {
 # $ rebase-login you@mail.com password
 # 
 rebase-login () {
-	rebase-post \
-	"{ \"user\": {\"email\": \"$1\"}, \"password\": \"$2\"}" \
-	auth
+	export CURRENT_USER=$(rebase-post "{ \"user\": {\"email\": \"$1\"}, \"password\": \"$2\"}" auth | jq -c '.user') 
+    echo $CURRENT_USER | jq .
 }
 
 #
@@ -92,6 +91,7 @@ rebase-login () {
 ##
 rebase-logout () {
 	rebase-get auth
+    export CURRENT_USER=
 	echo
 	echo "Goodbye!"
 }
@@ -104,6 +104,17 @@ rebase-role () {
 	rebase-put \
 	"{ \"current_role\": { \"id\": \"$2\"} }" \
 	users/$1
+}
+
+#
+# Create a new SSH public key
+# 
+# example: rebase-key "My public key" "$(cat ~/.ssh/id_rsa.pub)"
+#
+rebase-key () {
+    rebase-post \
+    "{ \"user\": $CURRENT_USER, \"title\": \"$1\", \"key\": \"$2\" }" \
+    ssh_keys
 }
 
 extract_session () {
