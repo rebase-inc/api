@@ -9,6 +9,9 @@ class Project(DB.Model, PermissionMixin):
     name =              DB.Column(DB.String, nullable=False)
     organization_id =   DB.Column(DB.Integer, DB.ForeignKey('organization.id', ondelete='CASCADE'), nullable=False)
     type =              DB.Column(DB.String)
+    deploy =            DB.Column(DB.String)
+    test =              DB.Column(DB.String)
+    readme =            DB.Column(DB.String)
 
     code_repository =   DB.relationship('CodeRepository',   backref='project', cascade="all, delete-orphan", passive_deletes=True, uselist=False)
     tickets =           DB.relationship('Ticket',           backref='project', cascade="all, delete-orphan", passive_deletes=True)
