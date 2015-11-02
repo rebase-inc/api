@@ -13,18 +13,18 @@ from rebase.tests.common.code_repository import (
 class TestCodeRepositoryModel(RebaseModelTestCase):
 
     def test_create(self):
-        mock.create_one_project(self.db).code_repository
+        mock.create_one_project(self.db).work_repo
         self.db.session.commit()
 
     def test_delete(self):
-        repo = mock.create_one_project(self.db).code_repository
+        repo = mock.create_one_project(self.db).work_repo
         self.db.session.commit()
 
         self.delete_instance(repo)
         self.assertEqual(models.CodeRepository.query.get(repo.id), None)
 
     def test_delete_organization(self):
-        repo = mock.create_one_project(self.db).code_repository
+        repo = mock.create_one_project(self.db).work_repo
         self.db.session.commit()
         repo_id = repo.id
         self.db.session.delete(repo.project.organization)

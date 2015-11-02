@@ -6,7 +6,6 @@ from rebase.common.database import get_or_make_object, SecureNestedField
 class CodeRepositorySchema(RebaseSchema):
     id =   fields.Integer()
     url =  fields.String()
-    project = SecureNestedField('ProjectSchema', only=('id',), default=None)
 
     def make_object(self, data):
         from rebase.models import CodeRepository

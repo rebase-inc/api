@@ -10,9 +10,5 @@ class InternalProject(RemoteProject):
 
     __mapper_args__ = { 'polymorphic_identity': 'internal_project' }
 
-    def __init__(self, organization, name):
-        super().__init__(organization, name)
-        self.imported = True
-
     def __repr__(self):
         return '<InternalProject[id:{} "{}"]>'.format(self.id, self.name)

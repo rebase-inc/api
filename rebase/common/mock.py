@@ -100,26 +100,23 @@ def create_one_remote_work_history(db, contractor=None):
     return remote_work_history
 
 def create_one_project(db, organization=None, project_name=None):
-    from rebase.models import Organization, InternalProject, CodeRepository
+    from rebase.models import Organization, InternalProject
     organization = organization or create_one_organization(db)
     project = InternalProject(organization, project_name or pick_a_word().capitalize()+' Project')
-    code_repo = CodeRepository(project)
-    db.session.add(code_repo)
+    db.session.add(project)
     return project
 
 def create_one_remote_project(db, organization=None, project_name=None):
-    from rebase.models import RemoteProject, CodeRepository
+    from rebase.models import RemoteProject
     organization = organization or create_one_organization(db)
     remote_project = RemoteProject(organization, project_name or pick_a_word().capitalize()+' Project')
-    code_repo = CodeRepository(remote_project)
-    db.session.add(code_repo)
+    db.session.add(remote_project)
     return remote_project
 
 def create_one_github_project(db, organization=None, project_name=None):
-    from rebase.models import Organization, GithubProject, CodeRepository
+    from rebase.models import Organization, GithubProject
     organization = organization or create_one_organization(db)
     github_project = GithubProject(organization, project_name or pick_a_word().capitalize()+' Project')
-    code_repo = CodeRepository(github_project)
     db.session.add(github_project)
     return github_project
 

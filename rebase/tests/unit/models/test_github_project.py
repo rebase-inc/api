@@ -14,14 +14,14 @@ class TestGithubProjectModel(RebaseModelTestCase):
         self.db.session.commit()
 
         self.assertEqual(github_project.name, 'api')
-        self.assertNotEqual(github_project.code_repository, None)
+        self.assertNotEqual(github_project.work_repo, None)
 
     def test_delete(self):
         github_project = mock.create_one_github_project(self.db, project_name='api')
         self.db.session.commit()
 
         org_id = github_project.organization.id
-        repo_id = github_project.code_repository.id
+        repo_id = (github_project.work_repo.code_repository_id, github_project.work_repo.project_id)
 
         self.assertEqual(github_project.name, 'api')
         self.assertNotEqual(github_project.code_repository, None)

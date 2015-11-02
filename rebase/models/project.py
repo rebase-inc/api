@@ -13,7 +13,7 @@ class Project(DB.Model, PermissionMixin):
     test =              DB.Column(DB.String)
     readme =            DB.Column(DB.String)
 
-    code_repository =   DB.relationship('CodeRepository',   backref='project', cascade="all, delete-orphan", passive_deletes=True, uselist=False)
+    work_repo =         DB.relationship('WorkRepo',         backref='project', cascade="all, delete-orphan", passive_deletes=False, uselist=False)
     tickets =           DB.relationship('Ticket',           backref='project', cascade="all, delete-orphan", passive_deletes=True)
     clearances =        DB.relationship('CodeClearance',    backref='project', cascade="all, delete-orphan", passive_deletes=True)
     managers =          DB.relationship('Manager',          backref='project', cascade='all, delete-orphan', passive_deletes=False)
@@ -24,9 +24,10 @@ class Project(DB.Model, PermissionMixin):
     }
 
     def __init__(self, organization, name):
-        from rebase.models.manager import Manager
+        from rebase.models import Manager, WorkRepo
         self.name = name
         self.organization = organization
+        self.work_repo = WorkRepo(self)
         for owner in organization.owners:
             Manager(owner.user, self)
 

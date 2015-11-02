@@ -3,7 +3,7 @@ from rebase.common.database import DB, PermissionMixin
 class CodeRepository(DB.Model, PermissionMixin):
     __pluralname__ = 'code_repositories'
 
-    id =   DB.Column(DB.Integer, DB.ForeignKey('project.id', ondelete='CASCADE'), primary_key=True)
+    id =   DB.Column(DB.Integer, primary_key=True)
     type = DB.Column(DB.String)
     url =  DB.Column(DB.String, nullable=True)
 
@@ -12,8 +12,7 @@ class CodeRepository(DB.Model, PermissionMixin):
         'polymorphic_on': type
     }
 
-    def __init__(self, project, url=None):
-        self.project = project
+    def __init__(self, url):
         self.url = url
 
     @classmethod
@@ -41,7 +40,7 @@ class CodeRepository(DB.Model, PermissionMixin):
     allowed_to_be_deleted_by = allowed_to_be_created_by
 
     def allowed_to_be_viewed_by(self, user):
-        return self.project.allowed_to_be_viewed_by(user)
+        return self.found(self, user)
 
     def __repr__(self):
         return '<CodeRepository[id:{}]>'.format(self.id)
