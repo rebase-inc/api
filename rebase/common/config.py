@@ -19,6 +19,7 @@ class Config(object):
     LOG_FILE = '/tmp/rebase_web.log'
     UPLOAD_FOLDER = path.expanduser('~/uploads/')
     MAX_CONTENT_LENGTH = 1024 * 1024
+    WORK_REPOS_HOST = 'git.joinrebase.com'
 
 
 class ProductionConfig(Config):
@@ -40,8 +41,10 @@ class DevelopmentConfig(Config):
     FLASK_LOGIN_SESSION_PROTECTION = "basic"
     NOMINATE_ALL_CONTRACTORS = True
     SEND_FILE_MAX_AGE_DEFAULT = 0
+    WORK_REPOS_HOST = 'localhost'
 
 
 class TestingConfig(Config):
     TESTING = True
     FLASK_LOGIN_SESSION_PROTECTION = "basic"
+    WORK_REPOS_HOST = 'localhost'

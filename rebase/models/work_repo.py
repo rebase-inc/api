@@ -1,3 +1,5 @@
+from flask.ext.login import current_app
+
 from rebase.common.database import DB
 from rebase.models.code_repository import CodeRepository
 
@@ -11,7 +13,7 @@ class WorkRepo(CodeRepository):
 
     def __init__(self, project):
         self.project = project
-        super().__init__('/'.join([self.project.organization.name, self.project.name]))
+        super().__init__('/'.join([current_app.config['WORK_REPOS_HOST'], self.project.organization.name, self.project.name]))
 
     @classmethod
     def setup_queries(cls, models):

@@ -1,6 +1,5 @@
 
 from rebase.common.database import DB
-
 from rebase.models.remote_project import RemoteProject
 
 class GithubProject(RemoteProject):
