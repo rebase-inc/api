@@ -54,7 +54,15 @@ rebase-rm () {
 # rebase-post "{\"first_name\": \"$1\", \"last_name\":\"$2\", \"email\":\"$3\", \"password\":\"$4\"}" users
 #
 rebase-post () {
-	rebase-curl POST "$1" $2
+	curl \
+	-L \
+	-b $REBASE_COOKIE_JAR \
+	-c $REBASE_COOKIE_JAR \
+	-H "Content-Type: application/json" \
+    -H 'Accept: application/json' \
+	-X POST \
+	--data-binary "$1" \
+	 $REBASE_HOST/$2
 }
 
 #

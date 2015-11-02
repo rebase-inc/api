@@ -1,11 +1,16 @@
 from functools import wraps
 
-from flask import redirect, url_for, session, request, jsonify, current_app
+from flask import redirect, url_for, request, jsonify, current_app
 from flask.ext.login import login_required, current_user
 
 from rebase.common.database import DB
 from rebase.github import create_github_app
-from rebase.github.scanners import import_github_repos, make_session, extract_repos_info
+from rebase.github.languages import detect_languages
+from rebase.github.scanners import (
+    import_github_repos,
+    make_session,
+    extract_repos_info,
+)
 from rebase.models.contractor import Contractor
 from rebase.models.github_account import GithubAccount
 from rebase.models.remote_work_history import RemoteWorkHistory
@@ -21,42 +26,23 @@ def save_access_token(github_user, logged_in_user, access_token, db):
     github_account.access_token = access_token
     db.session.add(github_account)
     db.session.commit()
+    current_app.default_queue.enqueue(detect_languages, github_account.id)
 
 def register_github_routes(app):
 
     github = create_github_app(app)
 
-    def github_oauth(fn):
-        @wraps(fn)
-        def _oauthed_fn(*args, **kwargs):
-            if 'github_token' in session:
-                return fn(*args, **kwargs)
-            return github.authorize(callback=url_for('github_authorized', _external=True))
-        return _oauthed_fn
-
     @app.route('/github')
     @login_required
-    @github_oauth
     def github_root():
-        github_user = github.get('user').data
-        app.logger.info('Found github user: {}', github_user)
-        return redirect('/app/app.html')
+        return github.authorize(callback=url_for('github_authorized', _external=True))
 
     @app.route('/github/verify')
     @login_required
     def verify_all_github_tokens():
-        github_accounts = GithubAccount.query.all()
-        for account in github_accounts:
-            app.logger.debug('Verifying account for '+account.login)
-            token = (account.auth_token, '')
-            app.logger.debug('token: '+account.auth_token)
-            github = create_github_app(app)
-            @github.tokengetter
-            def get_github_oauth_token():
-                return token
-            user = github.get('/user').data
-            app.logger.debug(user)
-
+        for account in current_user.github_accounts:
+            app.logger.debug('Verifying Github account '+account.login)
+            make_session(account, current_app, current_user, DB)
         return jsonify({'success':'complete'})
 
     @app.route('/github/login')
@@ -82,14 +68,12 @@ def register_github_routes(app):
         elif 'error' in resp:
             if resp['error'] == 'bad_verification_code':
                 return redirect(url_for('github_login'))
-        session['github_token'] = (resp['access_token'], '')
+        @github.tokengetter
+        def get_github_oauth_token():
+            return (resp['access_token'], '')
         github_user = github.get('user').data
         save_access_token(github_user, current_user, resp['access_token'], DB)
         return redirect('/app/app.html')
-
-    @github.tokengetter
-    def get_github_oauth_token():
-        return session.get('github_token')
 
     @app.route('/github/import_repos', methods=['POST'])
     @login_required
@@ -103,4 +87,11 @@ def register_github_routes(app):
         account = GithubAccount.query.get_or_404(github_account_id)
         session = make_session(account, current_app, current_user, DB)
         return jsonify({ 'repos': extract_repos_info(session) })
+
+    @app.route('/github/analyze_skills')
+    @login_required
+    def _analyze_skills():
+        for account in current_user.github_accounts:
+            current_app.default_queue.enqueue(detect_languages, account.id)
+        return jsonify({'status':'Skills detection started'})
 

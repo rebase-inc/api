@@ -17,6 +17,7 @@ from rebase.models.debit import *
 from rebase.models.feedback import *
 from rebase.models.github_project import *
 from rebase.models.github_account import *
+from rebase.models.github_contributed_repo import *
 from rebase.models.github_repository import *
 from rebase.models.github_organization import *
 from rebase.models.github_org_account import *
