@@ -294,7 +294,7 @@ class DeveloperUserStory(object):
         user_ted = create_one_user(db, 'Ted', 'Crisp', 'tedcrisp@joinrebase.com')
         org_veridian = create_one_organization(db, 'veridian', user_ted)
         project_matchmaker = create_one_project(db, org_veridian, 'matchmaker')
-        manager_ted = create_one_manager(db, user_ted, project_matchmaker)
+        manager_ted = project_matchmaker.managers[0]
         the_tickets = [create_one_internal_ticket(db, fake_ticket, project=project_matchmaker) for fake_ticket in FAKE_TICKETS]
         for ticket in the_tickets:
             for fake_comment in FAKE_COMMENTS:
@@ -328,7 +328,7 @@ class ManagerUserStory(object):
             skill_sets.append(SkillSet(contractor, {skill: uniform(min(0.0, approx_skill - 0.2), min(1.0, approx_skill, + 0.2)) for skill in skills}))
         organization = create_one_organization(db, 'Parks and Recreation', self.user)
         project = create_one_project(db, organization, 'Lot 48')
-        mgr = create_one_manager(db, user=self.user, project=project)
+        mgr = project.managers[0]
         the_tickets = [create_one_internal_ticket(db, fake_ticket + ' (AUCTIONED)', project=project) for fake_ticket in FAKE_TICKETS]
         skill_reqs = []
         for ticket in the_tickets:
