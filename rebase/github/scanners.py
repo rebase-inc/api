@@ -1,9 +1,9 @@
+from copy import copy
 from datetime import datetime
 from functools import lru_cache
 from subprocess import call, check_call
 
 from flask import current_app
-from sqlalchemy import and_
 from sqlalchemy.orm.collections import InstrumentedList
 
 from rebase.github.session import GithubSession, make_session, make_admin_github_session
@@ -42,12 +42,7 @@ def extract_repos_info(session):
                     importable.append(repo)
                 else:
                     # this repo already exists, so is this user a manager for the repo already?
-                    mgr = Manager.query.filter(
-                        and_(
-                            Manager.user==session.user,
-                            Manager.project==_repo.project
-                        )
-                    ).first()
+                    mgr = Manager.query.filter_by(user_id=session.user.id, project_id=_repo.project.id).first()
                     if not mgr:
                         importable.append(repo)
     return importable
@@ -141,11 +136,9 @@ def import_github_repos(repos, user, db_session):
                 rebase_org = GithubOrganization(org['login'], user, org['id'], org['url'], org['description'])
                 project_account = GithubOrgAccount(rebase_org, github_account)
                 db_session.add(project_account)
-            rebase_project = GithubProject(rebase_org, repo['name'])
-            rebase_repo = GithubRepository(rebase_project, repo['name'], repo['id'], repo['url'], repo['description'])
-            new_mgr = Manager(user, rebase_project)
-            db_session.add(rebase_repo)
-            new_mgr_roles.append(new_mgr)
+            rebase_project = GithubProject(rebase_org, repo['name'], repo['id'], repo['url'], repo['description'])
+            db_session.add(rebase_project)
+            new_mgr_roles.append(rebase_project.managers[0])
     db_session.commit()
     for role in new_mgr_roles:
         current_app.default_queue.enqueue(import_tickets, role.project.id, role.project.organization.accounts[0].account.id)
@@ -156,24 +149,29 @@ class SSH(object):
     def __init__(self, user, host):
         self.user = user
         self.host = host
-        self.prefix_args = ['ssh', self.user+'@'+self.host]
+        self.prefix_args = ('ssh', self.user+'@'+self.host)
 
-    def __call__(self, *args, check=True):
-        cmd = copy(self.prefix_args).extend(args)
+    def __call__(self, cmd, check=True, **kwargs):
+        _cmd = list(self.prefix_args)
+        _cmd.extend(cmd)
+        print('Executing: {}'.format(_cmd))
         if check:
-            check_call(cmd)
+            check_call(_cmd, **kwargs)
         else:
-            return call(cmd)
+            return call(_cmd, **kwargs)
 
 def create_work_repo(project_id, account_id):
     session = make_admin_github_session(account_id)
+    config = session.api.oauth.app.config
     project = GithubProject.query.get_or_404(project_id)
     if not project:
         return 'Unknow project with id: {}'.format(project_id)
-    ssh = SSH('git', session.api.config['WORK_REPOS_HOST'])
-    repo_relative_path = '/'.join([project.organization.name, project.name])
-    if ssh(['ls', repo_relative_path], check=False) != 0:
-        return 'Repo already exists'
-    ssh(['git', 'init', '/'.join([session.api.config['WORK_REPOS_ROOT'], repo_relative_path])])
-    oauth_url = project.work_repo.url.replace('https://github.com', 'https://'+token+'@github.com', 1)
-    ssh(['git', 'pull', oauth_url])
+    ssh = SSH('git', config['WORK_REPOS_HOST'])
+    repo_full_path = '/'.join([config['WORK_REPOS_ROOT'], project.work_repo.url])
+    if ssh(['ls', repo_full_path], check=False) == 0:
+        #return 'Repo already exists, skipping.'
+        ssh(['rm', '-rf', repo_full_path])
+    ssh(['git', 'init', repo_full_path])
+    oauth_url = project.remote_repo.url.replace('https://api.github.com', 'https://'+session.account.access_token+'@github.com', 1)
+    oauth_url = oauth_url.replace('github.com/repos', 'github.com', 1)
+    ssh(['git', '-C', repo_full_path, 'pull', oauth_url])

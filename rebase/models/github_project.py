@@ -11,5 +11,10 @@ class GithubProject(RemoteProject):
     
     __mapper_args__ = { 'polymorphic_identity': 'github_project' }
 
+    def __init__(self, organization, name, repo_id, repo_url, repo_description):
+        from rebase.models.github_repository import GithubRepository
+        super().__init__(organization, name)
+        GithubRepository(self, name, repo_id, repo_url, repo_description)
+
     def __repr__(self):
         return '<GithubProject[id:{} "{}"]>'.format(self.id, self.name)

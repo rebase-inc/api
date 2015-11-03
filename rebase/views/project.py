@@ -13,7 +13,7 @@ class ProjectSchema(RebaseSchema):
     organization =      SecureNestedField('OrganizationSchema',     only=('id','name'))
     clearances =        SecureNestedField('CodeClearanceSchema',    only=('id',), many=True)
     tickets =           SecureNestedField('TicketSchema',           only=('id',), many=True)
-    code_repository =   SecureNestedField('CodeRepositorySchema',   only=('id',))
+    work_repo =         SecureNestedField('WorkRepoSchema',         only=('id', 'url'))
     type =              fields.String()
 
     def make_object(self, data):

@@ -3,6 +3,14 @@ from flask.ext.login import current_app
 from rebase.common.database import DB
 from rebase.models.code_repository import CodeRepository
 
+chars = {
+    ord(' '): '_',
+    ord('\''): None
+}
+
+def normalize(s):
+    return s.lower().translate(chars)
+
 class WorkRepo(CodeRepository):
     __pluralname__ = 'rebase_repos'
 
@@ -13,7 +21,8 @@ class WorkRepo(CodeRepository):
 
     def __init__(self, project):
         self.project = project
-        super().__init__('/'.join([current_app.config['WORK_REPOS_HOST'], self.project.organization.name, self.project.name]))
+        url = normalize(self.project.organization.name)+'/'+ normalize(self.project.name)
+        super().__init__(url)
 
     @classmethod
     def setup_queries(cls, models):

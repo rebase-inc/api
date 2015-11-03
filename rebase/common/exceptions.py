@@ -139,6 +139,13 @@ class AlreadyBid(ClientError):
     def __init__(self, contractor, ticket_snapshot):
         super().__init__(code=409, message=self.error_message.format(contractor.user.first_name+' '+contractor.user.last_name, ticket_snapshot.title))
 
+class Forbidden(ClientError):
+    error_message = 'Access Forbidden'
+
+    def __init__(self):
+        super().__init__(code=403, message=self.error_message)
+
+
 @contextmanager
 def marshmallow_exceptions(data=None):
     try:
