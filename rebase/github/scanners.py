@@ -1,5 +1,6 @@
 from datetime import datetime
 from functools import lru_cache
+from subprocess import call, check_call
 
 from flask import current_app
 from sqlalchemy import and_
@@ -68,7 +69,7 @@ def get_or_make_user(session, user_id, user_login):
 
 def import_tickets(project_id, account_id):
     session = make_admin_github_session(account_id)
-    project = GithubProject.query.filter(GithubProject.id==project_id).first()
+    project = GithubProject.query.get_or_404(project_id)
     if not project:
         return 'Unknow project with id: {}'.format(project_id)
     repo_url = '/repos/{owner}/{repo}'.format(
@@ -148,5 +149,31 @@ def import_github_repos(repos, user, db_session):
     db_session.commit()
     for role in new_mgr_roles:
         current_app.default_queue.enqueue(import_tickets, role.project.id, role.project.organization.accounts[0].account.id)
+        current_app.default_queue.enqueue(create_work_repo, role.project.id, role.project.organization.accounts[0].account.id)
     return mgr_serializer.dump(new_mgr_roles, many=True).data
 
+class SSH(object):
+    def __init__(self, user, host):
+        self.user = user
+        self.host = host
+        self.prefix_args = ['ssh', self.user+'@'+self.host]
+
+    def __call__(self, *args, check=True):
+        cmd = copy(self.prefix_args).extend(args)
+        if check:
+            check_call(cmd)
+        else:
+            return call(cmd)
+
+def create_work_repo(project_id, account_id):
+    session = make_admin_github_session(account_id)
+    project = GithubProject.query.get_or_404(project_id)
+    if not project:
+        return 'Unknow project with id: {}'.format(project_id)
+    ssh = SSH('git', session.api.config['WORK_REPOS_HOST'])
+    repo_relative_path = '/'.join([project.organization.name, project.name])
+    if ssh(['ls', repo_relative_path], check=False) != 0:
+        return 'Repo already exists'
+    ssh(['git', 'init', '/'.join([session.api.config['WORK_REPOS_ROOT'], repo_relative_path])])
+    oauth_url = project.work_repo.url.replace('https://github.com', 'https://'+token+'@github.com', 1)
+    ssh(['git', 'pull', oauth_url])
