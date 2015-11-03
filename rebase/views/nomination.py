@@ -11,7 +11,7 @@ class NominationSchema(RebaseSchema):
     job_fit =    SecureNestedField('JobFitSchema',       only=('contractor_id', 'ticket_set_id', 'score'), default=None)
     contractor = SecureNestedField('ContractorSchema',   only=('id','user', 'skill_set', 'rating'), default=None)
     ticket_set = SecureNestedField('TicketSetSchema',    only=('id', 'auction'), default=None)
-    auction =    SecureNestedField('AuctionSchema',      only=('id',), default=None)
+    auction =    SecureNestedField('AuctionSchema',      only=('id','bids'), default=None)
 
     def make_object(self, data):
         return get_or_make_object(Nomination, data)
