@@ -186,7 +186,7 @@ class PermissionMixin(object):
         '''
         if user.admin:
             return True
-        return self.query_by_user(user).filter(cls.id==self.id).limit(1).first()
+        return self in self.query_by_user(user)
 
     @classmethod
     def setup_queries(cls, _):

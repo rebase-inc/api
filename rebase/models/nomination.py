@@ -44,39 +44,37 @@ class Nomination(DB.Model, PermissionMixin):
             ticket_matches.append(ticket_match)
         job_fits = JobFit(self, ticket_matches)
 
+    @classmethod
+    def setup_queries(cls, models):
+        cls.as_contractor_path = [
+            models.Contractor
+        ]
+        cls.as_manager_path = [
+            models.TicketSet,
+            models.BidLimit,
+            models.TicketSnapshot,
+            models.Ticket,
+            models.Project,
+            models.Manager
+        ]
+        cls.as_owner_path = [
+            models.TicketSet,
+            models.BidLimit,
+            models.TicketSnapshot,
+            models.Ticket,
+            models.Project,
+            models.Organization,
+            models.Owner
+        ]
+
     def allowed_to_be_created_by(self, user):
-        return True
-        if user.is_admin():
-            return True
-        organization_id = self.ticket_set.bid_limits[0].ticket_snapshot.ticket.organization.id
-        return bool(organization_id in user.manager_for_projects)
+        return self.ticket_set.allowed_to_be_created_by(user)
 
-    def allowed_to_be_modified_by(self, user):
-        return self.allowed_to_be_created_by(user)
-
-    def allowed_to_be_deleted_by(self, user):
-        return self.allowed_to_be_created_by(user)
+    allowed_to_be_modified_by = allowed_to_be_created_by
+    allowed_to_be_deleted_by = allowed_to_be_created_by
 
     def allowed_to_be_viewed_by(self, user):
-        return self.allowed_to_be_created_by(user)
-
-    @classmethod
-    def query_by_user(cls, user):
-        from rebase.models import TicketSet, BidLimit, TicketSnapshot, Ticket, Project, Organization
-        query = cls.query
-        if user.is_admin():
-            return query
-        elif user.manager_for_projects:
-            query = query.join(cls.ticket_set)
-            query = query.join(TicketSet.bid_limits)
-            query = query.join(BidLimit.ticket_snapshot)
-            query = query.join(TicketSnapshot.ticket)
-            query = query.join(Ticket.project)
-            query = query.join(Project.organization)
-            query = query.filter(Organization.id.in_(user.manager_for_projects))
-            return query
-        else:
-            return query.filter(sql.false())
+        return self.found(self, user)
 
     def __repr__(self):
         return '<Nomination[contractor({}), ticket_set({})]>'.format(self.contractor_id, self.ticket_set_id)

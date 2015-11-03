@@ -1,9 +1,7 @@
 from copy import copy
-from datetime import datetime, timedelta
 from math import floor
-from unittest import skip
 
-from . import PermissionTestCase, RebaseRestTestCase
+from . import PermissionTestCase
 from rebase.common import mock
 from rebase.common.database import ids
 from rebase.common.profile import profiling

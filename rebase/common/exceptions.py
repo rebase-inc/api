@@ -101,6 +101,12 @@ class UnknownRole(ServerError):
         super().__init__(message=UnknownRole.error_message.format(role))
 
 
+class InvalidGithubAccessToken(ServerError):
+    error_message = 'Invalid Github Access Token for {} for Github login: {}'
+    def __init__(self, user, login):
+        super().__init__(message=self.error_message.format(user, login))
+
+
 class QueryPathUndefined(TypeError):
     path_field_name = None
     error_message = 'You need to provide a valid list for {}.{}'
@@ -126,6 +132,12 @@ class BadBid(ClientError):
     error_message = 'bid didnt match expected tickets! we needed {} but got {}'
     def __init__(self, required_tickets, bid_tickets):
         super().__init__(message=self.error_message.format(required_tickets, bid_tickets))
+
+class AlreadyBid(ClientError):
+    error_message = 'Contractor "{}" already bid for Ticket "{}"'
+    
+    def __init__(self, contractor, ticket_snapshot):
+        super().__init__(code=409, message=self.error_message.format(contractor.user.first_name+' '+contractor.user.last_name, ticket_snapshot.title))
 
 @contextmanager
 def marshmallow_exceptions(data=None):
