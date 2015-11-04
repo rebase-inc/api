@@ -23,8 +23,10 @@ class GithubSession(object):
 
     def verify(self):
         '''
-        Raises rebase.common.exceptions.InvalidGithubAccessToken if the access_token for this account is no longer valid,
-        otherwise returns immediately.
+        If the access_token for this account is no longer valid, verify will:
+        1/ delete the GithubAccount for this user
+        2/ raises rebase.common.exceptions.InvalidGithubAccessToken
+        Otherwise it will return immediately.
         '''
         response = get(
             self.api.base_url+'applications/{client_id}/tokens/{access_token}'.format(

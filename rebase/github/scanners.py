@@ -1,11 +1,10 @@
-from copy import copy
 from datetime import datetime
 from functools import lru_cache
-from subprocess import call, check_call
 
 from flask import current_app
 from sqlalchemy.orm.collections import InstrumentedList
 
+from rebase.common.ssh import SSH
 from rebase.github.session import GithubSession, make_session, make_admin_github_session
 from rebase.models import (
     Comment,
@@ -114,6 +113,7 @@ def import_tickets(project_id, account_id):
 
 def import_github_repos(repos, user, db_session):
     new_mgr_roles = []
+    new_projects = []
     for repo_id, repo in repos.items():
         github_account = GithubAccount.query.filter(GithubAccount.id==repo['github_account_id']).first()
         if not github_account:
@@ -139,26 +139,13 @@ def import_github_repos(repos, user, db_session):
             rebase_project = GithubProject(rebase_org, repo['name'], repo['id'], repo['url'], repo['description'])
             db_session.add(rebase_project)
             new_mgr_roles.append(rebase_project.managers[0])
+            new_projects.append(rebase_project)
     db_session.commit()
     for role in new_mgr_roles:
         current_app.default_queue.enqueue(import_tickets, role.project.id, role.project.organization.accounts[0].account.id)
-        current_app.default_queue.enqueue(create_work_repo, role.project.id, role.project.organization.accounts[0].account.id)
+    for project in new_projects:
+        current_app.default_queue.enqueue(create_work_repo, project.id, project.organization.accounts[0].account.id)
     return mgr_serializer.dump(new_mgr_roles, many=True).data
-
-class SSH(object):
-    def __init__(self, user, host):
-        self.user = user
-        self.host = host
-        self.prefix_args = ('ssh', self.user+'@'+self.host)
-
-    def __call__(self, cmd, check=True, **kwargs):
-        _cmd = list(self.prefix_args)
-        _cmd.extend(cmd)
-        print('Executing: {}'.format(_cmd))
-        if check:
-            check_call(_cmd, **kwargs)
-        else:
-            return call(_cmd, **kwargs)
 
 def create_work_repo(project_id, account_id):
     session = make_admin_github_session(account_id)
