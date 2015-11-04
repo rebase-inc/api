@@ -19,8 +19,10 @@ class Config(object):
     LOG_FILE = '/tmp/rebase_web.log'
     UPLOAD_FOLDER = path.expanduser('~/uploads/')
     MAX_CONTENT_LENGTH = 1024 * 1024
-    WORK_REPOS_HOST = 'ec2-52-21-45-203.compute-1.amazonaws.com'
+    WORK_REPOS_HOST = 'git-rebase-origin'
     WORK_REPOS_ROOT = '/git'
+    TMP_KEYS = '/tmp/authorized_keys'
+    SSH_AUTHORIZED_KEYS = '.ssh/authorized_keys2'
 
 
 class ProductionConfig(Config):

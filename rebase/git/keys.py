@@ -1,15 +1,16 @@
+from subprocess import check_call
+
+from rebase import create_app
 from rebase.models.ssh_key import SSHKey
 
-tmp_keys='/tmp/authorized_keys'
+
+one_line = 'environment="REBASE_USER={user_id}" {key}\n'.format
+destination = '{host}:{path}'.format
 
 def generate_authorized_keys():
-    from rebase import create_app
-    app, _, db = create_app()
+    app, _, _ = create_app()
+    tmp_keys = app.config['TMP_KEYS']
     with open(tmp_keys, 'w') as authorized_keys:
-        keys = SSHKey.query.all()
-        for ssh_key in keys:
-            line = 'environment="REBASE_USER={user_id}" {key}\n'.format(
-                user_id=ssh_key.user.id,
-                key=ssh_key.key
-            )
-            authorized_keys.write(line)
+        for ssh_key in SSHKey.query.all():
+            authorized_keys.write(one_line(ssh_key.user.id, ssh_key.key))
+    check_call(['scp', tmp_keys, destination(app.config['WORK_REPOS_HOST'], app.config['SSH_AUTHORIZED_KEYS']) ])

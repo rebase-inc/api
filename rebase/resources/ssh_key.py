@@ -22,7 +22,7 @@ BaseSSHKeyCollection = RestfulCollection(
     ssh_key_views.deserializer,
 )
 
-def regenerate_git_server_authorized_keys(verb):
+def update_authorized_keys(verb):
     @wraps(verb)
     def _trigger_rq_task(*args, **kwargs):
         response = verb(*args, **kwargs)
@@ -31,17 +31,17 @@ def regenerate_git_server_authorized_keys(verb):
     return _trigger_rq_task
 
 class SSHKeyResource(BaseSSHKeyResource):
-    @regenerate_git_server_authorized_keys
+    @update_authorized_keys
     def put(self, id):
         return super().put(id)
 
-    @regenerate_git_server_authorized_keys
+    @update_authorized_keys
     def delete(self, id):
         return super().delete(id)
 
 
 class SSHKeyCollection(BaseSSHKeyCollection):
-    @regenerate_git_server_authorized_keys
+    @update_authorized_keys
     def post(self):
         return super().post()
 
