@@ -5,6 +5,7 @@ from flask import current_app
 from sqlalchemy.orm.collections import InstrumentedList
 
 from rebase.common.ssh import SSH
+from rebase.git.users import generate_authorized_users
 from rebase.github.session import GithubSession, make_session, make_admin_github_session
 from rebase.models import (
     Comment,
@@ -141,10 +142,11 @@ def import_github_repos(repos, user, db_session):
             new_mgr_roles.append(rebase_project.managers[0])
             new_projects.append(rebase_project)
     db_session.commit()
-    for role in new_mgr_roles:
-        current_app.default_queue.enqueue(import_tickets, role.project.id, role.project.organization.accounts[0].account.id)
     for project in new_projects:
+        current_app.default_queue.enqueue(import_tickets, project.id, project.organization.accounts[0].account.id)
         current_app.default_queue.enqueue(create_work_repo, project.id, project.organization.accounts[0].account.id)
+    for role in new_mgr_roles:
+        current_app.git_queue.enqueue(generate_authorized_users, role.project.id)
     return mgr_serializer.dump(new_mgr_roles, many=True).data
 
 def create_work_repo(project_id, account_id):
@@ -154,7 +156,7 @@ def create_work_repo(project_id, account_id):
     if not project:
         return 'Unknow project with id: {}'.format(project_id)
     ssh = SSH('git', config['WORK_REPOS_HOST'])
-    repo_full_path = '/'.join([config['WORK_REPOS_ROOT'], project.work_repo.url])
+    repo_full_path = join(config['WORK_REPOS_ROOT'], project.work_repo.url)
     if ssh(['ls', repo_full_path], check=False) == 0:
         #return 'Repo already exists, skipping.'
         ssh(['rm', '-rf', repo_full_path])

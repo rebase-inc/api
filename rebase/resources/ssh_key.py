@@ -21,8 +21,8 @@ BaseSSHKeyCollection = RestfulCollection(
 )
 
 class SSHKeyResource(BaseSSHKeyResource):
-    put = enqueue(generate_authorized_keys)(BaseSSHKeyCollection.put)
-    delete = enqueue(generate_authorized_keys)(BaseSSHKeyCollection.delete)
+    put = enqueue(generate_authorized_keys)(BaseSSHKeyResource.put)
+    delete = enqueue(generate_authorized_keys)(BaseSSHKeyResource.delete)
 
 
 class SSHKeyCollection(BaseSSHKeyCollection):

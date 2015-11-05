@@ -15,26 +15,18 @@ BaseManagerResource = RestfulResource(
     manager_views.update_deserializer
 )
 
-BaseManagerCollection = RestfulCollection(
+ManagerCollection = RestfulCollection(
     Manager,
     manager_views.serializer,
     manager_views.deserializer,
 )
 
 class ManagerResource(BaseManagerResource):
-    def put(self, id):
-        return super().put(id=id)
-
     def delete(self, id):
         project_id = Manager.query.get_or_404(id).project.id
-        response = super().delete(id)
+        response = super().delete(id=id)
         current_app.git_queue.enqueue(generate_authorized_users, project_id)
         return response
-
-
-class ManagerCollection(BaseManagerCollection):
-    def post(self):
-        return super().post()
 
 
 def add_manager_resource(api):
