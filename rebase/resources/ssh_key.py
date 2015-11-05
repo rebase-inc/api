@@ -1,11 +1,9 @@
-from functools import wraps
-
-from flask import current_app
 
 from rebase.common.database import make_collection_url, make_resource_url
 from rebase.models import SSHKey
 from rebase.resources import RestfulResource, RestfulCollection
 from rebase.git.keys import generate_authorized_keys
+from rebase.git.queue import enqueue
 import rebase.views.ssh_key as ssh_key_views
 
 
@@ -22,28 +20,13 @@ BaseSSHKeyCollection = RestfulCollection(
     ssh_key_views.deserializer,
 )
 
-def update_authorized_keys(verb):
-    @wraps(verb)
-    def _trigger_rq_task(*args, **kwargs):
-        response = verb(*args, **kwargs)
-        current_app.git_queue.enqueue(generate_authorized_keys)
-        return response
-    return _trigger_rq_task
-
 class SSHKeyResource(BaseSSHKeyResource):
-    @update_authorized_keys
-    def put(self, id):
-        return super().put(id)
-
-    @update_authorized_keys
-    def delete(self, id):
-        return super().delete(id)
+    put = enqueue(generate_authorized_keys)(BaseSSHKeyCollection.put)
+    delete = enqueue(generate_authorized_keys)(BaseSSHKeyCollection.delete)
 
 
 class SSHKeyCollection(BaseSSHKeyCollection):
-    @update_authorized_keys
-    def post(self):
-        return super().post()
+    post = enqueue(generate_authorized_keys)(BaseSSHKeyCollection.post)
 
 
 def add_ssh_key_resource(api):

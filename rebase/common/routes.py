@@ -80,9 +80,8 @@ def register_routes(api):
     import rebase.views.organization as o_view
     add_restful_endpoint(api, Organization, o_view.serializer, o_view.deserializer, o_view.update_deserializer)
 
-    from rebase.models.manager import Manager
-    import rebase.views.manager as m_view
-    add_restful_endpoint(api, Manager, m_view.serializer, m_view.deserializer, m_view.update_deserializer)
+    from rebase.resources.manager import add_manager_resource
+    add_manager_resource(api)
 
     from rebase.models.work import Work
     import rebase.views.work as w_view
