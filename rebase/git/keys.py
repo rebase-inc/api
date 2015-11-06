@@ -4,7 +4,7 @@ from rebase import create_app
 from rebase.models.ssh_key import SSHKey
 
 
-one_line = 'environment="REBASE_USER={user_id}" {key}\n'.format
+one_line = 'command="filter {user_id} $SSH_ORIGIINAL_COMMAND" {key}\n'.format
 destination = 'git@{host}:{path}'.format
 
 def generate_authorized_keys():
