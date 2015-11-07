@@ -13,13 +13,13 @@ from subprocess import call
 from sys import argv, exit
 
 class ExitCode(object):
-    MissingArguments,
-    InvalidGitDirectoryTooShort,
-    InvalidGitDirectoryRoot,
-    InvalidCommand,
-    GitDirDoesNotExist,
-    MissingAuthorizedUsersFile,
-    UnauthorizedUser = range(1,7)
+    MissingArguments = 1
+    InvalidGitDirectoryTooShort = 2
+    InvalidGitDirectoryRoot = 3
+    InvalidCommand = 4
+    GitDirDoesNotExist = 5
+    MissingAuthorizedUsersFile = 6
+    UnauthorizedUser = 7
 
 
 valid_commands = ['git-receive-pack', 'git-upload-archive', 'git-upload-pack']

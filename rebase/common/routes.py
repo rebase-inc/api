@@ -97,6 +97,12 @@ def register_routes(api):
     from rebase.resources.ssh_key import add_ssh_key_resource
     add_ssh_key_resource(api)
 
+    from rebase.resources.nomination import add_nomination_resource
+    add_nomination_resource(api)
+
+    from rebase.resources.code_clearance import add_code_clearance_resource
+    add_code_clearance_resource(api)
+
     from rebase.models.github_project import GithubProject
     import rebase.views.github_project as gp_view
     add_restful_endpoint(api, GithubProject, gp_view.serializer, gp_view.deserializer, gp_view.update_deserializer)
@@ -145,10 +151,6 @@ def register_routes(api):
     import rebase.views.ticket_match as tm_view
     add_restful_endpoint(api, TicketMatch, tm_view.serializer, tm_view.deserializer, tm_view.update_deserializer)
 
-    from rebase.models.nomination import Nomination
-    import rebase.views.nomination as n_view
-    add_restful_endpoint(api, Nomination, n_view.serializer, n_view.deserializer, n_view.update_deserializer)
-
     from rebase.models.remote_work_history import RemoteWorkHistory
     import rebase.views.remote_work_history as rwh_view
     add_restful_endpoint(api, RemoteWorkHistory, rwh_view.serializer, rwh_view.deserializer, rwh_view.update_deserializer)
@@ -160,10 +162,6 @@ def register_routes(api):
     from rebase.models.remote_ticket import RemoteTicket
     import rebase.views.remote_ticket as rt_view
     add_restful_endpoint(api, RemoteTicket, rt_view.serializer, rt_view.deserializer, rt_view.update_deserializer)
-
-    from rebase.models.code_clearance import CodeClearance
-    import rebase.views.code_clearance as cc_view
-    add_restful_endpoint(api, CodeClearance, cc_view.serializer, cc_view.deserializer, cc_view.update_deserializer)
 
     from rebase.models.skill_set import SkillSet
     import rebase.views.skill_set as ss_view

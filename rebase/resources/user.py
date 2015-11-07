@@ -27,6 +27,17 @@ class UserCollection(Resource):
     def post(self):
         return add_to_collection(self.model, self.deserializer, self.serializer)
 
+def update_current_role(user):
+    if user == current_user:
+        role_id = str(user.current_role.id)
+        session['role_id'] = role_id
+        return user
+    return user
+
+resource_handlers = {
+    'pre_serialization': update_current_role,
+}
+
 class UserResource(Resource):
     model = User
     serializer = user.serializer
@@ -40,12 +51,7 @@ class UserResource(Resource):
 
     @login_required
     def put(self, id):
-        def update_current_role(user):
-            if user == current_user:
-                role_id = str(user.current_role.id)
-                session['role_id'] = role_id
-            return user
-        response = update_resource(self.model, id, self.update_deserializer, self.serializer, pre_serialization=update_current_role)
+        response = update_resource(self.model, id, self.update_deserializer, self.serializer, handlers=resource_handlers)
         response.set_cookie('role_id', session['role_id'])
         return response
 

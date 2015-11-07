@@ -10,7 +10,6 @@ from rebase.models import (
 )
 
 
-one_line = 'environment="REBASE_USER={user_id}" {key}\n'.format
 destination = 'git@{host}:{path}'.format
 
 def build_query(permission_path, project_id):

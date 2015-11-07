@@ -1,3 +1,4 @@
+from flask import current_app
 
 from rebase.common.database import make_collection_url, make_resource_url
 from rebase.models import SSHKey
@@ -7,27 +8,39 @@ from rebase.git.queue import enqueue
 import rebase.views.ssh_key as ssh_key_views
 
 
-BaseSSHKeyResource = RestfulResource(
+def update_keys(instance):
+    current_app.git_queue.enqueue(generate_authorized_keys)
+    return instance
+
+resource_handlers = {
+    'PUT': {
+        'pre_serialization': update_keys
+    },
+    'DELETE': {
+        'before_delete': update_keys
+    },
+}
+
+collection_handlers = {
+    'POST': {
+        'pre_serialization': update_keys
+    },
+}
+
+SSHKeyResource = RestfulResource(
     SSHKey,
     ssh_key_views.serializer,
     ssh_key_views.deserializer,
-    ssh_key_views.update_deserializer
+    ssh_key_views.update_deserializer,
+    handlers=resource_handlers
 )
 
-BaseSSHKeyCollection = RestfulCollection(
+SSHKeyCollection = RestfulCollection(
     SSHKey,
     ssh_key_views.serializer,
     ssh_key_views.deserializer,
+    handlers=collection_handlers
 )
-
-class SSHKeyResource(BaseSSHKeyResource):
-    put = enqueue(generate_authorized_keys)(BaseSSHKeyResource.put)
-    delete = enqueue(generate_authorized_keys)(BaseSSHKeyResource.delete)
-
-
-class SSHKeyCollection(BaseSSHKeyCollection):
-    post = enqueue(generate_authorized_keys)(BaseSSHKeyCollection.post)
-
 
 def add_ssh_key_resource(api):
     api.add_resource(SSHKeyCollection, make_collection_url(SSHKey), endpoint = SSHKey.__pluralname__)

@@ -3,16 +3,26 @@ from flask import current_app
 from rebase.common.database import make_collection_url, make_resource_url
 from rebase.models import Manager
 from rebase.resources import RestfulResource, RestfulCollection
-from rebase.git.queue import enqueue
 from rebase.git.users import generate_authorized_users
 import rebase.views.manager as manager_views
 
 
-BaseManagerResource = RestfulResource(
+def update_git_server_authorized_users(manager):
+    current_app.git_queue.enqueue(generate_authorized_users, manager.project.id)
+    return manager
+
+resource_handlers = {
+    'DELETE': {
+        'before_delete': update_git_server_authorized_users
+    },
+}
+
+ManagerResource = RestfulResource(
     Manager,
     manager_views.serializer,
     manager_views.deserializer,
-    manager_views.update_deserializer
+    manager_views.update_deserializer,
+    handlers=resource_handlers
 )
 
 ManagerCollection = RestfulCollection(
@@ -20,13 +30,6 @@ ManagerCollection = RestfulCollection(
     manager_views.serializer,
     manager_views.deserializer,
 )
-
-class ManagerResource(BaseManagerResource):
-    def delete(self, id):
-        project_id = Manager.query.get_or_404(id).project.id
-        response = super().delete(id=id)
-        current_app.git_queue.enqueue(generate_authorized_users, project_id)
-        return response
 
 
 def add_manager_resource(api):
