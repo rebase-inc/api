@@ -1,3 +1,5 @@
+
+from flask import current_app
 from sqlalchemy.orm import validates
 from sqlalchemy.ext.hybrid import hybrid_property
 
@@ -5,12 +7,14 @@ from .work_offer import WorkOffer
 from .mediation import Mediation
 from rebase.common.database import DB, PermissionMixin
 from rebase.common.state import StateMachine
+from rebase.git.repo import Repo
 
 class Work(DB.Model, PermissionMixin):
     __pluralname__ = 'works'
 
     id =    DB.Column(DB.Integer, primary_key=True)
     state = DB.Column(DB.String, nullable=False, default='in_progress')
+    branch = DB.Column(DB.String, nullable=False)
 
     debit =             DB.relationship('Debit',     backref='work', uselist=False, cascade='all, delete-orphan', passive_deletes=True)
     credit =            DB.relationship('Credit',    backref='work', uselist=False, cascade='all, delete-orphan', passive_deletes=True)
@@ -20,6 +24,10 @@ class Work(DB.Model, PermissionMixin):
 
     def __init__(self, work_offer):
         self.offer = work_offer
+        self.branch = current_app.config['WORK_BRANCH_NAME_PREFIX']+str(self.offer.ticket_snapshot.id)
+        project = self.offer.ticket_snapshot.ticket.project
+        repo = Repo(project)
+        repo.create_branch(self.branch)
 
     @classmethod
     def query_by_user(cls, user):

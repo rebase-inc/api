@@ -2,7 +2,6 @@ from datetime import datetime, timedelta
 
 from sqlalchemy.orm import validates
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy import or_, sql
 
 from rebase.common.database import DB, PermissionMixin
 from rebase.common.exceptions import NoRole, UnknownRole, BadBid
@@ -71,8 +70,6 @@ class Auction(DB.Model, PermissionMixin):
         ]
 
     def allowed_to_be_created_by(self, user):
-        if user.is_admin():
-            return True
         return self.ticket_set.bid_limits[0].ticket_snapshot.ticket.allowed_to_be_created_by(user)
 
     allowed_to_be_modified_by = allowed_to_be_created_by

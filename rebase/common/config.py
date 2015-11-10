@@ -24,6 +24,7 @@ class Config(object):
     TMP_KEYS = '/tmp/authorized_keys'
     TMP_AUTHORIZED_USERS = '/tmp/authorized_users'
     SSH_AUTHORIZED_KEYS = '.ssh/authorized_keys2'
+    WORK_BRANCH_NAME_PREFIX = 'snapshot_'
 
 
 class ProductionConfig(Config):

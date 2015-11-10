@@ -11,6 +11,7 @@ from rebase.common.database import get_or_make_object, SecureNestedField
 class WorkSchema(RebaseSchema):
     id = fields.Integer()
     state = fields.String()
+    branch = fields.String()
     review = SecureNestedField(ReviewSchema, exclude=('work',), default=None)
     mediation = SecureNestedField(MediationSchema, only=('id','state'), attribute='mediation_rounds', many=True)
     debit = SecureNestedField(DebitSchema, only='id', default=None)
@@ -46,7 +47,7 @@ class FailEventSchema(RebaseSchema):
     def make_object(self, data):
         return 'fail'
 
-serializer = WorkSchema(only=('id','state','mediation','review','debit','credit','offer'), skip_missing=True)
+serializer = WorkSchema(only=('id', 'branch', 'state','mediation','review','debit','credit','offer'), skip_missing=True)
 deserializer = WorkSchema(only=tuple())
 update_deserializer = WorkSchema(only=tuple())
 update_deserializer.make_object = lambda data: data
