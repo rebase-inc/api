@@ -1,4 +1,3 @@
-from itertools import chain
 from os import environ
 from urllib.parse import urlparse
 
@@ -12,7 +11,7 @@ git_queue = 'git'
 
 parallel_queues = ['high', 'default', 'low']
 serial_queues = [git_queue]
-all_queues = tuple(chain(parallel_queues, serial_queues))
+all_queues = parallel_queues+serial_queues
 
 def get_connection():
     redis_url = environ.get('REDIS_URL', '')
