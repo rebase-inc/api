@@ -8,13 +8,15 @@ class RoleSchema(RebaseSchema):
     type = fields.String()
 
     user = SecureNestedField('UserSchema', only=('id',))
-    project = SecureNestedField('ProjectSchema', only=('id','type','name','organization'))
+    project = SecureNestedField('ProjectSchema', only=('id','type','name','organization')) # only valid for manager roles
+    skill_set = SecureNestedField('SkillSetSchema', only=('id','skills'), default=None) # only valid for contractor roles
+    remote_work_history = SecureNestedField('RemoteWorkHistorySchema', only=('id',), default=None) # only valid for contractor roles
 
     def make_object(self, data):
         from rebase.models import Role
         return get_or_make_object(Role, data)
 
-serializer = RoleSchema(only=('id','type','user','roles'), skip_missing=True)
+serializer = RoleSchema(only=('id','type','user','roles', 'project', 'skill_set', 'remote_work_history'), skip_missing=True)
 
 deserializer = RoleSchema(only=tuple(), strict=True)
 
