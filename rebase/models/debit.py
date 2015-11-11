@@ -1,6 +1,7 @@
 from sqlalchemy.orm import validates
 
 from rebase.common.database import DB, PermissionMixin
+from rebase.common.exceptions import ServerError, ClientError
 
 class Debit(DB.Model, PermissionMixin):
     __pluralname__ = 'debits'
@@ -11,10 +12,11 @@ class Debit(DB.Model, PermissionMixin):
     work_id = DB.Column(DB.Integer, DB.ForeignKey('work.id', ondelete='CASCADE'), nullable=False)
 
     def __init__(self, work, price):
-        if not hasattr(work, 'debit'):
-            raise ValueError('work must be of a Work type')
+        from rebase.models.work import Work
+        if not isinstance(work, Work):
+            raise ServerError(message='work must be of a Work type')
         if work.debit:
-            raise ValueError('Work is already debited!')
+            raise ClientError(message='Work is already debited!')
         self.work = work
         self.price = price
 
@@ -23,22 +25,8 @@ class Debit(DB.Model, PermissionMixin):
 
     @classmethod
     def setup_queries(cls, models):
-        cls.as_owner_path = [
-            models.Work,
-            models.WorkOffer,
-            models.TicketSnapshot,
-            models.Ticket,
-            models.Project,
-            models.Organization,
-            models.Owner,
-        ]
-        cls.as_contractor_path = [
-            models.Work,
-            models.WorkOffer,
-            models.Bid,
-            models.Contractor,
-        ]
-        cls.as_manager_path = [
+        cls.filter_based_on_current_role = False
+        cls.as_owner_path = cls.as_contractor_path = cls.as_manager_path = [
             models.Work,
             models.WorkOffer,
             models.TicketSnapshot,
@@ -47,6 +35,12 @@ class Debit(DB.Model, PermissionMixin):
             models.Manager
         ]
 
+    @classmethod
+    def query_by_user(cls, user):
+        if user.is_admin():
+            return cls.query
+        return cls.role_to_query_fn(user)(user)
+
     def allowed_to_be_created_by(self, user):
         return self.work.allowed_to_be_created_by(user)
 
@@ -54,7 +48,7 @@ class Debit(DB.Model, PermissionMixin):
     allowed_to_be_modified_by = allowed_to_be_created_by
 
     def allowed_to_be_viewed_by(self, user):
-        return self.work.allowed_to_be_viewed_by(user)
+        return self.found(self, user)
 
     def __repr__(self):
         return '<Debit for {} {}>'.format(self.price, 'dollars')

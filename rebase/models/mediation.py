@@ -53,16 +53,11 @@ class Mediation(DB.Model, PermissionMixin):
     def allowed_to_be_created_by(self, user):
         return user.is_admin()
 
-    def allowed_to_be_modified_by(self, user):
-        return user.is_admin()
-
-    def allowed_to_be_deleted_by(self, user):
-        return user.is_admin()
+    allowed_to_be_modified_by = allowed_to_be_created_by
+    allowed_to_be_deleted_by = allowed_to_be_created_by
 
     def allowed_to_be_viewed_by(self, user):
-        if user.is_admin():
-            return True
-        return self.role_to_query_fn(user)(user).filter(Mediation.id==self.id).first()
+        return self.found(self, user)
 
     def __repr__(self):
         return '<Mediation[id:{}] >'.format(self.id)

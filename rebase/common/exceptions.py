@@ -1,7 +1,5 @@
 from contextlib import contextmanager
-from sys import exc_info
 
-from flask import jsonify
 import marshmallow.exceptions as marsh_exc
 from werkzeug.http import HTTP_STATUS_CODES
 
@@ -160,4 +158,3 @@ def marshmallow_exceptions(data=None):
         raise ForcedError(error, data)
     except TypeError as error:
         raise InternalTypeError(error, data)
-

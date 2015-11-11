@@ -22,6 +22,7 @@ export REBASE_COOKIE_JAR=/tmp/rebase-cookie-jar.txt
 
 rebase-curl () {
 	curl \
+    -s \
 	-L \
 	-b $REBASE_COOKIE_JAR \
 	-c $REBASE_COOKIE_JAR \

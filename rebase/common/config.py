@@ -24,7 +24,8 @@ class Config(object):
     TMP_KEYS = '/tmp/authorized_keys'
     TMP_AUTHORIZED_USERS = '/tmp/authorized_users'
     SSH_AUTHORIZED_KEYS = '.ssh/authorized_keys2'
-    WORK_BRANCH_NAME_PREFIX = 'snapshot_'
+    WORK_BRANCH_NAME = 'work_{contractor_id}_{snapshot_id}'.format
+    REVENUE_FACTOR = 1.1 # 10 % of WorkOffer price is going to us if Work is complete
 
 
 class ProductionConfig(Config):

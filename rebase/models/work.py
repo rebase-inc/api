@@ -24,48 +24,42 @@ class Work(DB.Model, PermissionMixin):
 
     def __init__(self, work_offer):
         self.offer = work_offer
-        self.branch = current_app.config['WORK_BRANCH_NAME_PREFIX']+str(self.offer.ticket_snapshot.id)
+        self.branch = current_app.config['WORK_BRANCH_NAME'](
+            contractor_id=self.offer.contractor_id,
+            snapshot_id=self.offer.ticket_snapshot_id
+        )
         project = self.offer.ticket_snapshot.ticket.project
         repo = Repo(project)
         repo.create_branch(self.branch)
 
     @classmethod
-    def query_by_user(cls, user):
-        from rebase.models import WorkOffer, Contractor, Bid, Auction, TicketSet, User
-        from rebase.models import BidLimit, TicketSnapshot, Ticket , Organization
-
-        query = cls.query
-
-        if user.is_admin():
-            return query
-
-        query_contractor = query.join(cls.offer)
-        query_contractor = query_contractor.join(WorkOffer.contractor)
-        query_contractor = query_contractor.join(Contractor.user)
-        query_contractor = query_contractor.filter(User.id == user.id)
-
-        if user.manager_for_projects:
-            query_manager = query.join(cls.offer)
-            query_manager = query_manager.join(WorkOffer.bid)
-            query_manager = query_manager.join(Bid.auction)
-            query_manager = query_manager.join(Auction.ticket_set)
-            query_manager = query_manager.join(TicketSet.bid_limits)
-            query_manager = query_manager.join(BidLimit.ticket_snapshot)
-            query_manager = query_manager.join(TicketSnapshot.ticket)
-            query_manager = query_manager.join(Ticket.organization)
-            query_manager = query_manager.filter(Organization.id.in_(user.manager_for_projects))
-            query_contractor = query_contractor.union(query_manager)
-
-        return query_contractor
+    def setup_queries(cls, models):
+        cls.as_owner_path = [
+            models.WorkOffer,
+            models.TicketSnapshot,
+            models.Ticket,
+            models.Project,
+            models.Organization,
+            models.Owner,
+        ]
+        cls.as_contractor_path = [
+            models.WorkOffer,
+            models.Bid,
+            models.Contractor,
+        ]
+        cls.as_manager_path = [
+            models.WorkOffer,
+            models.TicketSnapshot,
+            models.Ticket,
+            models.Project,
+            models.Manager
+        ]
 
     def allowed_to_be_created_by(self, user):
         return user.is_admin()
 
-    def allowed_to_be_modified_by(self, user):
-        return self.allowed_to_be_created_by(user)
-
-    def allowed_to_be_deleted_by(self, user):
-        return self.allowed_to_be_created_by(user)
+    allowed_to_be_modified_by = allowed_to_be_created_by
+    allowed_to_be_deleted_by = allowed_to_be_created_by
 
     def allowed_to_be_viewed_by(self, user):
         if user.is_admin():
@@ -114,10 +108,11 @@ class WorkStateMachine(StateMachine):
         self.work.start_mediation()
 
     def complete(self):
-        from rebase.models.review import Review
+        from rebase.models import Review, Debit, Credit
         review = Review(self.work)
         DB.session.add(review)
-        pass
+        Debit(self.work, int(self.work.offer.price*current_app.config['REVENUE_FACTOR']))
+        Credit(self.work, self.work.offer.price)
 
     def failed(self):
         pass
