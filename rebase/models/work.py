@@ -26,7 +26,7 @@ class Work(DB.Model, PermissionMixin):
         self.offer = work_offer
         self.branch = current_app.config['WORK_BRANCH_NAME'](
             contractor_id=self.offer.contractor_id,
-            snapshot_id=self.offer.ticket_snapshot_id
+            work_id=self.id
         )
         project = self.offer.ticket_snapshot.ticket.project
         repo = Repo(project)

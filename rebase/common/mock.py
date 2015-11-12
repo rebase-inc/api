@@ -8,6 +8,8 @@ from .utils import (
     pick_an_organization_name,
 )
 
+from rebase.git.repo import Repo
+
 FAKE_COMMENTS = [
     '@rapha, I\'m convinced that you were right regarding the composite primary keys being a better choice. However, in the few places where we are using composite primary keys right now, I don’t think the relationship is being properly referenced. See the SQLAlchemy documentation for proper reference of a composite foreign key.',
     'What do you mean? Is this not correct (from job_fit model)? ```__table_args__ = ( DB.ForeignKeyConstraint( [contractor_id, ticket_set_id], [Nomination.contractor_id, Nomination.ticket_set_id], ondelete=\'CASCADE\'), {})```',
@@ -104,6 +106,9 @@ def create_one_project(db, organization=None, project_name=None):
     organization = organization or create_one_organization(db)
     project = InternalProject(organization, project_name or pick_a_word().capitalize()+' Project')
     db.session.add(project)
+    db.session.commit()
+    repo = Repo(project)
+    repo.create_internal_project_repo()
     return project
 
 def create_one_remote_project(db, organization=None, project_name=None):

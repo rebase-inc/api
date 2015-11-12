@@ -156,7 +156,7 @@ def import_github_repos(repos, user, db_session):
 def create_work_repo(project_id, account_id):
     session = make_admin_github_session(account_id)
     config = session.api.oauth.app.config
-    project = GithubProject.query.get_or_404(project_id)
+    project = GithubProject.query.get(project_id)
     if not project:
         return 'Unknow project with id: {}'.format(project_id)
     ssh = SSH('git', config['WORK_REPOS_HOST'])
