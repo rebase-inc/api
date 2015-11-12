@@ -1,7 +1,6 @@
 from rebase.common.database import DB, PermissionMixin
 from rebase.common.query import query_from_class_to_user
 
-from sqlalchemy import or_, sql
 
 class Bid(DB.Model, PermissionMixin):
     __pluralname__ = 'bids'

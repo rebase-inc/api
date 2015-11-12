@@ -1,7 +1,4 @@
 from sqlalchemy.orm import validates
-from sqlalchemy import or_, sql
-
-import rebase
 
 from rebase.common.database import DB, PermissionMixin
 from rebase.common.exceptions import AlreadyBid

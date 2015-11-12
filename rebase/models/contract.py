@@ -1,4 +1,3 @@
-from sqlalchemy import or_, sql
 
 from rebase.common.database import DB, PermissionMixin
 
