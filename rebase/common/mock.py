@@ -324,8 +324,7 @@ class ManagerUserStory(object):
         skill_sets = []
         for contractor in the_contractors:
             skills = sample(FAKE_SKILLS, randint(3,6))
-            approx_skill = uniform(0.3, 1.0)
-            skill_sets.append(SkillSet(contractor, {skill: uniform(min(0.0, approx_skill - 0.2), min(1.0, approx_skill, + 0.2)) for skill in skills}))
+            skill_sets.append(SkillSet(contractor, {skill: uniform(0.2, 1.0) for skill in skills}))
         organization = create_one_organization(db, 'Parks and Recreation', self.user)
         project = create_one_project(db, organization, 'Lot 48')
         mgr = project.managers[0]
