@@ -15,7 +15,7 @@ def convert_exceptions(verb):
         try:
             return verb(*args, **kwargs)
         except ServerError as server_error:
-            raise error
+            raise server_error
         except ClientError as client_error:
             raise client_error
         except:

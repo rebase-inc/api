@@ -56,6 +56,7 @@ rebase-rm () {
 #
 rebase-post () {
 	curl \
+    -s \
 	-L \
 	-b $REBASE_COOKIE_JAR \
 	-c $REBASE_COOKIE_JAR \

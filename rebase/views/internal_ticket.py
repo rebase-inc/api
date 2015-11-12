@@ -9,7 +9,7 @@ class InternalTicketSchema(RebaseSchema):
     title =         fields.String()
     discriminator = fields.String()
 
-    project =           SecureNestedField('ProjectSchema',          only=('id','name','organization'), allow_null=True)
+    project =           SecureNestedField('ProjectSchema',          only=('id','name','organization', 'work_repo', 'deploy', 'test', 'readme'), allow_null=True)
     skill_requirement = SecureNestedField('SkillRequirementSchema', only=('id','skills'), allow_null=True)
     snapshots =         SecureNestedField('TicketSnapshotSchema',   only=('id','bid_limit'), many=True)
     comments =          SecureNestedField('CommentSchema',          only=('id','content','user'), many=True)
