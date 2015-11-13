@@ -21,12 +21,16 @@ from rebase.models.user import User
 def save_access_token(github_user, logged_in_user, access_token, db):
     user = User.query.filter(User.id==logged_in_user.id).first()
     github_account = GithubAccount.query_by_user(user).filter(GithubAccount.login==github_user['login']).first()
+    contractor = next(filter(lambda r: r.type == 'contractor', user.roles), None) or Contractor(logged_in_user)
+    remote_work_history = RemoteWorkHistory.query_by_user(user).first() or RemoteWorkHistory(contractor)
     if not github_account:
         github_account = GithubAccount(logged_in_user, github_user['id'], github_user['login'], access_token)
     github_account.access_token = access_token
     db.session.add(github_account)
+    db.session.add(contractor)
+    db.session.add(remote_work_history)
     db.session.commit()
-    current_app.default_queue.enqueue(detect_languages, github_account.id)
+    current_app.default_queue.enqueue_call(func=detect_languages, args=(github_account.id,), timeout=6000 ) # timeout = 100 min
 
 def register_github_routes(app):
 

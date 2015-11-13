@@ -9,71 +9,46 @@ from rebase.models import (
     SkillSet,
 )
 
-languages = {
+_language_list = {
     'Python':   ('.py',),
+    'CSS':      ('.css',),
+    'HTML':     ('.html',),
+    'Bash':     ('.sh',),
     'Ruby':     ('.rb',),
     'Perl':     ('.pl',),
     'C':        ('.c', '.h'),
     'C++':      ('.cc', '.cxx', '.c++', '.cpp', '.hh', '.hxx', '.h++', '.hpp', '.h'),
     'Java':     ('.java',),
     'ObjectiveC': ('.m', '.mm', '.h'),
-    'Javascript': ('.js',),
+    'JavaScript': ('.js',),
     'Clojure':  ('.clj',)
 }
 
-extension_to_languages = defaultdict(list)
-for language, extensions in languages.items():
-    for extension in extensions:
-        extension_to_languages[extension].append(language)
 
-all_extensions = []
-for extensions in languages.values():
-    for ext in extensions:
-        all_extensions.append(ext)
-
-def repo_commit_paths(session, repo):
-    author = session.account.login
-    author_filter = { 'author': author } if author else None
-    commits = session.api.get(repo['url']+'/commits', data=author_filter).data
-    for commit in commits:
-        tree = session.api.get(commit['commit']['tree']['url']).data
-        for path_obj in tree['tree']:
-            yield path_obj['path']
-
-def path_to_languages(commit_paths):
-    all_languages = Counter()
-    for path in commit_paths:
-        _, extension = splitext(path)
-        extension = extension.lower()
-        if extension and extension in all_extensions:
-            all_languages.update(set(extension_to_languages[extension]))
-    return all_languages
-
-def save_languages(user, languages, db):
-    contractor_roles = tuple(filter(lambda role: role.type == 'contractor', user.roles))
-    if not contractor_roles:
-        contractor = Contractor(user)
-        db.session.add(contractor)
-    else:
-        contractor = contractor_roles[0]
-    total_commits = sum(languages.values())
-    skill_set = contractor.skill_set
-    skill_set.skills = { language: commits/total_commits for language, commits in languages.items() }
-    db.session.add(skill_set)
-    db.session.commit()
-    return skill_set.skills
+EXTENSION_TO_LANGUAGES = defaultdict(list)
+for language, extension_list in _language_list.items():
+    for extension in extension_list:
+        EXTENSION_TO_LANGUAGES[extension].append(language)
 
 def detect_languages(account_id):
-    ''' returns a list of all languages spoken by this user '''
-    session = make_admin_github_session(account_id)
-    owned_repos = session.api.get('/user/repos').data
-    def all_commit_paths(repos):
-        for repo in repos:
-            print('processing repo [{}]'.format(repo['name']))
-            for path in repo_commit_paths(session, repo):
-                yield path
+    github_session = make_admin_github_session(account_id)
+    author = github_session.account.login
+    owned_repos = github_session.api.get('/user/repos').data
 
-    found_languages = path_to_languages(all_commit_paths(owned_repos))
-    skills = save_languages(session.account.user, found_languages, session.DB)
-    pprint(found_languages)
-    pprint(skills)
+    commit_count_by_language = Counter()
+
+    for repo in owned_repos:
+        print('processing repo [{name}]'.format(**repo))
+        commits = github_session.api.get('{url}/commits'.format(**repo), data={ 'author': author }).data
+        for commit in commits:
+            commit = github_session.api.get(commit['url']).data
+            for file_obj in commit['files']:
+                _, extension = splitext(file_obj['filename'])
+                commit_count_by_language.update(EXTENSION_TO_LANGUAGES[extension.lower()])
+
+    scale_skill = lambda number: (1 - (1 / (0.01*number + 1 ) ) )
+    contractor = next(filter(lambda r: r.type == 'contractor', github_session.account.user.roles), None) or Contractor(github_session.acccount.user)
+    contractor.skill_set.skills = { language: scale_skill(commits) for language, commits in commit_count_by_language.items() }
+    github_session.DB.session.commit()
+
+    pprint(contractor.skill_set.skills)
