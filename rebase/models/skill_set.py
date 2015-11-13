@@ -51,7 +51,7 @@ class SkillSet(DB.Model, PermissionMixin):
     allowed_to_be_deleted_by = allowed_to_be_created_by
 
     def allowed_to_be_viewed_by(self, user):
-        return self.found(self, user)
+        return self.contractor.allowed_to_be_viewed_by(user)
 
     def __repr__(self):
         return '<SkillSet[{}]>'.format(self.id)

@@ -21,23 +21,27 @@ from rebase.models.user import User
 def save_access_token(github_user, logged_in_user, access_token, db):
     user = User.query.filter(User.id==logged_in_user.id).first()
     github_account = GithubAccount.query_by_user(user).filter(GithubAccount.login==github_user['login']).first()
+    contractor = next(filter(lambda r: r.type == 'contractor', user.roles), None) or Contractor(logged_in_user)
+    remote_work_history = RemoteWorkHistory.query_by_user(user).first() or RemoteWorkHistory(contractor)
     if not github_account:
         github_account = GithubAccount(logged_in_user, github_user['id'], github_user['login'], access_token)
     github_account.access_token = access_token
     db.session.add(github_account)
+    db.session.add(contractor)
+    db.session.add(remote_work_history)
     db.session.commit()
-    current_app.default_queue.enqueue(detect_languages, github_account.id)
+    current_app.default_queue.enqueue_call(func=detect_languages, args=(github_account.id,), timeout=6000 ) # timeout = 100 min
 
 def register_github_routes(app):
 
     github = create_github_app(app)
 
-    @app.route('/github')
+    @app.route('/api/v1/github', methods=['GET'])
     @login_required
     def github_root():
-        return github.authorize(callback=url_for('github_authorized', _external=True))
+        return github.authorize(callback=url_for('github_auth_callback', _external=True))
 
-    @app.route('/github/verify')
+    @app.route('/api/v1/github/verify')
     @login_required
     def verify_all_github_tokens():
         for account in current_user.github_accounts:
@@ -45,20 +49,20 @@ def register_github_routes(app):
             make_session(account, current_app, current_user, DB)
         return jsonify({'success':'complete'})
 
-    @app.route('/github/login')
+    @app.route('/api/v1/github/login')
     @login_required
     def github_login():
-        return github.authorize(callback=url_for('github_authorized', _external=True))
+        return github.authorize(callback=url_for('github_auth_callback', _external=True))
 
-    @app.route('/github/logout')
+    @app.route('/api/v1/github/logout')
     @login_required
     def github_logout():
         session.pop('github_token', None)
         return redirect(url_for('github_root'))
 
-    @app.route('/github/authorized')
+    @app.route('/api/v1/github/authorized')
     @login_required
-    def github_authorized():
+    def github_auth_callback():
         resp = github.authorized_response()
         if resp is None:
             return 'Access denied: reason=%s error=%s' % (
@@ -73,22 +77,22 @@ def register_github_routes(app):
             return (resp['access_token'], '')
         github_user = github.get('user').data
         save_access_token(github_user, current_user, resp['access_token'], DB)
-        return redirect('/app/app.html')
+        return redirect('/')
 
-    @app.route('/github/import_repos', methods=['POST'])
+    @app.route('/api/v1/github/import_repos', methods=['POST'])
     @login_required
     def import_repos():
         new_mgr_roles = import_github_repos(request.json['repos'], current_user, DB.session)
         return jsonify({'roles': new_mgr_roles});
 
-    @app.route('/github_accounts/<int:github_account_id>/importable_repos')
+    @app.route('/api/v1/github_accounts/<int:github_account_id>/importable_repos')
     @login_required
     def importable_repos(github_account_id):
         account = GithubAccount.query.get_or_404(github_account_id)
         session = make_session(account, current_app, current_user, DB)
         return jsonify({ 'repos': extract_repos_info(session) })
 
-    @app.route('/github/analyze_skills')
+    @app.route('/api/v1/github/analyze_skills')
     @login_required
     def _analyze_skills():
         for account in current_user.github_accounts:

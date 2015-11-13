@@ -30,7 +30,7 @@ def create_app(testing=False):
     app.config['SQLALCHEMY_DATABASE_URI'] = environ['TEST_URL'] if testing else environ['DATABASE_URL']
 
     install(app)
-    api = Api(app)
+    api = Api(app, prefix='/api/v1')
     register_home(app)
     register_routes(api)
     register_github_routes(app)
