@@ -13,24 +13,12 @@ class ProjectSchema(RebaseSchema):
     organization =      SecureNestedField('OrganizationSchema',     only=('id','name'))
     clearances =        SecureNestedField('CodeClearanceSchema',    only=('id',), many=True)
     tickets =           SecureNestedField('TicketSchema',           only=('id',), many=True)
-    work_repo =         SecureNestedField('WorkRepoSchema',         only=('id', 'url'))
+    work_repo =         SecureNestedField('WorkRepoSchema',         only=('id', 'url', 'clone'))
     type =              fields.String()
 
     def make_object(self, data):
         return get_or_make_object(Project, data)
 
-def add_clone(project):
-    url = project['work_repo']['url']
-    project['clone'] = 'git clone {}'.format(url)
-    return project
-
-@ProjectSchema.data_handler
-def make_clone_command(serializer, data, obj):
-    if isinstance(obj, list):
-        data = list(map(add_clone, data))
-    else:
-        data = add_clone(data)
-    return data
 
 serializer =            ProjectSchema(skip_missing=True)
 deserializer =          ProjectSchema(only=('organization', 'name'), strict=True)

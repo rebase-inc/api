@@ -1,26 +1,31 @@
-from marshmallow import fields
-from rebase.common.schema import RebaseSchema
 
-from rebase.views.review import ReviewSchema
-from rebase.views.mediation import MediationSchema
-from rebase.views.debit import DebitSchema
-from rebase.views.credit import CreditSchema
-from rebase.views.work_offer import WorkOfferSchema
+from marshmallow import fields
+
 from rebase.common.database import get_or_make_object, SecureNestedField
+from rebase.common.schema import RebaseSchema
+from rebase.views.credit import CreditSchema
+from rebase.views.debit import DebitSchema
+from rebase.views.mediation import MediationSchema
+from rebase.views.review import ReviewSchema
+from rebase.views.work_offer import WorkOfferSchema
+
 
 class WorkSchema(RebaseSchema):
-    id = fields.Integer()
-    state = fields.String()
-    branch = fields.String()
-    review = SecureNestedField(ReviewSchema, exclude=('work',), default=None)
-    mediation = SecureNestedField(MediationSchema, only=('id','state'), attribute='mediation_rounds', many=True)
-    debit = SecureNestedField(DebitSchema, only='id', default=None)
-    credit = SecureNestedField(CreditSchema, only='id', default=None)
-    offer = SecureNestedField(WorkOfferSchema, exclude=('work',), default=None)
+    id =        fields.Integer()
+    state =     fields.String()
+    branch =    fields.String()
+    clone =     fields.String()
+
+    review =    SecureNestedField(ReviewSchema,     exclude=('work',), default=None)
+    mediation = SecureNestedField(MediationSchema,  only=('id','state'), attribute='mediation_rounds', many=True)
+    debit =     SecureNestedField(DebitSchema,      only='id', default=None)
+    credit =    SecureNestedField(CreditSchema,     only='id', default=None)
+    offer =     SecureNestedField(WorkOfferSchema,  exclude=('work',), default=None)
 
     def make_object(self, data):
         from rebase.models import Work
         return get_or_make_object(Work, data)
+
 
 class HaltEventSchema(RebaseSchema):
     reason = fields.String(required=True)
@@ -47,7 +52,7 @@ class FailEventSchema(RebaseSchema):
     def make_object(self, data):
         return 'fail'
 
-serializer = WorkSchema(only=('id', 'branch', 'state','mediation','review','debit','credit','offer'), skip_missing=True)
+serializer = WorkSchema(skip_missing=True)
 deserializer = WorkSchema(only=tuple())
 update_deserializer = WorkSchema(only=tuple())
 update_deserializer.make_object = lambda data: data

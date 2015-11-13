@@ -1,29 +1,34 @@
-from marshmallow import fields
-from rebase.common.schema import RebaseSchema
+from os.path import join
 
+from flask import current_app
+from marshmallow import fields
+
+from rebase.common.database import get_or_make_object, SecureNestedField
+from rebase.common.schema import RebaseSchema
 from rebase.views.ticket_set import TicketSetSchema
 from rebase.views.term_sheet import TermSheetSchema
 from rebase.views.nomination import NominationSchema
-from rebase.common.database import get_or_make_object, SecureNestedField
 
 class AuctionSchema(RebaseSchema):
-    id =               fields.Integer()
-    created =          fields.DateTime()
-    expires =          fields.DateTime()
-    duration =         fields.Integer()
-    finish_work_by =   fields.DateTime()
-    redundancy =       fields.Integer()
-    state =            fields.String()
-    term_sheet =       SecureNestedField('TermSheetSchema', exclude=('auction',), required=True)
-    ticket_set =       SecureNestedField(TicketSetSchema, exclude=('auction',), required=True)
-    feedbacks =        SecureNestedField('FeedbackSchema', only='id', many=True)
-    bids =             SecureNestedField('BidSchema', only=('id','contractor', 'contract'), many=True)
-    organization =     SecureNestedField('OrganizationSchema', only=('id',), required=True)
-    approved_talents = SecureNestedField('NominationSchema', only=('contractor', 'job_fit'), many=True)
+    id =                fields.Integer()
+    created =           fields.DateTime()
+    expires =           fields.DateTime()
+    duration =          fields.Integer()
+    finish_work_by =    fields.DateTime()
+    redundancy =        fields.Integer()
+    state =             fields.String()
+    term_sheet =        SecureNestedField('TermSheetSchema', exclude=('auction',), required=True)
+    ticket_set =        SecureNestedField(TicketSetSchema, exclude=('auction',), required=True)
+    feedbacks =         SecureNestedField('FeedbackSchema', only='id', many=True)
+    bids =              SecureNestedField('BidSchema', only=('id','contractor', 'contract', 'work_offers'), many=True)
+    organization =      SecureNestedField('OrganizationSchema', only=('id',), required=True)
+    approved_talents =  SecureNestedField('NominationSchema', only=('contractor', 'job_fit'), many=True)
+    work =              SecureNestedField('WorkSchema', required=False)
 
     def make_object(self, data):
         from rebase.models import Auction
         return get_or_make_object(Auction, data)
+
 
 class BidEventSchema(RebaseSchema):
     bid = SecureNestedField('BidSchema', required=True, strict=True)

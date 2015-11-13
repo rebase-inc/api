@@ -1,4 +1,7 @@
+from os.path import join
+
 from flask.ext.login import current_app
+from sqlalchemy.orm import reconstructor
 
 from rebase.common.database import DB
 from rebase.models.code_repository import CodeRepository
@@ -21,8 +24,20 @@ class WorkRepo(CodeRepository):
 
     def __init__(self, project):
         self.project = project
-        url = normalize(self.project.organization.name)+'/'+ normalize(self.project.name)
-        super().__init__(url)
+        super().__init__('')
+
+    @reconstructor
+    def init(self):
+        repo_path = join(
+            current_app.config['WORK_REPOS_ROOT'], 
+            normalize(self.project.organization.name),
+            normalize(self.project.name)
+        )
+        self.url = '{hostname}:{path}'.format(
+            hostname=current_app.config['WORK_REPOS_HOST'],
+            path=repo_path
+        )
+        self.clone = 'git clone {}'.format(self.url)
 
     @classmethod
     def setup_queries(cls, models):

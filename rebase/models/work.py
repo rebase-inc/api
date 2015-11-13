@@ -1,6 +1,7 @@
+from os.path import join
 
 from flask import current_app
-from sqlalchemy.orm import validates
+from sqlalchemy.orm import validates, reconstructor
 from sqlalchemy.ext.hybrid import hybrid_property
 
 from .work_offer import WorkOffer
@@ -22,6 +23,8 @@ class Work(DB.Model, PermissionMixin):
     review =            DB.relationship('Review',    backref='work', lazy='joined', uselist=False, cascade='all, delete-orphan', passive_deletes=True)
     mediation_rounds =  DB.relationship('Mediation', backref='work', lazy='joined', cascade='all, delete-orphan', passive_deletes=True)
 
+    _clone = 'git clone -b {branch} --single-branch {url}'
+
     def __init__(self, work_offer):
         self.offer = work_offer
         self.branch = current_app.config['WORK_BRANCH_NAME'](
@@ -31,6 +34,13 @@ class Work(DB.Model, PermissionMixin):
         project = self.offer.ticket_snapshot.ticket.project
         repo = Repo(project)
         repo.create_branch(self.branch)
+
+    @reconstructor
+    def init(self):
+        self.clone = Work._clone.format(
+            branch=self.branch,
+            url=self.offer.ticket_snapshot.ticket.project.work_repo.url
+        )
 
     @classmethod
     def setup_queries(cls, models):
