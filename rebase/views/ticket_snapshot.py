@@ -6,7 +6,7 @@ class TicketSnapshotSchema(RebaseSchema):
     id =          fields.Integer()
     title =       fields.String()
     date =        fields.DateTime()
-    ticket =      SecureNestedField('TicketSchema', only=('id','title','skill_requirement', 'comments','project'))
+    ticket =      SecureNestedField('TicketSchema', only=('id','title', 'created', 'skill_requirement', 'comments','project'))
     bid_limit =   SecureNestedField('BidLimitSchema', only=('id','ticket_set'))
 
     def make_object(self, data):
