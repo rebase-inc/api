@@ -25,7 +25,7 @@ class GithubSession(object):
         '''
         If the access_token for this account is no longer valid, verify will:
         1/ delete the GithubAccount for this user
-        2/ raises rebase.common.exceptions.InvalidGithubAccessToken
+        2/ raise rebase.common.exceptions.InvalidGithubAccessToken
         Otherwise it will return immediately.
         '''
         response = get(

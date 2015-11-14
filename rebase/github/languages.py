@@ -32,6 +32,7 @@ for language, extension_list in _language_list.items():
 
 def detect_languages(account_id):
     github_session = make_admin_github_session(account_id)
+
     author = github_session.account.login
     owned_repos = github_session.api.get('/user/repos').data
 
@@ -53,6 +54,7 @@ def detect_languages(account_id):
     scale_skill = lambda number: (1 - (1 / (0.01*number + 1 ) ) )
     contractor = next(filter(lambda r: r.type == 'contractor', github_session.account.user.roles), None) or Contractor(github_session.acccount.user)
     contractor.skill_set.skills = { language: scale_skill(commits) for language, commits in commit_count_by_language.items() }
+    github_session.account.remote_work_history.analyzing = False
     github_session.DB.session.commit()
 
     pprint(contractor.skill_set.skills)
