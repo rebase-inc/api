@@ -1,7 +1,6 @@
 from os.path import join
 
 from flask import current_app
-from flask.ext.login import current_user
 
 from rebase.common.ssh import SSH
 from rebase.models.internal_project import InternalProject
@@ -36,13 +35,13 @@ class Repo(object):
     def create_branch(self, branch_name):
         return self.enqueue(_create_branch, self.host, self.repo_full_path, branch_name)
 
-    def create_internal_project_repo(self):
-        user_name = current_user.first_name+' '+current_user.last_name
+    def create_internal_project_repo(self, user):
+        user_name = user.first_name+' '+user.last_name
         return self.enqueue(
             _create_internal_project_repo,
             self.host,
             self.repo_full_path,
             self.project.name,
             user_name,
-            current_user.email
+            user.email
         )

@@ -108,7 +108,7 @@ def create_one_project(db, organization=None, project_name=None):
     db.session.add(project)
     db.session.commit()
     repo = Repo(project)
-    repo.create_internal_project_repo()
+    repo.create_internal_project_repo(project.managers[0].user)
     return project
 
 def create_one_remote_project(db, organization=None, project_name=None):
