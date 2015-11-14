@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from sqlalchemy.orm import validates, reconstructor
+from sqlalchemy.orm import validates
 from sqlalchemy.ext.hybrid import hybrid_property
 
 from rebase.common.database import DB, PermissionMixin
@@ -41,15 +41,6 @@ class Auction(DB.Model, PermissionMixin):
             from rebase.models.contractor import Contractor
             from rebase.models.nomination import Nomination
             nominations = [ Nomination(contractor, self.ticket_set) for contractor in Contractor.query.all() ]
-
-    @reconstructor
-    def init(self):
-        # hack to simplify client code
-        # we only support 1 ticket per auction with a redundancy of 1
-        self.work = None
-        winning_bid =  self.bids.filter(Bid.contract != None).first()
-        if winning_bid:
-            self.work = winning_bid.work_offers[0].work
 
     def __repr__(self):
         return '<Auction[id:{}] finish_work_by={}>'.format(self.id, self.finish_work_by)
@@ -138,10 +129,6 @@ class AuctionStateMachine(StateMachine):
         bid.contract = Contract(bid)
         if self.auction.bids.filter(Bid.contract != None).count() >= self.auction.redundancy:
             self.send('end')
-
-        # hack to simplify client code
-        # we only support 1 ticket per auction with a redundancy of 1
-        self.auction.work = bid.work_offers[0].work
 
     def failed(self):
         pass

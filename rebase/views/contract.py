@@ -6,7 +6,7 @@ from rebase.common.database import get_or_make_object, SecureNestedField
 
 class ContractSchema(RebaseSchema):
     id =  fields.Integer()
-    bid = SecureNestedField('BidSchema', only=('id','work_offers'))
+    bid = SecureNestedField('BidSchema', only=('id','work_offers', 'contractor'))
 
     def make_object(self, data):
         from rebase.models import Contract
