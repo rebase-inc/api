@@ -19,7 +19,7 @@ def convert_exceptions(verb):
         except ClientError as client_error:
             raise client_error
         except:
-            raise ServerError(message='Server error: {}'.format(exc_info()[1]))
+            raise ServerError(message='Server error')
     return _handle_other_exceptions
 
 def default_to_None(handlers):
