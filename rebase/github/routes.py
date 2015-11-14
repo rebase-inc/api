@@ -17,20 +17,22 @@ from rebase.models.remote_work_history import RemoteWorkHistory
 from rebase.models.skill_set import SkillSet
 from rebase.models.user import User
 
-
-def save_access_token(github_user, logged_in_user, access_token, db):
-    user = User.query.filter(User.id==logged_in_user.id).first()
-    github_account = GithubAccount.query_by_user(user).filter(GithubAccount.login==github_user['login']).first()
-    contractor = next(filter(lambda r: r.type == 'contractor', user.roles), None) or Contractor(logged_in_user)
-    remote_work_history = RemoteWorkHistory.query_by_user(user).first() or RemoteWorkHistory(contractor)
-    if not github_account:
-        github_account = GithubAccount(logged_in_user, github_user['id'], github_user['login'], access_token)
+def save_github_account(account_id, login, access_token):
+    github_account = GithubAccount.query_by_user(current_user).filter(GithubAccount.login==login).first()
+    github_account = github_account or GithubAccount(current_user, account_id, login, access_token)
     github_account.access_token = access_token
-    db.session.add(github_account)
-    db.session.add(contractor)
-    db.session.add(remote_work_history)
-    db.session.commit()
-    current_app.default_queue.enqueue_call(func=detect_languages, args=(github_account.id,), timeout=6000 ) # timeout = 100 min
+    DB.session.add(github_account)
+    return github_account
+
+def analyze_contractor_skills(github_account):
+    contractor = next(filter(lambda r: r.type == 'contractor', current_user.roles), None)
+    if contractor:
+        remote_work_history = RemoteWorkHistory.query_by_user(current_user).first() or RemoteWorkHistory(contractor)
+        remote_work_history.github_accounts.append(github_account)
+        remote_work_history.analyzing = True
+        DB.session.add(remote_work_history)
+        DB.session.commit()
+        current_app.default_queue.enqueue_call(func=detect_languages, args=(github_account.id,), timeout=360 ) # timeout = 6 minutes
 
 def register_github_routes(app):
 
@@ -65,18 +67,14 @@ def register_github_routes(app):
     def github_auth_callback():
         resp = github.authorized_response()
         if resp is None:
-            return 'Access denied: reason=%s error=%s' % (
-                request.args['error'],
-                request.args['error_description']
-            )
+            return 'Access denied: reason={error} error={error_description}'.format(**request.args)
         elif 'error' in resp:
-            if resp['error'] == 'bad_verification_code':
-                return redirect(url_for('github_login'))
-        @github.tokengetter
-        def get_github_oauth_token():
-            return (resp['access_token'], '')
-        github_user = github.get('user').data
-        save_access_token(github_user, current_user, resp['access_token'], DB)
+            if resp['error'] == 'bad_verification_code': return redirect(url_for('github_login'))
+            else: return 'Unknown error: {}'.format(resp['error'])
+        else:
+            github_user = github.get('user', token=(resp['access_token'], '')).data
+            github_account = save_github_account(github_user['id'], github_user['login'], resp['access_token'])
+            analyze_contractor_skills(github_account)
         return redirect('/')
 
     @app.route('/api/v1/github/import_repos', methods=['POST'])

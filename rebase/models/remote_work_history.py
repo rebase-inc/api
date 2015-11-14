@@ -8,8 +8,9 @@ class RemoteWorkHistory(DB.Model, PermissionMixin):
     __pluralname__ = 'remote_work_histories'
 
     id = DB.Column(DB.Integer, DB.ForeignKey('contractor.id', ondelete='CASCADE'), primary_key=True)
+    analyzing = DB.Column(DB.Boolean, default=False)
 
-    github_repos = DB.relationship('GithubContributedRepo', backref='remote_work_history', cascade="all, delete-orphan", passive_deletes=True)
+    github_accounts = DB.relationship('GithubAccount', backref='remote_work_history', cascade="all, delete-orphan", passive_deletes=True)
 
     def __init__(self, contractor):
         self.contractor = contractor

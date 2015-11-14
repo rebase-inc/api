@@ -4,13 +4,12 @@ from rebase.common.database import DB, PermissionMixin
 class GithubContributedRepo(DB.Model, PermissionMixin):
     __pluralname__ = 'github_org_accounts'
 
-    id = DB.Column(DB.Integer, primary_key=True)
-    remote_work_history_id =    DB.Column(DB.Integer, DB.ForeignKey('remote_work_history.id', ondelete='CASCADE'))
-    account_id =                DB.Column(DB.Integer, DB.ForeignKey('github_account.id', ondelete='CASCADE'))
-    github_id =                 DB.Column(DB.Integer)
-    name =                      DB.Column(DB.String)
-    description =               DB.Column(DB.String)
-    owner =                     DB.Column(DB.String)
+    id =          DB.Column(DB.Integer, primary_key=True)
+    account_id =  DB.Column(DB.Integer, DB.ForeignKey('github_account.id', ondelete='CASCADE'))
+    github_id =   DB.Column(DB.Integer)
+    name =        DB.Column(DB.String)
+    description = DB.Column(DB.String)
+    owner =       DB.Column(DB.String)
 
     def __init__(self, remote_work_history, account, github_id, name, description, owner):
         self.remote_work_history = remote_work_history
