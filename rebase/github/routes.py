@@ -22,6 +22,7 @@ def save_github_account(account_id, login, access_token):
     github_account = github_account or GithubAccount(current_user, account_id, login, access_token)
     github_account.access_token = access_token
     DB.session.add(github_account)
+    DB.session.commit()
     return github_account
 
 def analyze_contractor_skills(github_account):

@@ -33,7 +33,7 @@ nosetests --processes=-1 --process-timeout=999 rebase/tests
 # GitHub Integration
 ## Register a new GitHub application
 0. Go here: https://github.com/settings/applications/new
-1. In the field 'Authorization callback URL', copy: 'http://localhost:5000/api/v1/github/authorized'
+1. In the field 'Authorization callback URL', copy: 'http://localhost:3000/api/v1/github/authorized'
 1. Save these 2 lines into .github_setup and source it:
 ```bash
 export GITHUB_CLIENT_ID=<your_github_app_id>
