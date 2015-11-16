@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from rebase.common.database import DB, PermissionMixin, query_by_user_or_id
 from rebase.common.query import query_from_class_to_user
 
@@ -6,6 +8,7 @@ class Comment(DB.Model, PermissionMixin):
 
     id =        DB.Column(DB.Integer, primary_key=True)
     content =   DB.Column(DB.String,  nullable=False)
+    created =   DB.Column(DB.DateTime, nullable=False)
 
     review_id =     DB.Column(DB.Integer, DB.ForeignKey('review.id',    ondelete='CASCADE'),    nullable=True)
     mediation_id =  DB.Column(DB.Integer, DB.ForeignKey('mediation.id', ondelete='CASCADE'),    nullable=True)
@@ -15,9 +18,10 @@ class Comment(DB.Model, PermissionMixin):
     user_id = DB.Column(DB.Integer, DB.ForeignKey('user.id'))
     user = DB.relationship('User', uselist=False)
 
-    def __init__(self, user, content, review=None, mediation=None, ticket=None, feedback=None):
+    def __init__(self, user, content, created=None, review=None, mediation=None, ticket=None, feedback=None):
         self.user = user
         self.content = content
+        self.created = created or datetime.now()
         self.review = review
         self.mediation = mediation
         self.ticket = ticket

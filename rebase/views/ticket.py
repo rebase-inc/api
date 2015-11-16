@@ -12,7 +12,7 @@ class TicketSchema(RebaseSchema):
     project =           SecureNestedField('ProjectSchema',          only=('id','name','organization', 'work_repo', 'deploy', 'test', 'readme'), allow_null=True)
     skill_requirement = SecureNestedField('SkillRequirementSchema', only=('id','skills'), allow_null=True)
     snapshots =         SecureNestedField('TicketSnapshotSchema',   only=('id','bid_limit'), many=True)
-    comments =          SecureNestedField('CommentSchema',          only=('id','content','user'), many=True)
+    comments =          SecureNestedField('CommentSchema',          only=('id','content','user', 'created'), many=True)
 
     def make_object(self, data):
         from rebase.models import Ticket

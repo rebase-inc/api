@@ -7,6 +7,7 @@ from rebase.common.database import get_or_make_object, SecureNestedField
 class CommentSchema(RebaseSchema):
     id =        fields.Integer()
     content =   fields.String()
+    created =   fields.DateTime()
 
     user =      SecureNestedField('UserSchema',       only=('id','first_name', 'last_name', 'photo'), default=None)
     ticket =    SecureNestedField('TicketSchema',     only=('id',), default=None)

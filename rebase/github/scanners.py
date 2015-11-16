@@ -106,6 +106,7 @@ def import_tickets(project_id, account_id):
                     comment_user['login'],
                 ),
                 comment['body'],
+                created=datetime.strptime(comment['created_at'], _gh_datetime_format),
                 ticket=ticket
             )
             komments.append(ticket_comment)
