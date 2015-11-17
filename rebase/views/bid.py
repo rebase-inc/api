@@ -5,7 +5,7 @@ from rebase.common.database import get_or_make_object, SecureNestedField
 
 class BidSchema(RebaseSchema):
     id =          fields.Integer()
-    auction =     SecureNestedField('AuctionSchema', only='id', required=True)
+    auction =     SecureNestedField('AuctionSchema', only=('id', 'finish_work_by'), required=True)
     contract =    SecureNestedField('ContractSchema', only=('id',))
     contractor =  SecureNestedField('ContractorSchema', only=('id', 'user'), required=True)
     work_offers = SecureNestedField('WorkOfferSchema', many=True, required=True)
