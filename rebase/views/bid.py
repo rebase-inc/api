@@ -6,7 +6,7 @@ from rebase.common.database import get_or_make_object, SecureNestedField
 class BidSchema(RebaseSchema):
     id =          fields.Integer()
     auction =     SecureNestedField('AuctionSchema', only='id', required=True)
-    contract =    SecureNestedField('ContractSchema', only=('id',))
+    contract =    SecureNestedField('ContractSchema', exclude=('bid',))
     contractor =  SecureNestedField('ContractorSchema', only=('id',), required=True)
     work_offers = SecureNestedField('WorkOfferSchema', many=True, required=True)
 
@@ -14,7 +14,7 @@ class BidSchema(RebaseSchema):
         from rebase.models import Bid
         return get_or_make_object(Bid, data)
 
-serializer = BidSchema(only=('id', 'auction', 'contractor','work_offers'))
+serializer = BidSchema(only=('id', 'auction', 'contractor','contract', 'work_offers'))
 deserializer = BidSchema(only=('auction', 'contractor', 'work_offers'), strict=True)
 update_deserializer = BidSchema(only=('id',), strict=True, skip_missing=True)
 update_deserializer.make_object = lambda data: data

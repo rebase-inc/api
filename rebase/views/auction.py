@@ -17,7 +17,7 @@ class AuctionSchema(RebaseSchema):
     term_sheet =       SecureNestedField('TermSheetSchema', exclude=('auction',), required=True)
     ticket_set =       SecureNestedField(TicketSetSchema, exclude=('auction',), required=True)
     feedbacks =        SecureNestedField('FeedbackSchema', only='id', many=True)
-    bids =             SecureNestedField('BidSchema', only=('id','contractor', 'contract'), many=True)
+    bids =             SecureNestedField('BidSchema', only=('id','contractor', 'contract', 'work_offers'), many=True)
     organization =     SecureNestedField('OrganizationSchema', only=('id',), required=True)
     approved_talents = SecureNestedField('NominationSchema', only=('contractor', 'job_fit'), many=True)
 
