@@ -14,7 +14,7 @@ class BidSchema(RebaseSchema):
         from rebase.models import Bid
         return get_or_make_object(Bid, data)
 
-serializer = BidSchema(only=('id', 'auction', 'contractor','contract', 'work_offers'))
+serializer = BidSchema()
 deserializer = BidSchema(only=('auction', 'contractor', 'work_offers'), strict=True)
 update_deserializer = BidSchema(only=('id',), strict=True, skip_missing=True)
 update_deserializer.make_object = lambda data: data
