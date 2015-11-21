@@ -31,7 +31,7 @@ class TestUserResource(RebaseRestTestCase):
 
     def test_create_as_admin(self):
         self.login_admin()
-        user = dict(first_name='Saul', last_name='Goodman', email='saulgoodman@rebase.io', password='foo')
+        user = dict(name='Saul Goodman', email='saulgoodman@rebase.io', password='foo')
 
         expected_response = copy.copy(user)
         expected_response['admin'] = False
@@ -57,8 +57,7 @@ class TestUserResource(RebaseRestTestCase):
         return self.user_resource.create(
             validate=validate,
             expected_status=201,
-            first_name='Saul',
-            last_name='Goodman',
+            name='Saul Goodman',
             email='saulgoodman@rebase.io',
             password='foo'
         )
@@ -93,13 +92,13 @@ class TestUserResource(RebaseRestTestCase):
 
     def test_update_as_admin(self):
         self.login_admin()
-        user = dict(first_name='Walter', last_name='White', email='walterwhite@rebase.io', password='heisenberg')
+        user = dict(name='Walter White', email='walterwhite@rebase.io', password='heisenberg')
         response = self.post_resource('users', user)
         user['id'] = response['user']['id']
         user['last_seen'] = response['user']['last_seen']
         user.pop('password') # it shouldn't be returned
 
-        new_name = dict(first_name = 'Jesse', last_name = 'Pinkman')
+        new_name = dict(name = 'Jesse Pinkman')
         response = self.put_resource('users/{}'.format(user['id']), new_name)
         user.update(new_name)
         user['admin'] = False
@@ -116,7 +115,7 @@ class TestUserResource(RebaseRestTestCase):
 
     def test_delete_as_admin(self):
         self.login_admin()
-        user = dict(first_name='Hank', last_name='Schrader', email='hankschrader@rebase.io', password='theyreminerals')
+        user = dict(name='Hank Schrader', email='hankschrader@rebase.io', password='theyreminerals')
         response = self.post_resource('users', user)
         user_id = response['user']['id']
         response = self.delete_resource('users/{}'.format(user_id))

@@ -12,8 +12,7 @@ class PhotoSchema(RebaseSchema):
 
 class UserSchema(RebaseSchema):
     id =            fields.Integer()
-    first_name =    fields.String(required=True)
-    last_name =     fields.String(required=True)
+    name =          fields.String(required=True)
     email =         fields.Email(required=True)
     password =      fields.String(required=True)
     last_seen =     fields.DateTime(required=True)
@@ -33,9 +32,9 @@ class UserSchema(RebaseSchema):
                 raise marsh.ValidationError('Bad email')
         return get_or_make_object(User, data)
 
-serializer = UserSchema(only=('id','admin','first_name','last_name','email','last_seen','roles', 'current_role', 'photo'))
+serializer = UserSchema(only=('id','admin','name','email','last_seen','roles', 'current_role', 'photo'))
 
-deserializer = UserSchema(only=('first_name','last_name','email','password'), strict=True)
+deserializer = UserSchema(only=('name','email','password'), strict=True)
 
-update_deserializer = UserSchema(only=('first_name','last_name','email','password', 'current_role'))
+update_deserializer = UserSchema(only=('name','email','password', 'current_role'))
 update_deserializer.make_object = lambda data: data

@@ -23,8 +23,7 @@ class TestUserModel(RebaseModelTestCase):
 
         user = models.User.query.get(user.id)
 
-        self.assertIsInstance(user.first_name, str)
-        self.assertIsInstance(user.last_name, str)
+        self.assertIsInstance(user.name, str)
         self.assertIsInstance(user.email, str)
         self.assertIsInstance(user.hashed_password, str)
         self.assertIsInstance(user.last_seen, datetime.datetime)
@@ -52,20 +51,19 @@ class TestUserModel(RebaseModelTestCase):
         models.SkillSet(contractor)
         self.db.session.commit()
 
-        new_first_name = user.first_name + 'foo'
-        new_last_name = user.last_name + 'foo'
+        new_name = user.name + 'foo'
         new_email = 'foo' + user.email
         new_password = user.hashed_password + 'foo'
         new_last_seen = datetime.datetime.now()
 
-        user.first_name = new_first_name
+        user.name = new_name
         user.last_name = new_last_name
         user.email = new_email
         user.hashed_password = new_password
         user.last_seen = new_last_seen
 
         found_user = models.User.query.get(user.id)
-        self.assertEqual(found_user.first_name, new_first_name)
+        self.assertEqual(found_user.name, new_name)
         self.assertEqual(found_user.last_name, new_last_name)
         self.assertEqual(found_user.email, new_email)
         self.assertEqual(found_user.hashed_password, new_password)

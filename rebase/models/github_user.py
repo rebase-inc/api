@@ -25,11 +25,7 @@ class GithubUser(User):
         )
 
     def __repr__(self):
-        return '<GithubUser[{}] {} {}>'.format(
-            self.id,
-            self.first_name,
-            self.last_name,
-        )
+        return '<GithubUser[{}] {}>'.format(self.id, self.name)
 
     def allowed_to_be_created_by(self, user):
         return user.admin

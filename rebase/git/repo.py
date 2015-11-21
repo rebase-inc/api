@@ -36,12 +36,11 @@ class Repo(object):
         return self.enqueue(_create_branch, self.host, self.repo_full_path, branch_name)
 
     def create_internal_project_repo(self, user):
-        user_name = user.first_name+' '+user.last_name
         return self.enqueue(
             _create_internal_project_repo,
             self.host,
             self.repo_full_path,
             self.project.name,
-            user_name,
+            user.name,
             user.email
         )
