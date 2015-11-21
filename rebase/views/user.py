@@ -12,7 +12,7 @@ class PhotoSchema(RebaseSchema):
 
 class UserSchema(RebaseSchema):
     id =            fields.Integer()
-    name =          fields.String(required=True)
+    name =          fields.String(required=False)
     email =         fields.Email(required=True)
     password =      fields.String(required=True)
     last_seen =     fields.DateTime(required=True)
