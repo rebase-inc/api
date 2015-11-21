@@ -79,8 +79,7 @@ class TestContractorResource(RebaseRestTestCase):
             dict(
                 user={
                     'id': user.id,
-                    'first_name': user.first_name,
-                    'last_name': user.last_name
+                    'name': user.name,
                 }
             )
         )['contractor']
@@ -101,8 +100,7 @@ class TestContractor(RebaseNoMockRestTestCase):
         self.login(admin_user.email, 'foo')
         _user = {
             'id': other_user.id,
-            'first_name': other_user.first_name,
-            'last_name': other_user.last_name
+            'name': other_user.name,
         }
         self.resource.create(
             user=_user
@@ -113,8 +111,7 @@ class TestContractor(RebaseNoMockRestTestCase):
         logged_user = self.login(user.email, 'foo')
         _user = {
             'id': logged_user['id'],
-            'first_name': logged_user['first_name'],
-            'last_name': logged_user['last_name']
+            'name': logged_user['name'],
         }
         self.resource.create(
             user=_user
