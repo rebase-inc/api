@@ -15,7 +15,6 @@ class GithubUser(User):
         self.github_id = github_id
         self.login = login
         super().__init__(
-            '',
             name,
             '__github_user_{id}_{login}@joinrebase.com'.format(
                 id=self.github_id,
