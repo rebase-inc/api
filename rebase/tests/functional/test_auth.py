@@ -11,8 +11,7 @@ class TestAuth(RebaseNoMockRestTestCase):
 
     def test_login(self):
         new_user = {
-            'first_name': 'Joe',
-            'last_name': 'Zeplummer',
+            'name': 'Joe Zeplummer',
             'email': 'joe@zeplummer.org',
             'password': 'foo'
         }

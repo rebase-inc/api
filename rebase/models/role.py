@@ -32,4 +32,4 @@ class Role(DB.Model, PermissionMixin):
         return self.allowed_to_be_created_by(user)
 
     def __repr__(self):
-        return '<User[id:{}] first_name={} last_name={} email={}>'.format(self.id, self.first_name, self.last_name, self.email)
+        return '<User[id:{}] name={} email={}>'.format(self.id, self.name, self.email)

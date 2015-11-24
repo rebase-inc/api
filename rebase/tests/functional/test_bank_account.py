@@ -17,7 +17,7 @@ def name(res):
     ''' return a name (str) given a contractor or organization object '''
     if 'user' in res.keys():
         user = res['user']
-        return user['first_name']+' '+user['last_name']
+        return user['name']
     elif 'projects' in res.keys():
         return res['name']
     else:

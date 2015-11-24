@@ -12,8 +12,8 @@ from rebase.git.repo import Repo
 
 FAKE_COMMENTS = [
     '@rapha, I\'m convinced that you were right regarding the composite primary keys being a better choice. However, in the few places where we are using composite primary keys right now, I don’t think the relationship is being properly referenced. See the SQLAlchemy documentation for proper reference of a composite foreign key.',
-    'What do you mean? Is this not correct (from job_fit model)? ```__table_args__ = ( DB.ForeignKeyConstraint( [contractor_id, ticket_set_id], [Nomination.contractor_id, Nomination.ticket_set_id], ondelete=\'CASCADE\'), {})```',
-    'Hmm, that does look correct. The one I was looking at is in the bid model. It indirectly references the auction and contractor ids through the nomination model, though it doesn’t specifically reference the nomination model. This should instead be switched to a reference like above. I guess I should\'ve actually looked into the places where this was happening.',
+    'What do you mean? Is this not correct (from job_fit model)? ```__table_args__ = ( \n DB.ForeignKeyConstraint( [contractor_id, ticket_set_id], [Nomination.contractor_id, Nomination.ticket_set_id], ondelete=\'CASCADE\'), {})```',
+    'Hmm, that _does_ *look* correct. The one I was looking at is in the bid model. It indirectly references the auction and contractor ids through the nomination model, though it doesn’t specifically reference the nomination model. This should instead be switched to a reference like above. I guess I should\'ve actually looked into the places where this was happening.',
 ]
 
 FAKE_SKILLS = ['Python', 'SQLAlchemy', 'd3js', 'Marshmallow', 'unittest', 'Javascript', 'ES6']
@@ -37,12 +37,11 @@ def create_one_organization(db, name=None, user=None):
     db.session.add(organization)
     return organization
 
-def create_one_user(db, first_name=None, last_name=None, email=None, password='foo', admin=False):
+def create_one_user(db, name=None, email=None, password='foo', admin=False):
     from rebase.models import User
     email = email or 'user-{}@rebase.io'.format(uuid.uuid4())
     user = User(
-        first_name or pick_a_first_name(),
-        last_name or pick_a_last_name(),
+        name or pick_a_first_name() + pick_a_last_name(),
         email,
         password
     )
@@ -282,21 +281,20 @@ def create_one_work_review(db, user, rating, comment):
     return review
 
 def create_admin_user(db, password):
-    god = create_one_user(db, 'Flying', 'SpaghettiMonster', 'fsm@rebase.io', password)
+    god = create_one_user(db, 'Flying SpaghettiMonster', 'fsm@rebase.io', password)
     god.admin = True
     return god
 
 
 class DeveloperUserStory(object):
-    def __init__(self, db, first_name, last_name, email, password):
-        self.first_name = first_name
-        self.last_name = last_name
+    def __init__(self, db, name, email, password):
+        self.name = name
         self.email = email
         self.password = password
 
         from rebase.models import Comment
-        self.user = create_one_user(db, self.first_name, self.last_name, self.email, self.password, admin=False)
-        user_ted = create_one_user(db, 'Ted', 'Crisp', 'tedcrisp@joinrebase.com')
+        self.user = create_one_user(db, self.name, self.email, self.password, admin=False)
+        user_ted = create_one_user(db, 'Ted Crisp', 'tedcrisp@joinrebase.com')
         org_veridian = create_one_organization(db, 'veridian', user_ted)
         project_matchmaker = create_one_project(db, org_veridian, 'matchmaker')
         manager_ted = project_matchmaker.managers[0]
@@ -312,19 +310,18 @@ class DeveloperUserStory(object):
         the_job_fits = [create_one_job_fit(db, nomination, [match]) for nomination, match in zip(the_nominations, the_matches)]
 
 class ManagerUserStory(object):
-    def __init__(self, db, first_name, last_name, email, password):
-        self.first_name = first_name
-        self.last_name = last_name
+    def __init__(self, db, name, email, password):
+        self.name = name
         self.email = email
         self.password = password
 
         from rebase.models import Comment, SkillSet, SkillRequirement, TicketMatch, JobFit
-        self.user = create_one_user(db, self.first_name, self.last_name, self.email, self.password, admin=False)
-        dev1 = create_one_user(db, 'Andy', 'Dwyer', 'andy@joinrebase.com')
-        dev2 = create_one_user(db, 'April', 'Ludgate', 'april@joinrebase.com')
-        dev3 = create_one_user(db, 'Leslie', 'Knope', 'leslie@joinrebase.com')
-        dev4 = create_one_user(db, 'Donna', 'Meagle', 'donna@joinrebase.com')
-        dev5 = create_one_user(db, 'Tom', 'Haverford', 'tom@joinrebase.com')
+        self.user = create_one_user(db, self.name, self.email, self.password, admin=False)
+        dev1 = create_one_user(db, 'Andy Dwyer', 'andy@joinrebase.com')
+        dev2 = create_one_user(db, 'April Ludgate', 'april@joinrebase.com')
+        dev3 = create_one_user(db, 'Leslie Knope', 'leslie@joinrebase.com')
+        dev4 = create_one_user(db, 'Donna Meagle', 'donna@joinrebase.com')
+        dev5 = create_one_user(db, 'Tom Haverford', 'tom@joinrebase.com')
         the_contractors = [create_one_contractor(db, user) for user in [dev1, dev2, dev3, dev4, dev5]]
         skill_sets = []
         for contractor in the_contractors:
@@ -361,11 +358,11 @@ class ManagerUserStory(object):
             skill_reqs.append(SkillRequirement(ticket, {skill: uniform(min(0.0, approx_skill - 0.2), min(1.0, approx_skill, + 0.2)) for skill in skills_required}))
 
 def create_the_world(db):
-    andrew = create_one_user(db, 'Andrew', 'Millspaugh', 'andrew@manager.rebase.io')
-    rapha = create_one_user(db, 'Raphael', 'Goyran', 'raphael@rebase.io')
-    joe = create_one_user(db, 'Joe', 'Pesci', 'joe@rebase.io')
-    tim = create_one_user(db, 'Tim', 'Pesci', 'tim@rebase.io')
-    steve = create_one_user(db, 'Steve', 'Gildred', 'steve@rebase.io')
+    andrew = create_one_user(db, 'Andrew Millspaugh', 'andrew@manager.rebase.io')
+    rapha = create_one_user(db, 'Raphael Goyran', 'raphael@rebase.io')
+    joe = create_one_user(db, 'Joe Pesci', 'joe@rebase.io')
+    tim = create_one_user(db, 'Tim Pesci', 'tim@rebase.io')
+    steve = create_one_user(db, 'Steve Gildred', 'steve@rebase.io')
     bigdough_project = create_one_github_project(db, project_name='Big Dough')
     internal_project = create_one_project(db)
     internal_project_tickets = [create_one_internal_ticket(db, 'Issue #{}'.format(i), project=internal_project) for i in range(10)]

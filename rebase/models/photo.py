@@ -15,7 +15,7 @@ class Photo(DB.Model, PermissionMixin):
 
     @property
     def url(self):
-        return '/uploads/{}'.format(self.filename)
+        return '/api/v1/uploads/{}'.format(self.filename)
 
     @classmethod
     def query_by_user(cls, user):

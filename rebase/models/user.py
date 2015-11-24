@@ -14,8 +14,7 @@ class User(DB.Model, PermissionMixin):
 
     id =                DB.Column(DB.Integer,   primary_key=True)
     type =              DB.Column(DB.String)
-    first_name =        DB.Column(DB.String,    nullable=False)
-    last_name =         DB.Column(DB.String,    nullable=False)
+    name =              DB.Column(DB.String,    nullable=False)
     email =             DB.Column(DB.String,    nullable=False, unique=True)
     hashed_password =   DB.Column(DB.String,    nullable=False)
     last_seen =         DB.Column(DB.DateTime,  nullable=False)
@@ -30,10 +29,9 @@ class User(DB.Model, PermissionMixin):
         'polymorphic_on': type
     }
 
-    def __init__(self, first_name, last_name, email, password):
+    def __init__(self, name, email, password):
         from rebase.models.contractor import Contractor
-        self.first_name = first_name
-        self.last_name = last_name
+        self.name = name
         self.email = email
         self.last_seen = datetime.datetime.now()
         self.set_password(password)
@@ -208,5 +206,5 @@ class User(DB.Model, PermissionMixin):
         return [manager.project.id for manager in self.manager_roles]
 
     def __repr__(self):
-        return '<User[id:{}] first_name={} last_name={} email={}>'.format(self.id, self.first_name, self.last_name, self.email)
+        return '<User[id:{}] {} email={}>'.format(self.id, self.name, self.email)
 

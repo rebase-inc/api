@@ -15,7 +15,6 @@ class GithubUser(User):
         self.github_id = github_id
         self.login = login
         super().__init__(
-            '',
             name,
             '__github_user_{id}_{login}@joinrebase.com'.format(
                 id=self.github_id,
@@ -25,11 +24,7 @@ class GithubUser(User):
         )
 
     def __repr__(self):
-        return '<GithubUser[{}] {} {}>'.format(
-            self.id,
-            self.first_name,
-            self.last_name,
-        )
+        return '<GithubUser[{}] {}>'.format(self.id, self.name)
 
     def allowed_to_be_created_by(self, user):
         return user.admin

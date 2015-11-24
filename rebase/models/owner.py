@@ -18,10 +18,9 @@ class Owner(Role):
         self.organization = org
 
     def __repr__(self):
-        return '<Owner[{}] {} {} (org {})>'.format(
+        return '<Owner[{}] {} (org {})>'.format(
             self.id,
-            self.user.first_name,
-            self.user.last_name,
+            self.user.name,
             self.organization_id
         )
 

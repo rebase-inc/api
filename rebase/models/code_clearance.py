@@ -53,7 +53,7 @@ class CodeClearance(DB.Model, PermissionMixin):
         return '<CodeClearance[id:{} project:"{}" contractor:"{}" pre_approved:{}>'.format(
             self.id,
             self.project.name,
-            self.contractor.user.first_name+' '+self.contractor.user.last_name,
+            self.contractor.user.name,
             self.pre_approved
         )
 

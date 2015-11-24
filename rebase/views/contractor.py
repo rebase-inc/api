@@ -8,7 +8,7 @@ class ContractorSchema(RebaseSchema):
     type =                  fields.String()
     busyness =              fields.Integer()
     rating =                fields.Integer()
-    user =                  SecureNestedField('UserSchema',              only=('id', 'first_name', 'last_name'))
+    user =                  SecureNestedField('UserSchema',              only=('id', 'name'))
     work_offers =           SecureNestedField('WorkOfferSchema',         only=('id',), many=True)
     bank_account =          SecureNestedField('BankAccountSchema',       only=('id',), default=None)
     remote_work_history =   SecureNestedField('RemoteWorkHistorySchema', only=('id',))
