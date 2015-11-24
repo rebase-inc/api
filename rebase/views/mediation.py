@@ -11,8 +11,8 @@ class MediationSchema(RebaseSchema):
     client_answer = fields.String()
     timeout =       fields.DateTime()
     state =         fields.String()
-    work =          SecureNestedField('WorkSchema',         only='id', required=True)
-    arbitration =   SecureNestedField('ArbitrationSchema',  only='id', default=None)
+    work =          SecureNestedField('WorkSchema')
+    arbitration =   SecureNestedField('ArbitrationSchema', default=None)
     comments =      SecureNestedField('CommentSchema',      only=('id',), many=True, default=None)
 
     def make_object(self, data):

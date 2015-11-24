@@ -33,11 +33,11 @@ class Event(Resource):
         return response
 
 
-class MediationDevAnswerEvents(Event):
+#class MediationDevAnswerEvents(Event):
 
-    @login_required
-    def post(self, id):
-        return self._post(serializer, dev_answer_event_deserializer, id)
+    #@login_required
+    #def post(self, id):
+        #return self._post(serializer, dev_answer_event_deserializer, id)
 
         #mediation_instance = Mediation.query.get_or_404(id)
         #dev_answer_event = dev_answer_event_deserializer.load(request.form or request.json).data

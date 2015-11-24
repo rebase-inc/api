@@ -88,7 +88,7 @@ class MediationStateMachine(StateMachine):
         self.mediation.client_answer = client_answer
 
     def decision(self, remaining_answer):
-        if hasattr(self, 'client_answer'):
+        if hasattr(self.mediation, 'client_answer'):
             self.mediation.dev_answer = remaining_answer
         else:
             self.mediation.client_answer = remaining_answer
@@ -103,7 +103,6 @@ class MediationStateMachine(StateMachine):
             self.send('timeout_answer', self.mediation.client_answer)
         else:
             self.send('timeout_answer', self.mediation.dev_answer)
-        pass
 
     def agreement(self):
         self.mediation.work.machine.send(self.mediation.dev_answer)

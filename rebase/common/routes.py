@@ -45,12 +45,12 @@ def register_routes(api):
         MediationAgreeEvents,
         MediationArbitrateEvents
     )
-    api.add_resource(MediationDevAnswerEvents,      '/mediation/<int:id>/dev_answer_events')
-    api.add_resource(MediationClientAnswerEvents,   '/mediation/<int:id>/client_answer_events')
-    api.add_resource(MediationTimeoutEvents,        '/mediation/<int:id>/timeout_events')
-    api.add_resource(MediationTimeoutAnswerEvents,  '/mediation/<int:id>/timeout_answer_events')
-    api.add_resource(MediationAgreeEvents,          '/mediation/<int:id>/agree_events')
-    api.add_resource(MediationArbitrateEvents,      '/mediation/<int:id>/arbitrate_events')
+    api.add_resource(MediationDevAnswerEvents,      '/mediations/<int:id>/dev_answer')
+    api.add_resource(MediationClientAnswerEvents,   '/mediations/<int:id>/client_answer')
+    api.add_resource(MediationTimeoutEvents,        '/mediations/<int:id>/timeout')
+    api.add_resource(MediationTimeoutAnswerEvents,  '/mediations/<int:id>/timeout_answer')
+    api.add_resource(MediationAgreeEvents,          '/mediations/<int:id>/agree')
+    api.add_resource(MediationArbitrateEvents,      '/mediations/<int:id>/arbitrate')
 
     from rebase.models.internal_ticket import InternalTicket
     import rebase.views.internal_ticket as it_view
