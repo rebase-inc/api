@@ -56,8 +56,8 @@ class TestArbitrationResource(RebaseRestTestCase):
         returned_arbitration_ids = [a['id'] for a in returned_arbitrations]
         actual_arbitration_ids = []
         for work_offer in contractor.work_offers:
-            if work_offer.work and work_offer.work.mediation_rounds:
-                for mediation_round in work_offer.work.mediation_rounds:
+            if work_offer.work and work_offer.work.mediations:
+                for mediation_round in work_offer.work.mediations:
                     if mediation_round.arbitration:
                         actual_arbitration_ids.append(mediation_round.arbitration.id)
         self.assertEqual(set(returned_arbitration_ids), set(actual_arbitration_ids))

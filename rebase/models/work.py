@@ -21,7 +21,7 @@ class Work(DB.Model, PermissionMixin):
     credit =            DB.relationship('Credit',    backref='work', uselist=False, cascade='all, delete-orphan', passive_deletes=True)
     offer =             DB.relationship('WorkOffer', backref='work', uselist=False, cascade='all, delete-orphan', passive_deletes=True)
     review =            DB.relationship('Review',    backref='work', lazy='joined', uselist=False, cascade='all, delete-orphan', passive_deletes=True)
-    mediation_rounds =  DB.relationship('Mediation', backref='work', lazy='joined', cascade='all, delete-orphan', passive_deletes=True)
+    mediations =  DB.relationship('Mediation', backref='work', lazy='joined', cascade='all, delete-orphan', passive_deletes=True)
 
     _clone = 'git clone -b {branch} --single-branch {url}'
 
@@ -89,7 +89,7 @@ class Work(DB.Model, PermissionMixin):
         return self._machine
 
     def start_mediation(self):
-        self.mediation_rounds.append(Mediation(self))
+        self.mediations.append(Mediation(self))
 
     @validates('offer')
     def validate_work_offer(self, field, value):

@@ -20,7 +20,7 @@ class TestMediationModel(RebaseModelTestCase):
         self.db.session.flush()
 
         self.assertEqual(work.state, 'in_mediation')
-        mediation = work.mediation_rounds[0]
+        mediation = work.mediations[0]
 
         with managed_state:
             mediation.machine.send('dev_answer', 'complete')
@@ -43,7 +43,7 @@ class TestMediationModel(RebaseModelTestCase):
 
         self.assertEqual(work.state, 'in_mediation')
 
-        mediation = work.mediation_rounds[0]
+        mediation = work.mediations[0]
 
         mediation_id = mediation.id
         self.db.session.commit()
@@ -64,14 +64,14 @@ class TestMediationModel(RebaseModelTestCase):
 
 
     def test_create_mediation(self):
-        mediation = mock.create_some_work(self.db).pop().mediation_rounds[0]
+        mediation = mock.create_some_work(self.db).pop().mediations[0]
         self.db.session.commit()
 
         found_mediation = models.Mediation.query.get(mediation.id)
         self.assertIsInstance(found_mediation.work.offer.price, int)
 
     def test_delete_mediation(self):
-        mediation = mock.create_some_work(self.db).pop().mediation_rounds[0]
+        mediation = mock.create_some_work(self.db).pop().mediations[0]
         self.db.session.commit()
         arbitration_id = mediation.arbitration.id
 
@@ -84,7 +84,7 @@ class TestMediationModel(RebaseModelTestCase):
         self.assertEqual(models.Arbitration.query.get(arbitration_id), None)
 
     def test_update_mediation(self):
-        mediation = mock.create_some_work(self.db).pop().mediation_rounds[0]
+        mediation = mock.create_some_work(self.db).pop().mediations[0]
         self.db.session.commit()
 
         found_mediation = models.Mediation.query.get(mediation.id)

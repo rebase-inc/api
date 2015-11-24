@@ -27,7 +27,7 @@ class TestWorkModel(RebaseModelTestCase):
         found_work = models.Work.query.get(work_id)
         self.assertEqual(found_work.state, 'in_mediation')
 
-        mediation = found_work.mediation_rounds[0]
+        mediation = found_work.mediations[0]
         with managed_state:
             mediation.machine.send('dev_answer', 'resume_work')
             mediation.machine.send('client_answer', 'resume_work')
@@ -44,7 +44,7 @@ class TestWorkModel(RebaseModelTestCase):
         self.assertIsInstance(found_work.offer.price, int)
         self.assertIsInstance(found_work.debit.price, int)
         self.assertIsInstance(found_work.credit.price, int)
-        self.assertIsInstance(found_work.mediation_rounds[0], models.Mediation)
+        self.assertIsInstance(found_work.mediations[0], models.Mediation)
 
     def test_delete(self):
         work = mock.create_some_work(self.db).pop()
@@ -56,9 +56,9 @@ class TestWorkModel(RebaseModelTestCase):
             review_id = None
         debit_id = work.debit.id
         credit_id = work.credit.id
-        mediation_id = work.mediation_rounds[0].id
+        mediation_id = work.mediations[0].id
         work_offer_id = work.offer.id
-        arbitration_id = work.mediation_rounds[0].arbitration.id
+        arbitration_id = work.mediations[0].arbitration.id
 
         self.assertNotEqual(models.Work.query.get(work.id), None)
         self.delete_instance(work)
@@ -79,7 +79,7 @@ class TestWorkModel(RebaseModelTestCase):
             self.db.session.delete(work.review)
         self.db.session.delete(work.debit)
         self.db.session.delete(work.credit)
-        for mediation_round in work.mediation_rounds:
+        for mediation_round in work.mediations:
             self.db.session.delete(mediation_round)
         self.db.session.commit()
 
@@ -88,7 +88,7 @@ class TestWorkModel(RebaseModelTestCase):
             self.assertEqual(found_work.review, None)
         self.assertEqual(found_work.debit, None)
         self.assertEqual(found_work.credit, None)
-        self.assertEqual(len(found_work.mediation_rounds), 0)
+        self.assertEqual(len(found_work.mediations), 0)
 
         _ = models.Review(work)
         work.review.rating = 4
@@ -101,4 +101,4 @@ class TestWorkModel(RebaseModelTestCase):
         self.assertEqual(found_work.review.rating, 4)
         self.assertEqual(found_work.debit.price, 100)
         self.assertEqual(found_work.credit.price, 110)
-        self.assertEqual(len(found_work.mediation_rounds), 2)
+        self.assertEqual(len(found_work.mediations), 2)

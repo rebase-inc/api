@@ -29,7 +29,7 @@ class MediationUseCase(UseCase):
             work.machine.send('review')
             work.machine.send('mediate')
 
-        mediation_1 = work.mediation_rounds[0]
+        mediation_1 = work.mediations[0]
 
         # let's cross roles, the mgr will become the contractor of the contractor who is the mgr of his own project
         org_2 = mock.create_one_organization(db, user=user_2)
@@ -52,7 +52,7 @@ class MediationUseCase(UseCase):
             work_2.machine.send('review')
             work_2.machine.send('mediate')
 
-        mediation_2 = work_2.mediation_rounds[0]
+        mediation_2 = work_2.mediations[0]
 
         db.session.commit()
         return user_1, user_2, mediation_1, mediation_2

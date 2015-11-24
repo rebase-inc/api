@@ -17,7 +17,7 @@ class WorkSchema(RebaseSchema):
     clone =     fields.String()
 
     review =    SecureNestedField(ReviewSchema,     exclude=('work',), default=None)
-    mediation = SecureNestedField(MediationSchema,  only=('id','state'), attribute='mediation_rounds', many=True)
+    mediations = SecureNestedField(MediationSchema,  only=('id','state'), many=True)
     debit =     SecureNestedField(DebitSchema,      only='id', default=None)
     credit =    SecureNestedField(CreditSchema,     only='id', default=None)
     offer =     SecureNestedField(WorkOfferSchema,  exclude=('work',), default=None)
