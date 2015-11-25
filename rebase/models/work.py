@@ -21,7 +21,7 @@ class Work(DB.Model, PermissionMixin):
     credit =            DB.relationship('Credit',    backref='work', uselist=False, cascade='all, delete-orphan', passive_deletes=True)
     offer =             DB.relationship('WorkOffer', backref='work', uselist=False, cascade='all, delete-orphan', passive_deletes=True)
     review =            DB.relationship('Review',    backref='work', lazy='joined', uselist=False, cascade='all, delete-orphan', passive_deletes=True)
-    mediations =  DB.relationship('Mediation', backref='work', lazy='joined', cascade='all, delete-orphan', passive_deletes=True)
+    mediations =        DB.relationship('Mediation', backref='work', lazy='joined', cascade='all, delete-orphan', passive_deletes=True, order_by='Mediation.id')
 
     _clone = 'git clone -b {branch} --single-branch {url}'
 
@@ -88,9 +88,6 @@ class Work(DB.Model, PermissionMixin):
         self._machine = WorkStateMachine(self, initial_state=self.state)
         return self._machine
 
-    def start_mediation(self):
-        self.mediations.append(Mediation(self))
-
     @validates('offer')
     def validate_work_offer(self, field, value):
         if not isinstance(value, WorkOffer):
@@ -115,7 +112,7 @@ class WorkStateMachine(StateMachine):
         pass
 
     def in_mediation(self):
-        self.work.start_mediation()
+        Mediation(self.work)
 
     def complete(self):
         from rebase.models import Review, Debit, Credit
