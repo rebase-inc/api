@@ -1,4 +1,4 @@
-from marshmallow import fields
+from marshmallow import fields, post_load
 from rebase.common.schema import RebaseSchema
 from rebase.common.database import DB
 from rebase.models.manager import Manager
@@ -12,7 +12,8 @@ class ManagerSchema(RebaseSchema):
     project =   SecureNestedField('ProjectSchema',  only=('id','name', 'organization'))
     user =      SecureNestedField('UserSchema',     only=('id',))
 
-    def make_object(self, data):
+    @post_load
+    def make_manager(self, data):
         from rebase.models import Manager
         return get_or_make_object(Manager, data)
 

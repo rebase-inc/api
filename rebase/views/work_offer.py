@@ -1,4 +1,4 @@
-from marshmallow import fields
+from marshmallow import fields, post_load
 from rebase.common.schema import RebaseSchema
 from rebase.common.database import get_or_make_object, SecureNestedField
 
@@ -11,7 +11,8 @@ class WorkOfferSchema(RebaseSchema):
     bid = SecureNestedField('BidSchema', exclude=('work_offers',))
     ticket_snapshot = SecureNestedField('TicketSnapshotSchema', only=('id','ticket'))
 
-    def make_object(self, data):
+    @post_load
+    def make_work_offer(self, data):
         from rebase.models import WorkOffer
         return get_or_make_object(WorkOffer, data)
 

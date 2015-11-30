@@ -1,7 +1,7 @@
 from os.path import join
 
 from flask import current_app
-from marshmallow import fields
+from marshmallow import fields, post_load
 
 from rebase.common.database import get_or_make_object, SecureNestedField
 from rebase.common.schema import RebaseSchema
@@ -25,22 +25,29 @@ class AuctionSchema(RebaseSchema):
     approved_talents =  SecureNestedField('NominationSchema', only=('contractor', 'job_fit'), many=True)
     work =              SecureNestedField('WorkSchema', only=('id', 'clone'),  required=False)
 
-    def make_object(self, data):
+    @post_load
+    def make_auction(self, data):
         from rebase.models import Auction
         return get_or_make_object(Auction, data)
 
 
 class BidEventSchema(RebaseSchema):
     bid = SecureNestedField('BidSchema', required=True, strict=True)
-    def make_object(self, data):
+
+    @post_load
+    def make_bid(self, data):
         return 'bid', data.pop('bid')
 
 class EndEventSchema(RebaseSchema):
-    def make_object(self, data):
+
+    @post_load
+    def make_end(self, data):
         return 'end'
 
 class FailEventSchema(RebaseSchema):
-    def make_object(self, data):
+
+    @post_load
+    def make_fail(self, data):
         return 'fail'
 
 serializer = AuctionSchema()

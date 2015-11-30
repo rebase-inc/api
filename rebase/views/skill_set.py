@@ -1,5 +1,5 @@
 from flask.ext.restful import abort
-from marshmallow import fields
+from marshmallow import fields, post_load
 from rebase.common.schema import RebaseSchema
 
 from rebase.models.skill_set import SkillSet
@@ -37,7 +37,8 @@ class SkillSetSchema(RebaseSchema):
     skills =        DictField(fields.Str(), fields.Float(), default={})
     contractor =    SecureNestedField(ContractorSchema,  only=('id',))
 
-    def make_object(self, data):
+    @post_load
+    def make_skill_set(self, data):
         from rebase.models import SkillSet
         return get_or_make_object(SkillSet, data)
 

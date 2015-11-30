@@ -1,4 +1,4 @@
-from marshmallow import fields
+from marshmallow import fields, post_load
 
 from rebase.common.database import get_or_make_object, SecureNestedField
 from rebase.common.schema import RebaseSchema
@@ -13,7 +13,8 @@ class SSHKeySchema(RebaseSchema):
 
     user =          SecureNestedField('UserSchema', only=('id',), required=True)
 
-    def make_object(self, data):
+    @post_load
+    def make_ssh_key(self, data):
         from rebase.models import SSHKey
         return get_or_make_object(SSHKey, data)
 

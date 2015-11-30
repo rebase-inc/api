@@ -1,4 +1,4 @@
-from marshmallow import fields
+from marshmallow import fields, post_load
 from rebase.common.schema import RebaseSchema
 
 from rebase.views.ticket_set import TicketSetSchema
@@ -8,7 +8,8 @@ class TermSheetSchema(RebaseSchema):
     id =      fields.Integer()
     legalese = fields.String()
 
-    def make_object(self, data):
+    @post_load
+    def make_term_sheet(self, data):
         from rebase.models import TermSheet
         return get_or_make_object(TermSheet, data)
 

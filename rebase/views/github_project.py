@@ -1,4 +1,4 @@
-from marshmallow import fields
+from marshmallow import fields, post_load
 from rebase.common.schema import RebaseSchema
 from rebase.models.github_project import GithubProject
 from rebase.common.database import get_or_make_object, SecureNestedField
@@ -15,7 +15,8 @@ class GithubProjectSchema(RebaseSchema):
     work_repo =         SecureNestedField(WorkRepoSchema,               only=('code_repository_id', 'project_id', 'url'))
     remote_repo =       SecureNestedField(GithubRepositorySchema,       only=('id', 'repo_id', 'name', 'url', 'description', 'project'))
 
-    def make_object(self, data):
+    @post_load
+    def make_github_project(self, data):
         return get_or_make_object(GithubProject, data)
 
 

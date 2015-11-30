@@ -1,4 +1,4 @@
-from marshmallow import fields
+from marshmallow import fields, post_load
 from rebase.common.schema import RebaseSchema
 from rebase.common.database import DB
 from rebase.models.code_clearance import CodeClearance
@@ -14,7 +14,8 @@ class CodeClearanceSchema(RebaseSchema):
     project =      SecureNestedField('ProjectSchema', only=('id',), exclude=('code_clearance',), required=True)
     contractor =   SecureNestedField('ContractorSchema', only=('id',), exclude=('code_clearance',), required=True)
 
-    def make_object(self, data):
+    @post_load
+    def make_code_clearance(self, data):
         from rebase.models import CodeClearance
         return get_or_make_object(CodeClearance, data)
 

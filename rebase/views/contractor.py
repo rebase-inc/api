@@ -1,4 +1,4 @@
-from marshmallow import fields
+from marshmallow import fields, post_load
 from rebase.common.schema import RebaseSchema
 from rebase.common.database import get_or_make_object, SecureNestedField
 from rebase.views.nomination import NominationSchema
@@ -16,7 +16,8 @@ class ContractorSchema(RebaseSchema):
     clearances =            SecureNestedField('CodeClearanceSchema',     only=('id', 'project', 'pre_approved'), many=True)
     nominations =           SecureNestedField('NominationSchema',        only='id', many=True, default=None)
 
-    def make_object(self, data):
+    @post_load
+    def make_contractor(self, data):
         from rebase.models import Contractor
         return get_or_make_object(Contractor, data)
 

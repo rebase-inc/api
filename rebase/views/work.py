@@ -1,5 +1,5 @@
 
-from marshmallow import fields
+from marshmallow import fields, post_load
 
 from rebase.common.database import get_or_make_object, SecureNestedField
 from rebase.common.schema import RebaseSchema
@@ -22,34 +22,47 @@ class WorkSchema(RebaseSchema):
     credit =    SecureNestedField(CreditSchema,     only='id', default=None)
     offer =     SecureNestedField(WorkOfferSchema,  exclude=('work',), default=None)
 
-    def make_object(self, data):
+    @post_load
+    def make_work_schema(self, data):
         from rebase.models import Work
         return get_or_make_object(Work, data)
 
 
 class HaltEventSchema(RebaseSchema):
     reason = fields.String(required=True)
-    def make_object(self, data):
+
+    @post_load
+    def make_halt(self, data):
         return 'halt_work', data.pop('reason')
 
 class ReviewEventSchema(RebaseSchema):
-    def make_object(self, data):
+
+    @post_load
+    def make_review(self, data):
         return 'review'
 
 class MediateEventSchema(RebaseSchema):
-    def make_object(self, data):
+
+    @post_load
+    def make_mediate(self, data):
         return 'mediate'
 
 class CompleteEventSchema(RebaseSchema):
-    def make_object(self, data):
+
+    @post_load
+    def make_complete(self, data):
         return 'complete'
 
 class ResumeEventSchema(RebaseSchema):
-    def make_object(self, data):
+
+    @post_load
+    def make_resume(self, data):
         return 'resume_work'
 
 class FailEventSchema(RebaseSchema):
-    def make_object(self, data):
+
+    @post_load
+    def make_fail(self, data):
         return 'fail'
 
 serializer = WorkSchema()

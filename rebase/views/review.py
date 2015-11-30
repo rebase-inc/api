@@ -1,5 +1,5 @@
 
-from marshmallow import fields
+from marshmallow import fields, post_load
 
 from rebase.common.schema import RebaseSchema
 from rebase.views import NamespacedSchema
@@ -13,7 +13,8 @@ class ReviewSchema(RebaseSchema):
     work = SecureNestedField('WorkSchema', exclude=('review',))
     comments = SecureNestedField(CommentSchema, only=('id',), many=True, default=None)
 
-    def make_object(self, data):
+    @post_load
+    def make_review(self, data):
         from rebase.models import Review
         return get_or_make_object(Review, data)
 

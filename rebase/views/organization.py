@@ -1,4 +1,4 @@
-from marshmallow import fields
+from marshmallow import fields, post_load
 from rebase.common.schema import RebaseSchema
 from rebase.models.organization import Organization
 from rebase.views.manager import ManagerSchema
@@ -15,7 +15,8 @@ class OrganizationSchema(RebaseSchema):
     user =          SecureNestedField(UserSchema,           only=('id',)) #only used for deserialize
     managers =      SecureNestedField(ManagerSchema,        only=('id','user'), many=True)
 
-    def make_object(self, data):
+    @post_load
+    def make_organization(self, data):
         from rebase.models import Organization
         return get_or_make_object(Organization, data)
 

@@ -1,4 +1,4 @@
-from marshmallow import fields
+from marshmallow import fields, post_load
 from rebase.common.schema import RebaseSchema
 from rebase.common.database import get_or_make_object, SecureNestedField
 from rebase.models import Nomination
@@ -13,7 +13,8 @@ class NominationSchema(RebaseSchema):
     ticket_set = SecureNestedField('TicketSetSchema',    only=('id', 'auction'), default=None)
     auction =    SecureNestedField('AuctionSchema',      only=('id','bids'), default=None)
 
-    def make_object(self, data):
+    @post_load
+    def make_nomination(self, data):
         return get_or_make_object(Nomination, data)
 
 deserializer =          NominationSchema()

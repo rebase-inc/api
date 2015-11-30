@@ -1,4 +1,4 @@
-from marshmallow import fields
+from marshmallow import fields, post_load
 from rebase.common.schema import RebaseSchema
 from rebase.common.database import get_or_make_object, SecureNestedField
 
@@ -9,7 +9,8 @@ class TicketSnapshotSchema(RebaseSchema):
     ticket =      SecureNestedField('TicketSchema')
     bid_limit =   SecureNestedField('BidLimitSchema', only=('id','ticket_set'))
 
-    def make_object(self, data):
+    @post_load
+    def make_ticket_snapshot(self, data):
         from rebase.models import TicketSnapshot
         return get_or_make_object(TicketSnapshot, data)
 

@@ -1,4 +1,4 @@
-from marshmallow import fields
+from marshmallow import fields, post_load
 from rebase.common.schema import RebaseSchema
 
 from rebase.views import NamespacedSchema
@@ -15,7 +15,8 @@ class CommentSchema(RebaseSchema):
     mediation = SecureNestedField('MediationSchema',  only=('id',), default=None)
     feedback =  SecureNestedField('FeedbackSchema',   only=('id',), default=None)
 
-    def make_object(self, data):
+    @post_load
+    def make_comment(self, data):
         from rebase.models import Comment
         return get_or_make_object(Comment, data)
 

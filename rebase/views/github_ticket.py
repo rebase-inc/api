@@ -1,4 +1,4 @@
-from marshmallow import fields
+from marshmallow import fields, post_load
 from rebase.common.schema import RebaseSchema
 from rebase.models.github_ticket import GithubTicket
 from rebase.common.database import get_or_make_object, SecureNestedField
@@ -15,7 +15,8 @@ class GithubTicketSchema(RebaseSchema):
     snapshots =         SecureNestedField('TicketSnapshotSchema',   only=('id','bid_limit'), many=True)
     comments =          SecureNestedField('CommentSchema',          only=('id','content','user'), many=True)
 
-    def make_object(self, data):
+    @post_load
+    def make_github_ticket(self, data):
         from rebase.models import GithubTicket
         return get_or_make_object(GithubTicket, data)
 

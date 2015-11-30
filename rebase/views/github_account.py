@@ -1,4 +1,4 @@
-from marshmallow import fields
+from marshmallow import fields, post_load
 
 from rebase.common.database import get_or_make_object, SecureNestedField
 from rebase.common.schema import RebaseSchema
@@ -13,7 +13,8 @@ class GithubAccountSchema(RebaseSchema):
     orgs =          fields.Nested(GithubOrgAccountSchema, many=True, nullable=True)
     contributed_repos = fields.Nested(GithubContributedRepoSchema, many=True, nullable=True)
 
-    def make_object(self, data):
+    @post_load
+    def make_github_account(self, data):
         from rebase.models import GithubAccount
         return get_or_make_object(GithubAccount, data)
 

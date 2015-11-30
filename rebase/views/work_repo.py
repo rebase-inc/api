@@ -1,5 +1,5 @@
 
-from marshmallow import fields
+from marshmallow import fields, post_load
 
 from rebase.common.schema import RebaseSchema
 from rebase.models.work_repo import WorkRepo
@@ -11,7 +11,8 @@ class WorkRepoSchema(RebaseSchema):
     clone = fields.String()
     project = SecureNestedField('ProjectSchema', only=('id',), default=None)
 
-    def make_object(self, data):
+    @post_load
+    def make_work_repo(self, data):
         from rebase.models import WorkRepo
         return get_or_make_object(WorkRepo, data)
 

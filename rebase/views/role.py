@@ -1,4 +1,4 @@
-from marshmallow import fields
+from marshmallow import fields, post_load
 from rebase.common.schema import RebaseSchema
 
 from rebase.common.database import get_or_make_object, SecureNestedField
@@ -12,7 +12,8 @@ class RoleSchema(RebaseSchema):
     skill_set = SecureNestedField('SkillSetSchema', only=('id','skills'), default=None) # only valid for contractor roles
     remote_work_history = SecureNestedField('RemoteWorkHistorySchema', only=('id','analyzing', 'github_accounts'), default=None) # only valid for contractor roles
 
-    def make_object(self, data):
+    @post_load
+    def make_role(self, data):
         from rebase.models import Role
         return get_or_make_object(Role, data)
 

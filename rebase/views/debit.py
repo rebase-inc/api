@@ -1,5 +1,4 @@
-
-from marshmallow import fields
+from marshmallow import fields, post_load
 from rebase.common.schema import RebaseSchema
 from rebase.common.database import get_or_make_object, SecureNestedField
 
@@ -10,7 +9,8 @@ class DebitSchema(RebaseSchema):
     paid = fields.Boolean()
     work = SecureNestedField('WorkSchema', only='id')
 
-    def make_object(self, data):
+    @post_load
+    def make_debit(self, data):
         from rebase.models import Debit
         return get_or_make_object(Debit, data)
 
