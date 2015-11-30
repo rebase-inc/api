@@ -1,5 +1,5 @@
 import datetime
-from functools import lru_cache, partialmethod
+from functools import lru_cache
 
 from flask.ext.login import login_user, logout_user
 from sqlalchemy import and_
