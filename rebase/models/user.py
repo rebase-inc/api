@@ -1,4 +1,5 @@
 import datetime
+from functools import lru_cache, partialmethod
 
 from flask.ext.login import login_user, logout_user
 from sqlalchemy import and_
@@ -182,6 +183,7 @@ class User(DB.Model, PermissionMixin):
     def allowed_to_be_deleted_by(self, user):
         return self.allowed_to_be_modified_by(user)
 
+    @lru_cache(maxsize=None)
     def allowed_to_be_viewed_by(self, user):
         return self.query_by_user(user, self.id)
 
