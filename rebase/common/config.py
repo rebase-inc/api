@@ -26,6 +26,7 @@ class Config(object):
     SSH_AUTHORIZED_KEYS = '.ssh/authorized_keys2'
     WORK_BRANCH_NAME = 'work_{contractor_id}_{auction_id}'.format
     REVENUE_FACTOR = 1.1 # 10 % of WorkOffer price is going to us if Work is complete
+    URL_PREFIX = '/api/v1'
 
 
 class ProductionConfig(Config):

@@ -191,9 +191,10 @@ class TestAuction(PermissionTestCase):
         self.collection(case_admin_collection, 'manager')
 
     def test_profile(self):
-        mock.DeveloperUserStory(self.db, 'Phil', 'Meyman', 'philmeyman@joinrebase.com', 'lem')
-        mock.ManagerUserStory(self.db, 'Ron', 'Swanson', 'ron@joinrebase.com', 'ron')
+        mock.DeveloperUserStory(self.db, 'Phil Meyman', 'philmeyman@joinrebase.com', 'lem')
         self.db.session.commit()
-        self.login('ron@joinrebase.com', 'ron', 'manager')
-        with profiling():
+        mock.ManagerUserStory(self.db, 'Ron Swanson', 'ron@joinrebase.com', 'ron')
+        self.db.session.commit()
+        self.login('ron@joinrebase.com', 'ron')
+        with profiling(print_stats_args=('', .1)):
             self.get_resource('/auctions')

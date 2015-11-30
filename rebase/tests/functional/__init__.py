@@ -16,17 +16,18 @@ class RebaseRestTestCase(RebaseTestCase):
 
     def setUp(self):
         super().setUp()
+        self.prefix = self.app.config['URL_PREFIX']
         self.client = self.app.test_client()
         if self.create_mock_data:
             create_the_world(self.db)
             self.admin_user = create_admin_user(self.db, password='foo')
             self.db.session.commit()
 
-    def login_admin(self, role='manager'):
-        self.login(self.admin_user.email, 'foo', role=role)
+    def login_admin(self):
+        self.login(self.admin_user.email, 'foo')
 
-    def login(self, email, password, role=None):
-        response = self.post_resource('/auth', { 'user': {'email': email}, 'password': password, 'role': role})
+    def login(self, email, password):
+        response = self.post_resource('/auth', { 'user': {'email': email}, 'password': password})
         user = response['user']
         current_role = user['current_role']
         #print('Logged in as {} with role "{}"'.format(user['email'], current_role))
@@ -101,6 +102,7 @@ class RebaseRestTestCase(RebaseTestCase):
         return user
 
     def get_resource(self, url, expected_code=200):
+        url = self.prefix+url
         error_msg_fmt = 'Expected {}, got {}. Data: {}'
         # the header is required because of flask jsonify
         # see http://stackoverflow.com/questions/16908943/flask-display-json-in-a-neat-way
@@ -115,6 +117,7 @@ class RebaseRestTestCase(RebaseTestCase):
         return json.loads(response.data.decode('utf-8'))
 
     def post_resource(self, url, data=dict(), expected_code = 201):
+        url = self.prefix+url
         error_msg = 'Expected {}, got {}. Data: {}'
         response = self.client.post(url, data = json.dumps(data),
                 headers={'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json'})
@@ -125,6 +128,7 @@ class RebaseRestTestCase(RebaseTestCase):
         return json.loads(response.data.decode('utf-8'))
 
     def put_resource(self, url, data, expected_code = 200):
+        url = self.prefix+url
         error_msg = 'Expected {}, got {}. Data: {}'
         response = self.client.put(url, data = json.dumps(data),
                 headers={'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json'})
@@ -142,6 +146,7 @@ class RebaseRestTestCase(RebaseTestCase):
         return json.loads(response.data.decode('utf-8'))
 
     def delete_resource(self, url, expected_code = 200):
+        url = self.prefix+url
         error_msg = 'Expected {}, got {}. Data: {}'
         response = self.client.delete(url, headers={'X-Requested-With': 'XMLHttpRequest'})
         self.assertEqual(response.status_code, expected_code,
