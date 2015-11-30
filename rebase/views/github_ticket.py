@@ -19,7 +19,7 @@ class GithubTicketSchema(RebaseSchema):
         from rebase.models import GithubTicket
         return get_or_make_object(GithubTicket, data)
 
-serializer =            GithubTicketSchema(skip_missing=True)
+serializer =            GithubTicketSchema()
 deserializer =          GithubTicketSchema(strict=True)
 update_deserializer =   GithubTicketSchema()
 update_deserializer.make_object = lambda data: data

@@ -20,7 +20,7 @@ class ContractorSchema(RebaseSchema):
         from rebase.models import Contractor
         return get_or_make_object(Contractor, data)
 
-serializer =            ContractorSchema(skip_missing=True)
+serializer =            ContractorSchema()
 deserializer =          ContractorSchema(only=('user',), strict=True)
 update_deserializer =   ContractorSchema(only=('busyness',))
 update_deserializer.make_object = lambda data: data

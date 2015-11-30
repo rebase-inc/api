@@ -19,7 +19,7 @@ class GithubProjectSchema(RebaseSchema):
         return get_or_make_object(GithubProject, data)
 
 
-serializer =            GithubProjectSchema(skip_missing=True)
+serializer =            GithubProjectSchema()
 deserializer =          GithubProjectSchema(only=('organization', 'name'), strict=True)
 update_deserializer =   GithubProjectSchema()
 update_deserializer.make_object = lambda data: data

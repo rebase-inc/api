@@ -12,6 +12,6 @@ class TermSheetSchema(RebaseSchema):
         from rebase.models import TermSheet
         return get_or_make_object(TermSheet, data)
 
-serializer = TermSheetSchema(only=('id', 'legalese'), skip_missing=True)
-deserializer = TermSheetSchema(only=('id', 'legalese',), skip_missing=True, strict=True)
+serializer = TermSheetSchema(only=('id', 'legalese'))
+deserializer = TermSheetSchema(only=('id', 'legalese',), strict=True)
 update_deserializer = TermSheetSchema(only=('legalese',), strict=True)

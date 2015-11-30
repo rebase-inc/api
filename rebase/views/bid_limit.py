@@ -12,12 +12,12 @@ class BidLimitSchema(RebaseSchema):
         from rebase.models import BidLimit
         return get_or_make_object(BidLimit, data)
 
-serializer = BidLimitSchema(only=('id', 'price', 'ticket_snapshot','ticket_set'), skip_missing=True)
+serializer = BidLimitSchema(only=('id', 'price', 'ticket_snapshot','ticket_set'))
 
 ## we want only the id for serialization. for deserialization, we want to be able
 ## to pass the entire object in order to create a new sub resource
 #serializer.declared_fields['ticket_snapshot'].only = 'id'
 #serializer.declared_fields['ticket_set'].only = 'id'
 
-deserializer = BidLimitSchema(only=('id', 'price', 'ticket_snapshot' ), skip_missing=True, strict=True)
+deserializer = BidLimitSchema(only=('id', 'price', 'ticket_snapshot' ), strict=True)
 update_deserializer = BidLimitSchema(only=('price',), strict=True)

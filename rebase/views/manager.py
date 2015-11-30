@@ -20,7 +20,7 @@ class ManagerSchema(RebaseSchema):
         from rebase.models import Manager
         return update_object(Manager, data)
 
-serializer =            ManagerSchema(skip_missing=True)
+serializer =            ManagerSchema()
 deserializer =          ManagerSchema(strict=True)
 update_deserializer =   ManagerSchema()
 update_deserializer.make_object = lambda data: data

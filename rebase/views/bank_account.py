@@ -15,7 +15,7 @@ class BankAccountSchema(RebaseSchema):
         from rebase.models import BankAccount
         return get_or_make_object(BankAccount, data)
 
-serializer = BankAccountSchema(skip_missing=True)
+serializer = BankAccountSchema()
 deserializer = BankAccountSchema(exclude=('id',), strict=True)
 
 update_deserializer =   BankAccountSchema(only=('id', 'name',))

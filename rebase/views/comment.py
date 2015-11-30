@@ -19,7 +19,7 @@ class CommentSchema(RebaseSchema):
         from rebase.models import Comment
         return get_or_make_object(Comment, data)
 
-serializer =            CommentSchema(skip_missing=True)
+serializer =            CommentSchema()
 deserializer =          CommentSchema(strict=True)
 update_deserializer =   CommentSchema()
 update_deserializer.make_object = lambda data: data

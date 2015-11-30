@@ -19,7 +19,7 @@ class TicketSchema(RebaseSchema):
         return get_or_make_object(Ticket, data)
 
 
-serializer =            TicketSchema(skip_missing=True)
-deserializer =          TicketSchema(only=('id', 'title'), skip_missing=True, strict=True)
+serializer =            TicketSchema()
+deserializer =          TicketSchema(only=('id', 'title'), strict=True)
 update_deserializer =   TicketSchema()
 update_deserializer.make_object = lambda data: data

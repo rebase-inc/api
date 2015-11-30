@@ -55,9 +55,9 @@ class ArbitrateEventSchema(RebaseSchema):
         return 'arbitrate'
 
 
-serializer =            MediationSchema(skip_missing=True)
+serializer =            MediationSchema()
 deserializer =          MediationSchema(strict=True)
-update_deserializer =   MediationSchema(only=('id', 'timeout', 'client_answer', 'dev_answer'), skip_missing=True)
+update_deserializer =   MediationSchema(only=('id', 'timeout', 'client_answer', 'dev_answer'))
 update_deserializer.make_object = lambda data: data
 
 dev_answer_event_deserializer = DevAnswerEventSchema()

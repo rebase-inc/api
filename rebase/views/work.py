@@ -52,7 +52,7 @@ class FailEventSchema(RebaseSchema):
     def make_object(self, data):
         return 'fail'
 
-serializer = WorkSchema(skip_missing=True)
+serializer = WorkSchema()
 deserializer = WorkSchema(only=tuple())
 update_deserializer = WorkSchema(only=tuple())
 update_deserializer.make_object = lambda data: data

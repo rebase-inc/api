@@ -12,7 +12,7 @@ class FeedbackSchema(RebaseSchema):
         from rebase.models import Feedback
         return get_or_make_object(Feedback, data)
 
-serializer = FeedbackSchema(skip_missing=True)
+serializer = FeedbackSchema()
 deserializer = FeedbackSchema(strict=True)
 update_deserializer = FeedbackSchema()
 update_deserializer.make_object = lambda data: data 

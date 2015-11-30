@@ -1,4 +1,4 @@
-from marshmallow import fields
+from marshmallow import fields, post_load
 import marshmallow.exceptions as marsh
 import sqlalchemy.orm.exc as orm_exc
 
@@ -22,8 +22,8 @@ class UserSchema(RebaseSchema):
 
     roles = SecureNestedField('RoleSchema', exclude=('user',), many=True)
 
-
-    def make_object(self, data):
+    @post_load
+    def make_user(self, data):
         from rebase.models import User
         if tuple(data.keys()) == ('email',):
             try:

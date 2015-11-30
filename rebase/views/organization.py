@@ -19,7 +19,7 @@ class OrganizationSchema(RebaseSchema):
         from rebase.models import Organization
         return get_or_make_object(Organization, data)
 
-serializer = OrganizationSchema(exclude=('user',), skip_missing=True)
+serializer = OrganizationSchema(exclude=('user',))
 deserializer = OrganizationSchema(only=('name','user'))
 
 update_deserializer = OrganizationSchema(only=('name',))

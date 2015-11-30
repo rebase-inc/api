@@ -22,6 +22,6 @@ class RemoteTicketSchema(RebaseSchema):
 
 
 serializer =            RemoteTicketSchema()
-deserializer =          RemoteTicketSchema(skip_missing=True)
+deserializer =          RemoteTicketSchema()
 update_deserializer =   RemoteTicketSchema()
 update_deserializer.make_object = lambda data: data

@@ -16,7 +16,7 @@ class InternalProjectSchema(RebaseSchema):
     def make_object(self, data):
         return get_or_make_object(InternalProject, data)
 
-serializer =            InternalProjectSchema(skip_missing=True)
+serializer =            InternalProjectSchema()
 deserializer =          InternalProjectSchema(only=('organization', 'name'), strict=True)
 update_deserializer =   InternalProjectSchema()
 update_deserializer.make_object = lambda data: data

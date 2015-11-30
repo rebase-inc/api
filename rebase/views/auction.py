@@ -43,7 +43,7 @@ class FailEventSchema(RebaseSchema):
     def make_object(self, data):
         return 'fail'
 
-serializer = AuctionSchema(skip_missing=True)
+serializer = AuctionSchema()
 deserializer = AuctionSchema(only=('duration', 'finish_work_by', 'redundancy', 'ticket_set', 'term_sheet', 'approved_talents'), strict=True)
 deserializer.declared_fields['term_sheet'].only = None
 deserializer.declared_fields['ticket_set'].only = None

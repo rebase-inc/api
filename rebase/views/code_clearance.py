@@ -18,7 +18,7 @@ class CodeClearanceSchema(RebaseSchema):
         from rebase.models import CodeClearance
         return get_or_make_object(CodeClearance, data)
 
-serializer = CodeClearanceSchema(skip_missing=True)
+serializer = CodeClearanceSchema()
 
 deserializer = CodeClearanceSchema(only=('pre_approved','project','contractor'), strict=True)
 deserializer.declared_fields['project'].only = None

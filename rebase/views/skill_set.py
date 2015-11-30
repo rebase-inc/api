@@ -42,6 +42,6 @@ class SkillSetSchema(RebaseSchema):
         return get_or_make_object(SkillSet, data)
 
 serializer = SkillSetSchema()
-deserializer = SkillSetSchema(skip_missing=True)
+deserializer = SkillSetSchema()
 update_deserializer = SkillSetSchema('message',)
 update_deserializer.make_object = lambda data: data

@@ -13,8 +13,8 @@ class TicketSnapshotSchema(RebaseSchema):
         from rebase.models import TicketSnapshot
         return get_or_make_object(TicketSnapshot, data)
 
-serializer = TicketSnapshotSchema(skip_missing=True)
+serializer = TicketSnapshotSchema()
 
-deserializer = TicketSnapshotSchema(only=('id', 'ticket'), skip_missing=True,  strict=True)
+deserializer = TicketSnapshotSchema(only=('id', 'ticket'),  strict=True)
 update_deserializer = TicketSnapshotSchema()
 update_deserializer.make_object = lambda data: data

@@ -16,7 +16,7 @@ class NominationSchema(RebaseSchema):
     def make_object(self, data):
         return get_or_make_object(Nomination, data)
 
-deserializer =          NominationSchema(skip_missing=True)
-serializer =            NominationSchema(skip_missing=True)
+deserializer =          NominationSchema()
+serializer =            NominationSchema()
 update_deserializer =   NominationSchema()
 update_deserializer.make_object = lambda data: data

@@ -18,7 +18,7 @@ class TicketMatchSchema(RebaseSchema):
     def make_object(self, data):
         return get_or_make_object(TicketMatch, data, self._primary_keys)
 
-serializer =            TicketMatchSchema(skip_missing=True)
+serializer =            TicketMatchSchema()
 deserializer =          TicketMatchSchema(strict=True)
 update_deserializer =   TicketMatchSchema()
 update_deserializer.make_object = lambda data: data

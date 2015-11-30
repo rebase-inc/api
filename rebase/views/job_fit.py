@@ -42,7 +42,7 @@ class JobFitSchema(RebaseSchema):
     def make_object(self, data):
         return get_or_make_object(JobFit, data, self._primary_keys)
 
-deserializer =          JobFitSchema(skip_missing=True)
+deserializer =          JobFitSchema()
 serializer =            JobFitSchema()
 update_deserializer =   JobFitSchema(only=('score',))
 update_deserializer.make_object = lambda data: data

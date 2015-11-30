@@ -18,7 +18,7 @@ class InternalTicketSchema(RebaseSchema):
         from rebase.models import InternalTicket
         return get_or_make_object(InternalTicket, data)
 
-serializer =            InternalTicketSchema(skip_missing=True)
+serializer =            InternalTicketSchema()
 deserializer =          InternalTicketSchema(strict=True)
 update_deserializer =   InternalTicketSchema()
 update_deserializer.make_object = lambda data: data

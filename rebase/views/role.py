@@ -16,7 +16,7 @@ class RoleSchema(RebaseSchema):
         from rebase.models import Role
         return get_or_make_object(Role, data)
 
-serializer = RoleSchema(only=('id','type','user','roles', 'project', 'skill_set', 'remote_work_history'), skip_missing=True)
+serializer = RoleSchema(only=('id','type','user','roles', 'project', 'skill_set', 'remote_work_history'))
 
 deserializer = RoleSchema(only=tuple(), strict=True)
 

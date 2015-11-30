@@ -20,7 +20,7 @@ class ProjectSchema(RebaseSchema):
         return get_or_make_object(Project, data)
 
 
-serializer =            ProjectSchema(skip_missing=True)
+serializer =            ProjectSchema()
 deserializer =          ProjectSchema(only=('organization', 'name'), strict=True)
 update_deserializer =   ProjectSchema()
 update_deserializer.make_object = lambda data: data
