@@ -15,10 +15,9 @@ class ArbitrationSchema(RebaseSchema):
     def make_arbitration(self, data):
         ''' This is an admin only procedure '''
         from rebase.models import Arbitration
-        return get_or_make_object(Arbitration, data)
+        return self._get_or_make_object(Arbitration, data)
 
 serializer = ArbitrationSchema(only=('id','mediation'))
 deserializer = ArbitrationSchema(only=('mediation',))
-update_deserializer = ArbitrationSchema(only=tuple(), strict=True)
-update_deserializer.make_object = lambda data: data
+update_deserializer = ArbitrationSchema(only=tuple(), context={'raw': True}, strict=True)
 

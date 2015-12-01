@@ -40,9 +40,8 @@ class SkillSetSchema(RebaseSchema):
     @post_load
     def make_skill_set(self, data):
         from rebase.models import SkillSet
-        return get_or_make_object(SkillSet, data)
+        return self._get_or_make_object(SkillSet, data)
 
 serializer = SkillSetSchema()
 deserializer = SkillSetSchema()
-update_deserializer = SkillSetSchema('message',)
-update_deserializer.make_object = lambda data: data
+update_deserializer = SkillSetSchema('message', context={'raw': True}) # TODO: Figure out what the message parameter is for

@@ -25,8 +25,7 @@ class WorkSchema(RebaseSchema):
     @post_load
     def make_work_schema(self, data):
         from rebase.models import Work
-        return get_or_make_object(Work, data)
-
+        return self._get_or_make_object(Work, data)
 
 class HaltEventSchema(RebaseSchema):
     reason = fields.String(required=True)
@@ -66,9 +65,8 @@ class FailEventSchema(RebaseSchema):
         return 'fail'
 
 serializer = WorkSchema()
-deserializer = WorkSchema(only=tuple())
-update_deserializer = WorkSchema(only=tuple())
-update_deserializer.make_object = lambda data: data
+deserializer = WorkSchema(strict=True, only=tuple()) #TODO: Use load_only/dump_only
+update_deserializer = WorkSchema(only=tuple(), context={'raw': True})
 
 halt_event_deserializer = HaltEventSchema(strict=True)
 review_event_deserializer = ReviewEventSchema()

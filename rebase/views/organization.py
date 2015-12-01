@@ -5,7 +5,7 @@ from rebase.views.manager import ManagerSchema
 from rebase.views.project import ProjectSchema
 from rebase.views.bank_account import BankAccountSchema
 from rebase.views.user import UserSchema
-from rebase.common.database import get_or_make_object, SecureNestedField
+from rebase.common.database import SecureNestedField
 
 class OrganizationSchema(RebaseSchema):
     id =            fields.Integer()
@@ -18,10 +18,9 @@ class OrganizationSchema(RebaseSchema):
     @post_load
     def make_organization(self, data):
         from rebase.models import Organization
-        return get_or_make_object(Organization, data)
+        return self._get_or_make_object(Organization, data)
 
 serializer = OrganizationSchema(exclude=('user',))
 deserializer = OrganizationSchema(only=('name','user'))
 
-update_deserializer = OrganizationSchema(only=('name',))
-update_deserializer.make_object = lambda data: data
+update_deserializer = OrganizationSchema(only=('name',), context={'raw': True})

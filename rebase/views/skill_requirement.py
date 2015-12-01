@@ -39,10 +39,9 @@ class SkillRequirementSchema(RebaseSchema):
     @post_load
     def make_skill_requirement(self, data):
         from rebase.models import SkillRequirement
-        return get_or_make_object(SkillRequirement, data)
+        return self._get_or_make_object(SkillRequirement, data)
 
 serializer =            SkillRequirementSchema()
 deserializer =          SkillRequirementSchema()
-update_deserializer = SkillRequirementSchema('message',)
-update_deserializer.make_object = lambda data: data 
+update_deserializer = SkillRequirementSchema('message', context={'raw': True})
 

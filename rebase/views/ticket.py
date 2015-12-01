@@ -17,10 +17,8 @@ class TicketSchema(RebaseSchema):
     @post_load
     def make_ticket(self, data):
         from rebase.models import Ticket
-        return get_or_make_object(Ticket, data)
-
+        return self._get_or_make_object(Ticket, data)
 
 serializer =            TicketSchema()
 deserializer =          TicketSchema(only=('id', 'title'), strict=True)
-update_deserializer =   TicketSchema()
-update_deserializer.make_object = lambda data: data
+update_deserializer =   TicketSchema(context={'raw': True})

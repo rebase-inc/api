@@ -1,7 +1,7 @@
 from marshmallow import fields, post_load
 from rebase.common.schema import RebaseSchema
 from rebase.models.github_project import GithubProject
-from rebase.common.database import get_or_make_object, SecureNestedField
+from rebase.common.database import SecureNestedField
 from rebase.views.github_repository import GithubRepositorySchema
 from rebase.views.work_repo import WorkRepoSchema
 
@@ -17,10 +17,9 @@ class GithubProjectSchema(RebaseSchema):
 
     @post_load
     def make_github_project(self, data):
-        return get_or_make_object(GithubProject, data)
+        return self._get_or_make_object(GithubProject, data)
 
 
 serializer =            GithubProjectSchema()
 deserializer =          GithubProjectSchema(only=('organization', 'name'), strict=True)
-update_deserializer =   GithubProjectSchema()
-update_deserializer.make_object = lambda data: data
+update_deserializer =   GithubProjectSchema(context={'raw': True})

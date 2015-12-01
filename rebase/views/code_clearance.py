@@ -6,7 +6,7 @@ from rebase.models.project import Project
 from rebase.models.contractor import Contractor
 from rebase.views.project import ProjectSchema
 from rebase.views.contractor import ContractorSchema
-from rebase.common.database import get_or_make_object, SecureNestedField
+from rebase.common.database import SecureNestedField
 
 class CodeClearanceSchema(RebaseSchema):
     id =           fields.Integer()
@@ -17,7 +17,7 @@ class CodeClearanceSchema(RebaseSchema):
     @post_load
     def make_code_clearance(self, data):
         from rebase.models import CodeClearance
-        return get_or_make_object(CodeClearance, data)
+        return self._get_or_make_object(CodeClearance, data)
 
 serializer = CodeClearanceSchema()
 
@@ -25,5 +25,4 @@ deserializer = CodeClearanceSchema(only=('pre_approved','project','contractor'),
 deserializer.declared_fields['project'].only = None
 deserializer.declared_fields['contractor'].only = None
 
-update_deserializer = CodeClearanceSchema('message',)
-update_deserializer.make_object = lambda data: data 
+update_deserializer = CodeClearanceSchema(context={'raw': True})

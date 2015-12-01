@@ -14,7 +14,6 @@ from rebase.common.exceptions import (
     NotFoundError,
 )
 
-
 DB = SQLAlchemy()
 DB_PRODUCTION_NAME = 'rebase'
 DB_TEST_NAME = 'test_'+DB_PRODUCTION_NAME
@@ -46,7 +45,10 @@ def ids(instance):
     '''
     return dict(zip(get_model_primary_keys(type(instance)), primary_key(instance)))
 
-def get_or_make_object(model, data, id_fields=None):
+def get_or_make_object(model, data, id_fields=None, raw=False):
+    raise Exception('Deprecated! Use _get_or_make_object on RebaseSchema!')
+    if raw:
+        return data
     id_fields = get_model_primary_keys(model)
     instance_id = tuple(data.get(id_field) for id_field in id_fields)
     if all(instance_id):

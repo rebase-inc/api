@@ -3,7 +3,7 @@ from rebase.common.schema import RebaseSchema
 from rebase.models.remote_ticket import RemoteTicket
 from rebase.models.project import Project
 from rebase.views.skill_requirement import SkillRequirementSchema
-from rebase.common.database import get_or_make_object, SecureNestedField
+from rebase.common.database import SecureNestedField
 from flask.ext.restful import abort
 
 class RemoteTicketSchema(RebaseSchema):
@@ -19,10 +19,9 @@ class RemoteTicketSchema(RebaseSchema):
     @post_load
     def make_remote_ticket(self, data):
         from rebase.models import RemoteTicket
-        return get_or_make_object(RemoteTicket, data)
+        return self._get_or_make_object(RemoteTicket, data)
 
 
 serializer =            RemoteTicketSchema()
 deserializer =          RemoteTicketSchema()
-update_deserializer =   RemoteTicketSchema()
-update_deserializer.make_object = lambda data: data
+update_deserializer =   RemoteTicketSchema(context={'raw': True})

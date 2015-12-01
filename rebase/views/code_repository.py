@@ -10,10 +10,9 @@ class CodeRepositorySchema(RebaseSchema):
     @post_load
     def make_code_repository(self, data):
         from rebase.models import CodeRepository
-        return get_or_make_object(CodeRepository, data)
+        return self._get_or_make_object(CodeRepository, data)
 
 serializer = CodeRepositorySchema()
 deserializer = CodeRepositorySchema(only=tuple())
-update_deserializer = CodeRepositorySchema()
-update_deserializer.make_object = lambda data: data 
+update_deserializer = CodeRepositorySchema(context={'raw': True})
 

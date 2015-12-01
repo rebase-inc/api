@@ -18,7 +18,9 @@ def convert_exceptions(verb):
             raise server_error
         except ClientError as client_error:
             raise client_error
-        except:
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
             raise ServerError(message='Server error')
     return _handle_other_exceptions
 

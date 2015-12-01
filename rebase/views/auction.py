@@ -28,7 +28,7 @@ class AuctionSchema(RebaseSchema):
     @post_load
     def make_auction(self, data):
         from rebase.models import Auction
-        return get_or_make_object(Auction, data)
+        return self._get_or_make_object(Auction, data)
 
 
 class BidEventSchema(RebaseSchema):
@@ -55,8 +55,7 @@ deserializer = AuctionSchema(only=('duration', 'finish_work_by', 'redundancy', '
 deserializer.declared_fields['term_sheet'].only = None
 deserializer.declared_fields['ticket_set'].only = None
 
-update_deserializer = AuctionSchema(only=('id', 'duration', 'term_sheet', 'redundancy', 'approved_talents'), strict=True)
-update_deserializer.make_object = lambda data: data
+update_deserializer = AuctionSchema(only=('id', 'duration', 'term_sheet', 'redundancy', 'approved_talents'), context={'raw': True}, strict=True)
 
 bid_event_deserializer = BidEventSchema(only=('bid',), strict=True)
 end_event_deserializer = EndEventSchema()

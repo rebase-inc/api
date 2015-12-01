@@ -12,10 +12,9 @@ class CreditSchema(RebaseSchema):
     @post_load
     def make_credit(self, data):
         from rebase.models import Credit
-        return get_or_make_object(Credit, data)
+        return self._get_or_make_object(Credit, data)
 
 serializer = CreditSchema(only=('id','work','price','paid'))
 deserializer = CreditSchema(only=('work','price'))
 
-update_deserializer = CreditSchema(only=tuple(), strict=True)
-update_deserializer.make_object = lambda data: data
+update_deserializer = CreditSchema(only=tuple(), context={'raw': True}, strict=True)

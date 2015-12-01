@@ -19,10 +19,8 @@ class ContractorSchema(RebaseSchema):
     @post_load
     def make_contractor(self, data):
         from rebase.models import Contractor
-        return get_or_make_object(Contractor, data)
+        return self._get_or_make_object(Contractor, data)
 
 serializer =            ContractorSchema()
 deserializer =          ContractorSchema(only=('user',), strict=True)
-update_deserializer =   ContractorSchema(only=('busyness',))
-update_deserializer.make_object = lambda data: data
-
+update_deserializer =   ContractorSchema(only=('busyness',), context={'raw': True})

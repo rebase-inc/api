@@ -15,9 +15,8 @@ class NominationSchema(RebaseSchema):
 
     @post_load
     def make_nomination(self, data):
-        return get_or_make_object(Nomination, data)
+        return self._get_or_make_object(Nomination, data)
 
-deserializer =          NominationSchema()
 serializer =            NominationSchema()
-update_deserializer =   NominationSchema()
-update_deserializer.make_object = lambda data: data
+deserializer =          NominationSchema(strict=True)
+update_deserializer =   NominationSchema(context={'raw': True})

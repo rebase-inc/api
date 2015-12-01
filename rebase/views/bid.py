@@ -17,5 +17,4 @@ class BidSchema(RebaseSchema):
 
 serializer = BidSchema()
 deserializer = BidSchema(only=('auction', 'contractor', 'work_offers'), strict=True)
-update_deserializer = BidSchema(only=('id',), strict=True)
-update_deserializer.make_object = lambda data: data
+update_deserializer = BidSchema(only=('id',), context={'raw': True}, strict=True)

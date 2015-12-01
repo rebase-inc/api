@@ -4,7 +4,7 @@ from rebase.common.database import DB
 from rebase.models.manager import Manager
 from rebase.models.user import User
 from rebase.models.project import Project
-from rebase.common.database import get_or_make_object, SecureNestedField
+from rebase.common.database import SecureNestedField
 
 class ManagerSchema(RebaseSchema):
     id =        fields.Integer()
@@ -15,7 +15,7 @@ class ManagerSchema(RebaseSchema):
     @post_load
     def make_manager(self, data):
         from rebase.models import Manager
-        return get_or_make_object(Manager, data)
+        return self._get_or_make_object(Manager, data)
 
     def _update_object(self, data):
         from rebase.models import Manager
@@ -23,5 +23,4 @@ class ManagerSchema(RebaseSchema):
 
 serializer =            ManagerSchema()
 deserializer =          ManagerSchema(strict=True)
-update_deserializer =   ManagerSchema()
-update_deserializer.make_object = lambda data: data
+update_deserializer =   ManagerSchema(context={'raw': True})

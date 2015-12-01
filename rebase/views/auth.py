@@ -9,5 +9,4 @@ class AuthSchema(RebaseSchema):
 serializer = AuthSchema()
 deserializer = AuthSchema(strict=True)
 
-update_deserializer = AuthSchema()
-#update_deserializer.make_object = lambda data: data
+update_deserializer = None

@@ -1,6 +1,6 @@
 from marshmallow import fields, post_load
 
-from rebase.common.database import get_or_make_object, SecureNestedField
+from rebase.common.database import SecureNestedField
 from rebase.common.schema import RebaseSchema
 from rebase.models.github_account import GithubAccount
 from rebase.views.github_org_account import GithubOrgAccountSchema
@@ -16,10 +16,9 @@ class GithubAccountSchema(RebaseSchema):
     @post_load
     def make_github_account(self, data):
         from rebase.models import GithubAccount
-        return get_or_make_object(GithubAccount, data)
+        return self._get_or_make_object(GithubAccount, data)
 
 
 serializer =            GithubAccountSchema()
 deserializer =          GithubAccountSchema(exclude=('id',), strict=True)
-update_deserializer =   GithubAccountSchema()
-update_deserializer.make_object = lambda data: data
+update_deserializer =   GithubAccountSchema(context={'raw': True})

@@ -11,9 +11,8 @@ class ContractSchema(RebaseSchema):
     @post_load
     def make_contract(self, data):
         from rebase.models import Contract
-        return get_or_make_object(Contract, data)
+        return self._get_or_make_object(Contract, data)
 
 serializer = ContractSchema()
 deserializer = ContractSchema(only=('bid',), strict=True)
-update_deserializer = ContractSchema(only=('id',), strict=True)
-update_deserializer.make_object = lambda data: data
+update_deserializer = ContractSchema(only=('id',), context={'raw': True}, strict=True)

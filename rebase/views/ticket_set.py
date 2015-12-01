@@ -13,9 +13,8 @@ class TicketSetSchema(RebaseSchema):
     @post_load
     def make_ticket_set(self, data):
         from rebase.models import TicketSet
-        return get_or_make_object(TicketSet, data)
+        return self._get_or_make_object(TicketSet, data)
 
 serializer = TicketSetSchema()
 deserializer = TicketSetSchema(strict=True)
-update_deserializer = TicketSetSchema()
-update_deserializer.make_object = lambda data: data
+update_deserializer = TicketSetSchema(context={'raw': True})
