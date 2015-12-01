@@ -1,4 +1,5 @@
 from datetime import datetime
+from functools import lru_cache, partialmethod
 
 from rebase.common.database import DB, PermissionMixin, query_by_user_or_id
 from rebase.common.query import query_from_class_to_user
@@ -17,29 +18,17 @@ class TicketSnapshot(DB.Model, PermissionMixin):
         self.ticket = ticket
         self.title = ticket.title
 
-    @classmethod
-    def query_by_user(cls, user):
-        return cls.get_all(user)
-
-    def filter_by_id(self, query):
-        return query.filter(TicketSnapshot.id==self.id)
 
     @classmethod
-    def _all(cls, user):
-        return cls.as_manager(user)\
-            .union(cls.as_contractor_work_offers(user))\
-            .union(cls.as_contractor_auctions(user))
+    def as_owner(cls, user):
+        return cls.as_manager(user)
 
     @classmethod
-    def get_all(cls, user, snapshot=None):
-        return query_by_user_or_id(
-            cls,
-            cls._all,
-            cls.filter_by_id,
-            user, snapshot
-        )
+    def as_contractor(cls, user):
+        return cls.as_contractor_work_offers(user).union(cls.as_contractor_auctions(user))
 
     @classmethod
+    @lru_cache(maxsize=None)
     def as_manager(cls, user):
         import rebase.models
         return query_from_class_to_user(TicketSnapshot, [
@@ -75,7 +64,7 @@ class TicketSnapshot(DB.Model, PermissionMixin):
     allowed_to_be_deleted_by = allowed_to_be_created_by
 
     def allowed_to_be_viewed_by(self, user):
-        return self.get_all(user, self).limit(1).all()
+        return self.found(self, user)
 
     @property
     def organization(self):

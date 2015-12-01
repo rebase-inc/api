@@ -130,7 +130,7 @@ def create_one_internal_ticket(db, title=None, description=None, project=None):
     title = title or ' '.join(pick_a_word() for i in range(5))
     description = description or ' '.join(pick_a_word() for i in range(5))
     ticket = InternalTicket(project, title)
-    user = create_one_user(db)
+    user = project.managers[0].user
     Comment(user, description, ticket=ticket)
     SkillRequirement(ticket)
     db.session.add(ticket)

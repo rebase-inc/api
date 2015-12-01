@@ -70,6 +70,7 @@ class User(DB.Model, PermissionMixin):
             .union(cls.as_contractor_get_cleared_contractors(user))
 
     @classmethod
+    @lru_cache(maxsize=None)
     def as_manager(cls, user):
         '''
         As a manager, there are 3 types of users you can read:
@@ -167,7 +168,6 @@ class User(DB.Model, PermissionMixin):
     def allowed_to_be_deleted_by(self, user):
         return self.allowed_to_be_modified_by(user)
 
-    @lru_cache(maxsize=None)
     def allowed_to_be_viewed_by(self, user):
         return self.found(self, user)
 

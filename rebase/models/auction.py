@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from functools import lru_cache
 
 from sqlalchemy.orm import validates
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -75,6 +76,7 @@ class Auction(DB.Model, PermissionMixin):
     allowed_to_be_modified_by = allowed_to_be_created_by
     allowed_to_be_deleted_by = allowed_to_be_created_by
 
+    @lru_cache(maxsize=None)
     def allowed_to_be_viewed_by(self, user):
         if user.is_admin():
             return True

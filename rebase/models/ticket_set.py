@@ -1,3 +1,5 @@
+from functools import lru_cache, partialmethod
+
 from rebase.common.database import DB, PermissionMixin, query_by_user_or_id
 from rebase.models.bid_limit import BidLimit
 from rebase.common.query import query_from_class_to_user
@@ -22,16 +24,10 @@ class TicketSet(DB.Model, PermissionMixin):
     def organization(self):
         return self.bid_limits[0].ticket_snapshot.ticket.organization
 
-    @classmethod
-    def query_by_user(cls, user):
-        import rebase.models
-        if user.admin:
-            return cls.query
-        return cls._all(user)
 
     @classmethod
-    def _all(cls, user):
-        return cls.as_manager(user).union(cls.as_contractor(user))
+    def as_owner(cls, user):
+        return cls.as_manager(user)
 
     @classmethod
     def as_manager(cls, user):
@@ -60,12 +56,9 @@ class TicketSet(DB.Model, PermissionMixin):
     allowed_to_be_modified_by = allowed_to_be_created_by
     allowed_to_be_deleted_by = allowed_to_be_created_by
 
-    def filter_by_id(self, query):
-        return query.filter(TicketSet.id==self.id)
-
+    @lru_cache(maxsize=None)
     def allowed_to_be_viewed_by(self, user):
         return self.bid_limits[0].allowed_to_be_viewed_by(user)
-        
 
     def __repr__(self):
         return '<Ticketset[id:{}]>'.format(self.id)

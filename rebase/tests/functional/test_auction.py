@@ -196,5 +196,6 @@ class TestAuction(PermissionTestCase):
         mock.ManagerUserStory(self.db, 'Ron Swanson', 'ron@joinrebase.com', 'ron')
         self.db.session.commit()
         self.login('ron@joinrebase.com', 'ron')
-        with profiling(print_stats_args=('', .1)):
+        #with profiling(print_stats_args=('', .1)):
+        with profiling():
             self.get_resource('/auctions')
