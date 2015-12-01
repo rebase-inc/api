@@ -7,6 +7,7 @@ import datetime
 from rebase.common.database import DB, PermissionMixin
 from rebase.common.exceptions import ClientError
 from rebase.common.state import StateMachine
+from rebase.models.comment import Comment
 
 class Mediation(DB.Model, PermissionMixin):
     __pluralname__ = 'mediations'
@@ -77,24 +78,24 @@ class MediationStateMachine(StateMachine):
     def discussion(self):
         pass
 
-    def waiting_for_client(self, dev_answer, comment):
-        if dev_answer not in self.valid_answers:
-            raise InvalidMediationAnswer(self, dev_answer, comment)
-        self.mediation.dev_answer = dev_answer
+    def waiting_for_client(self, answer, comment):
+        if answer not in self.valid_answers:
+            raise InvalidMediationAnswer(self, answer, comment)
+        self.mediation.dev_answer = answer
         Comment(current_user, comment, mediation=self.mediation)
 
-    def waiting_for_dev(self, client_answer, comment):
-        if client_answer not in self.valid_answers:
-            raise InvalidMediationAnswer(self, client_answer, comment)
-        self.mediation.client_answer = client_answer
+    def waiting_for_dev(self, answer, comment):
+        if answer not in self.valid_answers:
+            raise InvalidMediationAnswer(self, answer, comment)
+        self.mediation.client_answer = answer
         Comment(current_user, comment, mediation=self.mediation)
 
-    def decision(self, remaining_answer, comment):
+    def decision(self, answer, comment):
         Comment(current_user, comment, mediation=self.mediation)
         if hasattr(self.mediation, 'client_answer'):
-            self.mediation.dev_answer = remaining_answer
+            self.mediation.dev_answer = answer
         else:
-            self.mediation.client_answer = remaining_answer
+            self.mediation.client_answer = answer
 
         if self.mediation.client_answer == self.mediation.dev_answer:
             self.send('agree')

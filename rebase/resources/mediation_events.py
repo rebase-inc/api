@@ -56,10 +56,10 @@ class MediationDevAnswerEvents(Resource):
     @login_required
     def post(self, id):
         mediation_instance = Mediation.query.get_or_404(id)
-        dev_answer_event = dev_answer_event_deserializer.load(request.form or request.json).data
+        event, data = dev_answer_event_deserializer.load(request.form or request.json).data
 
         with ManagedState():
-            mediation_instance.machine.send(*dev_answer_event)
+            mediation_instance.machine.send(event, **data)
 
         DB.session.commit()
 
@@ -73,10 +73,10 @@ class MediationClientAnswerEvents(Resource):
     @login_required
     def post(self, id):
         mediation_instance = Mediation.query.get_or_404(id)
-        client_answer_event = client_answer_event_deserializer.load(request.form or request.json).data
+        event, data = client_answer_event_deserializer.load(request.form or request.json).data
 
         with ManagedState():
-            mediation_instance.machine.send(*client_answer_event)
+            mediation_instance.machine.send(event, **data)
 
         DB.session.commit()
 

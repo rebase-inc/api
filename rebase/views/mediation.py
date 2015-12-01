@@ -13,7 +13,7 @@ class MediationSchema(RebaseSchema):
     state =         fields.String()
     work =          SecureNestedField('WorkSchema')
     arbitration =   SecureNestedField('ArbitrationSchema', default=None)
-    comments =      SecureNestedField('CommentSchema',      only=('id',), many=True, default=None)
+    comments =      SecureNestedField('CommentSchema', only=('id', 'content', 'created', 'user'), many=True, default=None)
 
     @post_load
     def make_mediation(self, data):
@@ -23,21 +23,21 @@ class MediationSchema(RebaseSchema):
 
 
 class DevAnswerEventSchema(RebaseSchema):
-    dev_answer = fields.String()
+    answer = fields.String()
     comment = fields.String()
 
     @post_load
     def make_dev_answer(self, data):
-        return 'dev_answer', data.pop('dev_answer')
+        return 'dev_answer', data
 
 
 class ClientAnswerEventSchema(RebaseSchema):
-    client_answer = fields.String()
+    answer = fields.String()
     comment = fields.String()
 
     @post_load
     def make_client_answer(self, data):
-        return 'client_answer', data.pop('client_answer')
+        return 'client_answer', data
 
 
 class TimeoutEventSchema(RebaseSchema):
