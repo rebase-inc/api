@@ -33,7 +33,7 @@ class UserSchema(RebaseSchema):
             try:
                 return User.query.filter(User.email == data.get('email')).one()
             except orm_exc.NoResultFound as error:
-                raise marsh.ValidationError('Bad email')
+                raise marsh.ValidationError('Bad email', fields=['email',])
         self._get_or_make_object(User, data)
 
 serializer = UserSchema()

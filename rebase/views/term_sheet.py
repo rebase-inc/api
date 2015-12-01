@@ -11,7 +11,7 @@ class TermSheetSchema(RebaseSchema):
     @post_load
     def make_term_sheet(self, data):
         from rebase.models import TermSheet
-        return get_or_make_object(TermSheet, data)
+        return self._get_or_make_object(TermSheet, data)
 
 serializer = TermSheetSchema(only=('id', 'legalese'))
 deserializer = TermSheetSchema(only=('id', 'legalese',), strict=True)

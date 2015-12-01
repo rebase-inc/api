@@ -11,7 +11,7 @@ class BidLimitSchema(RebaseSchema):
     @post_load
     def make_bid_limit(self, data):
         from rebase.models import BidLimit
-        return get_or_make_object(BidLimit, data)
+        return self._get_or_make_object(BidLimit, data)
 
 serializer = BidLimitSchema(only=('id', 'price', 'ticket_snapshot','ticket_set'))
 

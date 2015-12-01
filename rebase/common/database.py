@@ -100,6 +100,7 @@ class SecureNestedField(fields.Nested):
     def schema(self):
         _schema = fields.Nested.schema.fget(self)
         _schema.strict = self.strict
+        _schema.context = {} # hack
         return _schema
 
 

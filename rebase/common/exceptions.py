@@ -65,7 +65,7 @@ class ValidationError(ClientError):
         if not isinstance(error, marsh_exc.ValidationError):
             raise ValueError('error parameter must be of type {}'.format(marsh_exc.ValidationError))
         error_message = "Validation error: '{}' while validating: {}"
-        error_message = error_message.format(error.field, data)
+        error_message = error_message.format(error.fields, data)
         super().__init__(message=error_message, more_data=data)
 
 
