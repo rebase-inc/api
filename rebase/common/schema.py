@@ -13,7 +13,6 @@ class RebaseSchema(Schema):
             return super().dump(*args, **kwargs)
 
     def _get_or_make_object(self, model, data):
-        print('trying to get or make object ' + str(model) + ' with data ' + str(data))
         if self.context.get('raw'): 
             return data
         primary_keys = get_model_primary_keys(model)
