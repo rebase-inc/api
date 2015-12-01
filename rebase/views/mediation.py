@@ -1,9 +1,9 @@
 import datetime
 
-from marshmallow import fields
+from marshmallow import fields, post_load
 
 from rebase.common.schema import RebaseSchema
-from rebase.common.database import get_or_make_object, SecureNestedField
+from rebase.common.database import SecureNestedField
 
 class MediationSchema(RebaseSchema):
     id =            fields.Integer()
@@ -15,50 +15,60 @@ class MediationSchema(RebaseSchema):
     arbitration =   SecureNestedField('ArbitrationSchema', default=None)
     comments =      SecureNestedField('CommentSchema',      only=('id',), many=True, default=None)
 
-    def make_object(self, data):
+    @post_load
+    def make_mediation(self, data):
         ''' This is an admin only procedure '''
         from rebase.models import Mediation
-        return get_or_make_object(Mediation, data)
+        return self._get_or_make_object(Mediation, data)
 
 
 class DevAnswerEventSchema(RebaseSchema):
     dev_answer = fields.String()
 
-    def make_object(self, data):
+    @post_load
+    def make_dev_answer(self, data):
         return 'dev_answer', data.pop('dev_answer')
 
 
 class ClientAnswerEventSchema(RebaseSchema):
     client_answer = fields.String()
 
-    def make_object(self, data):
+    @post_load
+    def make_client_answer(self, data):
         return 'client_answer', data.pop('client_answer')
 
 
 class TimeoutEventSchema(RebaseSchema):
-    def make_object(self, data):
+
+    @post_load
+    def make_timeout(self, data):
         return 'timeout'
 
 
 class TimeoutAnswerEventSchema(RebaseSchema):
-    def make_object(self, data):
+
+    @post_load
+    def make_timeout_answer(self, data):
         return 'timeout_answer'
 
 
 class AgreeEventSchema(RebaseSchema):
-    def make_object(self, data):
+
+    @post_load
+    def make_agree(self, data):
         return 'agree'
 
 
 class ArbitrateEventSchema(RebaseSchema):
-    def make_object(self, data):
+
+    @post_load
+    def make_arbitrate(self, data):
         return 'arbitrate'
 
 
-serializer =            MediationSchema(skip_missing=True)
+serializer =            MediationSchema()
 deserializer =          MediationSchema(strict=True)
-update_deserializer =   MediationSchema(only=('id', 'timeout', 'client_answer', 'dev_answer'), skip_missing=True)
-update_deserializer.make_object = lambda data: data
+update_deserializer =   MediationSchema(only=('id', 'timeout', 'client_answer', 'dev_answer'), context={'raw': True})
 
 dev_answer_event_deserializer = DevAnswerEventSchema()
 client_answer_event_deserializer = ClientAnswerEventSchema()

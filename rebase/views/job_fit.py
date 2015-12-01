@@ -1,8 +1,8 @@
 from math import sqrt
 
-from marshmallow import fields
+from marshmallow import fields, post_load
 from rebase.common.schema import RebaseSchema
-from rebase.common.database import get_or_make_object, SecureNestedField
+from rebase.common.database import SecureNestedField
 from rebase.common.utils import get_model_primary_keys
 from rebase.models import JobFit
 from rebase.views.nomination import NominationSchema
@@ -39,10 +39,10 @@ class JobFitSchema(RebaseSchema):
         score = float(sum(self.get_similarity(tm) for tm in obj.ticket_matches))/max(len(obj.ticket_matches), 1)
         return score
 
-    def make_object(self, data):
-        return get_or_make_object(JobFit, data, self._primary_keys)
+    @post_load
+    def make_job_fit(self, data):
+        return self._get_or_make_object(JobFit, data, self._primary_keys)
 
-deserializer =          JobFitSchema(skip_missing=True)
+deserializer =          JobFitSchema()
 serializer =            JobFitSchema()
-update_deserializer =   JobFitSchema(only=('score',))
-update_deserializer.make_object = lambda data: data
+update_deserializer =   JobFitSchema(only=('score',), context={'raw': True})

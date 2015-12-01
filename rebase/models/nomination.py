@@ -40,7 +40,7 @@ class Nomination(DB.Model, PermissionMixin):
         for bid_limit in ticket_set.bid_limits:
             skill_requirement = bid_limit.ticket_snapshot.ticket.skill_requirement
             ticket_match = TicketMatch.query.get((skill_requirement.id, contractor.skill_set.id))
-            ticket_match = ticket_match or TicketMatch(contractor.skill_set, skill_requirement)            
+            ticket_match = ticket_match or TicketMatch(contractor.skill_set, skill_requirement)
             ticket_matches.append(ticket_match)
         job_fits = JobFit(self, ticket_matches)
 

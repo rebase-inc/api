@@ -1,4 +1,4 @@
-from marshmallow import fields
+from marshmallow import fields, post_load
 from rebase.common.schema import RebaseSchema
 
 from rebase.views.bid_limit import BidLimitSchema
@@ -10,11 +10,11 @@ class TicketSetSchema(RebaseSchema):
     auction =     SecureNestedField('AuctionSchema', only=('id',))
     nominations = SecureNestedField('NominationSchema', only=('contractor', 'ticket_set', 'job_fit', 'auction'), many=True)
 
-    def make_object(self, data):
+    @post_load
+    def make_ticket_set(self, data):
         from rebase.models import TicketSet
-        return get_or_make_object(TicketSet, data)
+        return self._get_or_make_object(TicketSet, data)
 
-serializer = TicketSetSchema(skip_missing=True)
+serializer = TicketSetSchema()
 deserializer = TicketSetSchema(strict=True)
-update_deserializer = TicketSetSchema()
-update_deserializer.make_object = lambda data: data
+update_deserializer = TicketSetSchema(context={'raw': True})

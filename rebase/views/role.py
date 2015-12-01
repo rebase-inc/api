@@ -1,4 +1,4 @@
-from marshmallow import fields
+from marshmallow import fields, post_load
 from rebase.common.schema import RebaseSchema
 
 from rebase.common.database import get_or_make_object, SecureNestedField
@@ -12,13 +12,11 @@ class RoleSchema(RebaseSchema):
     skill_set = SecureNestedField('SkillSetSchema', only=('id','skills'), default=None) # only valid for contractor roles
     remote_work_history = SecureNestedField('RemoteWorkHistorySchema', only=('id','analyzing', 'github_accounts'), default=None) # only valid for contractor roles
 
-    def make_object(self, data):
+    @post_load
+    def make_role(self, data):
         from rebase.models import Role
-        return get_or_make_object(Role, data)
+        return self._get_or_make_object(Role, data)
 
-serializer = RoleSchema(only=('id','type','user','roles', 'project', 'skill_set', 'remote_work_history'), skip_missing=True)
-
+serializer = RoleSchema(only=('id','type','user','roles', 'project', 'skill_set', 'remote_work_history')) # TODO: Use load_only/dump_only
 deserializer = RoleSchema(only=tuple(), strict=True)
-
-update_deserializer = RoleSchema(only=tuple())
-update_deserializer.make_object = lambda data: data
+update_deserializer = RoleSchema(only=tuple(), context={'raw': True})

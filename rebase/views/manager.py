@@ -1,10 +1,10 @@
-from marshmallow import fields
+from marshmallow import fields, post_load
 from rebase.common.schema import RebaseSchema
 from rebase.common.database import DB
 from rebase.models.manager import Manager
 from rebase.models.user import User
 from rebase.models.project import Project
-from rebase.common.database import get_or_make_object, SecureNestedField
+from rebase.common.database import SecureNestedField
 
 class ManagerSchema(RebaseSchema):
     id =        fields.Integer()
@@ -12,15 +12,15 @@ class ManagerSchema(RebaseSchema):
     project =   SecureNestedField('ProjectSchema',  only=('id','name', 'organization'))
     user =      SecureNestedField('UserSchema',     only=('id',))
 
-    def make_object(self, data):
+    @post_load
+    def make_manager(self, data):
         from rebase.models import Manager
-        return get_or_make_object(Manager, data)
+        return self._get_or_make_object(Manager, data)
 
     def _update_object(self, data):
         from rebase.models import Manager
         return update_object(Manager, data)
 
-serializer =            ManagerSchema(skip_missing=True)
+serializer =            ManagerSchema()
 deserializer =          ManagerSchema(strict=True)
-update_deserializer =   ManagerSchema()
-update_deserializer.make_object = lambda data: data
+update_deserializer =   ManagerSchema(context={'raw': True})

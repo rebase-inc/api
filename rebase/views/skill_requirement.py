@@ -1,5 +1,5 @@
 from flask.ext.restful import abort
-from marshmallow import fields
+from marshmallow import fields, post_load
 
 from rebase.common.database import get_or_make_object, SecureNestedField
 from rebase.common.schema import RebaseSchema
@@ -36,12 +36,12 @@ class SkillRequirementSchema(RebaseSchema):
     skills =    DictField(fields.Str(), fields.Float(), default={})
     ticket =    SecureNestedField(TicketSchema,  only=('id',))
 
-    def make_object(self, data):
+    @post_load
+    def make_skill_requirement(self, data):
         from rebase.models import SkillRequirement
-        return get_or_make_object(SkillRequirement, data)
+        return self._get_or_make_object(SkillRequirement, data)
 
 serializer =            SkillRequirementSchema()
 deserializer =          SkillRequirementSchema()
-update_deserializer = SkillRequirementSchema('message',)
-update_deserializer.make_object = lambda data: data 
+update_deserializer = SkillRequirementSchema('message', context={'raw': True})
 

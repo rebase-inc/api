@@ -1,4 +1,4 @@
-from marshmallow import fields
+from marshmallow import fields, post_load
 from rebase.common.schema import RebaseSchema
 from rebase.models.code_repository import CodeRepository
 from rebase.common.database import get_or_make_object, SecureNestedField
@@ -7,12 +7,12 @@ class CodeRepositorySchema(RebaseSchema):
     id =   fields.Integer()
     url =  fields.String()
 
-    def make_object(self, data):
+    @post_load
+    def make_code_repository(self, data):
         from rebase.models import CodeRepository
-        return get_or_make_object(CodeRepository, data)
+        return self._get_or_make_object(CodeRepository, data)
 
 serializer = CodeRepositorySchema()
 deserializer = CodeRepositorySchema(only=tuple())
-update_deserializer = CodeRepositorySchema()
-update_deserializer.make_object = lambda data: data 
+update_deserializer = CodeRepositorySchema(context={'raw': True})
 
