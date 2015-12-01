@@ -4,10 +4,6 @@ from rebase.common.database import get_model_primary_keys
 
 class RebaseSchema(Schema):
 
-    # def __init__(self, *args, **kwargs):
-        # if not hasattr(self, 'model'):
-            # raise Exception('Model must be defined!')
-
     def load(self, *args, **kwargs):
         with marshmallow_exceptions(args[0]):
             return super().load(*args, **kwargs)
