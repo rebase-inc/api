@@ -52,6 +52,14 @@ class AuthCollection(Resource):
             return response
 
     def get(self):
+        if current_user.is_authenticated():
+            return jsonify(**{'user': user.serializer.dump(current_user).data})
+        else:
+            response = jsonify(message=self.bad_credentials)
+            response.status_code = 400
+            return response
+
+    def delete(self):
         ''' logout '''
         logout_user()
         response = jsonify(message = 'Logged out')
