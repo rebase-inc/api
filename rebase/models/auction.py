@@ -12,13 +12,13 @@ from rebase.models import BidLimit, Contract, Bid
 class Auction(DB.Model, PermissionMixin):
     __pluralname__ = 'auctions'
 
-    id =              DB.Column(DB.Integer,   primary_key=True)
+    id =              DB.Column(DB.Integer,  primary_key=True)
     created =         DB.Column(DB.DateTime, nullable=False)
     expires =         DB.Column(DB.DateTime, nullable=False)
-    duration =        DB.Column(DB.Integer,   nullable=False)
-    finish_work_by =  DB.Column(DB.DateTime,  nullable=False)
-    redundancy =      DB.Column(DB.Integer,   nullable=False)
-    term_sheet_id =   DB.Column(DB.Integer,   DB.ForeignKey('term_sheet.id', ondelete='CASCADE'), nullable=False)
+    duration =        DB.Column(DB.Integer,  nullable=False)
+    finish_work_by =  DB.Column(DB.DateTime, nullable=False)
+    redundancy =      DB.Column(DB.Integer,  nullable=False)
+    term_sheet_id =   DB.Column(DB.Integer,  DB.ForeignKey('term_sheet.id', ondelete='CASCADE'), nullable=False)
     state =           DB.Column(DB.String, nullable=False, default='created')
 
     term_sheet =       DB.relationship('TermSheet',    uselist=False)
