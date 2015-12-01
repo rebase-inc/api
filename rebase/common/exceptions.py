@@ -65,7 +65,7 @@ class ValidationError(ClientError):
         if not isinstance(error, marsh_exc.ValidationError):
             raise ValueError('error parameter must be of type {}'.format(marsh_exc.ValidationError))
         error_message = "Validation error: '{}' while validating: {}"
-        error_message = error_message.format(error.field, data)
+        error_message = error_message.format(error.fields, data)
         super().__init__(message=error_message, more_data=data)
 
 
@@ -133,7 +133,7 @@ class BadBid(ClientError):
 
 class AlreadyBid(ClientError):
     error_message = 'Contractor "{}" already bid for Ticket "{}"'
-    
+
     def __init__(self, contractor, ticket_snapshot):
         super().__init__(code=409, message=self.error_message.format(contractor.user.name, ticket_snapshot.title))
 
@@ -148,13 +148,9 @@ class Forbidden(ClientError):
 def marshmallow_exceptions(data=None):
     try:
         yield
-    except marsh_exc.MarshallingError as error:
-        raise MarshallingError(error, data)
-    except marsh_exc.UnmarshallingError as error:
-        raise UnmarshallingError(error, data)
     except marsh_exc.ValidationError as error:
         raise ValidationError(error, data)
-    except marsh_exc.ForcedError as error:
-        raise ForcedError(error, data)
     except TypeError as error:
+        import traceback
+        traceback.print_exc()
         raise InternalTypeError(error, data)

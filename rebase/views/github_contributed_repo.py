@@ -1,6 +1,6 @@
-from marshmallow import fields
+from marshmallow import fields, post_load
 
-from rebase.common.database import get_or_make_object, SecureNestedField
+from rebase.common.database import SecureNestedField
 from rebase.common.schema import RebaseSchema
 from rebase.models.github_contributed_repo import GithubContributedRepo
 
@@ -13,12 +13,12 @@ class GithubContributedRepoSchema(RebaseSchema):
     description =               fields.String()
     owner =                     fields.String()
 
-    def make_object(self, data):
+    @post_load
+    def make_github_contributed_repo(self, data):
         from rebase.models import GithubContributedRepo
-        return get_or_make_object(GithubContributedRepo, data)
+        return self._get_or_make_object(GithubContributedRepo, data)
 
 
 serializer =            GithubContributedRepoSchema()
 deserializer =          GithubContributedRepoSchema(exclude=('id',), strict=True)
-update_deserializer =   GithubContributedRepoSchema()
-update_deserializer.make_object = lambda data: data
+update_deserializer =   GithubContributedRepoSchema(context={'raw': True})

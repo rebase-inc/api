@@ -1,6 +1,6 @@
-from marshmallow import fields
+from marshmallow import fields, post_load
 
-from rebase.common.database import get_or_make_object, SecureNestedField
+from rebase.common.database import SecureNestedField
 from rebase.common.schema import RebaseSchema
 from rebase.models.github_organization import GithubOrganization
 
@@ -14,12 +14,12 @@ class GithubOrganizationSchema(RebaseSchema):
     projects =      SecureNestedField('GithubProjectSchema', many=True)
     accounts =      SecureNestedField('GithubOrgAccountSchema', only=('account_id',), many=True)
 
-    def make_object(self, data):
+    @post_load
+    def make_github_organization(self, data):
         from rebase.models import GithubOrganization
-        return get_or_make_object(GithubOrganization, data)
+        return self._get_or_make_object(GithubOrganization, data)
 
 
 serializer =            GithubOrganizationSchema()
 deserializer =          GithubOrganizationSchema(exclude=('id'), strict=True)
-update_deserializer =   GithubOrganizationSchema()
-update_deserializer.make_object = lambda data: data
+update_deserializer =   GithubOrganizationSchema(context={'raw': True})

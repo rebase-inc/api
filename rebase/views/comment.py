@@ -1,4 +1,4 @@
-from marshmallow import fields
+from marshmallow import fields, post_load
 from rebase.common.schema import RebaseSchema
 
 from rebase.views import NamespacedSchema
@@ -9,17 +9,17 @@ class CommentSchema(RebaseSchema):
     content =   fields.String()
     created =   fields.DateTime()
 
-    user =      SecureNestedField('UserSchema',       only=('id','name', 'photo'), default=None)
+    user =      SecureNestedField('UserSchema',       only=('id','name', 'photo'), required=True)
     ticket =    SecureNestedField('TicketSchema',     only=('id',), default=None)
     review =    SecureNestedField('ReviewSchema',     only=('id',), default=None)
     mediation = SecureNestedField('MediationSchema',  only=('id',), default=None)
     feedback =  SecureNestedField('FeedbackSchema',   only=('id',), default=None)
 
-    def make_object(self, data):
+    @post_load
+    def make_comment(self, data):
         from rebase.models import Comment
-        return get_or_make_object(Comment, data)
+        return self._get_or_make_object(Comment, data)
 
-serializer =            CommentSchema(skip_missing=True)
+serializer =            CommentSchema(strict=True)
 deserializer =          CommentSchema(strict=True)
-update_deserializer =   CommentSchema()
-update_deserializer.make_object = lambda data: data
+update_deserializer =   CommentSchema(context={'raw': True})

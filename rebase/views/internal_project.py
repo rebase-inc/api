@@ -1,7 +1,7 @@
-from marshmallow import fields
+from marshmallow import fields, post_load
 from rebase.common.schema import RebaseSchema
 from rebase.models.internal_project import InternalProject
-from rebase.common.database import get_or_make_object, SecureNestedField
+from rebase.common.database import SecureNestedField
 
 class InternalProjectSchema(RebaseSchema):
 
@@ -12,11 +12,10 @@ class InternalProjectSchema(RebaseSchema):
     tickets =           SecureNestedField('TicketSchema',           only=('id',), many=True)
     code_repository =   SecureNestedField('CodeRepositorySchema',   only=('id',))
 
+    @post_load
+    def make_internal_project(self, data):
+        return self._get_or_make_object(InternalProject, data)
 
-    def make_object(self, data):
-        return get_or_make_object(InternalProject, data)
-
-serializer =            InternalProjectSchema(skip_missing=True)
+serializer =            InternalProjectSchema()
 deserializer =          InternalProjectSchema(only=('organization', 'name'), strict=True)
-update_deserializer =   InternalProjectSchema()
-update_deserializer.make_object = lambda data: data
+update_deserializer =   InternalProjectSchema(context={'raw': True})

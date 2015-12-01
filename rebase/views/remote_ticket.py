@@ -1,9 +1,9 @@
-from marshmallow import fields
+from marshmallow import fields, post_load
 from rebase.common.schema import RebaseSchema
 from rebase.models.remote_ticket import RemoteTicket
 from rebase.models.project import Project
 from rebase.views.skill_requirement import SkillRequirementSchema
-from rebase.common.database import get_or_make_object, SecureNestedField
+from rebase.common.database import SecureNestedField
 from flask.ext.restful import abort
 
 class RemoteTicketSchema(RebaseSchema):
@@ -16,12 +16,12 @@ class RemoteTicketSchema(RebaseSchema):
     snapshots =         SecureNestedField('TicketSnapshotSchema',   only=('id',), many=True)
     comments =          SecureNestedField('CommentSchema',          only=('id',), many=True)
 
-    def make_object(self, data):
+    @post_load
+    def make_remote_ticket(self, data):
         from rebase.models import RemoteTicket
-        return get_or_make_object(RemoteTicket, data)
+        return self._get_or_make_object(RemoteTicket, data)
 
 
 serializer =            RemoteTicketSchema()
-deserializer =          RemoteTicketSchema(skip_missing=True)
-update_deserializer =   RemoteTicketSchema()
-update_deserializer.make_object = lambda data: data
+deserializer =          RemoteTicketSchema()
+update_deserializer =   RemoteTicketSchema(context={'raw': True})

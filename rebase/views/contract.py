@@ -1,4 +1,4 @@
-from marshmallow import fields
+from marshmallow import fields, post_load
 from rebase.common.schema import RebaseSchema
 
 from rebase.views.ticket_set import TicketSetSchema
@@ -8,11 +8,11 @@ class ContractSchema(RebaseSchema):
     id =  fields.Integer()
     bid = SecureNestedField('BidSchema', exclude=('contract',))
 
-    def make_object(self, data):
+    @post_load
+    def make_contract(self, data):
         from rebase.models import Contract
-        return get_or_make_object(Contract, data)
+        return self._get_or_make_object(Contract, data)
 
-serializer = ContractSchema(skip_missing=True)
+serializer = ContractSchema()
 deserializer = ContractSchema(only=('bid',), strict=True)
-update_deserializer = ContractSchema(only=('id',), strict=True, skip_missing=True)
-update_deserializer.make_object = lambda data: data
+update_deserializer = ContractSchema(only=('id',), context={'raw': True}, strict=True)

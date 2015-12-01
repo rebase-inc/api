@@ -1,4 +1,4 @@
-from marshmallow import fields
+from marshmallow import fields, post_load
 from rebase.common.schema import RebaseSchema
 from rebase.models.contractor import Contractor
 from flask.ext.restful import abort
@@ -10,7 +10,8 @@ class RemoteWorkHistorySchema(RebaseSchema):
     contractor =      SecureNestedField('ContractorSchema', only=('id'))
     github_accounts = SecureNestedField('GithubAccountSchema', only=('id', 'login',), many=True)
 
-    def make_object(self, data):
+    @post_load
+    def make_remote_work_history(self, data):
         from rebase.models import RemoteWorkHistory
         return get_or_make_object(RemoteWorkHistory, data)
 
