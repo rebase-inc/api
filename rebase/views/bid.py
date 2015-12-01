@@ -1,7 +1,7 @@
 from marshmallow import fields, post_load
 from rebase.common.schema import RebaseSchema
 
-from rebase.common.database import get_or_make_object, SecureNestedField
+from rebase.common.database import SecureNestedField
 
 class BidSchema(RebaseSchema):
     id =          fields.Integer()
@@ -13,7 +13,7 @@ class BidSchema(RebaseSchema):
     @post_load
     def make_bid(self, data):
         from rebase.models import Bid
-        return get_or_make_object(Bid, data)
+        return self._get_or_make_object(Bid, data)
 
 serializer = BidSchema()
 deserializer = BidSchema(only=('auction', 'contractor', 'work_offers'), strict=True)

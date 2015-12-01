@@ -4,9 +4,6 @@ from rebase.common.database import get_or_make_object, SecureNestedField
 
 class TicketSnapshotSchema(RebaseSchema):
 
-    class Meta:
-        dump_only = ('id',)
-
     id =          fields.Integer()
     title =       fields.String()
     date =        fields.DateTime()

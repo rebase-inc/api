@@ -19,7 +19,7 @@ class WorkOfferSchema(RebaseSchema):
 
     @post_load
     def make_work_offer(self, data):
-        return self._get_or_make_object(data)
+        return self._get_or_make_object(WorkOffer, data)
 
 serializer = WorkOfferSchema()
 deserializer = WorkOfferSchema(strict=True)
