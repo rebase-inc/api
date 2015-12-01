@@ -31,7 +31,7 @@ def create_app(testing=False):
     toolbar = DebugToolbarExtension(app)
 
     install(app)
-    api = Api(app, prefix='/api/v1')
+    api = Api(app, prefix=app.config['URL_PREFIX'])
     register_home(app)
     register_routes(api)
     register_github_routes(app)

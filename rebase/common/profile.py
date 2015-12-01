@@ -4,7 +4,7 @@ from pstats import Stats
 
 
 @contextmanager
-def profiling(print_stats_args=(.1, 'api\/rebase')):
+def profiling(sort_stats_keys=('cumulative',), print_stats_args=(.1, 'api\/rebase')):
     '''
     Prints a profile of the code executed in a 'with profiling()' statement
 
@@ -18,7 +18,7 @@ def profiling(print_stats_args=(.1, 'api\/rebase')):
     yield
     profile.disable()
     stats = Stats(profile)
-    stats.sort_stats('cumulative')
+    stats.sort_stats(*sort_stats_keys)
     # print first 10% and only show my code
     stats.print_stats(*print_stats_args)
     #import pdb; pdb.set_trace()

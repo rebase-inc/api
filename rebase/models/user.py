@@ -1,4 +1,5 @@
 import datetime
+from functools import lru_cache
 
 from flask.ext.login import login_user, logout_user
 from sqlalchemy import and_
@@ -6,7 +7,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import aliased
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from rebase.common.database import DB, PermissionMixin, query_by_user_or_id
+from rebase.common.database import DB, PermissionMixin
 from rebase.common.query import query_from_class_to_user
 
 class User(DB.Model, PermissionMixin):
@@ -60,32 +61,26 @@ class User(DB.Model, PermissionMixin):
         return self.current_role
 
     @classmethod
-    def query_by_user(cls, user, user_id=None):
-        return cls.get_all(user)
-
-    def filter_by_id(self, query):
-        return query.filter(User.id==self.id)
+    def as_owner(cls, user):
+        return cls.as_manager(user)
 
     @classmethod
-    def get_all(cls, user, another_user=None):
-        return query_by_user_or_id(
-            cls,
-            lambda user: cls.as_manager(user).union(cls.as_contractor(user)).union(cls.as_user(user)),
-            cls.filter_by_id,
-            user, another_user
-        )
+    def as_contractor(cls, user):
+        return cls.as_contractor_get_managers(user)\
+            .union(cls.as_contractor_get_cleared_contractors(user))
 
     @classmethod
-    def as_manager(cls, current_user, user_id=None):
+    @lru_cache(maxsize=None)
+    def as_manager(cls, user):
         '''
         As a manager, there are 3 types of users you can read:
         - other managers in your project
         - cleared contractors for all projects in your project
         - nominated contractors for all projects in your project
         '''
-        return cls.as_manager_get_other_managers(current_user, user_id)\
-            .union(cls.as_manager_get_cleared_contractors(current_user, user_id))\
-            .union(cls.as_manager_get_nominated_users(current_user, user_id))
+        return cls.as_manager_get_other_managers(user)\
+            .union(cls.as_manager_get_cleared_contractors(user))\
+            .union(cls.as_manager_get_nominated_users(user))
 
     @classmethod
     def as_manager_get_other_managers(cls, user, user_id=None):
@@ -130,11 +125,6 @@ class User(DB.Model, PermissionMixin):
         return query
 
     @classmethod
-    def as_contractor(cls, current_user, user_id=None):
-        return cls.as_contractor_get_managers(current_user, user_id)\
-            .union(cls.as_contractor_get_cleared_contractors(current_user, user_id))
-
-    @classmethod
     def as_contractor_get_managers(cls, current_user, user_id=None):
         import rebase.models
         UserAlias = aliased(User)
@@ -167,10 +157,6 @@ class User(DB.Model, PermissionMixin):
             query = query.filter(UserAlias.id == user_id)
         return query
 
-    @classmethod
-    def as_user(cls, current_user, user_id=None):
-        return cls.query.filter(cls.id==current_user.id)
-
     def allowed_to_be_created_by(self, user):
         return True
 
@@ -183,7 +169,7 @@ class User(DB.Model, PermissionMixin):
         return self.allowed_to_be_modified_by(user)
 
     def allowed_to_be_viewed_by(self, user):
-        return self.query_by_user(user, self.id)
+        return self.found(self, user)
 
     # flask login helper functions
     def is_admin(self): return self.admin

@@ -130,7 +130,7 @@ def create_one_internal_ticket(db, title=None, description=None, project=None):
     title = title or ' '.join(pick_a_word() for i in range(5))
     description = description or ' '.join(pick_a_word() for i in range(5))
     ticket = InternalTicket(project, title)
-    user = create_one_user(db)
+    user = project.managers[0].user
     Comment(user, description, ticket=ticket)
     SkillRequirement(ticket)
     db.session.add(ticket)
@@ -213,7 +213,9 @@ def create_one_job_fit(db, nomination=None, ticket_matches=None):
         ticket_matches = []
         for bid_limit in nomination.ticket_set.bid_limits:
             ticket_matches.append(TicketMatch(skill_set, bid_limit.ticket_snapshot.ticket.skill_requirement, 100))
-    job_fit = JobFit(nomination, ticket_matches)
+    job_fit = JobFit.query.filter_by(contractor_id=nomination.contractor_id, ticket_set_id=nomination.ticket_set_id).first()
+    if not job_fit:
+        job_fit = JobFit(nomination, ticket_matches)
     db.session.add(job_fit)
     return job_fit
 
@@ -345,9 +347,6 @@ class ManagerUserStory(object):
             auction.expires = auction.expires + datetime.timedelta(seconds = randrange(-24*60*60, 24*60*60, 1))
             for contractor in the_contractors:
                 nomination = create_one_nomination(db, auction, contractor, False)
-                #match = TicketMatch(contractor.skill_set, ticket.skill_requirement)
-                #job_fit = JobFit(nomination, [match])
-                #db.session.add(job_fit)
 
         the_new_tickets = [create_one_internal_ticket(db, fake_ticket + ' (NEW)', project=project) for fake_ticket in FAKE_TICKETS]
         for ticket in the_new_tickets:
