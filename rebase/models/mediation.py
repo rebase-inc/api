@@ -1,11 +1,11 @@
+from flask.ext.login import current_user
 from sqlalchemy.orm import validates
 from sqlalchemy.ext.hybrid import hybrid_property
 
-import sys
 import datetime
 
-from rebase.common.database import DB, PermissionMixin, query_by_user_or_id
-from rebase.common.query import query_from_class_to_user
+from rebase.common.database import DB, PermissionMixin
+from rebase.common.exceptions import ClientError
 from rebase.common.state import StateMachine
 
 class Mediation(DB.Model, PermissionMixin):
@@ -65,7 +65,7 @@ class Mediation(DB.Model, PermissionMixin):
     @validates('work')
     def validate_work(self, field, value):
         if not hasattr(value, 'offer'):
-            raise ValueError('{} field on {} must be {}, not {}'.format(field, self.__tablename__, 'Work type', type(value)))
+            raise MediationInvalidWork(self, field, self.__tablename__, 'Work type', type(value))
         return value
 
 class MediationStateMachine(StateMachine):
@@ -77,17 +77,20 @@ class MediationStateMachine(StateMachine):
     def discussion(self):
         pass
 
-    def waiting_for_client(self, dev_answer):
+    def waiting_for_client(self, dev_answer, comment):
         if dev_answer not in self.valid_answers:
-            raise ValueError('Invalid dev answer')
+            raise InvalidMediationAnswer(self, dev_answer, comment)
         self.mediation.dev_answer = dev_answer
+        Comment(current_user, comment, mediation=self.mediation)
 
-    def waiting_for_dev(self, client_answer):
+    def waiting_for_dev(self, client_answer, comment):
         if client_answer not in self.valid_answers:
-            raise ValueError('Invalid dev answer')
+            raise InvalidMediationAnswer(self, client_answer, comment)
         self.mediation.client_answer = client_answer
+        Comment(current_user, comment, mediation=self.mediation)
 
-    def decision(self, remaining_answer):
+    def decision(self, remaining_answer, comment):
+        Comment(current_user, comment, mediation=self.mediation)
         if hasattr(self.mediation, 'client_answer'):
             self.mediation.dev_answer = remaining_answer
         else:
@@ -135,3 +138,48 @@ class MediationStateMachine(StateMachine):
         self.add_event_transitions('arbitrate',     {
             self.decision:  self.arbitration
         })
+
+class InvalidMediationAnswer(ClientError):
+    error_message = 'Invalid answer: {invalid_answer} with comment: "{comment}"\nValid answers: {valid_answers}'
+
+    def __init__(self, machine, invalid_answer, comment):
+        super().__init__(
+            code=400,
+            message=self.error_message.format(
+                invalid_answer=invalid_answer,
+                comment=comment,
+                valid_answers=MediationStateMachine.valid_answers
+            ),
+            more_data= {
+                'mediation': {
+                    'id': machine.mediation.id,
+                    'state': machine.mediation.state,
+                    'client_answer': machine.mediation.client_answer,
+                    'dev_answer': machine.mediation.dev_answer,
+                },
+                'ticket': {
+                    'id': machine.mediation.work.offer.ticket_snapshot.ticket.id,
+                    'title': machine.mediation.work.offer.ticket_snapshot.title
+                }
+            }
+        )
+
+class MediationInvalidWork(ClientError):
+    error_message = '{} field on {} must be {}, not {}'
+    
+    def __init__(self, mediation, field, model, field_type, field_type_value):
+        super().__init__(
+            message=self.error_message.format(field, model, field_type, field_type_value),
+            more_data={
+                'work': {
+                    'id': mediation.work.id,
+                },
+                'ticket': {
+                    'id': mediation.work.offer.ticket_snapshot.ticket_id,
+                    'title': mediation.work.offer.ticket_snapshot.title,
+                },
+                'contract': {
+                    'id': mediation.work.offer.bid.contract.id,
+                }
+            }
+        )

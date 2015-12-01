@@ -23,6 +23,7 @@ class MediationSchema(RebaseSchema):
 
 class DevAnswerEventSchema(RebaseSchema):
     dev_answer = fields.String()
+    comment = fields.String()
 
     def make_object(self, data):
         return 'dev_answer', data.pop('dev_answer')
@@ -30,6 +31,7 @@ class DevAnswerEventSchema(RebaseSchema):
 
 class ClientAnswerEventSchema(RebaseSchema):
     client_answer = fields.String()
+    comment = fields.String()
 
     def make_object(self, data):
         return 'client_answer', data.pop('client_answer')
