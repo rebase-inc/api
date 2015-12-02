@@ -1,7 +1,7 @@
 from marshmallow import fields, post_load
 from rebase.common.schema import RebaseSchema
 from rebase.models.ticket import Ticket
-from rebase.common.database import get_or_make_object, SecureNestedField
+from rebase.common.database import SecureNestedField
 
 class TicketSchema(RebaseSchema):
     id =            fields.Integer()
