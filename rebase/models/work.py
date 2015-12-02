@@ -105,11 +105,12 @@ class WorkStateMachine(StateMachine):
     def set_state(self, _, new_state):
         self.work.state = new_state.__name__
 
-    def in_progress(self):
-        pass
+    def in_progress(self, comment=None):
+        if comment:
+            Comment(current_user, comment, work=self.work)
 
-    def blocked(self, reason):
-        pass
+    def blocked(self, comment):
+        Comment(current_user, comment, work=self.work)
 
     def in_review(self, comment=None):
         if comment:

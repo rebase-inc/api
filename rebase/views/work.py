@@ -29,11 +29,11 @@ class WorkSchema(RebaseSchema):
         return self._get_or_make_object(Work, data)
 
 class HaltEventSchema(RebaseSchema):
-    reason = fields.String(required=True)
+    comment = fields.String(required=True)
 
     @post_load
     def make_halt(self, data):
-        return 'halt_work', data.pop('reason')
+        return 'halt_work', data
 
 class ReviewEventSchema(RebaseSchema):
     comment = fields.String(required=False)
@@ -58,10 +58,11 @@ class CompleteEventSchema(RebaseSchema):
         return 'complete', data
 
 class ResumeEventSchema(RebaseSchema):
+    comment = fields.String(required=False)
 
     @post_load
     def make_resume(self, data):
-        return 'resume_work'
+        return 'resume_work', data
 
 class FailEventSchema(RebaseSchema):
 

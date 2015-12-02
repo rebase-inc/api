@@ -13,10 +13,10 @@ class WorkHaltEvents(Resource):
     @login_required
     def post(self, id):
         work_instance = Work.query.get_or_404(id)
-        halt_event = work.halt_event_deserializer.load(request.form or request.json).data
+        event, data = work.halt_event_deserializer.load(request.form or request.json).data
 
         with ManagedState():
-            work_instance.machine.send(*halt_event)
+            work_instance.machine.send(event, **data)
 
         DB.session.commit()
 
@@ -78,10 +78,10 @@ class WorkResumeEvents(Resource):
     @login_required
     def post(self, id):
         work_instance = Work.query.get_or_404(id)
-        review_event = work.resume_event_deserializer.load(request.form or request.json).data
+        event, data = work.resume_event_deserializer.load(request.form or request.json).data
 
         with ManagedState():
-            work_instance.machine.send(review_event)
+            work_instance.machine.send(event, **data)
 
         DB.session.commit()
 
