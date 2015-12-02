@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime, timedelta
 import uuid
 from random import randint, randrange, sample, uniform
 from .utils import (
@@ -124,7 +124,7 @@ def create_one_github_project(db, organization=None, project_name=None):
     db.session.add(github_project)
     return github_project
 
-def create_one_internal_ticket(db, title=None, description=None, project=None):
+def create_one_internal_ticket(db, title=None, description=None, project=None, created=None):
     from rebase.models import InternalTicket, SkillRequirement, Comment
     project = project or create_one_project(db)
     title = title or ' '.join(pick_a_word() for i in range(5))
@@ -133,6 +133,8 @@ def create_one_internal_ticket(db, title=None, description=None, project=None):
     user = project.managers[0].user
     Comment(user, description, ticket=ticket)
     SkillRequirement(ticket)
+    if created:
+        ticket.created = created
     db.session.add(ticket)
     return ticket
 
@@ -141,7 +143,7 @@ def create_one_github_ticket(db, number=None, title=None, project=None):
     number = number or randrange(1, 99999)
     project = project or create_one_github_project(db)
     title = title or pick_a_word().capitalize()+' '+' '.join([pick_a_word() for i in range(5)])
-    ticket = GithubTicket(project, number, title=title, created=datetime.datetime.now())
+    ticket = GithubTicket(project, number, title=title, created=datetime.now())
     SkillRequirement(ticket)
 
     db.session.add(ticket)
@@ -180,7 +182,7 @@ def create_one_snapshot(db, ticket=None):
     return ts
 
 def create_one_auction(db, tickets=None, duration=1000, finish_work_by=None, redundancy=1, price=200):
-    finish_work_by = finish_work_by or datetime.datetime.now() + datetime.timedelta(days=2)
+    finish_work_by = finish_work_by or datetime.now() + timedelta(days=2)
     from rebase.models import Auction, TicketSet, BidLimit, TicketSnapshot, TermSheet
     tickets = tickets or create_some_tickets(db)
     ticket_snaps = [TicketSnapshot(ticket) for ticket in tickets]
@@ -332,7 +334,7 @@ class ManagerUserStory(object):
         organization = create_one_organization(db, 'Parks and Recreation', self.user)
         project = create_one_project(db, organization, 'Lot 48')
         mgr = project.managers[0]
-        the_tickets = [create_one_internal_ticket(db, fake_ticket + ' (AUCTIONED)', project=project) for fake_ticket in FAKE_TICKETS]
+        the_tickets = [create_one_internal_ticket(db, fake_ticket + ' (AUCTIONED)', project=project, created=(datetime.now() + timedelta(hours=randint(-72, 0)))) for fake_ticket in FAKE_TICKETS]
         skill_reqs = []
         for ticket in the_tickets:
             for fake_comment in FAKE_COMMENTS:
@@ -344,11 +346,11 @@ class ManagerUserStory(object):
         the_auctions = [create_one_auction(db, [ticket], price=randrange(200, 2000, 20)) for ticket in the_tickets]
 
         for auction, ticket in zip(the_auctions, the_tickets):
-            auction.expires = auction.expires + datetime.timedelta(seconds = randrange(-24*60*60, 24*60*60, 1))
+            auction.expires = auction.expires + timedelta(seconds = randrange(-24*60*60, 24*60*60, 1))
             for contractor in the_contractors:
                 nomination = create_one_nomination(db, auction, contractor, False)
 
-        the_new_tickets = [create_one_internal_ticket(db, fake_ticket + ' (NEW)', project=project) for fake_ticket in FAKE_TICKETS]
+        the_new_tickets = [create_one_internal_ticket(db, fake_ticket + ' (NEW)', project=project, created=datetime.now() + timedelta(hours=randint(-72,0))) for fake_ticket in FAKE_TICKETS]
         for ticket in the_new_tickets:
             for fake_comment in FAKE_COMMENTS:
                 Comment(self.user, fake_comment, ticket=ticket)
