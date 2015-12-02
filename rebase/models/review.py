@@ -1,8 +1,10 @@
 import datetime
 
+from flask.ext.login import current_user
 from sqlalchemy.orm import validates
 
 from rebase.common.database import DB, PermissionMixin
+from rebase.models.comment import Comment
 
 class Review(DB.Model, PermissionMixin):
     __pluralname__ = 'reviews'
@@ -14,12 +16,13 @@ class Review(DB.Model, PermissionMixin):
 
     comments = DB.relationship('Comment', lazy='dynamic', backref='review', cascade='all, delete-orphan', passive_deletes=True)
 
-    def __init__(self, work):
+    def __init__(self, work, comment):
         if work.review:
             raise ValueError('Work is already reviewed!')
         self.work = work
         self._rating = 0
         self.created = datetime.datetime.now()
+        Comment(current_user, comment, review=self)
 
     @property
     def rating(self):

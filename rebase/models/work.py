@@ -1,6 +1,7 @@
 from os.path import join
 
 from flask import current_app
+from flask.ext.login import current_user
 from sqlalchemy.orm import validates, reconstructor
 from sqlalchemy.ext.hybrid import hybrid_property
 
@@ -108,18 +109,19 @@ class WorkStateMachine(StateMachine):
     def blocked(self, reason):
         pass
 
-    def in_review(self):
-        pass
+    def in_review(self, comment):
+        from rebase.models import Review
+        review = Review(self.work, comment)
+        DB.session.add(review)
 
     def in_mediation(self, comment):
         Mediation(self.work, comment)
 
-    def complete(self):
-        from rebase.models import Review, Debit, Credit
-        review = Review(self.work)
-        DB.session.add(review)
+    def complete(self, comment):
+        from rebase.models import Debit, Credit, Comment
         Debit(self.work, int(self.work.offer.price*current_app.config['REVENUE_FACTOR']))
         Credit(self.work, self.work.offer.price)
+        Comment(current_user, comment, review=self.work.review)
 
     def failed(self):
         pass

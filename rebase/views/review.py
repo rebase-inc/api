@@ -11,7 +11,7 @@ class ReviewSchema(RebaseSchema):
     created = fields.DateTime()
     rating = fields.Integer()
     work = SecureNestedField('WorkSchema', exclude=('review',))
-    comments = SecureNestedField(CommentSchema, only=('id',), many=True, default=None)
+    comments = SecureNestedField(CommentSchema, only=('id', 'content', 'created', 'user'), many=True, default=None)
 
     @post_load
     def make_review(self, data):

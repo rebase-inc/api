@@ -35,10 +35,11 @@ class HaltEventSchema(RebaseSchema):
         return 'halt_work', data.pop('reason')
 
 class ReviewEventSchema(RebaseSchema):
+    comment = fields.String(required=True)
 
     @post_load
     def make_review(self, data):
-        return 'review'
+        return 'review', data
 
 class MediateEventSchema(RebaseSchema):
     comment = fields.String(required=True)
@@ -48,10 +49,11 @@ class MediateEventSchema(RebaseSchema):
         return 'mediate', data
 
 class CompleteEventSchema(RebaseSchema):
+    comment = fields.String(required=True)
 
     @post_load
     def make_complete(self, data):
-        return 'complete'
+        return 'complete', data
 
 class ResumeEventSchema(RebaseSchema):
 
