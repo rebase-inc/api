@@ -18,7 +18,7 @@ class AuctionSchema(RebaseSchema):
     redundancy =        fields.Integer()
     state =             fields.String()
     term_sheet =        SecureNestedField('TermSheetSchema', exclude=('auction',), required=True)
-    ticket_set =        SecureNestedField(TicketSetSchema, exclude=('auction',), required=True)
+    ticket_set =        SecureNestedField('TicketSetSchema', exclude=('auction',), required=True)
     feedbacks =         SecureNestedField('FeedbackSchema', only='id', many=True)
     bids =              SecureNestedField('BidSchema', only=('id','contractor', 'contract', 'work_offers', 'auction'), many=True)
     organization =      SecureNestedField('OrganizationSchema', only=('id',), required=True)

@@ -13,7 +13,7 @@ class PhotoSchema(RebaseSchema):
 class UserSchema(RebaseSchema):
 
     class Meta:
-        dump_only = ('id', 'admin', 'last_seen', 'photo')
+        dump_only = ('admin', 'last_seen', 'photo')
 
     id =            fields.Integer()
     name =          fields.String(required=False)
@@ -34,7 +34,7 @@ class UserSchema(RebaseSchema):
                 return User.query.filter(User.email == data.get('email')).one()
             except orm_exc.NoResultFound as error:
                 raise marsh.ValidationError('Bad email', fields=['email',])
-        self._get_or_make_object(User, data)
+        return self._get_or_make_object(User, data)
 
 serializer = UserSchema()
 deserializer = UserSchema(strict=True)
