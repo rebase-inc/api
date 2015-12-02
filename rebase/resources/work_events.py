@@ -46,10 +46,10 @@ class WorkMediateEvents(Resource):
     @login_required
     def post(self, id):
         work_instance = Work.query.get_or_404(id)
-        review_event = work.mediate_event_deserializer.load(request.form or request.json).data
+        event, data = work.mediate_event_deserializer.load(request.form or request.json).data
 
         with ManagedState():
-            work_instance.machine.send(review_event)
+            work_instance.machine.send(event, **data)
 
         DB.session.commit()
 

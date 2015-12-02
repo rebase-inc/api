@@ -17,7 +17,7 @@ class WorkSchema(RebaseSchema):
     clone =     fields.String()
 
     review =    SecureNestedField(ReviewSchema,     exclude=('work',), default=None)
-    mediations = SecureNestedField(MediationSchema,  only=('id','state'), many=True)
+    mediations = SecureNestedField(MediationSchema,  only=('id','state', 'comments'), many=True)
     debit =     SecureNestedField(DebitSchema,      only='id', default=None)
     credit =    SecureNestedField(CreditSchema,     only='id', default=None)
     offer =     SecureNestedField(WorkOfferSchema,  exclude=('work',), default=None)
@@ -41,10 +41,11 @@ class ReviewEventSchema(RebaseSchema):
         return 'review'
 
 class MediateEventSchema(RebaseSchema):
+    comment = fields.String(required=True)
 
     @post_load
     def make_mediate(self, data):
-        return 'mediate'
+        return 'mediate', data
 
 class CompleteEventSchema(RebaseSchema):
 

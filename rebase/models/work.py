@@ -111,8 +111,8 @@ class WorkStateMachine(StateMachine):
     def in_review(self):
         pass
 
-    def in_mediation(self):
-        Mediation(self.work)
+    def in_mediation(self, comment):
+        Mediation(self.work, comment)
 
     def complete(self):
         from rebase.models import Review, Debit, Credit

@@ -22,9 +22,10 @@ class Mediation(DB.Model, PermissionMixin):
     arbitration =   DB.relationship('Arbitration', backref='mediation', uselist=False, cascade='all, delete-orphan', passive_deletes=True)
     comments =      DB.relationship('Comment', backref='mediation', lazy='joined', cascade='all, delete-orphan', passive_deletes=True)
 
-    def __init__(self, work, timeout = datetime.datetime.now() + datetime.timedelta(days=3)):
+    def __init__(self, work, comment, timeout = datetime.datetime.now() + datetime.timedelta(days=3)):
         self.work = work
         self.timeout = timeout
+        Comment(current_user, comment, mediation=self)
 
     @hybrid_property
     def machine(self):
