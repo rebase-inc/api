@@ -111,8 +111,9 @@ class WorkStateMachine(StateMachine):
     def blocked(self, reason):
         pass
 
-    def in_review(self, comment):
-        Comment(current_user, comment, work=self.work)
+    def in_review(self, comment=None):
+        if comment:
+            Comment(current_user, comment, work=self.work)
 
     def in_mediation(self, comment):
         Mediation(self.work, comment)
@@ -126,9 +127,6 @@ class WorkStateMachine(StateMachine):
         Debit(self.work, int(self.work.offer.price*current_app.config['REVENUE_FACTOR']))
         Credit(self.work, self.work.offer.price)
 
-    def waiting_for_rating(self):
-        pass
-
     def failed(self):
         pass
 
@@ -136,9 +134,11 @@ class WorkStateMachine(StateMachine):
         self.work = work_instance
         StateMachine.__init__(self, initial_state = getattr(self, initial_state))
         self.add_event_transitions('halt_work', {self.in_progress: self.blocked})
-        self.add_event_transitions('review', {self.in_progress: self.in_review})
+        self.add_event_transitions('review', {
+            self.in_progress: self.in_review,
+            self.in_mediation: self.in_review
+        })
         self.add_event_transitions('mediate', {self.in_review: self.in_mediation})
         self.add_event_transitions('complete', {self.in_review: self.complete, self.in_mediation: self.complete})
         self.add_event_transitions('resume_work', {self.in_mediation: self.in_progress, self.blocked: self.in_progress})
         self.add_event_transitions('fail', {self.in_mediation: self.failed})
-        self.add_event_transitions('need_rating', {self.in_mediation: self.waiting_for_rating})

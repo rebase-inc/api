@@ -21,6 +21,7 @@ class WorkSchema(RebaseSchema):
     debit =     SecureNestedField(DebitSchema,      only='id', default=None)
     credit =    SecureNestedField(CreditSchema,     only='id', default=None)
     offer =     SecureNestedField(WorkOfferSchema,  exclude=('work',), default=None)
+    comments =  SecureNestedField('CommentSchema', only=('id', 'content', 'created', 'user'), many=True, default=None)
 
     @post_load
     def make_work_schema(self, data):
@@ -35,7 +36,7 @@ class HaltEventSchema(RebaseSchema):
         return 'halt_work', data.pop('reason')
 
 class ReviewEventSchema(RebaseSchema):
-    comment = fields.String(required=True)
+    comment = fields.String(required=False)
 
     @post_load
     def make_review(self, data):
@@ -50,6 +51,7 @@ class MediateEventSchema(RebaseSchema):
 
 class CompleteEventSchema(RebaseSchema):
     comment = fields.String(required=True)
+    rating = fields.Integer(required=True)
 
     @post_load
     def make_complete(self, data):
