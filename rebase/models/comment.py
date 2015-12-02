@@ -10,6 +10,7 @@ class Comment(DB.Model, PermissionMixin):
     content =   DB.Column(DB.String,  nullable=False)
     created =   DB.Column(DB.DateTime, nullable=False)
 
+    work_id =       DB.Column(DB.Integer, DB.ForeignKey('work.id',      ondelete='CASCADE'),    nullable=True)
     review_id =     DB.Column(DB.Integer, DB.ForeignKey('review.id',    ondelete='CASCADE'),    nullable=True)
     mediation_id =  DB.Column(DB.Integer, DB.ForeignKey('mediation.id', ondelete='CASCADE'),    nullable=True)
     ticket_id =     DB.Column(DB.Integer, DB.ForeignKey('ticket.id',    ondelete='CASCADE'),    nullable=True)
@@ -18,10 +19,11 @@ class Comment(DB.Model, PermissionMixin):
     user_id = DB.Column(DB.Integer, DB.ForeignKey('user.id'), nullable=False)
     user = DB.relationship('User', uselist=False)
 
-    def __init__(self, user, content, created=None, review=None, mediation=None, ticket=None, feedback=None):
+    def __init__(self, user, content, created=None, work=None, review=None, mediation=None, ticket=None, feedback=None):
         self.user = user
         self.content = content
         self.created = created or datetime.now()
+        self.work = work
         self.review = review
         self.mediation = mediation
         self.ticket = ticket
@@ -47,6 +49,7 @@ class Comment(DB.Model, PermissionMixin):
     def as_manager(cls, user):
         return cls.get_manager_ticket_comment(user)\
             .union(cls.get_manager_mediation_comment(user))\
+            .union(cls.get_manager_work_comment(user))\
             .union(cls.get_manager_review_comment(user))\
             .union(cls.get_manager_feedback_comment(user))
 
@@ -99,10 +102,23 @@ class Comment(DB.Model, PermissionMixin):
             rebase.models.manager.Manager,
         ], user)
 
+    def get_manager_work_comment(user):
+        import rebase.models
+        return query_from_class_to_user(Comment, [
+            rebase.models.work.Work,
+            rebase.models.work_offer.WorkOffer,
+            rebase.models.ticket_snapshot.TicketSnapshot,
+            rebase.models.ticket.Ticket,
+            rebase.models.project.Project,
+            rebase.models.organization.Organization,
+            rebase.models.manager.Manager,
+        ], user)
+
     @classmethod
     def as_contractor(cls, user):
         return cls.get_contractor_ticket_comment(user)\
             .union(cls.get_contractor_mediation_comment(user))\
+            .union(cls.get_contractor_work_comment(user))\
             .union(cls.get_contractor_review_comment(user))\
             .union(cls.get_contractor_feedback_comment(user))
 
@@ -131,6 +147,14 @@ class Comment(DB.Model, PermissionMixin):
             rebase.models.contractor.Contractor,
         ], user)
 
+    def get_contractor_work_comment(user):
+        import rebase.models
+        return query_from_class_to_user(Comment, [
+            rebase.models.work.Work,
+            rebase.models.work_offer.WorkOffer,
+            rebase.models.contractor.Contractor,
+        ], user)
+
     def get_contractor_review_comment(user):
         import rebase.models
         return query_from_class_to_user(Comment, [
@@ -143,6 +167,8 @@ class Comment(DB.Model, PermissionMixin):
     def allowed_to_be_created_by(self, user):
         if user.admin:
             return True
+        if self.work:
+            return self.work.allowed_to_be_viewed_by(user)
         if self.review:
             return self.review.allowed_to_be_viewed_by(user)
         if self.mediation:
@@ -159,6 +185,8 @@ class Comment(DB.Model, PermissionMixin):
     def allowed_to_be_viewed_by(self, user):
         if user.admin:
             return True
+        if self.work:
+            return self.work.allowed_to_be_viewed_by(user)
         if self.review:
             return self.review.allowed_to_be_viewed_by(user)
         if self.mediation:

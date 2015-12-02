@@ -71,7 +71,7 @@ class Mediation(DB.Model, PermissionMixin):
         return value
 
 class MediationStateMachine(StateMachine):
-    valid_answers = ['resume_work', 'complete', 'fail']
+    valid_answers = ['resume_work', 'need_rating', 'fail']
 
     def set_state(self, _, new_state):
         self.mediation.state = new_state.__name__

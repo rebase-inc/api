@@ -10,6 +10,7 @@ from .mediation import Mediation
 from rebase.common.database import DB, PermissionMixin
 from rebase.common.state import StateMachine
 from rebase.git.repo import Repo
+from rebase.models import Comment
 
 class Work(DB.Model, PermissionMixin):
     __pluralname__ = 'works'
@@ -23,6 +24,7 @@ class Work(DB.Model, PermissionMixin):
     offer =             DB.relationship('WorkOffer', backref='work', uselist=False, cascade='all, delete-orphan', passive_deletes=True)
     review =            DB.relationship('Review',    backref='work', lazy='joined', uselist=False, cascade='all, delete-orphan', passive_deletes=True)
     mediations =        DB.relationship('Mediation', backref='work', lazy='joined', cascade='all, delete-orphan', passive_deletes=True, order_by='Mediation.id')
+    comments =          DB.relationship('Comment',   backref='work', lazy='joined', cascade='all, delete-orphan', passive_deletes=True, order_by='Comment.created')
 
     _clone = 'git clone -b {branch} --single-branch {url}'
 
@@ -110,18 +112,22 @@ class WorkStateMachine(StateMachine):
         pass
 
     def in_review(self, comment):
-        from rebase.models import Review
-        review = Review(self.work, comment)
-        DB.session.add(review)
+        Comment(current_user, comment, work=self.work)
 
     def in_mediation(self, comment):
         Mediation(self.work, comment)
 
-    def complete(self, comment):
-        from rebase.models import Debit, Credit, Comment
+    def complete(self, comment, rating):
+        from rebase.models import Debit, Credit, Review
+        review = Review(self.work, comment)
+        review.rating = rating
+        Comment(current_user, comment, review=review)
+        DB.session.add(review)
         Debit(self.work, int(self.work.offer.price*current_app.config['REVENUE_FACTOR']))
         Credit(self.work, self.work.offer.price)
-        Comment(current_user, comment, review=self.work.review)
+
+    def waiting_for_rating(self):
+        pass
 
     def failed(self):
         pass
@@ -135,3 +141,4 @@ class WorkStateMachine(StateMachine):
         self.add_event_transitions('complete', {self.in_review: self.complete, self.in_mediation: self.complete})
         self.add_event_transitions('resume_work', {self.in_mediation: self.in_progress, self.blocked: self.in_progress})
         self.add_event_transitions('fail', {self.in_mediation: self.failed})
+        self.add_event_transitions('need_rating', {self.in_mediation: self.waiting_for_rating})
