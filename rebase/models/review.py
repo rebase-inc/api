@@ -1,7 +1,6 @@
 import datetime
 
 from flask.ext.login import current_user
-from sqlalchemy.orm import validates
 
 from rebase.common.database import DB, PermissionMixin
 from rebase.models.comment import Comment
@@ -14,7 +13,7 @@ class Review(DB.Model, PermissionMixin):
     created = DB.Column(DB.DateTime, nullable=False)
     work_id = DB.Column(DB.Integer, DB.ForeignKey('work.id', ondelete='CASCADE'), nullable=False)
 
-    comments = DB.relationship('Comment', lazy='dynamic', backref='review', cascade='all, delete-orphan', passive_deletes=True)
+    comments = DB.relationship('Comment', backref='review', lazy='joined', cascade='all, delete-orphan', passive_deletes=True, order_by='Comment.created')
 
     def __init__(self, work, comment):
         if work.review:
@@ -23,6 +22,7 @@ class Review(DB.Model, PermissionMixin):
         self._rating = 0
         self.created = datetime.datetime.now()
         Comment(current_user, comment, review=self)
+
 
     @property
     def rating(self):

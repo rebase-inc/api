@@ -11,7 +11,7 @@ class Ticket(DB.Model, PermissionMixin):
 
     skill_requirement =     DB.relationship('SkillRequirement',     backref='ticket', cascade='all, delete-orphan', passive_deletes=False, uselist=False)
     snapshots =             DB.relationship('TicketSnapshot',       backref='ticket', cascade='all, delete-orphan', passive_deletes=False)
-    comments =              DB.relationship('Comment', lazy='joined', backref='ticket', cascade='all, delete-orphan', passive_deletes=True)
+    comments =              DB.relationship('Comment', lazy='joined', backref='ticket', cascade='all, delete-orphan', passive_deletes=True, order_by='Comment.created')
 
     __mapper_args__ = {
         'polymorphic_identity': 'ticket',

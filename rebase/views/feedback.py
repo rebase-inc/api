@@ -6,7 +6,7 @@ class FeedbackSchema(RebaseSchema):
     id =            fields.Integer()
     auction =       SecureNestedField('AuctionSchema', only=('id',))
     contractor =    SecureNestedField('ContractorSchema', only=('id',), required=True)
-    comment =       SecureNestedField('CommentSchema', only=('id',), required=False)
+    comment =       SecureNestedField('CommentSchema', only=('id', 'content', 'created', 'user', 'type'), required=False)
 
     @post_load
     def make_feedback(self, data):

@@ -7,6 +7,7 @@ class Comment(DB.Model, PermissionMixin):
     __pluralname__ = 'comments'
 
     id =        DB.Column(DB.Integer, primary_key=True)
+    type =      DB.Column(DB.String,  nullable=False)
     content =   DB.Column(DB.String,  nullable=False)
     created =   DB.Column(DB.DateTime, nullable=False)
 
@@ -28,6 +29,9 @@ class Comment(DB.Model, PermissionMixin):
         self.mediation = mediation
         self.ticket = ticket
         self.feedback = feedback
+        self.type = 'work' if work else 'review' if review else 'mediation' if mediation else 'ticket' if ticket else 'feedback' if feedback else None
+        if not self.type:
+            raise ValueError('Invalid comment')
 
     @classmethod
     def query_by_user(cls, user):

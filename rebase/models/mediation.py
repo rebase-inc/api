@@ -20,7 +20,7 @@ class Mediation(DB.Model, PermissionMixin):
     state =         DB.Column(DB.String, nullable=False, default='discussion')
 
     arbitration =   DB.relationship('Arbitration', backref='mediation', uselist=False, cascade='all, delete-orphan', passive_deletes=True)
-    comments =      DB.relationship('Comment', backref='mediation', lazy='joined', cascade='all, delete-orphan', passive_deletes=True)
+    comments =      DB.relationship('Comment', backref='mediation', lazy='joined', cascade='all, delete-orphan', passive_deletes=True, order_by='Comment.created')
 
     def __init__(self, work, comment, timeout = datetime.datetime.now() + datetime.timedelta(days=3)):
         self.work = work

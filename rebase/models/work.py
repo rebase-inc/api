@@ -119,11 +119,13 @@ class WorkStateMachine(StateMachine):
     def in_mediation(self, comment):
         Mediation(self.work, comment)
 
+    def wait_for_rating(self):
+        pass
+
     def complete(self, comment, rating):
         from rebase.models import Debit, Credit, Review
         review = Review(self.work, comment)
         review.rating = rating
-        Comment(current_user, comment, review=review)
         DB.session.add(review)
         Debit(self.work, int(self.work.offer.price*current_app.config['REVENUE_FACTOR']))
         Credit(self.work, self.work.offer.price)
@@ -137,7 +139,7 @@ class WorkStateMachine(StateMachine):
         self.add_event_transitions('halt_work', {self.in_progress: self.blocked})
         self.add_event_transitions('review', {
             self.in_progress: self.in_review,
-            self.in_mediation: self.in_review
+            self.in_mediation: self.wait_for_rating
         })
         self.add_event_transitions('mediate', {self.in_review: self.in_mediation})
         self.add_event_transitions('complete', {self.in_review: self.complete, self.in_mediation: self.complete})

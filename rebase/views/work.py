@@ -21,7 +21,7 @@ class WorkSchema(RebaseSchema):
     debit =     SecureNestedField(DebitSchema,      only='id', default=None)
     credit =    SecureNestedField(CreditSchema,     only='id', default=None)
     offer =     SecureNestedField(WorkOfferSchema,  exclude=('work',), default=None)
-    comments =  SecureNestedField('CommentSchema', only=('id', 'content', 'created', 'user'), many=True, default=None)
+    comments =  SecureNestedField('CommentSchema', only=('id', 'content', 'created', 'user', 'type'), many=True, default=None)
 
     @post_load
     def make_work_schema(self, data):

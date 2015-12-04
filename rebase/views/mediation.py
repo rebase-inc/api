@@ -13,7 +13,7 @@ class MediationSchema(RebaseSchema):
     state =         fields.String()
     work =          SecureNestedField('WorkSchema')
     arbitration =   SecureNestedField('ArbitrationSchema', default=None)
-    comments =      SecureNestedField('CommentSchema', only=('id', 'content', 'created', 'user'), many=True, default=None)
+    comments =      SecureNestedField('CommentSchema', only=('id', 'content', 'created', 'user', 'type'), many=True, default=None)
 
     @post_load
     def make_mediation(self, data):
