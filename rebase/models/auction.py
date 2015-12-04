@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from functools import lru_cache
 
+from flask.ext.login import current_app
 from sqlalchemy.orm import validates
 from sqlalchemy.ext.hybrid import hybrid_property
 
@@ -37,7 +38,6 @@ class Auction(DB.Model, PermissionMixin):
         self.created = datetime.now()
         self.expires = datetime.now() + timedelta(days = 3)
         # Hack to nominate all contractors during development
-        from flask.ext.login import current_app
         if current_app.config['NOMINATE_ALL_CONTRACTORS']:
             from rebase.models.contractor import Contractor
             from rebase.models.nomination import Nomination
@@ -125,7 +125,7 @@ class AuctionStateMachine(StateMachine):
         # check to see if overbid or underbid
         for work_offer in bid.work_offers:
             price_limit = BidLimit.query.filter(BidLimit.ticket_snapshot == work_offer.ticket_snapshot).one().price
-            if work_offer.price > price_limit:
+            if work_offer.price*current_app.config['REVENUE_FACTOR'] > price_limit:
                 return
 
         bid.contract = Contract(bid)
