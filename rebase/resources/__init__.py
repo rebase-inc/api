@@ -38,6 +38,7 @@ def RestfulCollection(model, serializer, deserializer, handlers=None):
         @convert_exceptions
         def get(self):
             return get_collection(model, serializer, handlers=_handlers['GET'])
+
         @login_required
         @convert_exceptions
         def post(self):
@@ -53,11 +54,13 @@ def RestfulResource(model, serializer, deserializer, update_deserializer, handle
         def get(self, **id_args):
             id_values = tuple(id_args[pk] for pk in get_model_primary_keys(model))
             return get_resource(model, id_values, serializer, handlers=_handlers['GET'])
+
         @login_required
         @convert_exceptions
         def put(self, **id_args):
             id_values = tuple(id_args[pk] for pk in get_model_primary_keys(model))
             return update_resource(model, id_values, update_deserializer, serializer, handlers=_handlers['PUT'])
+
         @login_required
         @convert_exceptions
         def delete(self, **id_args):

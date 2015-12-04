@@ -1,4 +1,5 @@
 from contextlib import contextmanager
+from pprint import pformat
 
 import marshmallow.exceptions as marsh_exc
 from werkzeug.http import HTTP_STATUS_CODES
@@ -64,9 +65,7 @@ class ValidationError(ClientError):
     def __init__(self, error, data):
         if not isinstance(error, marsh_exc.ValidationError):
             raise ValueError('error parameter must be of type {}'.format(marsh_exc.ValidationError))
-        error_message = "Validation error: '{}' while validating: {}"
-        error_message = error_message.format(error.fields, data)
-        super().__init__(message=error_message, more_data=data)
+        super().__init__(message=pformat(error.messages))
 
 
 class ForcedError(ServerError):

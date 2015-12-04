@@ -1,4 +1,4 @@
-from marshmallow import fields, post_load
+from marshmallow import fields, post_load, validate
 from rebase.common.schema import RebaseSchema
 from rebase.models.internal_ticket import InternalTicket
 from rebase.common.database import SecureNestedField
@@ -6,7 +6,7 @@ from rebase.common.database import SecureNestedField
 class InternalTicketSchema(RebaseSchema):
     id =            fields.Integer()
     created =       fields.DateTime()
-    title =         fields.String()
+    title =         fields.String(required=True, validate=validate.Length(min=1, error='Please provide a title for this ticket'))
     discriminator = fields.String()
 
     project =           SecureNestedField('ProjectSchema',          only=('id','name','organization', 'work_repo', 'deploy', 'test', 'readme'), allow_null=True)
