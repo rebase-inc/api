@@ -29,7 +29,7 @@ class Comment(DB.Model, PermissionMixin):
         self.mediation = mediation
         self.ticket = ticket
         self.feedback = feedback
-        self.type = 'work' if work else 'review' if review else 'mediation' if mediation else 'ticket' if ticket else 'feedback' if feedback else None
+        self.type = 'work_comment' if work else 'review_comment' if review else 'mediation_comment' if mediation else 'ticket_comment' if ticket else 'feedback_comment' if feedback else None
         if not self.type:
             raise ValueError('Invalid comment')
 
