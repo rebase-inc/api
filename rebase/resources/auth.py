@@ -8,7 +8,7 @@ from flask.ext.login import (
     logout_user,
     current_user,
 )
-from rebase.common.exceptions import UnmarshallingError, ValidationError
+from rebase.common.exceptions import ValidationError
 
 from rebase.views import auth, user
 
@@ -40,11 +40,6 @@ class AuthCollection(Resource):
                 response.status_code = 201
                 response.set_cookie('role_id', str(current_role.id), expires=datetime.now()+timedelta(days=1))
                 return response
-        except UnmarshallingError as e:
-            logout_user()
-            response = jsonify(message = 'No credentials provided!')
-            response.status_code = 401
-            return response
         except ValidationError as e:
             logout_user()
             response = jsonify(message=self.bad_credentials)

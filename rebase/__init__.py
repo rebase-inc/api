@@ -7,6 +7,7 @@ from flask_debugtoolbar import DebugToolbarExtension
 from werkzeug import secure_filename
 
 from rebase.common.routes import register_routes
+from rebase.common.exceptions import errors
 from rebase.github.routes import register_github_routes
 from rebase.home.routes import register_home
 from rebase.features import install
@@ -31,7 +32,7 @@ def create_app(testing=False):
     toolbar = DebugToolbarExtension(app)
 
     install(app)
-    api = Api(app, prefix=app.config['URL_PREFIX'])
+    api = Api(app, prefix=app.config['URL_PREFIX'], errors=errors)
     register_home(app)
     register_routes(api)
     register_github_routes(app)
