@@ -1,8 +1,8 @@
+import datetime
+
 from flask.ext.login import current_user
 from sqlalchemy.orm import validates
 from sqlalchemy.ext.hybrid import hybrid_property
-
-import datetime
 
 from rebase.common.database import DB, PermissionMixin
 from rebase.common.exceptions import ClientError

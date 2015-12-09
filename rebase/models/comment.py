@@ -14,22 +14,24 @@ class Comment(DB.Model, PermissionMixin):
     work_id =       DB.Column(DB.Integer, DB.ForeignKey('work.id',      ondelete='CASCADE'),    nullable=True)
     review_id =     DB.Column(DB.Integer, DB.ForeignKey('review.id',    ondelete='CASCADE'),    nullable=True)
     mediation_id =  DB.Column(DB.Integer, DB.ForeignKey('mediation.id', ondelete='CASCADE'),    nullable=True)
+    blockage_id =   DB.Column(DB.Integer, DB.ForeignKey('blockage.id', ondelete='CASCADE'),    nullable=True)
     ticket_id =     DB.Column(DB.Integer, DB.ForeignKey('ticket.id',    ondelete='CASCADE'),    nullable=True)
     feedback_id =   DB.Column(DB.Integer, DB.ForeignKey('feedback.id',  ondelete='CASCADE'),    nullable=True)
 
     user_id = DB.Column(DB.Integer, DB.ForeignKey('user.id'), nullable=False)
     user = DB.relationship('User', uselist=False)
 
-    def __init__(self, user, content, created=None, work=None, review=None, mediation=None, ticket=None, feedback=None):
+    def __init__(self, user, content, created=None, work=None, review=None, mediation=None, blockage=None, ticket=None, feedback=None):
         self.user = user
         self.content = content
         self.created = created or datetime.now()
         self.work = work
         self.review = review
         self.mediation = mediation
+        self.blockage = blockage
         self.ticket = ticket
         self.feedback = feedback
-        self.type = 'work_comment' if work else 'review_comment' if review else 'mediation_comment' if mediation else 'ticket_comment' if ticket else 'feedback_comment' if feedback else None
+        self.type = 'work_comment' if work else 'review_comment' if review else 'mediation_comment' if mediation else 'ticket_comment' if ticket else 'feedback_comment' if feedback else 'blockage_comment' if blockage else None
         if not self.type:
             raise ValueError('Invalid comment')
 
@@ -177,6 +179,8 @@ class Comment(DB.Model, PermissionMixin):
             return self.review.allowed_to_be_viewed_by(user)
         if self.mediation:
             return self.mediation.allowed_to_be_viewed_by(user)
+        if self.blockage:
+            return self.blockage.allowed_to_be_viewed_by(user)
         if self.ticket:
             return self.ticket.allowed_to_be_viewed_by(user)
         if self.feedback:
@@ -195,6 +199,8 @@ class Comment(DB.Model, PermissionMixin):
             return self.review.allowed_to_be_viewed_by(user)
         if self.mediation:
             return self.mediation.allowed_to_be_viewed_by(user)
+        if self.blockage:
+            return self.blockage.allowed_to_be_viewed_by(user)
         if self.ticket:
             return self.ticket.allowed_to_be_viewed_by(user)
         if self.feedback:
