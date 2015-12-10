@@ -6,14 +6,11 @@ from rebase.models.ssh_key import SSHKey
 
 class SSHKeySchema(RebaseSchema):
 
-    class Meta:
-        dump_only = ('id',)
-
-    id =            fields.Integer()
+    id =            fields.Integer(dump_only=True)
     user_id =       fields.Integer()
     title =         fields.String()
-    key =           fields.String()
-    fingerprint =   fields.String()
+    key =           fields.String(load_only=True)
+    fingerprint =   fields.String(dump_only=True)
 
     user =          SecureNestedField('UserSchema', only=('id',), required=True)
 

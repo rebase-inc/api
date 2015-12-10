@@ -1,3 +1,4 @@
+from re import fullmatch
 from hashlib import md5
 from os import remove
 from subprocess import check_output
@@ -9,11 +10,11 @@ class SSHKey(DB.Model, PermissionMixin):
 
     id =            DB.Column(DB.Integer, primary_key=True)
     user_id =       DB.Column(DB.Integer, DB.ForeignKey('user.id', ondelete='CASCADE'))
-    title =         DB.Column(DB.String, nullable=False)
+    title =         DB.Column(DB.String, nullable=True)
     key =           DB.Column(DB.String, nullable=False)
     fingerprint =   DB.Column(DB.String, nullable=False)
 
-    def __init__(self, user, title, key):
+    def __init__(self, user, key, title=None):
         ''' 
         user: a User object.
         title: a way to annotate your key.
@@ -51,6 +52,6 @@ def get_fingerprint(key):
     key_path = '/tmp/rebase-key-'+md5(key.encode('utf-8')).hexdigest()
     with open(key_path, 'w') as f:
         f.write(key)
-    _fingerprint =  check_output(['ssh-keygen', '-l', '-f', key_path])
-    remove(key_path)
-    return _fingerprint[:-1].decode('utf-8')
+    _fingerprint =  check_output(['ssh-keygen', '-l', '-E', 'md5', '-f', key_path])[:-1].decode('utf-8')
+    match = fullmatch(r'2048 MD5:(([a-z0-9]{2}:){15}[a-z0-9][a-z0-9]).*', _fingerprint)
+    return match.group(1)
