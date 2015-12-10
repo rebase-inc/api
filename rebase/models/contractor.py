@@ -1,7 +1,7 @@
 from random import randint
 
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import aliased
+from sqlalchemy.orm import aliased, reconstructor
 
 from rebase.models.role import Role
 from rebase.models.user import User
@@ -39,6 +39,19 @@ class Contractor(Role):
             from rebase.models.auction import Auction
             from rebase.models.nomination import Nomination
             nominations = [ Nomination(self, auction.ticket_set) for auction in Auction.query.all() ]
+
+    @reconstructor
+    def init(self):
+        from rebase.models.review import Review
+        self.user.set_role(self.id)
+        reviews = Review.as_contractor(self.user).all()
+        if reviews:
+            _sum = 0
+            for review in reviews:
+                _sum += review.rating
+            self.rating = _sum/len(reviews)
+        else:
+            self.rating = 0
 
     @hybrid_property
     def auctions_approved_for(self):
