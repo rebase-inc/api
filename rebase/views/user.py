@@ -5,6 +5,7 @@ import sqlalchemy.orm.exc as orm_exc
 from rebase.common.schema import RebaseSchema
 from rebase.common.database import get_or_make_object, SecureNestedField
 from rebase.views.role import RoleSchema
+from rebase.views.ssh_key import SSHKeySchema
 
 class PhotoSchema(RebaseSchema):
     id =  fields.Integer()
@@ -12,19 +13,18 @@ class PhotoSchema(RebaseSchema):
 
 class UserSchema(RebaseSchema):
 
-    class Meta:
-        dump_only = ('admin', 'last_seen', 'photo')
-
     id =            fields.Integer()
     name =          fields.String(required=False)
     email =         fields.Email(required=True)
     password =      fields.String(required=True)
-    last_seen =     fields.DateTime(required=True)
-    admin =         fields.Boolean(default=False)
-    current_role =  SecureNestedField('RoleSchema')
-    photo =         SecureNestedField(PhotoSchema, only='url')
+    last_seen =     fields.DateTime(required=True, dump_only=True)
+    admin =         fields.Boolean(default=False, dump_only=True)
 
     roles = SecureNestedField('RoleSchema', exclude=('user',), many=True)
+    current_role =  SecureNestedField('RoleSchema')
+    photo =         SecureNestedField(PhotoSchema, only='url', dump_only=True)
+    ssh_public_keys = SecureNestedField(SSHKeySchema, exclude=('user',), many=True)
+    github_accounts = SecureNestedField('GithubAccountSchema', exclude=('user',), many=True)
 
     @post_load
     def make_user(self, data):
