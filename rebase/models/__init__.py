@@ -8,6 +8,7 @@ from rebase.models.bid import *
 from rebase.models.arbitration import *
 from rebase.models.auction import *
 from rebase.models.bank_account import *
+from rebase.models.blockage import *
 from rebase.models.code_clearance import *
 from rebase.models.code_repository import *
 from rebase.models.comment import *

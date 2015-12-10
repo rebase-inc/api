@@ -1,8 +1,8 @@
+import datetime
+
 from flask.ext.login import current_user
 from sqlalchemy.orm import validates
 from sqlalchemy.ext.hybrid import hybrid_property
-
-import datetime
 
 from rebase.common.database import DB, PermissionMixin
 from rebase.common.exceptions import ClientError
@@ -152,18 +152,6 @@ class InvalidMediationAnswer(ClientError):
                 comment=comment,
                 valid_answers=MediationStateMachine.valid_answers
             ),
-            more_data= {
-                'mediation': {
-                    'id': machine.mediation.id,
-                    'state': machine.mediation.state,
-                    'client_answer': machine.mediation.client_answer,
-                    'dev_answer': machine.mediation.dev_answer,
-                },
-                'ticket': {
-                    'id': machine.mediation.work.offer.ticket_snapshot.ticket.id,
-                    'title': machine.mediation.work.offer.ticket_snapshot.title
-                }
-            }
         )
 
 class MediationInvalidWork(ClientError):
@@ -171,17 +159,10 @@ class MediationInvalidWork(ClientError):
     
     def __init__(self, mediation, field, model, field_type, field_type_value):
         super().__init__(
-            message=self.error_message.format(field, model, field_type, field_type_value),
-            more_data={
-                'work': {
-                    'id': mediation.work.id,
-                },
-                'ticket': {
-                    'id': mediation.work.offer.ticket_snapshot.ticket_id,
-                    'title': mediation.work.offer.ticket_snapshot.title,
-                },
-                'contract': {
-                    'id': mediation.work.offer.bid.contract.id,
-                }
-            }
+            message=self.error_message.format(
+                field,
+                model,
+                field_type,
+                field_type_value
+            ),
         )

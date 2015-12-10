@@ -6,6 +6,7 @@ from rebase.common.schema import RebaseSchema
 from rebase.views.credit import CreditSchema
 from rebase.views.debit import DebitSchema
 from rebase.views.mediation import MediationSchema
+from rebase.views.blockage import BlockageSchema
 from rebase.views.review import ReviewSchema
 from rebase.views.work_offer import WorkOfferSchema
 
@@ -18,6 +19,7 @@ class WorkSchema(RebaseSchema):
 
     review =    SecureNestedField(ReviewSchema,     exclude=('work',), default=None)
     mediations = SecureNestedField(MediationSchema,  only=('id','state', 'comments'), many=True)
+    blockages = SecureNestedField(BlockageSchema,  only=('id','comments'), many=True)
     debit =     SecureNestedField(DebitSchema,      only='id', default=None)
     credit =    SecureNestedField(CreditSchema,     only='id', default=None)
     offer =     SecureNestedField(WorkOfferSchema,  exclude=('work',), default=None)
