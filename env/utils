@@ -8,7 +8,12 @@ py () {
 
 
 export REBASE_HOST_PRO=http://rebase-pro.herokuapp.com
+export REBASE_HOST_STAGE=http://rebase-stage.herokuapp.com
 export REBASE_HOST_LOCALHOST=http://127.0.0.1:5000
+
+stage () {
+	export REBASE_HOST=$REBASE_HOST_STAGE
+}
 
 pro () {
 	export REBASE_HOST=$REBASE_HOST_PRO
