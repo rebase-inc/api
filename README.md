@@ -3,7 +3,7 @@ Rebase is a Flask-based website. Its data are stored on a PostgreSQL database.
 Background task are run with RQ which itself relies on Redis.
 Supervisord is used to managed rqworker processes.
 
-# Local Development
+# Local Development on Mac
 ## Installation
 
 0. Go through https://devcenter.heroku.com/articles/getting-started-with-python
@@ -22,6 +22,20 @@ Supervisord is used to managed rqworker processes.
 12. ```./manage db migrate```
 13. ```./manage db upgrade```
 14. ```foreman start``` This should launch a server on localhost
+
+# Local Development on Linux
+## Installation
+
+0. Go through https://devcenter.heroku.com/articles/getting-started-with-python
+1. ```sudo apt-get install postgresql postgresql-contrib libpq-dev python-dev```
+2. ```sudo -u postgres -i```
+2. ```createdb rebase_web```
+9. ```pip install -r requirements.txt```
+10. ```source setup.sh```
+11. ```./manage db init```
+12. ```./manage db migrate```
+13. ```./manage db upgrade```
+
 
 ## Testing
 ```bash
