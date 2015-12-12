@@ -1,3 +1,4 @@
+import datetime
 
 from flask import current_app
 from flask.ext.login import current_user
@@ -117,6 +118,13 @@ class WorkStateMachine(StateMachine):
         if comment:
             Comment(current_user, comment, work=self.work)
 
+    def resolved(self, comment):
+        Comment(current_user, comment, work=self.work)
+        # this ending date is a hack that should be fixed by adding a state machine to the blockage
+        if len(self.work.blockages):
+            self.work.blockages[-1].ended = datetime.datetime.now()
+        self.send('resume')
+
     def in_mediation(self, comment):
         from rebase.models.mediation import Mediation
         Mediation(self.work, comment)
@@ -145,5 +153,6 @@ class WorkStateMachine(StateMachine):
         })
         self.add_event_transitions('mediate', {self.in_review: self.in_mediation})
         self.add_event_transitions('complete', {self.in_review: self.complete, self.in_mediation: self.complete})
-        self.add_event_transitions('resume_work', {self.in_mediation: self.in_progress, self.blocked: self.in_progress})
+        self.add_event_transitions('resolve', {self.in_mediation: self.resolved, self.blocked: self.resolved})
+        self.add_event_transitions('resume', {self.resolved: self.in_progress })
         self.add_event_transitions('fail', {self.in_mediation: self.failed})

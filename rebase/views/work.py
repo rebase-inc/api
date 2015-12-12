@@ -18,8 +18,8 @@ class WorkSchema(RebaseSchema):
     clone =     fields.String()
 
     review =    SecureNestedField(ReviewSchema,     exclude=('work',), default=None)
-    mediations = SecureNestedField(MediationSchema,  only=('id','state', 'comments'), many=True)
-    blockages = SecureNestedField(BlockageSchema,  only=('id','comments'), many=True)
+    mediations = SecureNestedField(MediationSchema,  only=('id','state', 'comments', 'created', 'ended'), many=True)
+    blockages = SecureNestedField(BlockageSchema,  only=('id','comments','created','ended'), many=True)
     debit =     SecureNestedField(DebitSchema,      only='id', default=None)
     credit =    SecureNestedField(CreditSchema,     only='id', default=None)
     offer =     SecureNestedField(WorkOfferSchema,  exclude=('work',), default=None)
@@ -59,12 +59,12 @@ class CompleteEventSchema(RebaseSchema):
     def make_complete(self, data):
         return 'complete', data
 
-class ResumeEventSchema(RebaseSchema):
+class ResolveEventSchema(RebaseSchema):
     comment = fields.String(required=False)
 
     @post_load
     def make_resume(self, data):
-        return 'resume_work', data
+        return 'resolve', data
 
 class FailEventSchema(RebaseSchema):
 
@@ -80,6 +80,6 @@ halt_event_deserializer = HaltEventSchema(strict=True)
 review_event_deserializer = ReviewEventSchema()
 mediate_event_deserializer = MediateEventSchema()
 complete_event_deserializer = CompleteEventSchema()
-resume_event_deserializer = ResumeEventSchema()
+resolve_event_deserializer = ResolveEventSchema()
 fail_event_deserializer = FailEventSchema()
 

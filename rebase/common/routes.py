@@ -29,12 +29,12 @@ def register_routes(api):
     github_account_resource = RestfulResource(GithubAccount, gh_account_views.serializer, gh_account_views.deserializer, gh_account_views.update_deserializer)
     api.add_resource(github_account_resource, make_resource_url(GithubAccount), endpoint = GithubAccount.__pluralname__ + '_resource')
 
-    from rebase.resources.work_events import WorkHaltEvents, WorkReviewEvents, WorkMediateEvents, WorkCompleteEvents, WorkResumeEvents, WorkFailEvents
+    from rebase.resources.work_events import WorkHaltEvents, WorkReviewEvents, WorkMediateEvents, WorkCompleteEvents, WorkResolveEvents, WorkFailEvents
     api.add_resource(WorkHaltEvents, '/works/<int:id>/halt')
     api.add_resource(WorkReviewEvents, '/works/<int:id>/review')
     api.add_resource(WorkMediateEvents, '/works/<int:id>/mediate')
     api.add_resource(WorkCompleteEvents, '/works/<int:id>/complete')
-    api.add_resource(WorkResumeEvents, '/works/<int:id>/resume')
+    api.add_resource(WorkResolveEvents, '/works/<int:id>/resolve')
     api.add_resource(WorkFailEvents, '/works/<int:id>/fail')
 
     from rebase.resources.mediation_events import (

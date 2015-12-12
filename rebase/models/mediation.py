@@ -13,6 +13,8 @@ class Mediation(DB.Model, PermissionMixin):
     __pluralname__ = 'mediations'
 
     id =            DB.Column(DB.Integer, primary_key=True)
+    created =       DB.Column(DB.DateTime, nullable=False)
+    ended =         DB.Column(DB.DateTime, nullable=True)
     dev_answer =    DB.Column(DB.String, nullable=True)
     client_answer = DB.Column(DB.String, nullable=True)
     timeout =       DB.Column(DB.DateTime, nullable=False)
@@ -25,6 +27,7 @@ class Mediation(DB.Model, PermissionMixin):
     def __init__(self, work, comment, timeout = datetime.datetime.now() + datetime.timedelta(days=3)):
         self.work = work
         self.timeout = timeout
+        self.created = datetime.datetime.now()
         Comment(current_user, comment, mediation=self)
 
     @hybrid_property
@@ -71,7 +74,7 @@ class Mediation(DB.Model, PermissionMixin):
         return value
 
 class MediationStateMachine(StateMachine):
-    valid_answers = ['resume_work', 'review', 'fail']
+    valid_answers = ['resolve', 'review', 'fail']
 
     def set_state(self, _, new_state):
         self.mediation.state = new_state.__name__
@@ -92,6 +95,7 @@ class MediationStateMachine(StateMachine):
         Comment(current_user, comment, mediation=self.mediation)
 
     def decision(self, answer, comment):
+        self.ended = datetime.datetime.now()
         Comment(current_user, comment, mediation=self.mediation)
         if hasattr(self.mediation, 'client_answer'):
             self.mediation.dev_answer = answer
@@ -156,7 +160,7 @@ class InvalidMediationAnswer(ClientError):
 
 class MediationInvalidWork(ClientError):
     error_message = '{} field on {} must be {}, not {}'
-    
+
     def __init__(self, mediation, field, model, field_type, field_type_value):
         super().__init__(
             message=self.error_message.format(
