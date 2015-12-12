@@ -1,3 +1,4 @@
+import datetime
 
 from flask.ext.login import current_user
 
@@ -8,11 +9,14 @@ class Blockage(DB.Model, PermissionMixin):
     __pluralname__ = 'blockages'
 
     id =            DB.Column(DB.Integer, primary_key=True)
+    created =       DB.Column(DB.DateTime, nullable=False)
+    ended =         DB.Column(DB.DateTime, nullable=True)
     work_id =       DB.Column(DB.Integer, DB.ForeignKey('work.id', ondelete='CASCADE'), nullable=False)
     comments =      DB.relationship('Comment', backref='blockage', lazy='joined', cascade='all, delete-orphan', passive_deletes=True, order_by='Comment.created')
 
     def __init__(self, work, comment):
         self.work = work
+        self.created = datetime.datetime.now()
         Comment(current_user, comment, blockage=self)
 
     @classmethod

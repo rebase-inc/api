@@ -7,6 +7,8 @@ from rebase.common.database import SecureNestedField
 
 class MediationSchema(RebaseSchema):
     id =            fields.Integer()
+    created =       fields.DateTime()
+    ended =         fields.DateTime()
     dev_answer =    fields.String()
     client_answer = fields.String()
     timeout =       fields.DateTime()

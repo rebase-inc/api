@@ -6,6 +6,8 @@ from rebase.common.database import SecureNestedField
 
 class BlockageSchema(RebaseSchema):
     id =            fields.Integer()
+    created =       fields.DateTime()
+    ended =         fields.DateTime()
     comments =      SecureNestedField('CommentSchema', only=('id', 'content', 'created', 'user', 'type'), many=True, default=None)
 
     @post_load

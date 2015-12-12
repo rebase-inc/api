@@ -25,7 +25,7 @@ class MediationUseCase(UseCase):
         db.session.commit()
         with managed_state:
             work.machine.send('halt_work', 'Just because...')
-            work.machine.send('resume_work')
+            work.machine.send('resolve', 'Whatever')
             work.machine.send('review')
             work.machine.send('mediate')
 
@@ -48,7 +48,7 @@ class MediationUseCase(UseCase):
         db.session.commit()
         with managed_state:
             work_2.machine.send('halt_work', 'Just because...')
-            work_2.machine.send('resume_work')
+            work_2.machine.send('resolve', 'Whatever')
             work_2.machine.send('review')
             work_2.machine.send('mediate')
 
