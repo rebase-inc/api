@@ -27,11 +27,23 @@ Supervisord is used to managed rqworker processes.
 ## Installation
 
 0. Go through https://devcenter.heroku.com/articles/getting-started-with-python
-1. ```sudo apt-get install postgresql postgresql-contrib libpq-dev python-dev```
+1. ```sudo apt-get install postgresql postgresql-contrib libpq-dev python-dev supervisor```
 2. ```sudo -u postgres -i```
-2. ```createdb rebase_web```
-9. ```pip install -r requirements.txt```
-10. ```source setup.sh```
+3. ```createuser -s ubuntu```
+4. ```exit```
+5. ```createdb rebase_web```
+6. ```mkdir -p ~/repo; cd repo```
+7. ```git clone git@github.com:rebase-inc/api.git```
+8. ```git clone git@github.com:rebase-inc/react-app.git```
+### Prepare the virtual environment for 'api'
+10. ```mkdir -p ~/.venv```
+11. ```pyvenv ~/.venv/api```
+12. ```pip install -r ~/repo/api/requirements.txt```
+11. ```cd ~/.venv/api```
+### Install the supervisor script and launch the backend
+12. ```ln -s ~/repo/api/etc/supervisor.ubuntu.conf```
+13. ```supervisord -c ~/.venv/api/supervisor.ubuntu.conf```
+### If need be, run a migration
 11. ```./manage db init```
 12. ```./manage db migrate```
 13. ```./manage db upgrade```
