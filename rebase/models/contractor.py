@@ -30,7 +30,7 @@ class Contractor(Role):
     def __init__(self, user):
         self.user = user
         self.busyness = 1
-        self.rating = randint(20, 50)/10
+        self.rating = 0
         from rebase.models.skill_set import SkillSet
         SkillSet(self)
         # Hack to nominate all contractors during development
@@ -46,7 +46,7 @@ class Contractor(Role):
         self.user.set_role(self.id)
         reviews = Review.as_contractor(self.user).all()
         if reviews:
-            _sum = 0
+            _sum = 0.0
             for review in reviews:
                 _sum += review.rating
             self.rating = _sum/len(reviews)

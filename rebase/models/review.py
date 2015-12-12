@@ -32,8 +32,8 @@ class Review(DB.Model, PermissionMixin):
     def rating(self, new_rating):
         if not isinstance(new_rating, int):
             raise ValueError('{} field on {} must be {}'.format('rating', self.__tablename__, int))
-        if new_rating < 1 or new_rating > 5:
-            raise ValueError('{} field on {} must be {}'.format('rating', self.__tablename__, 'from 1 to 5'))
+        if new_rating < 1 or new_rating > 10:
+            raise ValueError('{} field on {} must be {}'.format('rating', self.__tablename__, 'from 1 to 10'))
         self._rating = new_rating
 
     def allowed_to_be_created_by(self, user):
