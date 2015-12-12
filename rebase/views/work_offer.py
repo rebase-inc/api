@@ -13,7 +13,7 @@ class WorkOfferSchema(RebaseSchema):
     id = fields.Integer()
     price = fields.Integer()
     work = SecureNestedField('WorkSchema', only=('id','review', 'state', 'blockages', 'mediations', 'clone', 'comments'), default=None)
-    contractor = SecureNestedField('ContractorSchema', only=('id', 'user'))
+    contractor = SecureNestedField('ContractorSchema', only=('id', 'user', 'rating'))
     bid = SecureNestedField('BidSchema', exclude=('work_offers',))
     ticket_snapshot = SecureNestedField('TicketSnapshotSchema', only=('id','ticket'))
 
