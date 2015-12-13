@@ -27,7 +27,9 @@ def create_app(testing=False):
     app = Flask(__name__)
     app_context = app.app_context()
     app_context.push()
-    app.config.from_object(environ['APP_SETTINGS'])
+    settings = environ['APP_SETTINGS']
+    print('Using rebase configuration: '+settings)
+    app.config.from_object(settings)
     app.config['SQLALCHEMY_DATABASE_URI'] = environ['TEST_URL'] if testing else environ['DATABASE_URL']
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False 
     from rebase.common.database import DB, DB_PRODUCTION_NAME

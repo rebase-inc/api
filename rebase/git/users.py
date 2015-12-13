@@ -39,5 +39,5 @@ def generate_authorized_users(project_id):
     with open(tmp_authorized_users, 'w') as authorized_users:
         for user_id in ids:
             authorized_users.write(str(user_id)+'\n')
-    authorized_users_path = join(app.config['WORK_REPOS_ROOT'], project.work_repo.url, '.git', 'authorized_users')
+    authorized_users_path = join(project.work_repo.repo_path, '.git', 'authorized_users')
     check_call(['scp', tmp_authorized_users, destination(host=app.config['WORK_REPOS_HOST'], path=authorized_users_path)])

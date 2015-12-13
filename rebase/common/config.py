@@ -63,3 +63,7 @@ class DevelopmentConfig(Config):
 class TestingConfig(Config):
     TESTING = True
     FLASK_LOGIN_SESSION_PROTECTION = "basic"
+
+class DevServer(DevelopmentConfig):
+    WORK_REPOS_HOST = environ['WORK_REPOS_HOST']
+
