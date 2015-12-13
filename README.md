@@ -28,6 +28,14 @@ Supervisord is used to managed rqworker processes.
 
 0. Go through https://devcenter.heroku.com/articles/getting-started-with-python
 1. ```sudo apt-get install postgresql postgresql-contrib libpq-dev python-dev supervisor```
+### loosen auth for localhost only (to avoid this error: "(psycopg2.OperationalError) fe_sendauth: no password supplied")
+2. Find pg_hba.conf:
+3. ```sudo -u postgres psql -c 'SHOW hba_file;'```
+4. Looks for this line: ```host    all             all             127.0.0.1/32            md5```
+5. Replace md5 with trust:
+6. ```host    all             all             127.0.0.1/32            trust```
+3. ```sudo /etc/init.d/postgresql restart```
+2. ```Install a redis server (I followed https://www.digitalocean.com/community/tutorials/how-to-install-and-use-redis)
 2. ```sudo -u postgres -i```
 3. ```createuser -s ubuntu```
 4. ```exit```

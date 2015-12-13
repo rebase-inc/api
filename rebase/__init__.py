@@ -6,12 +6,15 @@ from flask.ext.login import current_user
 from flask_debugtoolbar import DebugToolbarExtension
 from werkzeug import secure_filename
 
-from rebase.common.routes import register_routes
 from rebase.common.exceptions import errors
+from rebase.common.env import check
+from rebase.common.routes import register_routes
 from rebase.github.routes import register_github_routes
 from rebase.home.routes import register_home
 from rebase.features import install
 
+
+check(['DATABASE_URL', 'APP_SETTINGS'])
 
 def create_app(testing=False):
     '''
@@ -19,8 +22,8 @@ def create_app(testing=False):
     or Flask at a very low level and basically don't really care abot the routes and widgets.
     Example: in the parsers, in run-workers.
     '''
-    if 'DATABASE_URL' not in environ or 'APP_SETTINGS' not in environ:
-        raise EnvironmentError('Missing environment variables. Did you forget to run "source setup.sh" or "source test_setup.sh"?')
+    if testing:
+        check(['TEST_URL'])
     app = Flask(__name__)
     app_context = app.app_context()
     app_context.push()

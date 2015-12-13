@@ -1,5 +1,15 @@
 from os import environ, path
 
+from rebase.common.env import check
+
+check([
+    'FLASK_SECRET_KEY',
+    'DATABASE_URL',
+    'GITHUB_CLIENT_ID',
+    'GITHUB_CLIENT_SECRET',
+    'CONNECTION_POOL_SIZE_PER_WORKER'
+])
+
 class Config(object):
     DEBUG = False
     TESTING = False
