@@ -65,5 +65,5 @@ class TestingConfig(Config):
     FLASK_LOGIN_SESSION_PROTECTION = "basic"
 
 class DevServer(DevelopmentConfig):
-    WORK_REPOS_HOST = environ['WORK_REPOS_HOST']
+    WORK_REPOS_HOST = environ['WORK_REPOS_HOST'] if 'WORK_REPOS_HOSTS' in environ else DevelopmentConfig.WORK_REPOS_HOST
 
