@@ -52,6 +52,9 @@ def get_fingerprint(key):
     key_path = '/tmp/rebase-key-'+md5(key.encode('utf-8')).hexdigest()
     with open(key_path, 'w') as f:
         f.write(key)
-    _fingerprint =  check_output(['ssh-keygen', '-l', '-E', 'md5', '-f', key_path])[:-1].decode('utf-8')
-    match = fullmatch(r'2048 MD5:(([a-z0-9]{2}:){15}[a-z0-9][a-z0-9]).*', _fingerprint)
-    return match.group(1)
+    _fingerprint =  check_output(['ssh-keygen', '-l', '-f', key_path])[:-1].decode('utf-8')
+    return _fingerprint
+    # -E option to specify hash algo is not available on Debian SSH 
+    # Also, bit-length is variable and defined by whoever creates the key
+    # match = fullmatch(r'2048 MD5:(([a-z0-9]{2}:){15}[a-z0-9][a-z0-9]).*', _fingerprint)
+    # return match.group(1)

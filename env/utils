@@ -61,6 +61,7 @@ rebase-rm () {
 #
 rebase-post () {
 	curl \
+    -v \
     -s \
 	-L \
 	-b $REBASE_COOKIE_JAR \
@@ -89,6 +90,12 @@ rebase-new-user () {
 	rebase-post \
 	"{\"first_name\": \"$1\", \"last_name\":\"$2\", \"email\":\"$3\", \"password\":\"$4\"}" \
 	users
+}
+
+rebase-login-raw () {
+	rebase-post \
+        "{ \"user\": {\"email\": \"$1\"}, \"password\": \"$2\"}" \
+        auth
 }
 
 #
