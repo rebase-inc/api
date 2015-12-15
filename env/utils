@@ -8,7 +8,12 @@ py () {
 
 
 export REBASE_HOST_PRO=http://rebase-pro.herokuapp.com
+export REBASE_HOST_STAGE=http://rebase-stage.herokuapp.com
 export REBASE_HOST_LOCALHOST=http://127.0.0.1:5000
+
+stage () {
+	export REBASE_HOST=$REBASE_HOST_STAGE
+}
 
 pro () {
 	export REBASE_HOST=$REBASE_HOST_PRO
@@ -56,6 +61,7 @@ rebase-rm () {
 #
 rebase-post () {
 	curl \
+    -v \
     -s \
 	-L \
 	-b $REBASE_COOKIE_JAR \
@@ -84,6 +90,12 @@ rebase-new-user () {
 	rebase-post \
 	"{\"first_name\": \"$1\", \"last_name\":\"$2\", \"email\":\"$3\", \"password\":\"$4\"}" \
 	users
+}
+
+rebase-login-raw () {
+	rebase-post \
+        "{ \"user\": {\"email\": \"$1\"}, \"password\": \"$2\"}" \
+        auth
 }
 
 #

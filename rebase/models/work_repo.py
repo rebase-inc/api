@@ -28,14 +28,14 @@ class WorkRepo(CodeRepository):
 
     @reconstructor
     def init(self):
-        repo_path = join(
+        self.repo_path = join(
             current_app.config['WORK_REPOS_ROOT'], 
             normalize(self.project.organization.name),
             normalize(self.project.name)
         )
         self.url = '{hostname}:{path}'.format(
             hostname=current_app.config['WORK_REPOS_HOST'],
-            path=repo_path
+            path=self.repo_path
         )
         self.clone = 'git clone {}'.format(self.url)
 

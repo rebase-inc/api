@@ -28,7 +28,7 @@ def _create_internal_project_repo(host, repo_full_path, project_name, user_name,
 class Repo(object):
     def __init__(self, project):
         self.project = project
-        self.repo_full_path = join(current_app.config['WORK_REPOS_ROOT'], project.work_repo.url)
+        self.repo_full_path = project.work_repo.repo_path
         self.host = current_app.config['WORK_REPOS_HOST']
         self.enqueue = current_app.git_queue.enqueue
 
