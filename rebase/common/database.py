@@ -15,8 +15,6 @@ from rebase.common.exceptions import (
 )
 
 DB = SQLAlchemy()
-DB_PRODUCTION_NAME = 'rebase'
-DB_TEST_NAME = 'test_'+DB_PRODUCTION_NAME
 
 def get_model_primary_keys(model):
     ''' returns the tuple of names of components of the primary key

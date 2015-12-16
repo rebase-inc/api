@@ -1,0 +1,21 @@
+web:
+  build: .
+  ports:
+   - "5000:5000"
+  volumes:
+   - .:/code
+  environment:
+    DATABASE_URL: 'postgres://postgres:@db/postgres'
+    FLASK_SECRET_KEY:
+    GITHUB_CLIENT_ID:
+    GITHUB_CLIENT_SECRET:
+
+  links:
+   - redis
+   - database:db
+redis:
+  image: redis
+database:
+  image: postgres
+  expose:
+   - "5432"

@@ -7,7 +7,6 @@ check([
     'DATABASE_URL',
     'GITHUB_CLIENT_ID',
     'GITHUB_CLIENT_SECRET',
-    'CONNECTION_POOL_SIZE_PER_WORKER'
 ])
 
 class Config(object):
@@ -23,7 +22,7 @@ class Config(object):
         raise KeyError('Missing GITHUB_CLIENT_SECRET from environment. Please follow README.md instructions.')
     GITHUB_CLIENT_SECRET = environ['GITHUB_CLIENT_SECRET']
     CLONING_SERVER_URL = 'http://ec2-52-21-89-158.compute-1.amazonaws.com:5001/'
-    SQLALCHEMY_POOL_SIZE = int(environ['CONNECTION_POOL_SIZE_PER_WORKER'])
+    SQLALCHEMY_POOL_SIZE = 1
     SQLALCHEMY_MAX_OVERFLOW = 1
     NOMINATE_ALL_CONTRACTORS = False
     LOG_FILE = '/tmp/rebase_web.log'

@@ -32,7 +32,7 @@ def create_app(testing=False):
     app.config.from_object(settings)
     app.config['SQLALCHEMY_DATABASE_URI'] = environ['TEST_URL'] if testing else environ['DATABASE_URL']
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False 
-    from rebase.common.database import DB, DB_PRODUCTION_NAME
+    from rebase.common.database import DB
     DB.init_app(app)
     toolbar = DebugToolbarExtension(app)
 
