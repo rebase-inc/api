@@ -1,0 +1,9 @@
+FROM python:3.4
+ARG username
+ARG password
+RUN git clone https://$username:$password@github.com/rebase-inc/api.git
+WORKDIR /api
+RUN pip install -r requirements.txt
+RUN mkdir /uploads
+ENV APP_SETTINGS=rebase.common.docker.Dev
+CMD bash -i -c "python ./manage runserver -h 0.0.0.0 -p 5000"

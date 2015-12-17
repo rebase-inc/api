@@ -9,6 +9,7 @@ web:
    - database:db
 redis:
   image: redis
+  restart: always
 database:
   image: postgres
 client:
@@ -20,5 +21,23 @@ client:
   links:
    - web
   command: bash -c "npm install && npm start"
-  stdin_open: true
-  tty: true
+rq_git:
+  build: .
+  volumes:
+   - .:/api
+  links:
+   - redis
+   - database:db
+  command: bash -c "pip install -r requirements.txt; python git-worker.py"
+rq_default:
+  build: .
+  volumes:
+   - .:/api
+  links:
+   - web
+   - redis
+   - database:db
+  command: bash -c "pip install -r requirements.txt; python run-worker.py"
+git:
+  build: ./git/Dockerfile
+
