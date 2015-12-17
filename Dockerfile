@@ -1,7 +1,5 @@
 FROM python:3.4
-ADD . /code
-WORKDIR /code
-RUN pip install -r requirements.txt
-ENV APP_SETTINGS=rebase.common.config.DevelopmentConfig
-ENTRYPOINT ["python", "./manage"]
-CMD ["runserver", "-h", "0.0.0.0", "-p", "5000"]
+RUN mkdir /uploads
+WORKDIR /api
+ENV APP_SETTINGS=rebase.common.docker.Dev
+CMD bash -i -c "pip install -r requirements.txt;  python ./manage runserver -h 0.0.0.0 -p 5000"
