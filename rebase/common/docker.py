@@ -2,6 +2,7 @@ from rebase.common.config import DevelopmentConfig
 
 class Dev(DevelopmentConfig):
     WORK_REPOS_HOST = 'git_1'
+    WORK_REPOS_ROOT = '/git'
     UPLOAD_FOLDER = '/uploads'
     SECRET_KEY = "\x86\xa1\xb8\xfbP\x8f\xd6\x1c'\xad-\xdb\xf8+K=\x820g<5\x16|l"
     SQLALCHEMY_DATABASE_URI = 'postgres://postgres:@db/postgres'

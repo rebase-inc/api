@@ -7,6 +7,7 @@ web:
   links:
    - redis
    - database:db
+   - git
 redis:
   image: redis
   restart: always
@@ -28,7 +29,7 @@ rq_git:
   links:
    - redis
    - database:db
-  command: bash -c "pip install -r requirements.txt; python git-worker.py"
+  command: bash -c "source /venv/api/bin/activate && pip install -r requirements.txt && python git-worker.py"
 rq_default:
   build: .
   volumes:
@@ -37,7 +38,6 @@ rq_default:
    - web
    - redis
    - database:db
-  command: bash -c "pip install -r requirements.txt; python run-worker.py"
+  command: bash -c "source /venv/api/bin/activate && pip install -r requirements.txt &&  python run-worker.py"
 git:
-  build: ./git/Dockerfile
-
+  build: ./git

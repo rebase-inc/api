@@ -1,0 +1,57 @@
+#! /usr/bin/env python
+
+'''
+Usage: filter <user_id> <git_cmd> <git_dir>
+
+user_id: the id of the the Rebase user that owns the SSH public key used to create the SSH connection
+git_cmd: must be in ['git-receive-pack', 'git-upload-archive', 'git-upload-pack']
+git_dir: a valid git repository path on this server.
+'''
+
+from os.path import exists, join
+from subprocess import call
+from sys import argv, exit
+
+class ExitCode(object):
+    MissingArguments = 1
+    InvalidGitDirectoryTooShort = 2
+    InvalidGitDirectoryRoot = 3
+    InvalidCommand = 4
+    GitDirDoesNotExist = 5
+    MissingAuthorizedUsersFile = 6
+    UnauthorizedUser = 7
+
+
+valid_commands = ['git-receive-pack', 'git-upload-archive', 'git-upload-pack']
+
+if len(argv) != 4:
+    exit(ExitCode.MissingArguments)
+user_id = int(argv[1])
+git_cmd = argv[2]
+if len(argv[3]) < 6:
+    exit(ExitCode.InvalidGitDirectoryTooShort)
+git_dir = argv[3][1:-1]
+
+if git_cmd not in valid_commands:
+    exit(ExitCode.InvalidCommand)
+if not git_dir.startswith('/git'):
+    exit(ExitCode.InvalidGitDirectoryRoot)
+if not exists(git_dir):
+    exit(ExitCode.GitDirDoesNotExist)
+user_ids_path = join(git_dir, '.git', 'authorized_users')
+if not exists(user_ids_path):
+    exit(ExitCode.MissingAuthorizedUsersFile)
+
+user_ids = []
+authenticated = False
+with open(user_ids_path, 'r') as f:
+    for line in f:
+        if int(line) == user_id:
+            authenticated = True
+            break
+
+if not authenticated:
+    exit(ExitCode.UnauthorizedUser)
+
+original_cmd = [git_cmd, git_dir]
+call(original_cmd)
