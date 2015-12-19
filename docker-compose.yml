@@ -29,15 +29,16 @@ rq_git:
   links:
    - redis
    - database:db
-  command: bash -c "source /venv/api/bin/activate && pip install -r requirements.txt && python git-worker.py"
+  command: ["source /venv/api/bin/activate && pip install -r requirements.txt && python git-worker.py"]
 rq_default:
   build: .
   volumes:
    - .:/api
   links:
-   - web
    - redis
    - database:db
-  command: bash -c "source /venv/api/bin/activate && pip install -r requirements.txt &&  python run-worker.py"
+  command: ["source /venv/api/bin/activate && pip install -r requirements.txt &&  python run-worker.py"]
 git:
   build: ./git
+  ports:
+   - "2222:22"
