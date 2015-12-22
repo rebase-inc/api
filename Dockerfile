@@ -5,8 +5,7 @@ RUN apt-get update && \
         libpq-dev \
         python3.4 \
         python3-pip \
-        python-psycopg2 \
-        openssh-client 
+        python-psycopg2
 RUN easy_install3 -U pip && \
     pip install virtualenv && \
     virtualenv -p python3 /venv/api && \
@@ -15,7 +14,5 @@ RUN easy_install3 -U pip && \
     pip install -r /api/requirements.txt
 WORKDIR /api
 ENV APP_SETTINGS=rebase.common.docker.Dev
-COPY .ssh/id_rsa /root/.ssh/id_rsa
-COPY entry_point.sh /usr/sbin/entry_point
-ENTRYPOINT ["/usr/sbin/entry_point"]
-CMD ["source /venv/api/bin/activate && pip install -r requirements.txt && python ./manage runserver -h 0.0.0.0 -p 5000"]
+EXPOSE 5000
+CMD ["bash", "-c", "source /venv/api/bin/activate && python ./manage runserver -h 0.0.0.0 -p 5000"]

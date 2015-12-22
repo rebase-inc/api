@@ -1,5 +1,5 @@
 web:
-  build: .
+  image: rebase/api
   ports:
    - "5000:5000"
   volumes:
@@ -7,38 +7,34 @@ web:
   links:
    - redis
    - database:db
-   - git
 redis:
   image: redis
   restart: always
 database:
   image: postgres
 client:
-  build: ../react-app/
+  build: ../react-app
   ports:
    - "3000:3000"
   volumes:
    - ../react-app:/code
   links:
    - web
-  command: bash -c "npm install && npm start"
+  command: bash -c "npm start"
 rq_git:
-  build: .
+  image: rebase/rq_git
   volumes:
    - .:/api
   links:
    - redis
    - database:db
-  command: ["source /venv/api/bin/activate && pip install -r requirements.txt && python git-worker.py"]
-rq_default:
-  build: .
-  volumes:
-   - .:/api
-  links:
-   - redis
-   - database:db
-  command: ["source /venv/api/bin/activate && pip install -r requirements.txt &&  python run-worker.py"]
-git:
-  build: ./git
   ports:
    - "2222:22"
+rq_default:
+  image: rebase/api
+  volumes:
+   - .:/api
+  links:
+   - redis
+   - database:db
+  command: ["bash", "-c", "source /venv/api/bin/activate && python run-worker.py"]
