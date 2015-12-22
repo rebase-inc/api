@@ -352,12 +352,20 @@ class ManagerUserStory(object):
 
         from rebase.models import Comment, SkillSet, SkillRequirement, TicketMatch, JobFit
         self.user = create_one_user(db, self.name, self.email, self.password, admin=False)
-        dev1 = create_one_user(db, 'Andy Dwyer', 'andy@joinrebase.com')
-        dev2 = create_one_user(db, 'April Ludgate', 'april@joinrebase.com')
-        dev3 = create_one_user(db, 'Leslie Knope', 'leslie@joinrebase.com')
-        dev4 = create_one_user(db, 'Donna Meagle', 'donna@joinrebase.com')
-        dev5 = create_one_user(db, 'Tom Haverford', 'tom@joinrebase.com')
-        the_contractors = [create_one_contractor(db, user) for user in [dev1, dev2, dev3, dev4, dev5]]
+        devs = []
+        devs.append(create_one_user(db, 'Andy Dwyer', 'andy@joinrebase.com'))
+        devs.append(create_one_user(db, 'April Ludgate', 'april@joinrebase.com'))
+        devs.append(create_one_user(db, 'Leslie Knope', 'leslie@joinrebase.com'))
+        devs.append(create_one_user(db, 'Donna Meagle', 'donna@joinrebase.com'))
+        devs.append(create_one_user(db, 'Tom Haverford', 'tom@joinrebase.com'))
+        devs.append(create_one_user(db, 'Chris Traeger', 'chris@joinrebase.com'))
+        devs.append(create_one_user(db, 'Jean-Ralphio Saperstein', 'jean-ralphio@joinrebase.com'))
+        devs.append(create_one_user(db, 'Jerry Gergich', 'jerry@joinrebase.com'))
+        devs.append(create_one_user(db, 'Ben Wyatt', 'ben@joinrebase.com'))
+        devs.append(create_one_user(db, 'Ann Perkins', 'ann@joinrebase.com'))
+        devs.append(create_one_user(db, 'Mark Brendanawicz', 'mark@joinrebase.com'))
+        devs.append(create_one_user(db, 'Craig Middlebrooks', 'craig@joinrebase.com'))
+        the_contractors = [create_one_contractor(db, user) for user in devs]
         skill_sets = []
         for contractor in the_contractors:
             skills = sample(FAKE_SKILLS, randint(3,6))
@@ -369,7 +377,7 @@ class ManagerUserStory(object):
         
         for ticket in the_new_tickets:
             for fake_comment in sample(FAKE_COMMENTS, randint(2, 5)):
-                Comment(choice([self.user, dev1, dev2, dev3, dev4, dev5]), fake_comment, ticket=ticket)
+                Comment(choice([self.user] + devs), fake_comment, ticket=ticket)
             skills_required = sample(FAKE_SKILLS, randint(3,6))
             approx_skill = uniform(0.3, 1.0) # this is so the dev looks roughly uniformly skilled
             SkillRequirement(ticket, {skill: uniform(min(0.0, approx_skill - 0.2), min(1.0, approx_skill, + 0.2)) for skill in skills_required})
