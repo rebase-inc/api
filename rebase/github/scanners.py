@@ -86,15 +86,16 @@ def import_tickets(project_id, account_id):
         ticket.skill_requirement.skills = languages
         tickets.append(ticket)
         issue_user = issue['user']
-        body = Comment(
-            get_or_make_user(
-                session,
-                issue_user['id'],
-                issue_user['login'],
-            ),
-            issue['body'],
-            ticket=ticket
-        )
+        if len(issue['body']):
+            body = Comment(
+                get_or_make_user(
+                    session,
+                    issue_user['id'],
+                    issue_user['login'],
+                ),
+                issue['body'],
+                ticket=ticket
+            )
         komments.append(body)
         comments = session.api.get(issue['url']+'/comments').data
         for comment in comments:
