@@ -7,10 +7,10 @@ class InternalProjectSchema(RebaseSchema):
 
     id =                fields.Integer()
     name =              fields.String()
-    organization =      SecureNestedField('OrganizationSchema',     only=('id',), allow_null=True)
+    organization =      SecureNestedField('OrganizationSchema',     only=('id','name'), allow_null=True)
     clearances =        SecureNestedField('CodeClearanceSchema',    only=('id',), many=True)
     tickets =           SecureNestedField('TicketSchema',           only=('id',), many=True)
-    code_repository =   SecureNestedField('CodeRepositorySchema',   only=('id',))
+    code_repository =   SecureNestedField('CodeRepositorySchema',   only=('id','url', 'clone'))
 
     @post_load
     def make_internal_project(self, data):
