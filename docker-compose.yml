@@ -1,7 +1,7 @@
 web:
   image: rebase/api
   ports:
-   - "5000:5000"
+   - "${API_PORT}:5000"
   volumes:
    - .:/api
   links:
@@ -15,12 +15,12 @@ database:
 client:
   build: ../react-app
   ports:
-   - "3000:3000"
+   - "${WEBPACK_PORT}:3000"
   volumes:
    - ../react-app:/code
   links:
    - web
-  command: bash -c "npm start"
+  command: bash -c "npm install && npm start"
 rq_git:
   image: rebase/rq_git
   volumes:
@@ -29,7 +29,7 @@ rq_git:
    - redis
    - database:db
   ports:
-   - "2222:22"
+   - "${GIT_PORT}:22"
 rq_default:
   image: rebase/api
   volumes:

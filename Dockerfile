@@ -10,7 +10,7 @@ RUN easy_install3 -U pip && \
     pip install virtualenv && \
     virtualenv -p python3 /venv/api && \
     mkdir /uploads /root/.ssh && \
-    . /venv/api && \
+    . /venv/api/bin/activate && \
     pip install -r /api/requirements.txt
 WORKDIR /api
 ENV APP_SETTINGS=rebase.common.docker.Dev
