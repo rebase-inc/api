@@ -96,7 +96,7 @@ def import_tickets(project_id, account_id):
                 issue['body'],
                 ticket=ticket
             )
-        komments.append(body)
+            komments.append(body)
         comments = session.api.get(issue['url']+'/comments').data
         for comment in comments:
             comment_user = comment['user']
