@@ -20,6 +20,9 @@ client:
    - ../react-app:/code
   links:
    - web
+  environment:
+    WEBPACK_HOST: "${WEBPACK_HOST}"
+    WEBPACK_PORT: "${WEBPACK_PORT}"
   command: bash -c "npm install && npm start"
 rq_git:
   image: rebase/rq_git
