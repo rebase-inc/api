@@ -10,8 +10,6 @@ from rebase.models import (
 )
 
 
-destination = 'git@{host}:{path}'.format
-
 def build_query(permission_path, project_id):
     _query = User.query
     for path in reversed(permission_path):
@@ -35,9 +33,7 @@ def generate_authorized_users(project_id):
     if not project:
         return 'Invalid project with id:'+str(project_id)
     ids = user_ids(project_id)
-    tmp_authorized_users = '{path}_{suffix}'.format(path=app.config['TMP_AUTHORIZED_USERS'], suffix=str(project_id))
-    with open(tmp_authorized_users, 'w') as authorized_users:
+    authorized_users_path = join(project.work_repo.repo_path, '.git', 'authorized_users')
+    with open(authorized_users_path, 'w') as authorized_users:
         for user_id in ids:
             authorized_users.write(str(user_id)+'\n')
-    authorized_users_path = join(project.work_repo.repo_path, '.git', 'authorized_users')
-    check_call(['scp', tmp_authorized_users, destination(host=app.config['WORK_REPOS_HOST'], path=authorized_users_path)])

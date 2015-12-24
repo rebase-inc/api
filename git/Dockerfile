@@ -4,12 +4,16 @@ RUN apt-get update && \
         git \
         openssh-server
 COPY sshd_config /etc/ssh/sshd_config
-COPY entry_point /usr/sbin/entry_point
+COPY supervisor.conf /etc/git/supervisor.conf
+COPY filter /usr/bin/filter
 RUN mkdir -p /git \
     /var/run/sshd \
     /root/.ssh && \
     adduser --quiet --disabled-password --gecos "Rebase Git" git && \
-    echo "git:foo" | chpasswd
+    echo "git:foo" | chpasswd && \
+    virtualenv -p python2.7 /venv/super && \
+    /venv/super/bin/pip install supervisor
+
 USER git
 WORKDIR /home/git
 RUN mkdir .ssh && \
@@ -19,6 +23,4 @@ RUN mkdir .ssh && \
 USER root
 WORKDIR /
 EXPOSE 22
-ENTRYPOINT ["/usr/sbin/entry_point"]
-CMD ["bash", "-c", "source /venv/api/bin/activate && pip install -r requirements.txt && python git-worker.py"]
-COPY filter /usr/bin/filter
+ENTRYPOINT ["/venv/super/bin/supervisord", "--nodaemon", "--configuration", "/etc/git/supervisor.conf"]

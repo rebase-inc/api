@@ -40,4 +40,4 @@ rq_default:
   links:
    - redis
    - database:db
-  command: ["bash", "-c", "source /venv/api/bin/activate && python run-worker.py"]
+  command: ["/venv/api/bin/python", "run-worker.py"]
