@@ -20,8 +20,8 @@ class WorkSchema(RebaseSchema):
     review =    SecureNestedField(ReviewSchema,     exclude=('work',), default=None)
     mediations = SecureNestedField(MediationSchema,  only=('id','state', 'comments', 'created', 'ended'), many=True)
     blockages = SecureNestedField(BlockageSchema,  only=('id','comments','created','ended'), many=True)
-    debit =     SecureNestedField(DebitSchema,      only='id', default=None)
-    credit =    SecureNestedField(CreditSchema,     only='id', default=None)
+    debit =     SecureNestedField(DebitSchema,      only=('id','price', 'paid'), default=None)
+    credit =    SecureNestedField(CreditSchema,     only=('id','price', 'paid'), default=None)
     offer =     SecureNestedField(WorkOfferSchema,  exclude=('work',), default=None)
     comments =  SecureNestedField('CommentSchema', only=('id', 'content', 'created', 'user', 'type'), many=True, default=None)
 

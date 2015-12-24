@@ -169,6 +169,7 @@ class User(DB.Model, PermissionMixin):
         return self.allowed_to_be_modified_by(user)
 
     def allowed_to_be_viewed_by(self, user):
+        return True
         return self.found(self, user)
 
     # flask login helper functions

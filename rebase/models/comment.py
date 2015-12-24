@@ -23,6 +23,8 @@ class Comment(DB.Model, PermissionMixin):
 
     def __init__(self, user, content, created=None, work=None, review=None, mediation=None, blockage=None, ticket=None, feedback=None):
         self.user = user
+        if not len(content):
+            raise ValueError('Comment content must be non-empty')
         self.content = content
         self.created = created or datetime.now()
         self.work = work

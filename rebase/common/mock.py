@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 import uuid
-from random import randint, randrange, sample, uniform
+from random import randint, randrange, sample, uniform, choice
 from .utils import (
     pick_a_word,
     pick_a_first_name,
@@ -14,21 +14,52 @@ FAKE_COMMENTS = [
     '@rapha, I\'m convinced that you were right regarding the composite primary keys being a better choice. However, in the few places where we are using composite primary keys right now, I don’t think the relationship is being properly referenced. See the SQLAlchemy documentation for proper reference of a composite foreign key.',
     'What do you mean? Is this not correct (from job_fit model)? ```__table_args__ = ( \n DB.ForeignKeyConstraint( [contractor_id, ticket_set_id], [Nomination.contractor_id, Nomination.ticket_set_id], ondelete=\'CASCADE\'), {})```',
     'Hmm, that _does_ *look* correct. The one I was looking at is in the bid model. It indirectly references the auction and contractor ids through the nomination model, though it doesn’t specifically reference the nomination model. This should instead be switched to a reference like above. I guess I should\'ve actually looked into the places where this was happening.',
+    'I\'m pretty sure you can\'t do that. It just doesn\'t look right',
+    'Where are you getting this idea from? I think it goes something like this ```\ndef foo():\n    return \'bar\'```',
+    'Absolutely. I\'m pretty sure I can handle that',
+    'Where do you get the extra fields for that one object?',
+    'I don\'t know. Let me check on that and get back to you',
+    'How about, instead, we just look at that other thing?',
+    'I cannot highlight to copy/paste the data in the devtools default UI. It won\'t highlight the text on using chrome 47. This is intentional due to: : chibicode/react-json-tree#10',
+    'I\'ve looked at #585 foobar/react#12 but can\'t seem to make my code work.  By console.log and redux devtools I can see that my state is successfully updated but there is no fresh render',
+    'Maybe @jldfaster, @axlhaer, and @foolitt might want to take a look at this too.',
+    '@faffnal there are already 2 examples ported : counter and shopping-cart; although there is no complex operations in the examples (added a simple example of onBoarding to the counter example; i\'ll try to port other examples later; it was on the roadmap anyway to provide more examples. I think we need some use cases involving non trivial operations (i mean other than simple reactions) that still can fit into small examples, perhaps some use case that someone found difficult to implement using thunks.',
+    'I think foobar-effects and foobar-saga address 2 complementary concerns. I think redux-saga can also be used as a composition middleware for foobar-effects (unless I\'m mistaken) because it automatically resolve responses from dispatch calls.',
+    'seems a bit hard to read, is there a better way to express not blocking?',
+    'I was thinking the same thing. Maybe a helper function io.spawn which encapsulates the code above.',
+    'I am advocating the Elm approach ever since the first time I encountered Flux and after 3 successful production projects (1 Flux, 2 Redux) I am still convinced that it\'s it the only right way to think about side effects and I am really convinced that I won\'t change my opinion in near future.',
+    'Not sure if I correctely understood it; can you elaborate ?',
+    'Could you write a unit test for this use case?',
+    'I understand; that\'s why you emphasized the world \'unit\'. I can surely setup an integration test which connects the reducer and saga to some dispatcher, dispatches the action then checks the result of the 2 but of course this is not as simple as unit testing. Sure, pure functions will be always easier to test.',
+    'added support for non blocking calls using fork and join',
+    'API is shaping up nicely, great work. :+1:',
+    '@loosnn I like what you\'re doing here as well. I think you are right that the most correct place for all this logic is in the middleware, so that you have a pristine log of intent. I\'m excited to see how this shapes up.',
 ]
 
-FAKE_SKILLS = ['Python', 'SQLAlchemy', 'd3js', 'Marshmallow', 'unittest', 'Javascript', 'ES6']
+FAKE_SKILLS = ['Python', 'SQLAlchemy', 'd3js', 'Marshmallow', 'docker', 'NLP', 'ML', 'unittest', 'Javascript', 'ES6', 'security']
 
-FAKE_TICKETS = [
+FAKE_TICKETS = set([
     'Abstract out state machine event resource creation',
     'For all ORM relationships that reference a table with composite foreign key, combine those keys into one relationship.',
     'Add permission checking to rebase REST object creation and up date methods.',
     'Refactor auction ORM model to remove organization helper relationship.',
+    'Add password secured fields to profile page',
     'Change bank account model initialization method to take a generic owner parameter.',
     'Do this one thing and then the other thing so we have more things to do.',
-    'Delete every line of code from the codebase, destroy everybody\'s computers, and delete our github accounts.',
     'Play with the quadcopter for 10-15 hours.',
-    'Build some really cool software, get a bunch of people to use it, and make a billion dollars.',
-]
+    'Refactor RQ server to handle jobs from different origins',
+    'Enforce minimum entropy on user passwords',
+    'Add forgotten password link to profile page',
+    'Add logical separation between users that are developers and users that are managers',
+    'Find method of better distributing work for ml platform among different servers',
+    'Implement a higher order api for text sentiment processing',
+    'Build better user onboarding flow',
+    'Allow developer to input their own skill set instead of relying on github integration',
+    'Add integration with Jira',
+    'Add integration with Asana',
+    'Add method for user to dynamically generate docker images for deployment of new tasks'
+])
+
 
 def create_one_organization(db, name=None, user=None):
     from rebase.models import Organization
@@ -131,7 +162,7 @@ def create_one_internal_ticket(db, title=None, description=None, project=None, c
     description = description or ' '.join(pick_a_word() for i in range(5))
     ticket = InternalTicket(project, title)
     user = project.managers[0].user
-    Comment(user, description, ticket=ticket)
+    #Comment(user, description, ticket=ticket)
     SkillRequirement(ticket)
     if created:
         ticket.created = created
@@ -321,12 +352,20 @@ class ManagerUserStory(object):
 
         from rebase.models import Comment, SkillSet, SkillRequirement, TicketMatch, JobFit
         self.user = create_one_user(db, self.name, self.email, self.password, admin=False)
-        dev1 = create_one_user(db, 'Andy Dwyer', 'andy@joinrebase.com')
-        dev2 = create_one_user(db, 'April Ludgate', 'april@joinrebase.com')
-        dev3 = create_one_user(db, 'Leslie Knope', 'leslie@joinrebase.com')
-        dev4 = create_one_user(db, 'Donna Meagle', 'donna@joinrebase.com')
-        dev5 = create_one_user(db, 'Tom Haverford', 'tom@joinrebase.com')
-        the_contractors = [create_one_contractor(db, user) for user in [dev1, dev2, dev3, dev4, dev5]]
+        devs = []
+        devs.append(create_one_user(db, 'Andy Dwyer', 'andy@joinrebase.com'))
+        devs.append(create_one_user(db, 'April Ludgate', 'april@joinrebase.com'))
+        devs.append(create_one_user(db, 'Leslie Knope', 'leslie@joinrebase.com'))
+        devs.append(create_one_user(db, 'Donna Meagle', 'donna@joinrebase.com'))
+        devs.append(create_one_user(db, 'Tom Haverford', 'tom@joinrebase.com'))
+        devs.append(create_one_user(db, 'Chris Traeger', 'chris@joinrebase.com'))
+        devs.append(create_one_user(db, 'Jean-Ralphio Saperstein', 'jean-ralphio@joinrebase.com'))
+        devs.append(create_one_user(db, 'Jerry Gergich', 'jerry@joinrebase.com'))
+        devs.append(create_one_user(db, 'Ben Wyatt', 'ben@joinrebase.com'))
+        devs.append(create_one_user(db, 'Ann Perkins', 'ann@joinrebase.com'))
+        devs.append(create_one_user(db, 'Mark Brendanawicz', 'mark@joinrebase.com'))
+        devs.append(create_one_user(db, 'Craig Middlebrooks', 'craig@joinrebase.com'))
+        the_contractors = [create_one_contractor(db, user) for user in devs]
         skill_sets = []
         for contractor in the_contractors:
             skills = sample(FAKE_SKILLS, randint(3,6))
@@ -334,29 +373,14 @@ class ManagerUserStory(object):
         organization = create_one_organization(db, 'Parks and Recreation', self.user)
         project = create_one_project(db, organization, 'Lot 48')
         mgr = project.managers[0]
-        the_tickets = [create_one_internal_ticket(db, fake_ticket + ' (AUCTIONED)', project=project, created=(datetime.now() + timedelta(hours=randint(-72, 0)))) for fake_ticket in FAKE_TICKETS]
-        skill_reqs = []
-        for ticket in the_tickets:
-            for fake_comment in FAKE_COMMENTS:
-                Comment(self.user, fake_comment, ticket=ticket)
-            skills_required = sample(FAKE_SKILLS, randint(3,6))
-            approx_skill = uniform(0.3, 1.0) # this is so the dev looks roughly uniformly skilled
-            skill_reqs.append(SkillRequirement(ticket, {skill: uniform(min(0.0, approx_skill - 0.2), min(1.0, approx_skill, + 0.2)) for skill in skills_required}))
-
-        the_auctions = [create_one_auction(db, [ticket], price=randrange(200, 2000, 20)) for ticket in the_tickets]
-
-        for auction, ticket in zip(the_auctions, the_tickets):
-            auction.expires = auction.expires + timedelta(seconds = randrange(-24*60*60, 24*60*60, 1))
-            for contractor in the_contractors:
-                nomination = create_one_nomination(db, auction, contractor, False)
-
-        the_new_tickets = [create_one_internal_ticket(db, fake_ticket + ' (NEW)', project=project, created=datetime.now() + timedelta(hours=randint(-72,0))) for fake_ticket in FAKE_TICKETS]
+        the_new_tickets = [create_one_internal_ticket(db, fake_ticket, project=project, created=datetime.now() + timedelta(hours=randint(-72,0))) for fake_ticket in FAKE_TICKETS]
+        
         for ticket in the_new_tickets:
-            for fake_comment in FAKE_COMMENTS:
-                Comment(self.user, fake_comment, ticket=ticket)
+            for fake_comment in sample(FAKE_COMMENTS, randint(2, 5)):
+                Comment(choice([self.user] + devs), fake_comment, ticket=ticket)
             skills_required = sample(FAKE_SKILLS, randint(3,6))
             approx_skill = uniform(0.3, 1.0) # this is so the dev looks roughly uniformly skilled
-            skill_reqs.append(SkillRequirement(ticket, {skill: uniform(min(0.0, approx_skill - 0.2), min(1.0, approx_skill, + 0.2)) for skill in skills_required}))
+            SkillRequirement(ticket, {skill: uniform(min(0.0, approx_skill - 0.2), min(1.0, approx_skill, + 0.2)) for skill in skills_required})
 
 def create_the_world(db):
     andrew = create_one_user(db, 'Andrew Millspaugh', 'andrew@manager.rebase.io')
