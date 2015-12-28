@@ -13,7 +13,7 @@ redis:
 database:
   image: postgres
 client:
-  build: ../react-app
+  build: ../react-app/
   ports:
    - "${WEBPACK_PORT}:3000"
   volumes:
@@ -23,7 +23,6 @@ client:
   environment:
     WEBPACK_HOST: "${WEBPACK_HOST}"
     WEBPACK_PORT: "${WEBPACK_PORT}"
-  command: bash -c "npm install && npm start"
 rq_git:
   image: rebase/rq_git
   volumes:
