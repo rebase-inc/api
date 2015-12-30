@@ -7,6 +7,9 @@ web:
   links:
    - redis
    - database:db
+  environment:
+    REBASE_HOST: "${REBASE_HOST}"
+    REBASE_PORT: "${REBASE_PORT}"
 redis:
   image: redis
   restart: always
@@ -15,14 +18,14 @@ database:
 client:
   build: ../react-app/
   ports:
-   - "${WEBPACK_PORT}:3000"
+   - "${REBASE_PORT}:3000"
   volumes:
    - ../react-app:/code
   links:
    - web
   environment:
-    WEBPACK_HOST: "${WEBPACK_HOST}"
-    WEBPACK_PORT: "${WEBPACK_PORT}"
+    WEBPACK_HOST: "${REBASE_HOST}"
+    WEBPACK_PORT: "${REBASE_PORT}"
 rq_git:
   image: rebase/rq_git
   volumes:
@@ -32,6 +35,9 @@ rq_git:
    - database:db
   ports:
    - "${GIT_PORT}:22"
+  environment:
+    REBASE_HOST: "${REBASE_HOST}"
+    REBASE_PORT: "${REBASE_PORT}"
 rq_default:
   image: rebase/api
   volumes:
@@ -39,4 +45,7 @@ rq_default:
   links:
    - redis
    - database:db
+  environment:
+    REBASE_HOST: "${REBASE_HOST}"
+    REBASE_PORT: "${REBASE_PORT}"
   command: ["/venv/api/bin/python", "run-worker.py"]

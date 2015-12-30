@@ -1,4 +1,17 @@
-SERVER_NAME = '192.168.99.100:3001'
+from os import environ
+
+from rebase.common.env import check
+
+check([
+    'REBASE_HOST',
+    'REBASE_PORT',
+])
+
+SERVER_NAME = '{HOST}:{PORT}'.format(
+    HOST=environ['REBASE_HOST'],
+    PORT=environ['REBASE_PORT']
+)
+
 WORK_REPOS_HOST = 'rq_git_1'
 WORK_REPOS_ROOT = '/git'
 UPLOAD_FOLDER = '/uploads'
