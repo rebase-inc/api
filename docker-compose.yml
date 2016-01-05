@@ -49,3 +49,11 @@ rq_default:
     REBASE_HOST: "${REBASE_HOST}"
     REBASE_PORT: "${REBASE_PORT}"
   command: ["/venv/api/bin/python", "run-worker.py"]
+nginx:
+    build: nginx
+    ports:
+     - "8080:80"
+    links:
+     - web
+    volumes_from:
+     - client:ro
