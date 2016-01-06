@@ -1,7 +1,5 @@
 web:
   image: rebase/api
-  ports:
-   - "5000:5000"
   volumes:
    - .:/api
   links:
@@ -9,23 +7,16 @@ web:
    - database:db
   environment:
     REBASE_CLIENT_HOST: "192.168.99.100"
-    REBASE_CLIENT_PORT: 3000
+    REBASE_CLIENT_PORT: 8080
 redis:
   image: redis
   restart: always
 database:
   image: postgres
 client:
-  build: ../react-app/
-  ports:
-   - "3000:3000"
+  image: rebase/client-production
   volumes:
    - ../react-app:/code
-  links:
-   - web
-  environment:
-    WEBPACK_HOST: "192.168.99.100"
-    WEBPACK_PORT: 3000
 rq_git:
   image: rebase/rq_git
   volumes:
@@ -37,7 +28,7 @@ rq_git:
    - "2222:22"
   environment:
     REBASE_CLIENT_HOST: "192.168.99.100"
-    REBASE_CLIENT_PORT: 3000
+    REBASE_CLIENT_PORT: 8080
 rq_default:
   image: rebase/api
   volumes:
@@ -47,5 +38,13 @@ rq_default:
    - database:db
   environment:
     REBASE_CLIENT_HOST: "192.168.99.100"
-    REBASE_CLIENT_PORT: 3000
+    REBASE_CLIENT_PORT: 8080
   command: ["/venv/api/bin/python", "run-worker.py"]
+nginx:
+    build: nginx
+    ports:
+     - "8080:80"
+    links:
+     - web
+    volumes_from:
+     - client:ro
