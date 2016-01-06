@@ -9,9 +9,9 @@ RUN apt-get update && \
 RUN easy_install3 -U pip && \
     pip install virtualenv && \
     virtualenv -p python3 /venv/api && \
-    mkdir /uploads /root/.ssh && \
+    mkdir -p /uploads /root/.ssh /var/log/gunicorn && \
     /venv/api/bin/pip install -r /api/requirements.txt
 WORKDIR /api
 ENV APP_SETTINGS=/api/rebase/common/docker.py
 EXPOSE 5000
-CMD ["/venv/api/bin/python", "./manage", "runserver", "-h", "0.0.0.0", "-p", "5000"]
+CMD ["/venv/api/bin/gunicorn", "-c", "/api/etc/gunicorn.conf", "wsgi:app"]
