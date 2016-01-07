@@ -1,50 +1,51 @@
 web:
-  image: rebase/api
-  volumes:
-   - .:/api
+  extends:
+    service: webserver
+    file: docker/api-production.yml
   links:
    - redis
    - database:db
-  environment:
-    REBASE_CLIENT_HOST: "192.168.99.100"
-    REBASE_CLIENT_PORT: 8080
-redis:
-  image: redis
-  restart: always
-database:
-  image: postgres
+
 client:
   image: rebase/client-production
   volumes:
    - ../react-app:/code
+  extends:
+    service: common_env
+    file: docker/api-production.yml
+
 rq_git:
+  extends:
+    service: webserver
+    file: docker/api-production.yml
   image: rebase/rq_git
-  volumes:
-   - .:/api
   links:
    - redis
    - database:db
   ports:
    - "2222:22"
-  environment:
-    REBASE_CLIENT_HOST: "192.168.99.100"
-    REBASE_CLIENT_PORT: 8080
+
 rq_default:
-  image: rebase/api
-  volumes:
-   - .:/api
+  extends:
+    service: webserver
+    file: docker/api-production.yml
   links:
    - redis
    - database:db
-  environment:
-    REBASE_CLIENT_HOST: "192.168.99.100"
-    REBASE_CLIENT_PORT: 8080
   command: ["/venv/api/bin/python", "run-worker.py"]
+
 nginx:
     build: nginx
     ports:
-     - "8080:80"
+     - "${REBASE_CLIENT_PORT}:80"
     links:
      - web
     volumes_from:
      - client:ro
+
+redis:
+  image: redis
+  restart: always
+
+database:
+  image: postgres

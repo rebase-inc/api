@@ -1,0 +1,11 @@
+common_env:
+  environment:
+    REBASE_CLIENT_HOST:
+    REBASE_CLIENT_PORT:
+
+webserver:
+  image: rebase/api
+  volumes:
+   - ..:/api
+  extends:
+    service: common_env

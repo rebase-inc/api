@@ -1,20 +1,13 @@
 web:
-  image: rebase/api
+  extends:
+    service: webserver
+    file: docker/api-dev.yml
   ports:
    - "5000:5000"
-  volumes:
-   - .:/api
   links:
    - redis
    - database:db
-  environment:
-    REBASE_CLIENT_HOST: "192.168.99.100"
-    REBASE_CLIENT_PORT: 3000
-redis:
-  image: redis
-  restart: always
-database:
-  image: postgres
+
 client:
   build: ../react-app/
   ports:
@@ -23,29 +16,33 @@ client:
    - ../react-app:/code
   links:
    - web
-  environment:
-    WEBPACK_HOST: "192.168.99.100"
-    WEBPACK_PORT: 3000
+  extends:
+    service: common_env
+    file: docker/api-dev.yml
+
 rq_git:
+  extends:
+    service: webserver
+    file: docker/api-dev.yml
   image: rebase/rq_git
-  volumes:
-   - .:/api
-  links:
-   - redis
-   - database:db
   ports:
    - "2222:22"
-  environment:
-    REBASE_CLIENT_HOST: "192.168.99.100"
-    REBASE_CLIENT_PORT: 3000
-rq_default:
-  image: rebase/api
-  volumes:
-   - .:/api
   links:
    - redis
    - database:db
-  environment:
-    REBASE_CLIENT_HOST: "192.168.99.100"
-    REBASE_CLIENT_PORT: 3000
+
+rq_default:
+  extends:
+    service: webserver
+    file: docker/api-dev.yml
+  links:
+   - redis
+   - database:db
   command: ["/venv/api/bin/python", "run-worker.py"]
+
+redis:
+  image: redis
+  restart: always
+
+database:
+  image: postgres
