@@ -2,6 +2,7 @@ FROM debian
 COPY ./requirements.txt /api/requirements.txt
 RUN apt-get update && \
     apt-get install -y \
+        openssh-client \
         libpq-dev \
         python3.4 \
         python3-pip \
