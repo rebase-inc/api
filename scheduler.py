@@ -37,9 +37,10 @@ def wait(sched, delta):
 
 
 def auction_expires(auction):
-    with ManagedState():
-        auction.machine.send('fail')
-    db.session.commit()
+    if auction.state == 'waiting_for_bids' or auction.state == 'created':
+        with ManagedState():
+            auction.machine.send('fail')
+        db.session.commit()
 
 def main():
     mainScheduler = Proxy()
