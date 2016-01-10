@@ -36,7 +36,7 @@ def load_new_events(sched):
 
 
 class Proxy(scheduler):
-    check_queue_period = timedelta(seconds=20)
+    check_queue_period = timedelta(minutes=5)
 
     def reset(self, obj):
         self.__dict__.update(copy(obj.__dict__))
