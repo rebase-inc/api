@@ -29,14 +29,17 @@ class Auction(DB.Model, PermissionMixin):
     bids =             DB.relationship('Bid',          backref='auction', cascade='all, delete-orphan', passive_deletes=True, lazy='dynamic')
     approved_talents = DB.relationship('Nomination',    backref='_auction') # both ends are conditional
 
-    def __init__(self, ticket_set, term_sheet, duration=3, finish_work_by=datetime.now() + timedelta(days = 7), redundancy = 1):
+    def __init__(self, ticket_set, term_sheet, duration=3, finish_work_by=None, redundancy = 1):
         self.ticket_set = ticket_set
         self.term_sheet = term_sheet
         self.duration = duration
-        self.finish_work_by = finish_work_by
+        if not finish_work_by:
+            self.finish_work_by = datetime.now() + current_app.config['FINISH_WORK_BY']
+        else:
+            self.finish_work_by = finish_work_by
         self.redundancy = redundancy
         self.created = datetime.now()
-        self.expires = datetime.now() + timedelta(days = 3)
+        self.expires = datetime.now() + current_app.config['AUCTION_EXPIRATION']
         # Hack to nominate all contractors during development
         if current_app.config['NOMINATE_ALL_CONTRACTORS']:
             from rebase.models.contractor import Contractor

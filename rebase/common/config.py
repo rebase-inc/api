@@ -1,3 +1,4 @@
+from datetime import timedelta
 from os import environ, path
 
 from rebase.common.env import check
@@ -37,6 +38,8 @@ class Config(object):
     WORK_BRANCH_NAME = 'work_{contractor_id}_{auction_id}'.format
     REVENUE_FACTOR = 1.1 # 10 % of WorkOffer price is going to us if Work is complete
     URL_PREFIX = '/api/v1'
+    FINISH_WORK_BY = timedelta(days=7)
+    AUCTION_EXPIRATION = timedelta(days=3)
 
 
 class ProductionConfig(Config):
@@ -58,6 +61,8 @@ class DevelopmentConfig(Config):
     FLASK_LOGIN_SESSION_PROTECTION = "basic"
     NOMINATE_ALL_CONTRACTORS = True
     SEND_FILE_MAX_AGE_DEFAULT = 0
+    #FINISH_WORK_BY = timedelta(minutes=3)
+    #AUCTION_EXPIRATION = timedelta(minutes=1)
 
 
 class TestingConfig(Config):
