@@ -6,8 +6,8 @@ RUN apt-get update && \
 COPY sshd_config /etc/ssh/sshd_config
 COPY supervisor.conf /etc/git/supervisor.conf
 COPY filter /usr/bin/filter
-RUN mkdir -p /git \
-    /var/run/sshd \
+VOLUME /git
+RUN mkdir -p /var/run/sshd \
     /root/.ssh && \
     adduser --quiet --disabled-password --gecos "Rebase Git" git && \
     echo "git:foo" | chpasswd && \
