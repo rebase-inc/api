@@ -13,7 +13,7 @@ RUN mkdir -p /var/run/sshd \
     touch /var/log/filter/error.log && \
     chmod o+w /var/log/filter/error.log && \
     adduser --quiet --disabled-password --gecos "Rebase Git" git && \
-    echo "git:foo" | chpasswd && \
+    echo "git:rebase_is_da_bomb" | chpasswd && \
     virtualenv -p python2.7 /venv/super && \
     /venv/super/bin/pip install supervisor
 
