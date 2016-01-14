@@ -14,7 +14,7 @@ from subprocess import call
 from sys import argv, exit
 
 error_log = '/var/log/filter/error.log'
-basicConfig(filename=error_log, level=WARNING)
+basicConfig(filename=error_log, level=WARNING, format='%(asctime)s %(message)s')
     
 class FilterException(Exception):
     error_message = 'FilterException base class message '
