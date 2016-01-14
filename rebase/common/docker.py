@@ -12,8 +12,10 @@ SERVER_NAME = '{HOST}:{PORT}'.format(
     PORT=environ['REBASE_CLIENT_PORT']
 )
 
+GIT_SERVER_NAME=environ['REBASE_CLIENT_HOST']
 WORK_REPOS_HOST = 'rq_git_1'
 WORK_REPOS_ROOT = '/git'
+SSH_AUTHORIZED_KEYS = '/home/git/.ssh/authorized_keys2'
 UPLOAD_FOLDER = '/uploads'
 SECRET_KEY = "\x86\xa1\xb8\xfbP\x8f\xd6\x1c'\xad-\xdb\xf8+K=\x820g<5\x16|l"
 SQLALCHEMY_DATABASE_URI = 'postgres://postgres:@db/postgres'

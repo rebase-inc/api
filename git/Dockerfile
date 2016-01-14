@@ -8,6 +8,7 @@ COPY supervisor.conf /etc/git/supervisor.conf
 COPY filter /usr/bin/filter
 VOLUME /git
 RUN mkdir -p /var/run/sshd \
+    /var/log/filter \
     /root/.ssh && \
     adduser --quiet --disabled-password --gecos "Rebase Git" git && \
     echo "git:foo" | chpasswd && \

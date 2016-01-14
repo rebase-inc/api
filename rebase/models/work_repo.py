@@ -34,7 +34,7 @@ class WorkRepo(CodeRepository):
             normalize(self.project.name)
         )
         self.url = '{hostname}:{path}'.format(
-            hostname=current_app.config['WORK_REPOS_HOST'],
+            hostname=current_app.config['GIT_SERVER_NAME'],
             path=self.repo_path
         )
         self.clone = 'git clone {}'.format(self.url)

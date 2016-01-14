@@ -1,3 +1,6 @@
+. env/docker_utils
+_vm
+
 # #
 # Search recursively for pattern in python files located in rebase/.
 # $ py register_route
@@ -10,6 +13,8 @@ py () {
 export REBASE_HOST_PRO=http://rebase-pro.herokuapp.com
 export REBASE_HOST_STAGE=http://rebase-stage.herokuapp.com
 export REBASE_HOST_LOCALHOST=http://127.0.0.1:5000
+export REBASE_HOST_DOCKER="http://$(docker-machine ip default):3000"
+export REBASE_HOST=$REBASE_HOST_DOCKER
 
 stage () {
 	export REBASE_HOST=$REBASE_HOST_STAGE

@@ -10,7 +10,6 @@ class Config(object):
     NOMINATE_ALL_CONTRACTORS = False
     LOG_FILE = '/tmp/rebase_web.log'
     MAX_CONTENT_LENGTH = 1024 * 1024
-    SSH_AUTHORIZED_KEYS = '.ssh/authorized_keys2'
     WORK_BRANCH_NAME = 'work_{contractor_id}_{auction_id}'.format
     REVENUE_FACTOR = 1.1 # 10 % of WorkOffer price is going to us if Work is complete
     URL_PREFIX = '/api/v1'
