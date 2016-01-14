@@ -162,7 +162,7 @@ def create_work_repo(project_id, account_id):
     if not project:
         return 'Unknow project with id: {}'.format(project_id)
     ssh = SSH('git', config['WORK_REPOS_HOST'])
-    repo_full_path = project.work_repo.repo_path
+    repo_full_path = project.work_repo.full_repo_path
     if ssh(['ls', repo_full_path], check=False) == 0:
         return 'Repo already exists, skipping.'
         #ssh(['rm', '-rf', repo_full_path])

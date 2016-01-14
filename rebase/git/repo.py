@@ -25,7 +25,7 @@ def _create_internal_project_repo(repo_full_path, project_name, user_name, user_
 class Repo(object):
     def __init__(self, project):
         self.project = project
-        self.repo_full_path = project.work_repo.repo_path
+        self.repo_full_path = project.work_repo.full_repo_path
         self.enqueue = current_app.git_queue.enqueue
 
     def create_branch(self, branch_name):

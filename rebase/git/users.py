@@ -29,7 +29,7 @@ def user_ids(project_id):
 def make_authorized_users_file(project):
     project_id = project.id
     ids = user_ids(project_id)
-    authorized_users_path = join(project.work_repo.repo_path, '.git', 'authorized_users')
+    authorized_users_path = join(project.work_repo.full_repo_path, '.git', 'authorized_users')
     with open(authorized_users_path, 'w') as authorized_users:
         for user_id in ids:
             authorized_users.write(str(user_id)+'\n')

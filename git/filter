@@ -13,6 +13,7 @@ from os.path import exists, join
 from subprocess import call
 from sys import argv, exit
 
+GIT_ROOT='/git'
 error_log = '/var/log/filter/error.log'
 basicConfig(filename=error_log, level=WARNING, format='%(asctime)s %(message)s')
     
@@ -36,10 +37,6 @@ class InvalidGitDirectoryTooShort(FilterException):
     error_message = 'Invalid Git directory: too short'
     code = 2
 
-class InvalidGitDirectoryRoot(FilterException):
-    error_message = 'Invalid Git directory root'
-    code = 3
-
 class InvalidCommand(FilterException):
     error_message = 'Invalid command'
     code = 4
@@ -47,7 +44,6 @@ class InvalidCommand(FilterException):
 class GitDirDoesNotExist(FilterException):
     error_message = 'Git directory does not exist'
     code = 5
-
 
 class MissingAuthorizedUsersFile(FilterException):
     error_message = 'Missing authorized_users file'
@@ -66,18 +62,15 @@ def main(argv):
     git_cmd = argv[2]
     if len(argv[3]) < 6:
         raise InvalidGitDirectoryTooShort()
-    git_dir = argv[3][1:-1]
-
+    # the [1:-1] index is to remove the extraneous double-quotes around the string
+    git_dir = join(GIT_ROOT, argv[3][1:-1])
     if git_cmd not in valid_commands:
         raise InvalidCommand()
-    if not git_dir.startswith('/git'):
-        raise InvalidGitDirectoryRoot()
     if not exists(git_dir):
         raise GitDirDoesNotExist()
     user_ids_path = join(git_dir, '.git', 'authorized_users')
     if not exists(user_ids_path):
         raise MissingAuthorizedUsersFile()
-
     user_ids = []
     authenticated = False
     with open(user_ids_path, 'r') as f:

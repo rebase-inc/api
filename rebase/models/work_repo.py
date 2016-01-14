@@ -29,9 +29,12 @@ class WorkRepo(CodeRepository):
     @reconstructor
     def init(self):
         self.repo_path = join(
-            current_app.config['WORK_REPOS_ROOT'], 
             normalize(self.project.organization.name),
             normalize(self.project.name)
+        )
+        self.full_repo_path = join(
+            current_app.config['WORK_REPOS_ROOT'], 
+            self.repo_path
         )
         self.url = '{hostname}:{path}'.format(
             hostname=current_app.config['GIT_SERVER_NAME'],
