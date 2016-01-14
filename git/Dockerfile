@@ -11,7 +11,7 @@ RUN mkdir -p /var/run/sshd \
     /var/log/filter \
     /root/.ssh && \
     touch /var/log/filter/error.log && \
-    chmod o+w /var/log/filter && \
+    chmod o+w /var/log/filter/error.log && \
     adduser --quiet --disabled-password --gecos "Rebase Git" git && \
     echo "git:foo" | chpasswd && \
     virtualenv -p python2.7 /venv/super && \
