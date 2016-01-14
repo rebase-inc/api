@@ -88,6 +88,7 @@ def main(argv):
 
     if not authenticated:
         raise UnauthorizedUser()
+    warning('Successfull authentication with: {}'.format(argv))
 
     original_cmd = [git_cmd, git_dir]
     call(original_cmd)
