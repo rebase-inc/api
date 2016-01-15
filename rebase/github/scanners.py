@@ -1,6 +1,7 @@
 from datetime import datetime
 from functools import lru_cache
 from os.path import join
+from subprocess import check_call, call
 
 from flask import current_app
 from sqlalchemy.orm.collections import InstrumentedList
@@ -161,12 +162,10 @@ def create_work_repo(project_id, account_id):
     project = GithubProject.query.get(project_id)
     if not project:
         return 'Unknow project with id: {}'.format(project_id)
-    ssh = SSH('git', config['WORK_REPOS_HOST'])
     repo_full_path = project.work_repo.full_repo_path
-    if ssh(['ls', repo_full_path], check=False) == 0:
+    if call(['ls', repo_full_path]) == 0:
         return 'Repo already exists, skipping.'
-        #ssh(['rm', '-rf', repo_full_path])
-    ssh(['git', 'init', repo_full_path])
+    check_call(['git', 'init', repo_full_path])
     oauth_url = project.remote_repo.url.replace('https://api.github.com', 'https://'+session.account.access_token+'@github.com', 1)
     oauth_url = oauth_url.replace('github.com/repos', 'github.com', 1)
-    ssh(['git', '-C', repo_full_path, 'pull', oauth_url])
+    check_call(['git', '-C', repo_full_path, 'pull', oauth_url])

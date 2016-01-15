@@ -19,7 +19,7 @@ basicConfig(filename=error_log, level=WARNING, format='%(asctime)s %(message)s')
     
 class FilterException(Exception):
     error_message = 'FilterException base class message '
-    message_format = '{error_message}\nArguments:\n{argv}\nExit code: {code}'
+    message_format = '{error_message} {argv} exit: {code}'
     code = 255
 
     def __init__(self):
