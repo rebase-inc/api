@@ -6,7 +6,6 @@ from subprocess import check_call, call
 from flask import current_app
 from sqlalchemy.orm.collections import InstrumentedList
 
-from rebase.common.ssh import SSH
 from rebase.git.users import generate_authorized_users
 from rebase.github.session import GithubSession, make_session, make_admin_github_session
 from rebase.models import (
