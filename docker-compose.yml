@@ -30,6 +30,8 @@ rq_git:
   links:
    - redis
    - database:db
+  volumes:
+   - git:/git
 
 rq_default:
   extends:
@@ -46,3 +48,7 @@ redis:
 
 database:
   image: postgres
+  environment:
+    PGDATA: "/var/lib/postgresql/data/rebase"
+  volumes:
+   - sql:/var/lib/postgresql/data/rebase

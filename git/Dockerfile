@@ -6,12 +6,10 @@ RUN apt-get update && \
 COPY sshd_config /etc/ssh/sshd_config
 COPY supervisor.conf /etc/git/supervisor.conf
 COPY filter /usr/bin/filter
-VOLUME /git
 RUN mkdir -p /var/run/sshd \
-    /var/log/filter \
     /root/.ssh && \
-    touch /var/log/filter/error.log && \
-    chmod o+w /var/log/filter/error.log && \
+    touch /log/error.log && \
+    chmod o+w /log/error.log && \
     adduser --quiet --disabled-password --gecos "Rebase Git" git && \
     echo "git:rebase_is_da_bomb" | chpasswd && \
     virtualenv -p python2.7 /venv/super && \
