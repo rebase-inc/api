@@ -13,6 +13,6 @@ RUN easy_install3 -U pip && \
     mkdir -p /uploads /root/.ssh /var/log/gunicorn && \
     /venv/api/bin/pip install -r /api/requirements.txt
 WORKDIR /api
-ENV APP_SETTINGS=/api/rebase/common/docker.py
+ENV APP_SETTINGS=/api/rebase/common/dev.py
 EXPOSE 5000
-CMD ["/venv/api/bin/gunicorn", "-c", "/api/etc/gunicorn.conf", "wsgi:app"]
+CMD ["/venv/api/bin/gunicorn", "-c", "/api/etc/gunicorn.dev.conf", "wsgi:app"]

@@ -163,10 +163,10 @@ abc () {
 }
 
 genkey () {
-	python -c "
+	python3 -c "
 from string import ascii_lowercase
 from os import urandom
-key = ''.join(map(lambda char: ascii_lowercase[char % (len(ascii_lowercase)-1)], urandom(512)))
+key = ''.join(map(lambda char: ascii_lowercase[char % (len(ascii_lowercase)-1)], urandom(1024)))
 print(key)
 "
 }

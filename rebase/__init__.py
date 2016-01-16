@@ -26,7 +26,7 @@ def create_app(testing=False):
     app = Flask(__name__, static_url_path='')
     app_context = app.app_context()
     app_context.push()
-    app.config.from_object('rebase.common.config.DevelopmentConfig')
+    app.config.from_object('rebase.common.config.Config')
     app.config.from_envvar('APP_SETTINGS')
     from rebase.common.database import DB
     DB.init_app(app)

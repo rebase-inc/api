@@ -5,6 +5,7 @@ web:
   links:
    - redis
    - database:db
+  command: ["/venv/api/bin/gunicorn", "-c", "/api/etc/gunicorn.pro.conf", "wsgi:app"]
 
 client:
   image: rebase/client-production

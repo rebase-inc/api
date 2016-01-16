@@ -1,3 +1,16 @@
+from os import environ
+
+from rebase.common.env import check
+
+check([
+    'REBASE_CLIENT_HOST',
+    'REBASE_CLIENT_PORT',
+])
+
+SERVER_NAME = '{HOST}:{PORT}'.format(
+    HOST=environ['REBASE_CLIENT_HOST'],
+    PORT=environ['REBASE_CLIENT_PORT']
+)
 
 class Config(object):
     DEBUG = False
@@ -13,29 +26,10 @@ class Config(object):
     WORK_BRANCH_NAME = 'work_{contractor_id}_{auction_id}'.format
     REVENUE_FACTOR = 1.1 # 10 % of WorkOffer price is going to us if Work is complete
     URL_PREFIX = '/api/v1'
+    SQLALCHEMY_DATABASE_URI = 'postgres://postgres:@db/postgres'
+    GIT_SERVER_NAME=environ['REBASE_CLIENT_HOST']
+    WORK_REPOS_HOST = 'rq_git_1'
+    WORK_REPOS_ROOT = '/git'
+    SSH_AUTHORIZED_KEYS = '/home/git/.ssh/authorized_keys'
+    UPLOAD_FOLDER = '/uploads'
 
-
-class ProductionConfig(Config):
-    DEBUG = False
-    FLASK_LOGIN_SESSION_PROTECTION = "strong" # WARNING: this will make Apache Bench fail login unless it is used to login as well
-
-
-class StagingConfig(Config):
-    DEVELOPMENT = True
-    DEBUG = True
-    DEBUG_TB_INTERCEPT_REDIRECTS = False
-    FLASK_LOGIN_SESSION_PROTECTION = "basic"
-
-
-class DevelopmentConfig(Config):
-    DEVELOPMENT = True
-    DEBUG = True
-    DEBUG_TB_INTERCEPT_REDIRECTS = False
-    FLASK_LOGIN_SESSION_PROTECTION = "basic"
-    NOMINATE_ALL_CONTRACTORS = True
-    SEND_FILE_MAX_AGE_DEFAULT = 0
-
-
-class TestingConfig(Config):
-    TESTING = True
-    FLASK_LOGIN_SESSION_PROTECTION = "basic"
