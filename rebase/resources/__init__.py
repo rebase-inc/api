@@ -3,7 +3,7 @@ from functools import wraps
 from sys import exc_info
 
 from flask.ext.restful import Resource
-from flask.ext.login import login_required
+from flask.ext.login import login_required, current_user
 
 from rebase.common.database import get_model_primary_keys, make_collection_url, make_resource_url
 from rebase.common.exceptions import ServerError, ClientError
@@ -37,7 +37,7 @@ def RestfulCollection(model, serializer, deserializer, handlers=None):
         @login_required
         @convert_exceptions
         def get(self):
-            return get_collection(model, serializer, handlers=_handlers['GET'])
+            return get_collection(model, serializer, current_user, handlers=_handlers['GET'])
 
         @login_required
         @convert_exceptions

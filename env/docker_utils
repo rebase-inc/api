@@ -13,3 +13,15 @@ function _vm() {
     eval "$(docker-machine env default)"
     env|sort|grep DOCKER
 }
+
+function _shell() {
+    docker exec -it api_web_1 /venv/api/bin/python manage shell
+}
+
+function _recreate() {
+    docker exec -it api_web_1 /venv/api/bin/python manage data recreate
+}
+
+function _populate() {
+    docker exec -it api_web_1 /venv/api/bin/python manage data populate
+}

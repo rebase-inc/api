@@ -32,4 +32,4 @@ class Config(object):
     WORK_REPOS_ROOT = '/git'
     SSH_AUTHORIZED_KEYS = '/home/git/.ssh/authorized_keys'
     UPLOAD_FOLDER = '/uploads'
-
+    REDIS_HOST = 'redis_1'

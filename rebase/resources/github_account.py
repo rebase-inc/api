@@ -1,5 +1,5 @@
 from flask.ext.restful import Resource
-from flask.ext.login import login_required
+from flask.ext.login import login_required, current_user
 
 from rebase.models import GithubAccount
 from rebase.views import github_account as views
@@ -14,7 +14,7 @@ class GithubAccountCollection(Resource):
 
     @login_required
     def get(self):
-        return get_collection(self.model, self.serializer)
+        return get_collection(self.model, self.serializer, current_user)
 
     @login_required
     def post(self):

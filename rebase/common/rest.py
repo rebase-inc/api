@@ -2,8 +2,9 @@ from flask import jsonify, request
 from flask.ext.login import current_user, current_app
 from rebase.common.exceptions import NotFoundError
 from rebase.common.database import DB
+from rebase.common.stopwatch import PrintElapsedTime
 
-def get_collection(model, serializer, handlers=None):
+def get_collection(model, serializer, user, handlers=None):
     '''
     model is the rebase resource to be queried and serialized
     serializer is a marshmallow Schema
@@ -14,11 +15,17 @@ def get_collection(model, serializer, handlers=None):
     and passed in the queried data.
     The handler must return a list of potentially updated instances.
     '''
-    query = model.query_by_user(current_user)
+    query = model.query_by_user(user)
     all_instances = query.limit(100).all()
     if handlers and 'pre_serialization' in handlers.keys():
         all_instances = handlers['pre_serialization'](all_instances)
-    serializer.context = dict(current_user = current_user)
+    serializer.context = dict(current_user = user)
+    with PrintElapsedTime():
+        jsonify(**{model.__pluralname__: serializer.dump(all_instances, many=True).data})
+    with PrintElapsedTime():
+        jsonify(**{model.__pluralname__: serializer.dump(all_instances, many=True).data})
+    for obj in DB.session.identity_map:
+        print(obj)
     return jsonify(**{model.__pluralname__: serializer.dump(all_instances, many=True).data})
 
 def add_to_collection(model, deserializer, serializer, handlers=None):
@@ -42,6 +49,8 @@ def add_to_collection(model, deserializer, serializer, handlers=None):
     serializer.context = dict(current_user = current_user)
     response = jsonify(**{model.__tablename__: serializer.dump(new_instance).data})
     response.status_code = 201
+    for obj in DB.session.identity_map:
+        print(obj)
     return response
 
 def get_resource(model, instance_id, serializer, handlers=None):

@@ -7,6 +7,9 @@ web:
   links:
    - redis
    - database:db
+  stdin_open: true
+  tty: true
+  command: ["/venv/api/bin/python", "manage", "runserver", "-h", "0.0.0.0", "-p", "5000"]
 
 client:
   build: ../react-app/
