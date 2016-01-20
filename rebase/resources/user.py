@@ -31,7 +31,6 @@ def update_current_role(user):
     if user == current_user:
         role_id = str(user.current_role.id)
         session['role_id'] = role_id
-        return user
     return user
 
 resource_handlers = {

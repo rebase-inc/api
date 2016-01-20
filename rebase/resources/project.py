@@ -15,7 +15,7 @@ def pick_a_new_role(response):
         new_role = current_user.set_role(0)
         session['role_id']=new_role.id
         response.set_cookie('role_id', str(session['role_id']))
-        return response
+    return response
 
 project_resource_handlers = {
     'DELETE': {
