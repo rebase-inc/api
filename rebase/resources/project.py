@@ -13,11 +13,12 @@ def pick_a_new_role(response):
         new_role = current_user.set_role(0)
         session['role_id']=new_role.id
         response.set_cookie('role_id', str(session['role_id']))
-        return response
+    return response
 
 def on_new_project(project):
     repo = Repo(project)
     repo.create_internal_project_repo(project.managers[0].user)
+    return project
 
 project_resource_handlers = {
     'DELETE': {

@@ -2,9 +2,7 @@ from os import environ
 
 from flask import Flask
 from flask.ext.restful import Api
-from flask.ext.login import current_user
 from flask_debugtoolbar import DebugToolbarExtension
-from werkzeug import secure_filename
 
 from rebase.common.exceptions import errors
 from rebase.common.env import check

@@ -1,0 +1,104 @@
+#!/venv/api/bin/python
+
+from functools import partial
+from http.server import HTTPServer, BaseHTTPRequestHandler
+import multiprocessing as mp
+from os import getpid
+from pickle import dumps, loads
+from queue import Queue, Empty
+from signal import signal, sigwait, SIGTERM, SIGQUIT, SIGINT
+from sys import exit
+from threading import Thread
+from time import sleep
+
+from requests import post
+
+from rebase.cache import create
+from rebase.common.stopwatch import PrintElapsedTime
+from rebase.models import (
+    User,
+)
+
+
+class RequestHandler(BaseHTTPRequestHandler):
+    q = Queue()
+    def do_POST(self):
+        self.send_response(200)
+        self.end_headers()
+        content_len = int(self.headers['content-length'], 0)
+        post_body = self.rfile.read(content_len)
+        task = loads(post_body)
+        print('Received task: {}'.format(task))
+        self.q.put(task)
+
+def user_role_cache(user_role_id, q, name):
+    app, _, db = create()
+    for user in User.query.all():
+        print('User: {}'.format(user))
+    while True:
+        try:
+            task = q.get(timeout=600)
+        except Empty as e:
+            print('{} TIMEOUT'.format(name))
+            break
+        print('{} received: {}'.format(name, task))
+        if task['action'] == 'QUIT':
+            print('{} QUIT'.format(name, *user_role_id))
+            break
+
+def quit(sig, frame, server, processes):
+    server.shutdown()
+    for process in processes.values():
+        process.q.put({'action': 'QUIT'})
+        process.join()
+    exit()
+
+class CacheProcess(mp.Process):
+    def __init__(self, user_role_id):
+        self.cache_id = user_role_id
+        self.q = mp.Queue()
+        self.name = 'CacheProcess[{},{}]'.format(*user_role_id)
+        super().__init__(
+            name=self.name,
+            target=user_role_cache,
+            args=(user_role_id, self.q, self.name)
+        )
+        self.start()
+
+def run():
+    processes = dict()
+    server = HTTPServer(('0.0.0.0', 5000), RequestHandler)
+    _quit = partial(quit, server=server, processes=processes)
+    signal(SIGTERM, _quit)
+    signal(SIGQUIT, _quit)
+    signal(SIGINT, _quit)
+    ip, port = server.server_address
+
+    server_thread = Thread(target=server.serve_forever)
+    server_thread.daemon = True
+    server_thread.start()
+    print("Cache server is listening in thread:", server_thread.name)
+    print('sending POST')
+    post(
+        'http://127.0.0.1:5000',
+        data=dumps({
+            'id': (3, 17),
+            'action': 'foo'
+        })
+    )
+    while True:
+        task = RequestHandler.q.get()
+        RequestHandler.q.task_done()
+        print('Got this task from q: {}'.format(task))
+        _id  = task['id']
+        # processes may timeout if no action is sent to them for a while,
+        # so we need to keep the 'processes' dict up-to-date
+        processes = dict(filter(lambda _id, process: process.is_alive(), processes))
+        if _id not in processes:
+            processes[_id] = CacheProcess(_id)
+            print('Processes: {}'.format(processes))
+        processes[_id].q.put(task)
+
+
+if __name__ == '__main__':
+    run()
