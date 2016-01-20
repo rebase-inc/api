@@ -31,7 +31,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         print('Received task: {}'.format(task))
         self.q.put(task)
 
-def user_role_cache(user_role_id, q, name):
+def cache_main(user_role_id, q, name):
     app, _, db = create()
     for user in User.query.all():
         print('User: {}'.format(user))
@@ -60,12 +60,12 @@ class CacheProcess(mp.Process):
         self.name = 'CacheProcess[{},{}]'.format(*user_role_id)
         super().__init__(
             name=self.name,
-            target=user_role_cache,
+            target=cache_main,
             args=(user_role_id, self.q, self.name)
         )
         self.start()
 
-def run():
+def main_thread():
     processes = dict()
     server = HTTPServer(('0.0.0.0', 5000), RequestHandler)
     _quit = partial(quit, server=server, processes=processes)
@@ -101,4 +101,4 @@ def run():
 
 
 if __name__ == '__main__':
-    run()
+    main_thread()
