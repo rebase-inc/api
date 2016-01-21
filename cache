@@ -2,22 +2,15 @@
 
 from functools import partial
 from http.server import HTTPServer, BaseHTTPRequestHandler
-import multiprocessing as mp
-from os import getpid
 from pickle import dumps, loads
-from queue import Queue, Empty
+from queue import Queue
 from signal import signal, sigwait, SIGTERM, SIGQUIT, SIGINT
 from sys import exit
 from threading import Thread
-from time import sleep
 
 from requests import post
 
-from rebase.cache import create
-from rebase.common.stopwatch import PrintElapsedTime
-from rebase.models import (
-    User,
-)
+from rebase.cache import CacheProcess
 
 
 class RequestHandler(BaseHTTPRequestHandler):
@@ -31,20 +24,6 @@ class RequestHandler(BaseHTTPRequestHandler):
         print('Received task: {}'.format(task))
         self.q.put(task)
 
-def cache_main(user_role_id, q, name):
-    app, _, db = create()
-    for user in User.query.all():
-        print('User: {}'.format(user))
-    while True:
-        try:
-            task = q.get(timeout=600)
-        except Empty as e:
-            print('{} TIMEOUT'.format(name))
-            break
-        print('{} received: {}'.format(name, task))
-        if task['action'] == 'QUIT':
-            print('{} QUIT'.format(name, *user_role_id))
-            break
 
 def quit(sig, frame, server, processes):
     server.shutdown()
@@ -52,18 +31,6 @@ def quit(sig, frame, server, processes):
         process.q.put({'action': 'QUIT'})
         process.join()
     exit()
-
-class CacheProcess(mp.Process):
-    def __init__(self, user_role_id):
-        self.cache_id = user_role_id
-        self.q = mp.Queue()
-        self.name = 'CacheProcess[{},{}]'.format(*user_role_id)
-        super().__init__(
-            name=self.name,
-            target=cache_main,
-            args=(user_role_id, self.q, self.name)
-        )
-        self.start()
 
 def main_thread():
     processes = dict()
@@ -77,13 +44,13 @@ def main_thread():
     server_thread = Thread(target=server.serve_forever)
     server_thread.daemon = True
     server_thread.start()
-    print("Cache server is listening in thread:", server_thread.name)
+    print("Cache HTTP server is listening in thread:", server_thread.name)
     print('sending POST')
     post(
         'http://127.0.0.1:5000',
         data=dumps({
             'id': (3, 17),
-            'action': 'foo'
+            'action': 'warmup'
         })
     )
     while True:
