@@ -3,7 +3,9 @@ from flask.ext.login import current_user, current_app
 from rebase.common.exceptions import NotFoundError
 from rebase.common.database import DB
 from rebase.common.stopwatch import PrintElapsedTime
+from rebase.memoize import cache
 
+@cache.memoize(timeout=60)
 def get_collection(model, serializer, user, handlers=None):
     '''
     model is the rebase resource to be queried and serialized

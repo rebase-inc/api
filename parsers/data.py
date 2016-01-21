@@ -2,9 +2,9 @@ from subprocess import check_call
 
 from flask.ext.script import Manager, prompt_bool
 
-from rebase import create_app
+from rebase.app import create
 from rebase.common import mock
-_, _, db = create_app()
+_, _, db = create()
 
 data = Manager(usage="Manage the data inside the database.")
 

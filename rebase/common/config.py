@@ -33,3 +33,4 @@ class Config(object):
     SSH_AUTHORIZED_KEYS = '/home/git/.ssh/authorized_keys'
     UPLOAD_FOLDER = '/uploads'
     REDIS_HOST = 'redis_1'
+    CACHE_HOST = 'cache_1:5000'

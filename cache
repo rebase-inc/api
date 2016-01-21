@@ -3,32 +3,48 @@
 from functools import partial
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from pickle import dumps, loads
-from queue import Queue
+from queue import Queue, Empty
+import re
 from signal import signal, sigwait, SIGTERM, SIGQUIT, SIGINT
 from sys import exit
 from threading import Thread
 
 from requests import post
 
-from rebase.cache import CacheProcess
+from rebase.cache.process import CacheProcess
 
+def route(action):
+    return re.compile(r'/(?P<action>{action})/(?P<role_id>[0-9]+)'.format(action=action))
+
+routes = (
+    route('warmup'),
+    route('cooldown')
+)
 
 class RequestHandler(BaseHTTPRequestHandler):
     q = Queue()
     def do_POST(self):
-        self.send_response(200)
-        self.end_headers()
-        content_len = int(self.headers['content-length'], 0)
-        post_body = self.rfile.read(content_len)
-        task = loads(post_body)
-        print('Received task: {}'.format(task))
-        self.q.put(task)
+        match = None
+        for route in routes:
+            match = route.match(self.path)
+            if match:
+                break
+        if match:
+            self.send_response(200)
+            self.end_headers()
+            self.q.put({
+                'id': int(match.group('role_id'), 0),
+                'action': match.group('action')
+            })
+        else:
+            self.send_response(404)
+            self.end_headers()
 
 
 def quit(sig, frame, server, processes):
     server.shutdown()
     for process in processes.values():
-        process.q.put({'action': 'QUIT'})
+        process.q.put({'action': 'cooldown'})
         process.join()
     exit()
 
@@ -44,23 +60,19 @@ def main_thread():
     server_thread = Thread(target=server.serve_forever)
     server_thread.daemon = True
     server_thread.start()
-    print("Cache HTTP server is listening in thread:", server_thread.name)
-    print('sending POST')
-    post(
-        'http://127.0.0.1:5000',
-        data=dumps({
-            'id': (3, 17),
-            'action': 'warmup'
-        })
-    )
+    print('Cache HTTP server is listening at {}:{}'.format(ip, port))
     while True:
-        task = RequestHandler.q.get()
+        try:
+            task = RequestHandler.q.get(timeout=60)
+        except Empty as e:
+            # processes may timeout if no action is sent to them for a while,
+            # so we need to keep the 'processes' dict up-to-date
+            processes = {
+                role_id: process for role_id, process in processes.items() if process.is_alive()
+            }
+            continue
         RequestHandler.q.task_done()
-        print('Got this task from q: {}'.format(task))
         _id  = task['id']
-        # processes may timeout if no action is sent to them for a while,
-        # so we need to keep the 'processes' dict up-to-date
-        processes = dict(filter(lambda _id, process: process.is_alive(), processes))
         if _id not in processes:
             processes[_id] = CacheProcess(_id)
             print('Processes: {}'.format(processes))

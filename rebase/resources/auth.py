@@ -8,9 +8,11 @@ from flask.ext.login import (
     logout_user,
     current_user,
 )
-from rebase.common.exceptions import ValidationError
 
+from rebase.cache.rq_jobs import warmup, cooldown
+from rebase.common.exceptions import ValidationError
 from rebase.views import auth, user
+
 
 class AuthCollection(Resource):
     url = '/auth'
@@ -37,6 +39,7 @@ class AuthCollection(Resource):
                     'user': user.serializer.dump(auth_user).data,
                     'message': 'success!'
                 })
+                warmup(current_role.id)
                 response.status_code = 201
                 response.set_cookie('role_id', str(current_role.id), expires=datetime.now()+timedelta(days=1))
                 return response
@@ -56,6 +59,8 @@ class AuthCollection(Resource):
 
     def delete(self):
         ''' logout '''
+        role_id = int(request.cookies.get('role_id', 0))
+        cooldown(role_id)
         logout_user()
         response = jsonify(message = 'Logged out')
         response.status_code = 200

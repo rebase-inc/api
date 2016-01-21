@@ -1,3 +1,3 @@
-from rebase import create_app
+from rebase.app import create
 
-app, _, _ = create_app()
+app, _, _ = create()
