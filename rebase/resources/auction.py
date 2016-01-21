@@ -1,6 +1,5 @@
-from flask.ext.cache import Cache
 from flask.ext.restful import Resource
-from flask.ext.login import login_required, current_user, current_app
+from flask.ext.login import login_required, current_user
 from flask import jsonify, make_response, request
 
 from rebase.models import Auction, Role
@@ -9,14 +8,6 @@ from rebase.common.database import DB
 from rebase.common.state import ManagedState
 from rebase.common.rest import get_collection, add_to_collection, get_resource, update_resource, delete_resource
 
-
-cache = Cache(
-    current_app, 
-    config = {
-        'CACHE_TYPE': 'redis',
-        'CACHE_REDIS_HOST': current_app.config['REDIS_HOST']
-    }
-)
 
 class AuctionCollection(Resource):
     model = Auction
@@ -31,6 +22,7 @@ class AuctionCollection(Resource):
     @login_required
     def post(self):
         return add_to_collection(self.model, self.deserializer, self.serializer)
+
 
 class AuctionResource(Resource):
     model = Auction
@@ -51,6 +43,7 @@ class AuctionResource(Resource):
     def delete(self, id):
         return delete_resource(self.model, id)
 
+
 class AuctionBidEvents(Resource):
 
     @login_required
@@ -67,6 +60,7 @@ class AuctionBidEvents(Resource):
         response.status_code = 201
         return response
 
+
 class AuctionEndEvents(Resource):
 
     @login_required
@@ -82,6 +76,7 @@ class AuctionEndEvents(Resource):
         response = jsonify(auction = auction_views.serializer.dump(single_auction).data)
         response.status_code = 201
         return response
+
 
 class AuctionFailEvents(Resource):
 
