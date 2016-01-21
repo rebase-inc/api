@@ -5,7 +5,7 @@ from rebase.models import (
 from rebase.views import auction as auction_views
 
 
-def warmup(app, db, role):
+def warmup(role):
     from rebase.common.rest import get_collection
     print('Warming up for {}'.format(role))
     response = get_collection(Auction, auction_views.serializer, role.user)

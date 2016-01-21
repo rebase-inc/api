@@ -5,7 +5,7 @@ from rebase.common.database import DB
 from rebase.common.stopwatch import PrintElapsedTime
 from rebase.memoize import cache
 
-@cache.memoize(timeout=60)
+@cache.memoize()
 def get_collection(model, serializer, user, handlers=None):
     '''
     model is the rebase resource to be queried and serialized
@@ -22,12 +22,6 @@ def get_collection(model, serializer, user, handlers=None):
     if handlers and 'pre_serialization' in handlers.keys():
         all_instances = handlers['pre_serialization'](all_instances)
     serializer.context = dict(current_user = user)
-    with PrintElapsedTime():
-        jsonify(**{model.__pluralname__: serializer.dump(all_instances, many=True).data})
-    with PrintElapsedTime():
-        jsonify(**{model.__pluralname__: serializer.dump(all_instances, many=True).data})
-    for obj in DB.session.identity_map:
-        print(obj)
     return jsonify(**{model.__pluralname__: serializer.dump(all_instances, many=True).data})
 
 def add_to_collection(model, deserializer, serializer, handlers=None):

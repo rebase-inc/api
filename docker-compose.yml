@@ -7,9 +7,8 @@ web:
   links:
    - redis
    - database:db
-   - cache
-  stdin_open: true
-  tty: true
+  #stdin_open: true
+  #tty: true
   command: ["/venv/api/bin/python", "manage", "runserver", "-h", "0.0.0.0", "-p", "5000"]
 
 cache:
@@ -21,8 +20,8 @@ cache:
   links:
    - redis
    - database:db
-  stdin_open: true
-  tty: true
+  #stdin_open: true
+  #tty: true
   command: ["/api/cache"]
 
 client:

@@ -1,3 +1,4 @@
+from logging import info, debug, error
 from queue import Queue, Empty
 
 from flask.ext.login import login_user
@@ -7,10 +8,11 @@ from rebase.cache.tasks import warmup
 from rebase.models import Role
 
 def cache_main(role_id, q, name):
+    info('Started child process')
     app, _, db = create()
     role = Role.query.get(role_id)
     if not role:
-        print('Unknown role, terminating')
+        error('Unknown role, terminating')
         return 1
     role.user.set_role(role.id)
     # create a fake request context to allow flask.ext.login to work
@@ -22,11 +24,12 @@ def cache_main(role_id, q, name):
         try:
             task = q.get(timeout=3600)
         except Empty as e:
-            print('{} TIMEOUT'.format(name))
+            info('TIMEOUT')
             break
-        print('{} received: {}'.format(name, task))
+        debug('Received: {}'.format(task))
         if task['action'] == 'cooldown':
-            print('{} QUIT'.format(name))
+            info('QUIT')
             break
         if task['action'] == 'warmup':
-            warmup(app, db, role)
+            warmup(role)
+    info('Exiting child process')

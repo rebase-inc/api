@@ -19,9 +19,13 @@ function _shell() {
 }
 
 function _recreate() {
-    docker exec -it api_web_1 /venv/api/bin/python manage data recreate
+    docker exec -t api_web_1 /venv/api/bin/python manage data recreate
 }
 
 function _populate() {
-    docker exec -it api_web_1 /venv/api/bin/python manage data populate
+    docker exec -t api_web_1 /venv/api/bin/python manage data populate
+}
+
+function _log_cache() {
+    docker exec -t api_cache_1 tail -f /log/cache.log
 }
