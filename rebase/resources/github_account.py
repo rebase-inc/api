@@ -14,7 +14,7 @@ class GithubAccountCollection(Resource):
 
     @login_required
     def get(self):
-        return get_collection(self.model, self.serializer, current_user)
+        return get_collection(self.model, self.serializer, current_user.current_role.id)
 
     @login_required
     def post(self):

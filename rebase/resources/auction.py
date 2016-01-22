@@ -2,11 +2,17 @@ from flask.ext.restful import Resource
 from flask.ext.login import login_required, current_user
 from flask import jsonify, make_response, request
 
+from rebase.common.database import DB
+from rebase.common.rest import get_collection, add_to_collection, get_resource, update_resource, delete_resource
+from rebase.common.state import ManagedState
+from rebase.memoize import cache
 from rebase.models import Auction, Role
 from rebase.views import auction as auction_views
-from rebase.common.database import DB
-from rebase.common.state import ManagedState
-from rebase.common.rest import get_collection, add_to_collection, get_resource, update_resource, delete_resource
+
+
+@cache.memoize(timeout=600)
+def get_all_auctions(role_id):
+    return get_collection(Auction, auction_views.serializer, role_id)
 
 
 class AuctionCollection(Resource):
@@ -17,7 +23,7 @@ class AuctionCollection(Resource):
 
     @login_required
     def get(self):
-        return get_collection(self.model, self.serializer, current_user)
+        return get_all_auctions(current_user.current_role.id)
 
     @login_required
     def post(self):

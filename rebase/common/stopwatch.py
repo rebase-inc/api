@@ -22,9 +22,9 @@ class PrintElapsedTime(StopWatch):
 class Elapsed(StopWatch):
     def __init__(self, on_elapsed=None):
         self.on_elapsed = on_elapsed
-        super().__init__(self)
+        super().__init__()
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        ret = super().__exit__(self, exc_type, exc_val, exc_tb)
+        ret = super().__exit__(exc_type, exc_val, exc_tb)
         self.on_elapsed(self.elapsed)
         return ret

@@ -22,7 +22,7 @@ class UserCollection(Resource):
 
     @login_required
     def get(self):
-        return get_collection(self.model, self.serializer, current_user)
+        return get_collection(self.model, self.serializer, current_user.current_role.id)
 
     def post(self):
         return add_to_collection(self.model, self.deserializer, self.serializer)

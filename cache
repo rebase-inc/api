@@ -46,6 +46,7 @@ def main():
     server_thread.daemon = True
     server_thread.start()
     logging.info('HTTP server is listening at {}:{}'.format(ip, port))
+
     while True:
         try:
             task = CacheHandler.q.get(timeout=10)

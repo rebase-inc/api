@@ -37,7 +37,7 @@ def RestfulCollection(model, serializer, deserializer, handlers=None):
         @login_required
         @convert_exceptions
         def get(self):
-            return get_collection(model, serializer, current_user, handlers=_handlers['GET'])
+            return get_collection(model, serializer, current_user.current_role.id, handlers=_handlers['GET'])
 
         @login_required
         @convert_exceptions
