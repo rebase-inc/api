@@ -2,34 +2,24 @@ from functools import partial
 from logging import info, debug
 from sys import exit
 
-from flask.ext.login import login_user
 
+from rebase.common.database import DB
 from rebase.common.stopwatch import Elapsed
-from rebase.models import Role
 
 
-def warmup(role_id):
-    info('Warming up cache for {}'.format(role_id))
+def warmup():
+    from rebase.cache.role import ROLE
     from rebase.memoize import cache
     from rebase.resources.auction import get_all_auctions
-    role = Role.query.get(role_id)
-    if not role:
-        error('Unknown role, terminating')
-        return
-    role.user.set_role(role.id)
-    login_user(role.user)
-    cache.delete_memoized(get_all_auctions, role.id)
-    with Elapsed(partial(info, 'running get_all_auctions took %f seconds')):
-        get_all_auctions(role.id)
-    info('Done with get_collection')
+    cache.delete_memoized(get_all_auctions, ROLE.id)
+    with Elapsed(partial(info, 'warmup: running get_all_auctions for {} took %f seconds'.format(ROLE.id))):
+        get_all_auctions(ROLE.id)
 
 def cooldown():
     info('QUIT')
     exit(0)
 
 def invalidate(changeset):
-    info('Inside invalidate')
-    debug(changeset)
     '''
     invalidate updates the list of potentially modified model instances 
     contained in 'changeset' and re-computes the cached functions
@@ -50,5 +40,9 @@ def invalidate(changeset):
     the 'changeset'.
 
     '''
-    debug('Invalidating changeset:')
-    debug(changeset)
+    #debug('Invalidating changeset:')
+    #debug(changeset)
+    #debug('Current DB.identity_map:')
+    #debug(tuple(DB.session.identity_map.keys()))
+    info('Updating get_all_auctions cache after invalidation')
+    warmup()

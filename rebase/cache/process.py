@@ -10,6 +10,6 @@ class CacheProcess(Process):
         super().__init__(
             name=self.name,
             target=cache_main,
-            args=(self.q, self.name)
+            args=(role_id, self.q, self.name)
         )
         self.start()

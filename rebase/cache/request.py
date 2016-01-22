@@ -15,7 +15,7 @@ class RoleResource(object):
         return int(match.group('role_id'))
 
     def warmup_args(request, match):
-        return (RoleResource.destination(request, match),), dict()
+        return tuple(), dict()
 
     def cooldown_args(request, match):
         return tuple(), dict()
@@ -32,7 +32,6 @@ class InvalidateResource(object):
         return 0
 
     def invalidate_args(request, match):
-        debug(request.headers)
         changeset = loads(request.rfile.read(int(request.headers['Content-Length'])))
         return (changeset,), dict()
 
