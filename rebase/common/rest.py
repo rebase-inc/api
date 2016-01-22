@@ -1,5 +1,7 @@
 from flask import jsonify, request
 from flask.ext.login import current_user, current_app
+
+from rebase.cache.rq_jobs import invalidate
 from rebase.common.exceptions import NotFoundError
 from rebase.common.database import DB
 from rebase.common.stopwatch import PrintElapsedTime
@@ -45,6 +47,7 @@ def add_to_collection(model, deserializer, serializer, handlers=None):
     response.status_code = 201
     for obj in DB.session.identity_map:
         print(obj)
+    invalidate(DB.session.identity_map)
     return response
 
 def get_resource(model, instance_id, serializer, handlers=None):
@@ -73,7 +76,9 @@ def update_resource(model, instance_id, update_deserializer, serializer, handler
     if handlers and 'pre_serialization' in handlers.keys():
         instance = handlers['pre_serialization'](instance)
     serializer.context = dict(current_user = current_user)
-    return jsonify(**{model.__tablename__: serializer.dump(instance).data})
+    response = jsonify(**{model.__tablename__: serializer.dump(instance).data})
+    invalidate(DB.session.identity_map)
+    return response
 
 def delete_resource(model, instance_id, handlers=None):
     instance = model.query.get(instance_id)
@@ -92,4 +97,5 @@ def delete_resource(model, instance_id, handlers=None):
     response.status_code = 200
     if handlers and 'modify_response' in handlers.keys():
         response = handlers['modify_response'](response)
+    invalidate(DB.session.identity_map)
     return response

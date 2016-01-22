@@ -59,7 +59,13 @@ def main():
         CacheHandler.q.task_done()
         processes = refresh(processes)
         _id  = task['id']
+        if _id == 0:
+            # broadcast to all children
+            for process in processes.values():
+                process.q.put(task)
+            continue
         if _id not in processes:
+            # create a new child process for this role
             processes[_id] = CacheProcess(_id)
             logging.debug('Processes: {}'.format(processes))
         processes[_id].q.put(task)

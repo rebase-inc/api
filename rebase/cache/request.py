@@ -1,6 +1,6 @@
-from collections import defaultdict
 from functools import partialmethod
 from logging import debug, info
+from pickle import loads
 from queue import Queue
 import re
 
@@ -11,31 +11,43 @@ from rebase.cache.tasks import warmup, cooldown, invalidate
 class RoleResource(object):
     path = re.compile(r'/role/(?P<role_id>[0-9]+)')
 
+    def destination(request, match):
+        return int(match.group('role_id'))
+
     def warmup_args(request, match):
-        return (int(match.group('role_id'), 0),), dict()
+        return (RoleResource.destination(request, match),), dict()
 
     def cooldown_args(request, match):
         return tuple(), dict()
 
+    POST = (warmup, warmup_args)
+    DELETE = (cooldown, cooldown_args)
+
+
+class InvalidateResource(object):
+    path = re.compile(r'/invalidate')
+
+    def destination(request, match):
+        # broadcast to all children
+        return 0
+
     def invalidate_args(request, match):
-        return (int(match.group('role_id'), 0),), dict()
+        debug(request.headers)
+        changeset = loads(request.rfile.read(int(request.headers['Content-Length'])))
+        return (changeset,), dict()
 
-    POST =  (warmup, warmup_args)
-    DELETE =(cooldown, cooldown_args)
-    PUT =   (invalidate, invalidate_args)
-
-
-all_resources = ( RoleResource, )
+    POST = (invalidate, invalidate_args)
 
 
 class CacheHandler(CacheBaseHandler):
     # q is used to send tasks to the main thread
     q = Queue()
+    all_resources = (RoleResource, InvalidateResource)
 
     def _handle(self, verb):
         match = None
         matching_resource = None
-        for resource in all_resources:
+        for resource in self.all_resources:
             if hasattr(resource, verb):
                 match = resource.path.match(self.path)
                 if match:
@@ -47,7 +59,7 @@ class CacheHandler(CacheBaseHandler):
             function, extract_args = getattr(matching_resource, verb)
             args, kwargs = extract_args(self, match)
             task = {
-                'id': int(match.group('role_id'), 0),
+                'id': matching_resource.destination(self, match),
                 'action': (function, args, kwargs)
             }
             debug('Sending {} to main thread'.format(task))

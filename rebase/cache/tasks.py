@@ -1,5 +1,5 @@
 from functools import partial
-from logging import info
+from logging import info, debug
 from sys import exit
 
 from flask.ext.login import login_user
@@ -27,7 +27,9 @@ def cooldown():
     info('QUIT')
     exit(0)
 
-def invalidate(role_id, changeset):
+def invalidate(changeset):
+    info('Inside invalidate')
+    debug(changeset)
     '''
     invalidate updates the list of potentially modified model instances 
     contained in 'changeset' and re-computes the cached functions
@@ -48,4 +50,5 @@ def invalidate(role_id, changeset):
     the 'changeset'.
 
     '''
-    pass
+    debug('Invalidating changeset:')
+    debug(changeset)

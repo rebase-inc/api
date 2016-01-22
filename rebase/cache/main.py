@@ -5,7 +5,7 @@ from queue import Queue, Empty
 from rebase.cache.app import create
 from rebase.cache.tasks import warmup
 
-def cache_main(role_id, q, name):
+def cache_main(q, name):
     info('Started child process')
     app, _, db = create()
     # create a fake request context to allow flask.ext.login to work
