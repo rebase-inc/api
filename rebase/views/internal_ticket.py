@@ -1,7 +1,8 @@
 from marshmallow import fields, post_load, validate
-from rebase.common.schema import RebaseSchema
+
+from rebase.common.schema import RebaseSchema, SecureNestedField
 from rebase.models.internal_ticket import InternalTicket
-from rebase.common.database import SecureNestedField
+
 
 class InternalTicketSchema(RebaseSchema):
     id =            fields.Integer()
@@ -18,6 +19,7 @@ class InternalTicketSchema(RebaseSchema):
     def make_internal_ticket(self, data):
         from rebase.models import InternalTicket
         return self._get_or_make_object(InternalTicket, data)
+
 
 serializer =            InternalTicketSchema()
 deserializer =          InternalTicketSchema(strict=True)

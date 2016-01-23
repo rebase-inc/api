@@ -1,10 +1,9 @@
 
 from marshmallow import fields, post_load
 
-from rebase.common.schema import RebaseSchema
-from rebase.views import NamespacedSchema
+from rebase.common.schema import RebaseSchema, SecureNestedField
 from rebase.views.comment import CommentSchema
-from rebase.common.database import SecureNestedField
+
 
 class ReviewSchema(RebaseSchema):
     id = fields.Integer()
@@ -18,7 +17,7 @@ class ReviewSchema(RebaseSchema):
         from rebase.models import Review
         return self._get_or_make_object(Review, data)
 
+
 serializer = ReviewSchema()
 deserializer = ReviewSchema(only=('work',))
-
 update_deserializer = ReviewSchema(only=('rating',), context={'raw': True})

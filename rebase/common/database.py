@@ -1,11 +1,7 @@
-from functools import lru_cache, partialmethod
+from functools import lru_cache
 
-from sqlalchemy.inspection import inspect
-from sqlalchemy.orm.collections import InstrumentedList
-
-from marshmallow import fields
-from flask.ext.login import current_user
 from flask.ext.sqlalchemy import SQLAlchemy
+
 from rebase.common.exceptions import (
     AsContractorPathUndefined,
     AsManagerPathUndefined,
@@ -14,92 +10,8 @@ from rebase.common.exceptions import (
     NotFoundError,
 )
 
+
 DB = SQLAlchemy()
-
-def get_model_primary_keys(model):
-    ''' returns the tuple of names of components of the primary key
-    e.g get_model_primary_keys(Foo<('id1', 'id2')>)  => ('id1', 'id2')
-    '''
-    return tuple(map(lambda key: key.name, inspect(model).primary_key))
-
-def make_collection_url(model):
-    return '/'+ model.__pluralname__
-
-def make_resource_url(model):
-    keyspace_format = ''
-    for primary_key in get_model_primary_keys(model):
-        keyspace_format += '/<int:{}>'.format(primary_key)
-    return make_collection_url(model) + keyspace_format
-
-def primary_key(instance):
-    ''' given an instance, returns the value of the primary key
-    e.g Foo<('id1':1, 'id2':5)>  => (1, 5)
-    '''
-    return inspect(instance).identity
-
-def ids(instance):
-    ''' return a dictionary of with the ids of instance
-    e.g. ids(some_db_class) => {'a': 1, 'b':3} where (a, b) is the primary key of some_db_class
-    '''
-    return dict(zip(get_model_primary_keys(type(instance)), primary_key(instance)))
-
-def get_or_make_object(model, data, id_fields=None, raw=False):
-    raise Exception('Deprecated! Use _get_or_make_object on RebaseSchema!')
-    if raw:
-        return data
-    id_fields = get_model_primary_keys(model)
-    instance_id = tuple(data.get(id_field) for id_field in id_fields)
-    if all(instance_id):
-        instance = model.query.get(instance_id)
-        if not instance:
-            raise NotFoundError(model.__tablename__, instance_id)
-        return instance
-    elif not data:
-        raise BadDataError(model_name=model.__tablename__)
-    return model(**data)
-
-
-# TODO implement incremental hashing
-def _setitem(ilist, index, element):
-    current_hash = getattr(ilist, '__current_hash__', 0)
-
-def _hash(ilist):
-    pile = ''
-    for elt in ilist:
-        pile = pile+str(elt)
-    return hash(pile)
-
-setattr(InstrumentedList, '__hash__', _hash)
-
-class SecureNestedField(fields.Nested):
-    def __init__(self, nested, strict=False, *args, **kwargs):
-        self.strict = strict
-        super().__init__(nested, *args, **kwargs)
-
-    @lru_cache(maxsize=None)
-    def _serialize_with_user(self, nested_obj, attr, obj, user):
-        if not nested_obj:
-            if self.many:
-                return []
-            else:
-                return None
-        if not user:
-            raise ValueError('Current user not supplied to {} nested on {}'.format(nested_obj, obj))
-        if self.many:
-            nested_obj = [elem for elem in nested_obj if elem.allowed_to_be_viewed_by(user)]
-        else:
-            nested_obj = nested_obj if nested_obj.allowed_to_be_viewed_by(user) else None
-        self.schema.context = self.context
-        return super()._serialize(nested_obj, attr, obj)
-
-    _serialize = partialmethod(_serialize_with_user, user=current_user)
-
-    @property
-    def schema(self):
-        _schema = fields.Nested.schema.fget(self)
-        _schema.strict = self.strict
-        _schema.context = {} # hack
-        return _schema
 
 
 class PermissionMixin(object):
@@ -196,12 +108,3 @@ class PermissionMixin(object):
         #raise NotImplemented(msg.format(cls.__name__))
         #print(msg.format(cls.__name__))
 
-
-def query_by_user_or_id(cls, query_fn, filter_by_id, user, instance=None):
-    if user.admin:
-        query = cls.query
-    else:
-        query = query_fn(user)
-    if instance:
-        query = instance.filter_by_id(query)
-    return query

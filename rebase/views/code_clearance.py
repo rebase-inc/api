@@ -1,12 +1,13 @@
 from marshmallow import fields, post_load
-from rebase.common.schema import RebaseSchema
+
+from rebase.common.schema import RebaseSchema, SecureNestedField
 from rebase.common.database import DB
 from rebase.models.code_clearance import CodeClearance
 from rebase.models.project import Project
 from rebase.models.contractor import Contractor
 from rebase.views.project import ProjectSchema
 from rebase.views.contractor import ContractorSchema
-from rebase.common.database import SecureNestedField
+
 
 class CodeClearanceSchema(RebaseSchema):
     id =           fields.Integer()
@@ -19,10 +20,9 @@ class CodeClearanceSchema(RebaseSchema):
         from rebase.models import CodeClearance
         return self._get_or_make_object(CodeClearance, data)
 
-serializer = CodeClearanceSchema()
 
+serializer = CodeClearanceSchema()
 deserializer = CodeClearanceSchema(only=('pre_approved','project','contractor'), strict=True)
 deserializer.declared_fields['project'].only = None
 deserializer.declared_fields['contractor'].only = None
-
 update_deserializer = CodeClearanceSchema(context={'raw': True})

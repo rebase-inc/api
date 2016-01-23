@@ -2,8 +2,7 @@ from marshmallow import fields, post_load
 import marshmallow.exceptions as marsh
 import sqlalchemy.orm.exc as orm_exc
 
-from rebase.common.schema import RebaseSchema
-from rebase.common.database import get_or_make_object, SecureNestedField
+from rebase.common.schema import RebaseSchema, SecureNestedField
 from rebase.views.role import RoleSchema
 from rebase.views.ssh_key import SSHKeySchema
 

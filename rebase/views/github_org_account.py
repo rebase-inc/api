@@ -1,9 +1,9 @@
 from marshmallow import fields, post_load
 
-from rebase.common.database import SecureNestedField
-from rebase.common.schema import RebaseSchema
+from rebase.common.schema import RebaseSchema, SecureNestedField
 from rebase.models.github_org_account import GithubOrgAccount
 from rebase.views.github_organization import GithubOrganizationSchema
+
 
 class GithubOrgAccountSchema(RebaseSchema):
     org_id =        fields.Integer()

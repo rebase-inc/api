@@ -5,7 +5,7 @@ from sys import exc_info
 from flask.ext.restful import Resource
 from flask.ext.login import login_required, current_user
 
-from rebase.common.database import get_model_primary_keys, make_collection_url, make_resource_url
+from rebase.common.keys import get_model_primary_keys, make_collection_url, make_resource_url
 from rebase.common.exceptions import ServerError, ClientError
 from rebase.common.rest import get_collection, add_to_collection, get_resource, update_resource, delete_resource
 

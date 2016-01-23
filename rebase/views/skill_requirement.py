@@ -1,10 +1,10 @@
 from flask.ext.restful import abort
 from marshmallow import fields, post_load
 
-from rebase.common.database import get_or_make_object, SecureNestedField
-from rebase.common.schema import RebaseSchema
+from rebase.common.schema import RebaseSchema, SecureNestedField
 from rebase.models.skill_requirement import SkillRequirement
 from rebase.views.ticket import TicketSchema
+
 
 class DictField(fields.Field):
 

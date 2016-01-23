@@ -1,10 +1,11 @@
-from marshmallow import fields, post_load
-from rebase.common.schema import RebaseSchema
-from rebase.models.remote_ticket import RemoteTicket
-from rebase.models.project import Project
-from rebase.views.skill_requirement import SkillRequirementSchema
-from rebase.common.database import SecureNestedField
 from flask.ext.restful import abort
+from marshmallow import fields, post_load
+
+from rebase.common.schema import RebaseSchema, SecureNestedField
+from rebase.models.project import Project
+from rebase.models.remote_ticket import RemoteTicket
+from rebase.views.skill_requirement import SkillRequirementSchema
+
 
 class RemoteTicketSchema(RebaseSchema):
     id =          fields.Integer(required=True)

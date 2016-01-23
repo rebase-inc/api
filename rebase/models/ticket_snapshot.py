@@ -1,7 +1,7 @@
 from datetime import datetime
 from functools import lru_cache, partialmethod
 
-from rebase.common.database import DB, PermissionMixin, query_by_user_or_id
+from rebase.common.database import DB, PermissionMixin
 from rebase.common.query import query_from_class_to_user
 
 class TicketSnapshot(DB.Model, PermissionMixin):

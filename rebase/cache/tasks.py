@@ -8,6 +8,7 @@ from rebase.common.database import DB
 from rebase.common.stopwatch import Elapsed
 from rebase.models import Role
 
+
 def get_role(role_id):
     info('Loading Role(%d)', role_id)
     role = Role.query.get(role_id)
@@ -18,17 +19,21 @@ def get_role(role_id):
     login_user(role.user)
     return role
 
+
 def warmup(role_id):
-    from rebase.memoize import cache
+    from rebase.memoize import redis, in_process
     from rebase.resources.auction import get_all_auctions
     role = get_role(role_id)
-    cache.delete_memoized(get_all_auctions, role.id)
+    redis.clear()
+    in_process.clear()
     with Elapsed(partial(info, 'warmup: running get_all_auctions for {} took %f seconds'.format(role.id))):
         get_all_auctions(role.id)
+
 
 def cooldown(role_id):
     info('QUIT')
     exit(0)
+
 
 def invalidate(role_id, changeset):
     '''

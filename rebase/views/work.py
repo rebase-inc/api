@@ -1,8 +1,7 @@
 
 from marshmallow import fields, post_load
 
-from rebase.common.database import get_or_make_object, SecureNestedField
-from rebase.common.schema import RebaseSchema
+from rebase.common.schema import RebaseSchema, SecureNestedField
 from rebase.views.credit import CreditSchema
 from rebase.views.debit import DebitSchema
 from rebase.views.mediation import MediationSchema
@@ -30,6 +29,7 @@ class WorkSchema(RebaseSchema):
         from rebase.models import Work
         return self._get_or_make_object(Work, data)
 
+
 class HaltEventSchema(RebaseSchema):
     comment = fields.String(required=True)
 
@@ -37,12 +37,14 @@ class HaltEventSchema(RebaseSchema):
     def make_halt(self, data):
         return 'halt_work', data
 
+
 class ReviewEventSchema(RebaseSchema):
     comment = fields.String(required=False)
 
     @post_load
     def make_review(self, data):
         return 'review', data
+
 
 class MediateEventSchema(RebaseSchema):
     comment = fields.String(required=True)
@@ -66,11 +68,13 @@ class ResolveEventSchema(RebaseSchema):
     def make_resume(self, data):
         return 'resolve', data
 
+
 class FailEventSchema(RebaseSchema):
 
     @post_load
     def make_fail(self, data):
         return 'fail'
+
 
 serializer = WorkSchema()
 deserializer = WorkSchema(strict=True, only=tuple()) #TODO: Use load_only/dump_only

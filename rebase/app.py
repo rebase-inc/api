@@ -6,7 +6,6 @@ from flask_debugtoolbar import DebugToolbarExtension
 
 from rebase.common.exceptions import errors
 from rebase.common.env import check
-from rebase.github.routes import register_github_routes
 from rebase.home.routes import register_home
 from rebase.features import install
 
@@ -34,6 +33,7 @@ def create(testing=False):
     register_home(app)
     # some routes use flask.ext.cache is can't be created until an app and its context exist
     from rebase.common.routes import register_routes
+    from rebase.github.routes import register_github_routes
     register_routes(api)
     register_github_routes(app)
     return app, app_context, DB

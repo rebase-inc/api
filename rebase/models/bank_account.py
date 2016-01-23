@@ -1,7 +1,7 @@
 from sqlalchemy.orm import validates
 
-from rebase.common.database import DB, PermissionMixin, query_by_user_or_id
-from rebase.common.query import query_from_class_to_user
+from rebase.common.database import DB, PermissionMixin
+from rebase.common.query import query_by_user_or_id, query_from_class_to_user
 
 class BankAccount(DB.Model, PermissionMixin):
     __pluralname__ = 'bank_accounts'

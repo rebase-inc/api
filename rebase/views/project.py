@@ -1,7 +1,8 @@
 from marshmallow import fields, post_load
-from rebase.common.schema import RebaseSchema
+
+from rebase.common.schema import RebaseSchema, SecureNestedField
 from rebase.models.project import Project
-from rebase.common.database import SecureNestedField
+
 
 class ProjectSchema(RebaseSchema):
 

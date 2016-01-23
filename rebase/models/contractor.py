@@ -5,8 +5,8 @@ from sqlalchemy.orm import aliased, reconstructor
 
 from rebase.models.role import Role
 from rebase.models.user import User
-from rebase.common.database import DB, query_by_user_or_id
-from rebase.common.query import query_from_class_to_user
+from rebase.common.database import DB
+from rebase.common.query import query_from_class_to_user, query_by_user_or_id
 import rebase.models
 
 class Contractor(Role):

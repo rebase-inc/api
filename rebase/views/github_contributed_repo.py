@@ -1,8 +1,8 @@
 from marshmallow import fields, post_load
 
-from rebase.common.database import SecureNestedField
-from rebase.common.schema import RebaseSchema
+from rebase.common.schema import RebaseSchema, SecureNestedField
 from rebase.models.github_contributed_repo import GithubContributedRepo
+
 
 class GithubContributedRepoSchema(RebaseSchema):
     id =                        fields.Integer()

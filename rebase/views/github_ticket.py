@@ -1,7 +1,8 @@
 from marshmallow import fields, post_load
-from rebase.common.schema import RebaseSchema
+
+from rebase.common.schema import RebaseSchema, SecureNestedField
 from rebase.models.github_ticket import GithubTicket
-from rebase.common.database import SecureNestedField
+
 
 class GithubTicketSchema(RebaseSchema):
     id =            fields.Integer()
@@ -19,6 +20,7 @@ class GithubTicketSchema(RebaseSchema):
     def make_github_ticket(self, data):
         from rebase.models import GithubTicket
         return self._get_or_make_object(GithubTicket, data)
+
 
 serializer =            GithubTicketSchema()
 deserializer =          GithubTicketSchema(strict=True)

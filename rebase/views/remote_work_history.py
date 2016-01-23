@@ -1,8 +1,7 @@
 from marshmallow import fields, post_load
-from rebase.common.schema import RebaseSchema
+from rebase.common.schema import RebaseSchema, SecureNestedField
 from rebase.models.contractor import Contractor
 from flask.ext.restful import abort
-from rebase.common.database import get_or_make_object, SecureNestedField
 
 class RemoteWorkHistorySchema(RebaseSchema):
     id =              fields.Integer()
@@ -13,7 +12,7 @@ class RemoteWorkHistorySchema(RebaseSchema):
     @post_load
     def make_remote_work_history(self, data):
         from rebase.models import RemoteWorkHistory
-        return get_or_make_object(RemoteWorkHistory, data)
+        return self._get_or_make_object(RemoteWorkHistory, data)
 
 serializer =            RemoteWorkHistorySchema(only=('id','github_accounts'))
 deserializer =          RemoteWorkHistorySchema(only=('contractor',))

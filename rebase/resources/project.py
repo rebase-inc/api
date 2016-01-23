@@ -2,7 +2,7 @@
 from flask.ext.login import current_user
 from flask import session
 
-from rebase.common.database import make_collection_url, make_resource_url
+from rebase.common.keys import make_collection_url, make_resource_url
 from rebase.git.repo import Repo
 from rebase.models import Project
 from rebase.resources import RestfulResource, RestfulCollection

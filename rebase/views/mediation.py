@@ -2,8 +2,8 @@ import datetime
 
 from marshmallow import fields, post_load
 
-from rebase.common.schema import RebaseSchema
-from rebase.common.database import SecureNestedField
+from rebase.common.schema import RebaseSchema, SecureNestedField
+
 
 class MediationSchema(RebaseSchema):
     id =            fields.Integer()

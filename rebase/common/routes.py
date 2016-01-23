@@ -1,5 +1,5 @@
 from rebase.resources import add_restful_endpoint, RestfulResource
-from rebase.common.database import make_resource_url
+from rebase.common.keys import make_resource_url
 
 def register_routes(api):
 
