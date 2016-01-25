@@ -143,6 +143,12 @@ rebase-key () {
     ssh_keys
 }
 
+rebase-ticket-comment() {
+    rebase-post \
+    "{ \"user\": $CURRENT_USER, \"content\": \"yo mama so big\", \"ticket\": { \"id\": $1 } }" \
+    comments
+}
+
 extract_session () {
 	awk "/$1.*session/ { printf(\"%s=%s\", \$6, \$7) }" $REBASE_COOKIE_JAR
 }

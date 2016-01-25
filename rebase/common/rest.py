@@ -45,8 +45,6 @@ def add_to_collection(model, deserializer, serializer, handlers=None):
     serializer.context = dict(current_user = current_user)
     response = jsonify(**{model.__tablename__: serializer.dump(new_instance).data})
     response.status_code = 201
-    for obj in DB.session.identity_map:
-        print(obj)
     invalidate(DB.session.identity_map)
     return response
 
