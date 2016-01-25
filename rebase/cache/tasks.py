@@ -21,11 +21,11 @@ def get_role(role_id):
 
 
 def warmup(role_id):
-    from rebase.memoize import redis, in_process
+    from flask import current_app
     from rebase.resources.auction import get_all_auctions
     role = get_role(role_id)
-    redis.clear()
-    in_process.clear()
+    current_app.cache_in_redis.clear()
+    current_app.cache_in_process.clear()
     with Elapsed(partial(info, 'warmup: running get_all_auctions for {} took %f seconds'.format(role.id))):
         get_all_auctions(role.id)
 

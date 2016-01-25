@@ -1,12 +1,12 @@
 from functools import partialmethod
 
+from flask import current_app
 from flask.ext.login import current_user
 from marshmallow import Schema, fields
 from sqlalchemy.orm.collections import InstrumentedList
 
 from rebase.common.exceptions import marshmallow_exceptions, NotFoundError, BadDataError
 from rebase.common.keys import get_model_primary_keys
-from rebase.memoize import in_process
 
 
 class RebaseSchema(Schema):
@@ -51,7 +51,7 @@ class SecureNestedField(fields.Nested):
         self.strict = strict
         super().__init__(nested, *args, **kwargs)
 
-    @in_process.memoize()
+    @current_app.cache_in_process.memoize()
     def _serialize_with_user(self, nested_obj, attr, obj, user):
         if not nested_obj:
             if self.many:

@@ -1,3 +1,4 @@
+from flask import current_app
 from flask.ext.restful import Resource
 from flask.ext.login import login_required, current_user
 from flask import jsonify, make_response, request
@@ -5,12 +6,11 @@ from flask import jsonify, make_response, request
 from rebase.common.database import DB
 from rebase.common.rest import get_collection, add_to_collection, get_resource, update_resource, delete_resource
 from rebase.common.state import ManagedState
-from rebase.memoize import redis
 from rebase.models import Auction, Role
 from rebase.views import auction as auction_views
 
 
-@redis.memoize()
+@current_app.cache_in_redis.memoize()
 def get_all_auctions(role_id):
     return get_collection(Auction, auction_views.serializer, role_id)
 
