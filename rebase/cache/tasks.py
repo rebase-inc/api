@@ -16,7 +16,7 @@ def get_role(role_id):
         error('Unknown role, terminating')
         return
     role.user.set_role(role.id)
-    login_user(role.user)
+    login_user(role.user) # so current_user is properly initialized
     return role
 
 
@@ -35,6 +35,7 @@ def warmup(main_state):
 def cooldown(main_state):
     info('QUIT')
     exit(0)
+    return main_state # never reached, but keeps the looks functional :)
 
 
 def invalidate(main_state, changeset):
@@ -43,23 +44,22 @@ def invalidate(main_state, changeset):
     contained in 'changeset' and re-computes the cached functions
 
     The invalidation mechanism:
-    a child maintains a list of loaded model instances (a.k.a. database rows), via
-    its global sqlalchemy session.
-    This list is simply 'db.session.identity_map'.
+    a child maintains a list of loaded model instances's ids (a.k.a. database rows),
+    in main_state['loaded_model_ids']. Note this is a list of tuples of (type, ids), no other data,
+    which means the size of the list is in the hundreds of bytes only.
+    This list is simply 'db.session.identity_map.keys()'.
 
     Anytime the web server creates/deletes/updates (but not reads) a resource,
-    it creates a small identity_map for that request. This is the 'changeset'.
+    it creates a small identity_map for that request. 
+    The keys of the map is the 'changeset'.
     That 'changeset' gets broadcasted to all cache children.
-    If the intersection of 'changeset' with the global identity_map of a given child is
-    not void, that child must update and unionize with the 'changeset'.
+    If the intersection of 'changeset' with the main_state['loaded_model_ids'] of a given child is
+    not void, that child must update its cache.
 
-    After the update+union has happened, the child's identity_map now contains the truth,
+    After the update, the child's identity_map now contains the truth,
     meaning it matches the state of the database at the time of the transaction that produced
     the 'changeset'.
-
     '''
-    #debug('Invalidating changeset: %s', changeset)
-    #debug('Current loaded ids: %s', main_state['loaded_model_ids'])
     intersection = changeset & main_state['loaded_model_ids']
     debug('Intersection: %s', intersection)
     from rebase.models.project import Project
