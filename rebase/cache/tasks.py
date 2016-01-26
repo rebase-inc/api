@@ -63,7 +63,7 @@ def invalidate(main_state, changeset):
     intersection = changeset & main_state['loaded_model_ids']
     debug('Intersection: %s', intersection)
     from rebase.models.project import Project
-    if type(Project) not in intersection:
+    if Project.__mapper__.class_ not in intersection:
         debug('No meaningful intersection, skipping invalidation')
         return main_state
     debug('Updating get_all_auctions cache after invalidation')
