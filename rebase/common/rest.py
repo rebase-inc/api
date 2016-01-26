@@ -45,7 +45,7 @@ def add_to_collection(model, deserializer, serializer, handlers=None):
     serializer.context = dict(current_user = current_user)
     response = jsonify(**{model.__tablename__: serializer.dump(new_instance).data})
     response.status_code = 201
-    invalidate(DB.session.identity_map)
+    invalidate(DB.session.identity_map.keys())
     return response
 
 def get_resource(model, instance_id, serializer, handlers=None):
@@ -75,7 +75,7 @@ def update_resource(model, instance_id, update_deserializer, serializer, handler
         instance = handlers['pre_serialization'](instance)
     serializer.context = dict(current_user = current_user)
     response = jsonify(**{model.__tablename__: serializer.dump(instance).data})
-    invalidate(DB.session.identity_map)
+    invalidate(DB.session.identity_map.keys())
     return response
 
 def delete_resource(model, instance_id, handlers=None):
@@ -95,5 +95,5 @@ def delete_resource(model, instance_id, handlers=None):
     response.status_code = 200
     if handlers and 'modify_response' in handlers.keys():
         response = handlers['modify_response'](response)
-    invalidate(DB.session.identity_map)
+    invalidate(DB.session.identity_map.keys())
     return response

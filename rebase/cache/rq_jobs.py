@@ -4,6 +4,9 @@ from pickle import dumps
 from flask import current_app
 from requests import post, delete
 
+from rebase.cache.model_ids import ModelIds
+
+
 def prefix():
     return 'http://{cache}'.format(cache=current_app.config['CACHE_HOST'])
 
@@ -16,6 +19,5 @@ def warmup(role_id):
 def cooldown(role_id):
     current_app.default_queue.enqueue(delete, role_url(role_id))
 
-def invalidate(changeset):
-    debug(changeset)
-    current_app.default_queue.enqueue(post, prefix()+'/invalidate', data=dumps(tuple(changeset.keys())))
+def invalidate(identity_map_keys):
+    current_app.default_queue.enqueue(post, prefix()+'/invalidate', data=dumps(ModelIds(identity_map_keys)))

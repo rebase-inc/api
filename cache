@@ -55,7 +55,7 @@ def main():
             # so we need to keep the 'processes' dict up-to-date
             processes = refresh(processes)
             continue
-        logging.debug('Received task: {}'.format(task))
+        #logging.debug('Received task: {}'.format(task))
         CacheHandler.q.task_done()
         processes = refresh(processes)
         _id  = task['id']

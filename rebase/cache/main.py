@@ -20,6 +20,9 @@ def cache_main(role_id, q, name):
     from rebase.common.database import DB
     DB.init_app(app)
     routes_are_registered = False
+    # store objects persistent across tasks
+    main_state = dict()
+    main_state['id'] = role_id
     while True:
         with app.app_context():
             from rebase.common.routes import register_routes
@@ -31,10 +34,10 @@ def cache_main(role_id, q, name):
             except Empty as e:
                 info('TIMEOUT')
                 break
-            debug('Received: {}'.format(task))
+            #debug('Received: {}'.format(task))
             function, args, kwargs = task['action']
             # create a fake request context to allow flask.ext.login to work
             # which is needed wherever 'current_user' is read
             with app.test_request_context('/foobar'):
-                function(role_id, *args, **kwargs)
+                main_state = function(main_state, *args, **kwargs)
     info('Exiting child process')
