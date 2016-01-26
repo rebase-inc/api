@@ -62,6 +62,7 @@ def invalidate(main_state, changeset):
     #debug('Current loaded ids: %s', main_state['loaded_model_ids'])
     intersection = changeset & main_state['loaded_model_ids']
     debug('Intersection: %s', intersection)
+    from rebase.models.project import Project
     if type(Project) not in intersection:
         debug('No meaningful intersection, skipping invalidation')
         return main_state
