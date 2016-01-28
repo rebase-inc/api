@@ -16,7 +16,9 @@ class ModelIds(defaultdict):
         _intersection = ModelIds([])
         intersect_models = set(self.keys()) & set(other.keys())
         for model in intersect_models:
-            _intersection[model].append(set(self[model]) & set(other[model]))
+            _intersecting_ids = set(self[model]) & set(other[model])
+            if _intersecting_ids:
+                _intersection[model].extend(_intersecting_ids)
         return _intersection
 
 

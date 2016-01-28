@@ -39,33 +39,47 @@ def _setitem(ilist, index, element):
     current_hash = getattr(ilist, '__current_hash__', 0)
 
 def _hash(ilist):
-    pile = ''
+    _result = 0
     for elt in ilist:
-        pile = pile+str(elt)
-    return hash(pile)
+        _result ^= hash(elt)
+    return _result
 
 setattr(InstrumentedList, '__hash__', _hash)
 
+
+def make_cache_key(_serialize, secure_nested_field, nested_obj, attr, obj, user):
+    cache = current_app.cache_in_process
+    cache_key = cache._memoize_make_cache_key()(_serialize, secure_nested_field, nested_obj, attr, obj, user)
+    if nested_obj:
+        _hash = hash(nested_obj)
+        value = (cache_key, hash(obj))
+        # only add new values to the keys cache
+        if _hash not in cache.keys or value not in cache.keys[_hash]:
+           cache.keys[_hash].add(value) 
+    return cache_key
+
+
 class SecureNestedField(fields.Nested):
+
     def __init__(self, nested, strict=False, *args, **kwargs):
         self.strict = strict
         super().__init__(nested, *args, **kwargs)
 
-    @current_app.cache_in_process.memoize()
+    @current_app.cache_in_process.memoize(timeout=3600)
     def _serialize_with_user(self, nested_obj, attr, obj, user):
         if not nested_obj:
             if self.many:
                 return []
             else:
                 return None
-        if not user:
-            raise ValueError('Current user not supplied to {} nested on {}'.format(nested_obj, obj))
         if self.many:
             nested_obj = [elem for elem in nested_obj if elem.allowed_to_be_viewed_by(user)]
         else:
             nested_obj = nested_obj if nested_obj.allowed_to_be_viewed_by(user) else None
         self.schema.context = self.context
         return super()._serialize(nested_obj, attr, obj)
+
+    _serialize_with_user.make_cache_key = make_cache_key
 
     _serialize = partialmethod(_serialize_with_user, user=current_user)
 

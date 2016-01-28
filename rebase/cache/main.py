@@ -1,7 +1,7 @@
 from logging import info, debug, error
 from queue import Queue, Empty
 
-from flask import Flask
+from flask import Flask, current_app
 from flask.ext.restful import Api
 from flask.ext.sqlalchemy import SQLAlchemy
 from werkzeug.routing import Map
@@ -22,7 +22,6 @@ def cache_main(role_id, q, name):
     routes_are_registered = False
     # store objects persistent across tasks
     main_state = dict()
-    main_state['id'] = role_id
     while True:
         with app.app_context():
             from rebase.common.routes import register_routes
@@ -39,5 +38,5 @@ def cache_main(role_id, q, name):
             # create a fake request context to allow flask.ext.login to work
             # which is needed wherever 'current_user' is read
             with app.test_request_context('/foobar'):
-                main_state = function(main_state, *args, **kwargs)
+                main_state = function(current_app, role_id, main_state, *args, **kwargs)
     info('Exiting child process')

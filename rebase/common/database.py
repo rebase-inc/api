@@ -107,4 +107,10 @@ class PermissionMixin(object):
         msg = 'setup_queries is not implemented for {}'
         #raise NotImplemented(msg.format(cls.__name__))
         #print(msg.format(cls.__name__))
+    
+    def __cache_repr__(self):
+        return self.__mapper__.identity_key_from_instance(self)
+
+    def __hash__(self):
+        return hash(str(self.__cache_repr__()))
 

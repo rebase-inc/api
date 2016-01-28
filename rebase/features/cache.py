@@ -1,4 +1,7 @@
+from collections import defaultdict
+
 from flask.ext.cache import Cache
+
 
 def setup_cache(app):
     redis = Cache(
@@ -16,4 +19,5 @@ def setup_cache(app):
             'CACHE_TYPE': 'simple',
         }
     )
+    setattr(in_process, 'keys', defaultdict(set))
     setattr(app, 'cache_in_process', in_process)

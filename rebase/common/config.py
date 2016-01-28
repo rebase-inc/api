@@ -1,3 +1,4 @@
+import logging
 from os import environ
 
 from rebase.common.env import check
@@ -21,7 +22,6 @@ class Config(object):
     SQLALCHEMY_MAX_OVERFLOW = 1
     SQLALCHEMY_TRACK_MODIFICATIONS = False 
     NOMINATE_ALL_CONTRACTORS = False
-    LOG_FILE = '/tmp/rebase_web.log'
     MAX_CONTENT_LENGTH = 1024 * 1024
     WORK_BRANCH_NAME = 'work_{contractor_id}_{auction_id}'.format
     REVENUE_FACTOR = 1.1 # 10 % of WorkOffer price is going to us if Work is complete
@@ -34,3 +34,9 @@ class Config(object):
     UPLOAD_FOLDER = '/uploads'
     REDIS_HOST = 'redis_1'
     CACHE_HOST = 'cache_1:5000'
+    WEB_LOG_FILENAME =   '/log/rebase_web.log'
+    WEB_LOG_CONFIG = {
+        'filename': '/log/rebase_web.log',
+        'level':    logging.DEBUG,
+        'format':   '%(asctime)s %(levelname)s {%(processName)s[%(process)d] %(threadName)s} %(message)s',
+    }

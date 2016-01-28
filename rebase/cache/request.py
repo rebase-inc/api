@@ -61,7 +61,7 @@ class CacheHandler(CacheBaseHandler):
                 'id': matching_resource.destination(self, match),
                 'action': (function, args, kwargs)
             }
-            debug('Sending {} to main thread'.format(task))
+            #debug('Sending {} to main thread'.format(task))
             self.q.put(task)
         else:
             self.send_response(404)

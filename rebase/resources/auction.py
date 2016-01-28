@@ -10,7 +10,7 @@ from rebase.models import Auction, Role
 from rebase.views import auction as auction_views
 
 
-@current_app.cache_in_redis.memoize()
+@current_app.cache_in_redis.memoize(timeout=3600)
 def get_all_auctions(role_id):
     return get_collection(Auction, auction_views.serializer, role_id)
 

@@ -1,8 +1,11 @@
-from logging import INFO
+from logging import DEBUG, basicConfig
 from logging.handlers import RotatingFileHandler
 
+
 def setup_logger(app):
-    handler = RotatingFileHandler(app.config['LOG_FILE'], maxBytes=10000000, backupCount=1)
-    handler.setLevel(INFO)
+    basicConfig(**app.config['WEB_LOG_CONFIG'])
+    handler = RotatingFileHandler(app.config['WEB_LOG_FILENAME'], maxBytes=10*(1024**2), backupCount=5)
+    handler.setLevel(DEBUG)
     app.logger.addHandler(handler)
+
 
