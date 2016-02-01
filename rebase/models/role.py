@@ -5,6 +5,7 @@ class Role(DB.Model, PermissionMixin):
 
     id =      DB.Column(DB.Integer, primary_key=True)
     user_id = DB.Column(DB.Integer, DB.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
+    walkthrough_completed = DB.Column(DB.Boolean, default=False)
     type =    DB.Column(DB.String)
 
     __mapper_args__ = {
