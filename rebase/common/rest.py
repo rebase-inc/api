@@ -1,3 +1,4 @@
+from copy import copy
 from logging import debug
 
 from flask import jsonify, request
@@ -39,17 +40,25 @@ def add_to_collection(model, deserializer, serializer, handlers=None):
     and passed in the committed instance.
     The handler must return a potentially updated instance.
     '''
+    pre_load_keys = copy(list(DB.session.identity_map.keys()))
+    debug('add_to_collection, pre_load_keys: %s', pre_load_keys)
+    debug('add_to_collection, # of keys in pre_load_keys: %d', len(pre_load_keys))
     new_instance = deserializer.load(request.json or request.form).data
     DB.session.add(new_instance)
     if not new_instance.allowed_to_be_created_by(current_user):
         return current_app.login_manager.unauthorized()
     DB.session.commit()
+    post_load_keys = copy(list(DB.session.identity_map.keys()))
+    debug('add_to_collection, post_load_keys: %s', post_load_keys)
+    debug('add_to_collection, # of keys in post_load_keys: %d', len(post_load_keys))
+    diff_keys = set(post_load_keys) - set(pre_load_keys)
+    invalidate(diff_keys)
+    debug('add_to_collection, identity_map_keys after invalidate: %s', diff_keys)
     if handlers and 'pre_serialization' in handlers.keys():
         new_instance = handlers['pre_serialization'](new_instance)
     serializer.context = dict(current_user = current_user)
     response = jsonify(**{model.__tablename__: serializer.dump(new_instance).data})
     response.status_code = 201
-    invalidate(DB.session.identity_map.keys())
     return response
 
 

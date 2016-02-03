@@ -1,3 +1,4 @@
+import gc
 from logging import info, debug, error
 from queue import Queue, Empty
 
@@ -22,6 +23,10 @@ def cache_main(role_id, q, name):
     routes_are_registered = False
     # store objects persistent across tasks
     main_state = dict()
+    # Run the garbage collection after each function.
+    # This speeds up the function call by 20%.
+    gc.disable()
+    gc.collect()
     while True:
         with app.app_context():
             from rebase.common.routes import register_routes
@@ -39,4 +44,5 @@ def cache_main(role_id, q, name):
             # which is needed wherever 'current_user' is read
             with app.test_request_context('/foobar'):
                 main_state = function(current_app, role_id, main_state, *args, **kwargs)
+        gc.collect()
     info('Exiting child process')

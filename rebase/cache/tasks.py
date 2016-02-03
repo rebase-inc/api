@@ -35,18 +35,46 @@ def warmup(app, role_id, main_state):
 
 
 def invalidate_cache(delete_key, keys, changeset):
+    '''
+    This function removes keys from the cache that match the provided changeset.
+    There is a one-to-one match between an item in 'changetset' and one in 'keys' in the
+    case of update or delete operations (indirectly PUT/DELETE).
+    The more difficult case is when a new object gets created. This object (its hash) is not present
+    in the cache, but one of its parent is, so we need to invalidate the parent and the parent's parent and so on.
+
+    'delete_key' is a function to delete keys from 'keys' which is a cache.
+    'changeset' contains the list of new/updated/deleted instances' identities (type, ids)
+    '''
     debug('# of cache keys before invalidation: %d', len(keys))
     q = Queue(maxsize=1024)
+    # first, flatten the changeset into a dict with each (k,v) => (hash(instance), instance)
+    instances_to_invalidate = dict()
     for type_obj, ids in changeset.items():
         for _id in ids:
-            q.put(hash(str((type_obj, _id))))
+            identity = (type_obj, _id)
+            _hash = hash(str(identity))
+            if _hash in keys:
+                q.put(_hash)
+            else:
+                # _id is a new obj that's never been cached, so we need to find its parents
+                instance = type_obj.query.get(*_id)
+                for fk in instance.__table__.foreign_keys:
+                    parent = getattr(instance, fk.column.table.name, None)
+                    if parent:
+                        _parent_hash = hash(parent)
+                        if _parent_hash in keys:
+                            q.put(_parent_hash)
+                        else:
+                            # that means we need to implement a recursive search...
+                            raise Exception('Parent obj not in cache')
+            # now empty the q and delete the corresponding keys from the cache
             while not q.empty():
                 _hash = q.get()
-                if _hash in keys:
-                    for key, parent_hash in keys[_hash]:
-                        delete_key(key)
-                        q.put(parent_hash)
-                    del keys[_hash]
+                for key, parent_hash in keys[_hash]:
+                    delete_key(key)
+                    q.put(parent_hash)
+                del keys[_hash]
+
     debug('# of cache keys after invalidation: %d', len(keys))
 
 
@@ -60,7 +88,7 @@ def incremental(app, role_id, changeset):
     #debug('Keys: %s', app.cache_in_process.keys)
     debug('# of cache keys: %d', len(app.cache_in_process.keys))
     debug('Size of cache keys: %d bytes', getsizeof(app.cache_in_process.keys))
-    return ModelIds(DB.session.identity_map.keys())
+    return ModelIds([])
 
 
 def cooldown(app, role_id, main_state):
@@ -91,12 +119,13 @@ def invalidate(app, role_id, main_state, changeset):
     meaning it matches the state of the database at the time of the transaction that produced
     the 'changeset'.
     '''
-    #debug('invalidate changeset: %s', changeset)
-    intersection = changeset & main_state['loaded_model_ids']
-    debug('Intersection: %s', intersection)
-    from rebase.models.project import Project
-    if Project.__mapper__.class_ not in intersection:
-        debug('No meaningful intersection, skipping invalidation')
-        return main_state
-    main_state['loaded_model_ids'] = incremental(app, role_id, intersection)
+    debug('invalidate changeset: %s', changeset)
+    #debug('invalidate loaded: %s', main_state['loaded_model_ids'])
+    #intersection = changeset & main_state['loaded_model_ids']
+    #debug('Intersection: %s', intersection)
+    #from rebase.models.project import Project
+    #if Project.__mapper__.class_ not in intersection:
+        #debug('No meaningful intersection, skipping invalidation')
+        #return main_state
+    main_state['loaded_model_ids'] = incremental(app, role_id, changeset)
     return main_state

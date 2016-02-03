@@ -20,5 +20,10 @@ class ModelIds(defaultdict):
             if _intersecting_ids:
                 _intersection[model].extend(_intersecting_ids)
         return _intersection
-
-
+    
+    def __sub__(self, other):
+        for model, ids in other.items():
+            if model in self:
+                diff_ids = list(iter(set(self[model]) - set(ids)))
+                if diff_ids:
+                    self[model] = diff_ids

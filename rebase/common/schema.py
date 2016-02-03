@@ -48,6 +48,16 @@ setattr(InstrumentedList, '__hash__', _hash)
 
 
 def make_cache_key(_serialize, secure_nested_field, nested_obj, attr, obj, user):
+    '''
+    Returns a cache key for '_serialize' function call signature.
+    Internally, that cache key is stored cache.keys along with the parent of the object to be
+    serialized.
+
+    So cache.keys = { hash(nested_obj) : (cache_key, obj) }
+    
+    If nested_obj is a list (InstrumentedList), we save cache_key for each item in the list.
+    This way, if an item gets invalidated, the whole list does too, and its parents.
+    '''
     cache = current_app.cache_in_process
     cache_key = cache._memoize_make_cache_key()(_serialize, secure_nested_field, nested_obj, attr, obj, user)
     if nested_obj:
@@ -56,6 +66,11 @@ def make_cache_key(_serialize, secure_nested_field, nested_obj, attr, obj, user)
         # only add new values to the keys cache
         if _hash not in cache.keys or value not in cache.keys[_hash]:
            cache.keys[_hash].add(value) 
+        # for lists, make sure to add one cache entry per item in the list
+        # in order to invalidate the whole list if any one item gets invalidated
+        if secure_nested_field.many:
+            for elem in nested_obj:
+                cache.keys[hash(elem)].add(value)
     return cache_key
 
 

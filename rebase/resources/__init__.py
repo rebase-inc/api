@@ -1,7 +1,9 @@
 from collections import defaultdict
 from functools import wraps
 from sys import exc_info
+from traceback import print_exc
 
+from flask import current_app
 from flask.ext.restful import Resource
 from flask.ext.login import login_required, current_user
 
@@ -19,8 +21,7 @@ def convert_exceptions(verb):
         except ClientError as client_error:
             raise client_error
         except Exception as e:
-            import traceback
-            traceback.print_exc()
+            print_exc(file=current_app.config['WEB_LOG_FILENAME'])
             raise ServerError(message='Server error')
     return _handle_other_exceptions
 
