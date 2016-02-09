@@ -86,15 +86,16 @@ def update_resource(model, instance_id, update_deserializer, serializer, handler
             setattr(instance, field, value)
     DB.session.add(instance)
     DB.session.commit()
+    invalidate([(model, instance_id)])
     if handlers and 'pre_serialization' in handlers.keys():
         instance = handlers['pre_serialization'](instance)
     serializer.context = dict(current_user = current_user)
     response = jsonify(**{model.__tablename__: serializer.dump(instance).data})
-    invalidate(DB.session.identity_map.keys())
     return response
 
 
 def delete_resource(model, instance_id, handlers=None):
+    pre_load_keys = copy(list(DB.session.identity_map.keys()))
     instance = model.query.get(instance_id)
     if not instance:
         raise NotFoundError(model.__tablename__, instance_id)
@@ -104,6 +105,7 @@ def delete_resource(model, instance_id, handlers=None):
         instance = handlers['before_delete'](instance)
     DB.session.delete(instance)
     DB.session.commit()
+    invalidate([(model, instance_id)])
     if handlers and 'pre_serialization' in handlers.keys():
         handlers['pre_serialization']()
 
@@ -111,7 +113,6 @@ def delete_resource(model, instance_id, handlers=None):
     response.status_code = 200
     if handlers and 'modify_response' in handlers.keys():
         response = handlers['modify_response'](response)
-    invalidate(DB.session.identity_map.keys())
     return response
 
 

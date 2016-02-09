@@ -30,7 +30,7 @@ def warmup(app, role_id, main_state):
     main_state['loaded_model_ids'] = ModelIds(DB.session.identity_map.keys())
     #debug('Keys: %s', app.cache_in_process.keys)
     debug('# of cache keys: %d', len(app.cache_in_process.keys))
-    debug('Size of cache keys: %d', getsizeof(app.cache_in_process.keys))
+    debug('Size of cache keys: %d bytes', getsizeof(app.cache_in_process.keys))
     return main_state
 
 
@@ -57,16 +57,17 @@ def invalidate_cache(delete_key, keys, changeset):
                 q.put(_hash)
             else:
                 # _id is a new obj that's never been cached, so we need to find its parents
-                instance = type_obj.query.get(*_id)
-                for fk in instance.__table__.foreign_keys:
+                instance = type_obj.query.get(_id)
+                foreign_keys = instance.__table__.foreign_keys
+                if not foreign_keys:
+                    debug('%s was not found in cache and does not have any parent, skipping invalidation', instance)
+                for fk in foreign_keys:
                     parent = getattr(instance, fk.column.table.name, None)
                     if parent:
                         _parent_hash = hash(parent)
                         if _parent_hash in keys:
                             q.put(_parent_hash)
-                        else:
-                            # that means we need to implement a recursive search...
-                            raise Exception('Parent obj not in cache')
+                            break
             # now empty the q and delete the corresponding keys from the cache
             while not q.empty():
                 _hash = q.get()
@@ -83,9 +84,10 @@ def incremental(app, role_id, changeset):
     login(role_id)
     app.cache_in_redis.clear()
     invalidate_cache(app.cache_in_process.cache.delete, app.cache_in_process.keys, changeset)
+    setattr(app.cache_in_process, 'misses', 0)
     with Elapsed(partial(info, 'incremental: running get_all_auctions for {} took %f seconds'.format(role_id))):
         get_all_auctions(role_id)
-    #debug('Keys: %s', app.cache_in_process.keys)
+    debug('cache misses: %s', app.cache_in_process.misses)
     debug('# of cache keys: %d', len(app.cache_in_process.keys))
     debug('Size of cache keys: %d bytes', getsizeof(app.cache_in_process.keys))
     return ModelIds([])
@@ -120,12 +122,5 @@ def invalidate(app, role_id, main_state, changeset):
     the 'changeset'.
     '''
     debug('invalidate changeset: %s', changeset)
-    #debug('invalidate loaded: %s', main_state['loaded_model_ids'])
-    #intersection = changeset & main_state['loaded_model_ids']
-    #debug('Intersection: %s', intersection)
-    #from rebase.models.project import Project
-    #if Project.__mapper__.class_ not in intersection:
-        #debug('No meaningful intersection, skipping invalidation')
-        #return main_state
     main_state['loaded_model_ids'] = incremental(app, role_id, changeset)
     return main_state
