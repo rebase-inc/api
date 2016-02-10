@@ -31,7 +31,8 @@ def recreate(default_data=True, sample_data=False):
 @data.command
 def populate(default_data=False, sample_data=False):
     "Populate database with default data"
-    dev_user_story = mock.DeveloperUserStory(db, 'Phil Meyman', 'philmeyman@joinrebase.com', 'lem')
-    dev_user_story = mock.ManagerUserStory(db, 'Ron Swanson', 'ron@joinrebase.com', 'ron')
+    mock.DeveloperUserStory(db, 'Phil Meyman', 'philmeyman@joinrebase.com', 'lem')
+    mock.ManagerUserStory(db, 'Ron Swanson', 'ron@joinrebase.com', 'ron')
+    mock.create_one_user(db, 'New User', 'new@joinrebase.com', 'new') 
 
     db.session.commit()
