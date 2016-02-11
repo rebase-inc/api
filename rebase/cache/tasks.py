@@ -75,7 +75,7 @@ def invalidate_cache(delete_key, keys, changeset):
                         _parent_hash = hash(parent)
                         if _parent_hash in keys:
                             q.put(_parent_hash)
-                            break
+                            #debug('Found parent %s for instance %s', parent, instance)
             # now empty the q and delete the corresponding keys from the cache
             while not q.empty():
                 _hash = q.get()
