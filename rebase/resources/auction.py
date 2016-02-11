@@ -16,7 +16,7 @@ def get_all_auctions(role_id):
 
 
 def clear_cache(role_id):
-    current_app.cache_in_redis.delete_memoized(get_all_auctions, Auction, auction_views.serializer, role_id)
+    current_app.cache_in_redis.delete_memoized(get_all_auctions, role_id)
 
 
 setattr(get_all_auctions, 'clear_cache', clear_cache)

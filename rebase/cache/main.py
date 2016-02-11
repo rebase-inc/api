@@ -22,7 +22,6 @@ def cache_main(role_id, q, name):
     DB.init_app(app)
     routes_are_registered = False
     # store objects persistent across tasks
-    main_state = dict()
     # Run the garbage collection after each function.
     # This speeds up the function call by 20%.
     gc.disable()
@@ -43,6 +42,6 @@ def cache_main(role_id, q, name):
             # create a fake request context to allow flask.ext.login to work
             # which is needed wherever 'current_user' is read
             with app.test_request_context('/foobar'):
-                main_state = function(current_app, role_id, main_state, *args, **kwargs)
+                function(current_app, role_id, *args, **kwargs)
         gc.collect()
     info('Exiting child process')

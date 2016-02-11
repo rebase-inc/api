@@ -20,7 +20,7 @@ def login(role_id):
     login_user(role.user) # so current_user is properly initialized
 
 
-def warmup(app, role_id, main_state):
+def warmup(app, role_id):
     from rebase.resources.ticket import get_all_tickets
     from rebase.resources.auction import get_all_auctions
     from rebase.resources.contract import get_all_contracts
@@ -38,10 +38,8 @@ def warmup(app, role_id, main_state):
     get_all_contracts(role_id)
     get_all_reviews(role_id)
     debug('warmup done')
-    main_state['loaded_model_ids'] = ModelIds(DB.session.identity_map.keys())
     debug('# of cache keys: %d', len(app.cache_in_process.keys))
     debug('Size of cache keys: %d bytes', getsizeof(app.cache_in_process.keys))
-    return main_state
 
 
 def invalidate_cache(delete_key, keys, changeset):
@@ -111,37 +109,28 @@ def incremental(app, role_id, changeset):
     debug('cache misses: %s', app.cache_in_process.misses)
     debug('# of cache keys: %d', len(app.cache_in_process.keys))
     debug('Size of cache keys: %d bytes', getsizeof(app.cache_in_process.keys))
-    return ModelIds([])
 
 
-def cooldown(app, role_id, main_state):
+def cooldown(app, role_id):
     info('QUIT')
     exit(0)
-    return main_state # never reached, but keeps the looks functional :)
 
 
-def invalidate(app, role_id, main_state, changeset):
+def invalidate(app, role_id, changeset):
     '''
     invalidate updates the list of potentially modified model instances 
     contained in 'changeset' and re-computes the cached functions
 
-    The invalidation mechanism:
-    a child maintains a list of loaded model instances's ids (a.k.a. database rows),
-    in main_state['loaded_model_ids']. Note this is a list of tuples of (type, ids), no other data,
-    which means the size of the list is in the hundreds of bytes only.
-    This list is simply 'db.session.identity_map.keys()'.
-
     Anytime the web server creates/deletes/updates (but not reads) a resource,
-    it creates a small identity_map for that request. 
+    it reads the identity_map of the sqlalchemy session for that request. 
     The keys of the map is the 'changeset'.
     That 'changeset' gets broadcasted to all cache children.
-    If the intersection of 'changeset' with the main_state['loaded_model_ids'] of a given child is
-    not void, that child must update its cache.
 
     After the update, the child's identity_map now contains the truth,
     meaning it matches the state of the database at the time of the transaction that produced
     the 'changeset'.
     '''
     debug('invalidate changeset: %s', changeset)
-    main_state['loaded_model_ids'] = incremental(app, role_id, changeset)
-    return main_state
+    incremental(app, role_id, changeset)
+
+
