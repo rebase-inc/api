@@ -15,6 +15,13 @@ def get_all_auctions(role_id):
     return get_collection(Auction, auction_views.serializer, role_id)
 
 
+def clear_cache(role_id):
+    current_app.cache_in_redis.delete_memoized(get_all_auctions, Auction, auction_views.serializer, role_id)
+
+
+setattr(get_all_auctions, 'clear_cache', clear_cache)
+
+
 class AuctionCollection(Resource):
     model = Auction
     serializer = auction_views.serializer

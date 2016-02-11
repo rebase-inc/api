@@ -114,3 +114,4 @@ class PermissionMixin(object):
     def __hash__(self):
         return hash(str(self.__cache_repr__()))
 
+

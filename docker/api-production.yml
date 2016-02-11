@@ -4,6 +4,7 @@ common_env:
     REBASE_CLIENT_PORT:
     GITHUB_CLIENT_SECRET:
     SECRET_KEY:
+    PYTHONHASHSEED:
     APP_SETTINGS: "/api/rebase/common/pro.py"
 
 webserver:

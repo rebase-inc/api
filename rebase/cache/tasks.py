@@ -21,14 +21,24 @@ def login(role_id):
 
 
 def warmup(app, role_id, main_state):
+    from rebase.resources.ticket import get_all_tickets
     from rebase.resources.auction import get_all_auctions
+    from rebase.resources.contract import get_all_contracts
+    from rebase.resources.review import get_all_reviews
     login(role_id)
-    app.cache_in_redis.clear()
+    get_all_tickets.clear_cache(role_id)
+    get_all_auctions.clear_cache(role_id)
+    get_all_contracts.clear_cache(role_id)
+    get_all_reviews.clear_cache(role_id)
     app.cache_in_process.clear()
-    with Elapsed(partial(info, 'warmup: running get_all_auctions for {} took %f seconds'.format(role_id))):
-        get_all_auctions(role_id)
+    #with Elapsed(partial(info, 'warmup: running GET (/tickets, /auctions, /contracts, /reviews) for {} took %f seconds'.format(role_id))):
+    debug('warmup started')
+    get_all_tickets(role_id)
+    get_all_auctions(role_id)
+    get_all_contracts(role_id)
+    get_all_reviews(role_id)
+    debug('warmup done')
     main_state['loaded_model_ids'] = ModelIds(DB.session.identity_map.keys())
-    #debug('Keys: %s', app.cache_in_process.keys)
     debug('# of cache keys: %d', len(app.cache_in_process.keys))
     debug('Size of cache keys: %d bytes', getsizeof(app.cache_in_process.keys))
     return main_state
@@ -80,13 +90,24 @@ def invalidate_cache(delete_key, keys, changeset):
 
 
 def incremental(app, role_id, changeset):
+    from rebase.resources.ticket import get_all_tickets
     from rebase.resources.auction import get_all_auctions
+    from rebase.resources.contract import get_all_contracts
+    from rebase.resources.review import get_all_reviews
     login(role_id)
-    app.cache_in_redis.clear()
+    get_all_tickets.clear_cache(role_id)
+    get_all_auctions.clear_cache(role_id)
+    get_all_contracts.clear_cache(role_id)
+    get_all_reviews.clear_cache(role_id)
     invalidate_cache(app.cache_in_process.cache.delete, app.cache_in_process.keys, changeset)
     setattr(app.cache_in_process, 'misses', 0)
-    with Elapsed(partial(info, 'incremental: running get_all_auctions for {} took %f seconds'.format(role_id))):
-        get_all_auctions(role_id)
+    #with Elapsed(partial(info, 'incremental: running get_all_auctions for {} took %f seconds'.format(role_id))):
+    debug('incremental started')
+    get_all_tickets(role_id)
+    get_all_auctions(role_id)
+    get_all_contracts(role_id)
+    get_all_reviews(role_id)
+    debug('incremental done')
     debug('cache misses: %s', app.cache_in_process.misses)
     debug('# of cache keys: %d', len(app.cache_in_process.keys))
     debug('Size of cache keys: %d bytes', getsizeof(app.cache_in_process.keys))
