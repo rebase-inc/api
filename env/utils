@@ -1,3 +1,6 @@
+. env/docker_utils
+_vm
+
 # #
 # Search recursively for pattern in python files located in rebase/.
 # $ py register_route
@@ -10,6 +13,8 @@ py () {
 export REBASE_HOST_PRO=http://rebase-pro.herokuapp.com
 export REBASE_HOST_STAGE=http://rebase-stage.herokuapp.com
 export REBASE_HOST_LOCALHOST=http://127.0.0.1:5000
+export REBASE_HOST_DOCKER="http://$(docker-machine ip default):3000"
+export REBASE_HOST=$REBASE_HOST_DOCKER
 
 stage () {
 	export REBASE_HOST=$REBASE_HOST_STAGE
@@ -61,7 +66,6 @@ rebase-rm () {
 #
 rebase-post () {
 	curl \
-    -v \
     -s \
 	-L \
 	-b $REBASE_COOKIE_JAR \
@@ -159,10 +163,10 @@ abc () {
 }
 
 genkey () {
-	python -c "
+	python3 -c "
 from string import ascii_lowercase
 from os import urandom
-key = ''.join(map(lambda char: ascii_lowercase[char % (len(ascii_lowercase)-1)], urandom(512)))
+key = ''.join(map(lambda char: ascii_lowercase[char % (len(ascii_lowercase)-1)], urandom(1024)))
 print(key)
 "
 }

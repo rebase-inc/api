@@ -14,25 +14,21 @@ from rebase.home.routes import register_home
 from rebase.features import install
 
 
-check(['DATABASE_URL', 'APP_SETTINGS'])
-
 def create_app(testing=False):
     '''
     Use create_app when you need an app to interact with the database
     or Flask at a very low level and basically don't really care abot the routes and widgets.
     Example: in the parsers, in run-workers.
     '''
+    # TODO: check whether we're still using 'testing'
     if testing:
         check(['TEST_URL'])
     app = Flask(__name__, static_url_path='')
     app_context = app.app_context()
     app_context.push()
-    settings = environ['APP_SETTINGS']
-    print('Using rebase configuration: '+settings)
-    app.config.from_object(settings)
-    app.config['SQLALCHEMY_DATABASE_URI'] = environ['TEST_URL'] if testing else environ['DATABASE_URL']
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False 
-    from rebase.common.database import DB, DB_PRODUCTION_NAME
+    app.config.from_object('rebase.common.config.Config')
+    app.config.from_envvar('APP_SETTINGS')
+    from rebase.common.database import DB
     DB.init_app(app)
     toolbar = DebugToolbarExtension(app)
 

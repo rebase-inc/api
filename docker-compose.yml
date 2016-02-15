@@ -1,0 +1,54 @@
+web:
+  extends:
+    service: webserver
+    file: docker/api-dev.yml
+  ports:
+   - "5000:5000"
+  links:
+   - redis
+   - database:db
+
+client:
+  build: ../react-app/
+  ports:
+   - "3000:3000"
+  volumes:
+   - ../react-app:/code
+  links:
+   - web
+  extends:
+    service: common_env
+    file: docker/api-dev.yml
+
+rq_git:
+  extends:
+    service: webserver
+    file: docker/api-dev.yml
+  image: rebase/rq_git
+  ports:
+   - "2222:22"
+  links:
+   - redis
+   - database:db
+  volumes:
+   - git:/git
+
+rq_default:
+  extends:
+    service: webserver
+    file: docker/api-dev.yml
+  links:
+   - redis
+   - database:db
+  command: ["/venv/api/bin/python", "run-worker.py"]
+
+redis:
+  image: redis
+  restart: always
+
+database:
+  image: postgres
+  environment:
+    PGDATA: "/var/lib/postgresql/data/rebase"
+  volumes:
+   - sql:/var/lib/postgresql/data/rebase

@@ -1,0 +1,14 @@
+common_env:
+  environment:
+    REBASE_CLIENT_HOST:
+    REBASE_CLIENT_PORT:
+    GITHUB_CLIENT_SECRET:
+    SECRET_KEY:
+    APP_SETTINGS: "/api/rebase/common/pro.py"
+
+webserver:
+  image: rebase/api
+  volumes:
+   - ..:/api
+  extends:
+    service: common_env
