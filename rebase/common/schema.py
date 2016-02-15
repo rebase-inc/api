@@ -83,6 +83,9 @@ class SecureNestedField(fields.Nested):
 
     @current_app.cache_in_process.memoize(timeout=3600)
     def _serialize_with_user(self, nested_obj, attr, obj, user):
+        if hasattr(nested_obj, '__tablename__') and nested_obj.__tablename__ == 'comment' and nested_obj.content == "plouc":
+            debug('Found plouc!')
+
         if not nested_obj:
             if self.many:
                 return []

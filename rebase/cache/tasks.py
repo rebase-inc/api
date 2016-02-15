@@ -75,7 +75,7 @@ def invalidate_cache(delete_key, keys, changeset):
                         _parent_hash = hash(parent)
                         if _parent_hash in keys:
                             q.put(_parent_hash)
-                            #debug('Found parent %s for instance %s', parent, instance)
+                            debug('Found parent %s for instance %s', parent, instance)
             # now empty the q and delete the corresponding keys from the cache
             while not q.empty():
                 _hash = q.get()
@@ -93,16 +93,19 @@ def incremental(app, role_id, changeset):
     from rebase.resources.contract import get_all_contracts
     from rebase.resources.review import get_all_reviews
     login(role_id)
-    get_all_tickets.clear_cache(role_id)
-    get_all_auctions.clear_cache(role_id)
-    get_all_contracts.clear_cache(role_id)
-    get_all_reviews.clear_cache(role_id)
+    #get_all_tickets.clear_cache(role_id)
+    #get_all_auctions.clear_cache(role_id)
+    #get_all_contracts.clear_cache(role_id)
+    #get_all_reviews.clear_cache(role_id)
+    app.cache_in_redis.clear()
     invalidate_cache(app.cache_in_process.cache.delete, app.cache_in_process.keys, changeset)
     setattr(app.cache_in_process, 'misses', 0)
     #with Elapsed(partial(info, 'incremental: running get_all_auctions for {} took %f seconds'.format(role_id))):
     debug('incremental started')
     get_all_tickets(role_id)
-    get_all_auctions(role_id)
+    response = get_all_auctions(role_id)
+    with open('/tmp/auctions', 'wb') as f:
+        f.write(response.data)
     get_all_contracts(role_id)
     get_all_reviews(role_id)
     debug('incremental done')
