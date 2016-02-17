@@ -11,7 +11,7 @@ def setup_cache(app):
             'CACHE_REDIS_HOST': app.config['REDIS_HOST']
         }
     )
-    setattr(app, 'cache_in_redis', redis)
+    setattr(app, 'redis', redis)
 
     in_process = Cache(
         app, 

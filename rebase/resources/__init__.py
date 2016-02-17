@@ -40,7 +40,7 @@ def _make_cache_key(old_make_cache_key, get_collection, model, serializer, role_
     return old_make_cache_key(get_collection, prefix_hash, role_id, handlers)
 
 
-memoized_get_collection = current_app.cache_in_redis.memoize(timeout=3600)(get_collection)
+memoized_get_collection = current_app.redis.memoize(timeout=3600)(get_collection)
 memoized_get_collection.make_cache_key = partial(_make_cache_key, memoized_get_collection.make_cache_key)
 
 
@@ -56,7 +56,7 @@ def RestfulCollection(model, serializer, deserializer, handlers=None, cache=Fals
         def get_all(role_id):
             return memoized_get_collection(model, serializer, role_id, handlers=_handlers['GET'])
         def clear_cache(role_id):
-            current_app.cache_in_redis.delete_memoized(memoized_get_collection, model, serializer, role_id, _handlers['GET'])
+            current_app.redis.delete_memoized(memoized_get_collection, model, serializer, role_id, _handlers['GET'])
         setattr(get_all, 'clear_cache', clear_cache)
 
     class CustomRestfulCollection(Resource):
