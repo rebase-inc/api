@@ -1,5 +1,4 @@
 from copy import copy
-from logging import debug
 
 from flask import jsonify, request
 from flask.ext.login import current_user, current_app
@@ -7,7 +6,6 @@ from flask.ext.login import current_user, current_app
 from rebase.cache.rq_jobs import invalidate
 from rebase.common.exceptions import NotFoundError
 from rebase.common.database import DB
-from rebase.common.stopwatch import PrintElapsedTime
 
 
 def get_collection(model, serializer, role_id, handlers=None):

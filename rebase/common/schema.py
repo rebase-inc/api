@@ -83,7 +83,6 @@ class SecureNestedField(fields.Nested):
 
     @current_app.cache_in_process.memoize(timeout=3600)
     def _serialize_with_user(self, nested_obj, attr, obj, user):
-
         if not nested_obj:
             if self.many:
                 return []

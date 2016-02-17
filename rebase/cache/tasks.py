@@ -1,12 +1,14 @@
-from functools import partial
 from logging import info, debug, error
 from queue import Queue
 from sys import exit
 
 from flask.ext.login import login_user
 
-from rebase.common.stopwatch import Elapsed
+from rebase.common.stopwatch import DebugElapsedTime
 from rebase.models import Role
+
+
+elapsed_time = DebugElapsedTime(start='Start get_collections', stop='Stop get_collections, Elapsed: %f seconds')
 
 
 def login(role_id):
@@ -44,10 +46,8 @@ def warmup(app, role_id):
     login(role_id)
     clear_collections_from_redis(role_id)
     app.cache_in_process.clear()
-    #with Elapsed(partial(info, 'warmup: running GET (/tickets, /auctions, /contracts, /reviews) for {} took %f seconds'.format(role_id))):
-    debug('warmup started')
-    get_collections(role_id)
-    debug('warmup done')
+    with elapsed_time:
+        get_collections(role_id)
 
 
 def invalidate_cache(delete_key, keys, changeset):
@@ -100,10 +100,8 @@ def incremental(app, role_id, changeset):
     clear_collections_from_redis(role_id)
     invalidate_cache(app.cache_in_process.cache.delete, app.cache_in_process.keys, changeset)
     setattr(app.cache_in_process, 'misses', 0)
-    #with Elapsed(partial(info, 'incremental: running get_all_auctions for {} took %f seconds'.format(role_id))):
-    debug('incremental started')
-    get_collections(role_id)
-    debug('incremental done')
+    with elapsed_time:
+        get_collections(role_id)
     debug('cache misses: %s', app.cache_in_process.misses)
 
 
