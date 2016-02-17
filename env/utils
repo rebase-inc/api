@@ -149,6 +149,26 @@ rebase-ticket-comment() {
     comments
 }
 
+
+# rebase-bid <auction-id> <contractor-id> <snapshot-id> <price>
+rebase-bid() {
+    rebase-post \
+    "{ \
+        \"bid\": { \
+            \"auction\":    { \"id\": $1 }, \
+            \"contractor\": { \"id\": $2 }, \
+            \"work_offers\": [ \
+                { \
+                    \"ticket_snapshot\": { \"id\": $3 }, \
+                    \"price\": $4, \
+                    \"contractor\": { \"id\": $2 } \
+                } \
+            ] \
+        } \
+    }" \
+    /auctions/$1/bid_events
+}
+
 extract_session () {
 	awk "/$1.*session/ { printf(\"%s=%s\", \$6, \$7) }" $REBASE_COOKIE_JAR
 }

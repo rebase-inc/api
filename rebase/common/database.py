@@ -1,4 +1,3 @@
-from functools import lru_cache
 
 from flask.ext.sqlalchemy import SQLAlchemy
 
@@ -67,7 +66,6 @@ class PermissionMixin(object):
         return cls.query_from_class_to_user(cls.as_contractor_path, user)
 
     @classmethod
-    @lru_cache(maxsize=None)
     def as_manager(cls, user):
         if cls.as_manager_path == None:
             raise AsManagerPathUndefined(cls)
@@ -91,7 +89,6 @@ class PermissionMixin(object):
         return cls.role_to_query_fn(user)(user)
 
     @classmethod
-    @lru_cache(maxsize=None)
     def found(cls, self, user):
         '''
         Returns True is 'user' can retrieve 'self' via one of the permitted paths (i.e. as_owner_path, as_contractor_path or as_manager_path).

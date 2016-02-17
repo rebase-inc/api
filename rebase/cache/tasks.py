@@ -5,8 +5,6 @@ from sys import exit, getsizeof
 
 from flask.ext.login import login_user
 
-from rebase.cache.model_ids import ModelIds
-from rebase.common.database import DB
 from rebase.common.stopwatch import Elapsed
 from rebase.models import Role
 
@@ -67,15 +65,15 @@ def invalidate_cache(delete_key, keys, changeset):
                 # _id is a new obj that's never been cached, so we need to find its parents
                 instance = type_obj.query.get(_id)
                 foreign_keys = instance.__table__.foreign_keys
-                if not foreign_keys:
-                    debug('%s was not found in cache and does not have any parent, skipping invalidation', instance)
+                #if not foreign_keys:
+                    #debug('%s was not found in cache and does not have any parent, skipping invalidation', instance)
                 for fk in foreign_keys:
                     parent = getattr(instance, fk.column.table.name, None)
                     if parent:
                         _parent_hash = hash(parent)
                         if _parent_hash in keys:
                             q.put(_parent_hash)
-                            debug('Found parent %s for instance %s', parent, instance)
+                            #debug('Found parent %s for instance %s', parent, instance)
             # now empty the q and delete the corresponding keys from the cache
             while not q.empty():
                 _hash = q.get()
@@ -93,19 +91,16 @@ def incremental(app, role_id, changeset):
     from rebase.resources.contract import get_all_contracts
     from rebase.resources.review import get_all_reviews
     login(role_id)
-    #get_all_tickets.clear_cache(role_id)
-    #get_all_auctions.clear_cache(role_id)
-    #get_all_contracts.clear_cache(role_id)
-    #get_all_reviews.clear_cache(role_id)
-    app.cache_in_redis.clear()
+    get_all_tickets.clear_cache(role_id)
+    get_all_auctions.clear_cache(role_id)
+    get_all_contracts.clear_cache(role_id)
+    get_all_reviews.clear_cache(role_id)
     invalidate_cache(app.cache_in_process.cache.delete, app.cache_in_process.keys, changeset)
     setattr(app.cache_in_process, 'misses', 0)
     #with Elapsed(partial(info, 'incremental: running get_all_auctions for {} took %f seconds'.format(role_id))):
     debug('incremental started')
     get_all_tickets(role_id)
-    response = get_all_auctions(role_id)
-    with open('/tmp/auctions', 'wb') as f:
-        f.write(response.data)
+    get_all_auctions(role_id)
     get_all_contracts(role_id)
     get_all_reviews(role_id)
     debug('incremental done')
