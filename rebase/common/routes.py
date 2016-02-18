@@ -179,6 +179,5 @@ def register_routes(api):
     import rebase.views.feedback as f_view
     add_restful_endpoint(api, Feedback, f_view.serializer, f_view.deserializer, f_view.update_deserializer)
 
-    from rebase.models.comment import Comment
-    import rebase.views.comment as c_view
-    add_restful_endpoint(api, Comment, c_view.serializer, c_view.deserializer, c_view.update_deserializer)
+    from rebase.resources.comment import add_comment_resource
+    add_comment_resource(api)
