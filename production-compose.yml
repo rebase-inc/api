@@ -16,6 +16,14 @@ cache:
    - database:db
   command: ["/api/cache"]
 
+scheduler:
+  extends:
+    service: webserver
+    file: docker/api-production.yml
+  links:
+   - database:db
+  command: ["/venv/api/bin/python", "scheduler.py"]
+
 client:
   image: rebase/client-production
   volumes:
