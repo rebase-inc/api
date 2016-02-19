@@ -1,27 +1,17 @@
-from logging import warning
 
 from flask import current_app
 
 from rebase.common.keys import make_collection_url, make_resource_url
+from rebase.github.rq_jobs import save_comment
 from rebase.models.comment import Comment
 from rebase.resources import RestfulResource, RestfulCollection
 import rebase.views.comment as comment_views
 
 
-def push_to_github(account_id, comment_id):
-    session = make_admin_github_session(account_id)
-    new_comment = Comment.query.get(comment_id)
-    if not new_comment:
-        warning('There is no comment with id %d', comment_id)
-    else:
-        info('Push new comment to Github: %s', new_comment)
-        #session.api.post(repo_url+'/repos/:owner/:repo/issues/:number/comments').data
-
-
 def enqueue_push_to_github(new_comment):
     if new_comment.ticket and new_comment.ticket.discriminator == 'github_ticket':
         current_app.default_queue.enqueue(
-            push_to_github,
+            save_comment,
             new_comment.ticket.project.organization.accounts[0].account.id,
             new_comment.id
         )
