@@ -3,8 +3,7 @@ from os.path import join
 from flask import current_app
 from marshmallow import fields, post_load
 
-from rebase.common.database import get_or_make_object, SecureNestedField
-from rebase.common.schema import RebaseSchema
+from rebase.common.schema import RebaseSchema, SecureNestedField
 from rebase.views.ticket_set import TicketSetSchema
 from rebase.views.term_sheet import TermSheetSchema
 from rebase.views.nomination import NominationSchema

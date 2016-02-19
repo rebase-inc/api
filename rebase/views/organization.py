@@ -1,11 +1,12 @@
 from marshmallow import fields, post_load
-from rebase.common.schema import RebaseSchema
+
+from rebase.common.schema import RebaseSchema, SecureNestedField
 from rebase.models.organization import Organization
+from rebase.views.bank_account import BankAccountSchema
 from rebase.views.manager import ManagerSchema
 from rebase.views.project import ProjectSchema
-from rebase.views.bank_account import BankAccountSchema
 from rebase.views.user import UserSchema
-from rebase.common.database import SecureNestedField
+
 
 class OrganizationSchema(RebaseSchema):
     id =            fields.Integer()
@@ -20,7 +21,7 @@ class OrganizationSchema(RebaseSchema):
         from rebase.models import Organization
         return self._get_or_make_object(Organization, data)
 
+
 serializer = OrganizationSchema(exclude=('user',))
 deserializer = OrganizationSchema(only=('name','user'))
-
 update_deserializer = OrganizationSchema(only=('name',), context={'raw': True})

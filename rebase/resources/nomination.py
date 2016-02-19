@@ -1,6 +1,6 @@
 from flask import current_app
 
-from rebase.common.database import make_collection_url, make_resource_url
+from rebase.common.keys import make_collection_url, make_resource_url
 from rebase.models import Nomination
 from rebase.resources import RestfulResource, RestfulCollection
 from rebase.git.users import generate_authorized_users

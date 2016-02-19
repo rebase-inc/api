@@ -1,10 +1,10 @@
 
 from marshmallow import fields, post_load
 
-from rebase.common.schema import RebaseSchema
-from rebase.models.work_repo import WorkRepo
-from rebase.common.database import get_or_make_object, SecureNestedField
+from rebase.common.schema import RebaseSchema, SecureNestedField
 from rebase.models import WorkRepo
+from rebase.models.work_repo import WorkRepo
+
 
 class WorkRepoSchema(RebaseSchema):
     model = WorkRepo
@@ -17,6 +17,7 @@ class WorkRepoSchema(RebaseSchema):
     @post_load
     def make_work_repo(self, data):
         self._get_or_make_object(data)
+
 
 serializer = WorkRepoSchema()
 deserializer = WorkRepoSchema(only=tuple()) # TODO: Use load_only/dump_only instead

@@ -1,0 +1,12 @@
+common_env:
+  environment:
+    REBASE_CLIENT_HOST: "192.168.99.100"
+    REBASE_CLIENT_PORT: 3000
+    PYTHONHASHSEED: 2592602613
+
+webserver:
+  image: rebase/api
+  volumes:
+   - ..:/api
+  extends:
+    service: common_env

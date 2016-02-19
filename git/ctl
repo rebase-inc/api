@@ -1,0 +1,3 @@
+!/bin/bash
+
+/venv/super/bin/supervisorctl -c /etc/git/supervisor.conf

@@ -1,7 +1,7 @@
 from marshmallow import fields, post_load
-from rebase.common.schema import RebaseSchema
 
-from rebase.common.database import SecureNestedField
+from rebase.common.schema import RebaseSchema, SecureNestedField
+
 
 class BankAccountSchema(RebaseSchema):
     id =             fields.Integer()
@@ -16,8 +16,8 @@ class BankAccountSchema(RebaseSchema):
         from rebase.models import BankAccount
         return self._get_or_make_object(BankAccount, data)
 
+
 serializer = BankAccountSchema()
 deserializer = BankAccountSchema(exclude=('id',), strict=True)
-
 update_deserializer =   BankAccountSchema(only=('id', 'name',), context={'raw': True})
 

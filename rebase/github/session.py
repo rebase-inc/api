@@ -49,8 +49,8 @@ def make_session(github_account, app, user, db):
     return GithubSession(github, github_account, user, db)
 
 def make_admin_github_session(account_id):
-    from rebase import create_app
-    app, _, db = create_app()
+    from rebase.app import create
+    app, _, db = create()
     user = User('RQ', 'RQ', 'RQ')
     user.admin = True
     github_account = GithubAccount.query.filter(GithubAccount.id==account_id).first()

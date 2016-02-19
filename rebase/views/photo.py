@@ -1,7 +1,7 @@
 from marshmallow import fields
-from rebase.common.schema import RebaseSchema
 
-from rebase.common.database import get_or_make_object, SecureNestedField
+from rebase.common.schema import RebaseSchema, SecureNestedField
+
 
 class PhotoSchema(RebaseSchema):
     id =  fields.Integer()

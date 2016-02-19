@@ -1,45 +1,32 @@
+from flask import current_app
 from flask.ext.restful import Resource
-from flask.ext.login import login_required, current_user
-from flask import jsonify, make_response, request
+from flask.ext.login import login_required
+from flask import jsonify, request
 
-from rebase.models import Auction, Role
-from rebase.views import auction as auction_views
 from rebase.common.database import DB
 from rebase.common.state import ManagedState
-from rebase.common.rest import get_collection, add_to_collection, get_resource, update_resource, delete_resource
+from rebase.models import Auction
+from rebase.resources import RestfulResource, RestfulCollection
+from rebase.views import auction as auction_views
 
-class AuctionCollection(Resource):
-    model = Auction
-    serializer = auction_views.serializer
-    deserializer = auction_views.deserializer
-    url = '/{}'.format(model.__pluralname__)
 
-    @login_required
-    def get(self):
-        return get_collection(self.model, self.serializer)
+AuctionResource = RestfulResource(
+    Auction,
+    auction_views.serializer,
+    auction_views.deserializer,
+    auction_views.update_deserializer,
+)
 
-    @login_required
-    def post(self):
-        return add_to_collection(self.model, self.deserializer, self.serializer)
 
-class AuctionResource(Resource):
-    model = Auction
-    serializer = auction_views.serializer
-    deserializer = auction_views.deserializer
-    update_deserializer = auction_views.update_deserializer
-    url = '/{}/<int:id>'.format(model.__pluralname__)
+AuctionCollection = RestfulCollection(
+    Auction,
+    auction_views.serializer,
+    auction_views.deserializer,
+    cache=True
+)
 
-    @login_required
-    def get(self, id):
-        return get_resource(self.model, id, self.serializer)
 
-    @login_required
-    def put(self, id):
-        return update_resource(self.model, id, self.update_deserializer, self.serializer)
-
-    @login_required
-    def delete(self, id):
-        return delete_resource(self.model, id)
+get_all_auctions = AuctionCollection.get_all
 
 class AuctionBidEvents(Resource):
 
@@ -57,6 +44,7 @@ class AuctionBidEvents(Resource):
         response.status_code = 201
         return response
 
+
 class AuctionEndEvents(Resource):
 
     @login_required
@@ -72,6 +60,7 @@ class AuctionEndEvents(Resource):
         response = jsonify(auction = auction_views.serializer.dump(single_auction).data)
         response.status_code = 201
         return response
+
 
 class AuctionFailEvents(Resource):
 

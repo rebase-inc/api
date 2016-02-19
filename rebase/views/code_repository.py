@@ -1,7 +1,8 @@
 from marshmallow import fields, post_load
-from rebase.common.schema import RebaseSchema
+
+from rebase.common.schema import RebaseSchema, SecureNestedField
 from rebase.models.code_repository import CodeRepository
-from rebase.common.database import get_or_make_object, SecureNestedField
+
 
 class CodeRepositorySchema(RebaseSchema):
     id =   fields.Integer()
@@ -12,7 +13,7 @@ class CodeRepositorySchema(RebaseSchema):
         from rebase.models import CodeRepository
         return self._get_or_make_object(CodeRepository, data)
 
+
 serializer = CodeRepositorySchema()
 deserializer = CodeRepositorySchema(only=tuple())
 update_deserializer = CodeRepositorySchema(context={'raw': True})
-

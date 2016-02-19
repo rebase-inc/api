@@ -22,7 +22,7 @@ class UserCollection(Resource):
 
     @login_required
     def get(self):
-        return get_collection(self.model, self.serializer)
+        return get_collection(self.model, self.serializer, current_user.current_role.id)
 
     def post(self):
         return add_to_collection(self.model, self.deserializer, self.serializer)
@@ -31,7 +31,6 @@ def update_current_role(user):
     if user == current_user:
         role_id = str(user.current_role.id)
         session['role_id'] = role_id
-        return user
     return user
 
 resource_handlers = {

@@ -1,8 +1,8 @@
 from marshmallow import fields, post_load
-from rebase.common.schema import RebaseSchema
 
+from rebase.common.schema import RebaseSchema, SecureNestedField
 from rebase.views.bid_limit import BidLimitSchema
-from rebase.common.database import get_or_make_object, SecureNestedField
+
 
 class TicketSetSchema(RebaseSchema):
     id =          fields.Integer()
@@ -14,6 +14,7 @@ class TicketSetSchema(RebaseSchema):
     def make_ticket_set(self, data):
         from rebase.models import TicketSet
         return self._get_or_make_object(TicketSet, data)
+
 
 serializer = TicketSetSchema()
 deserializer = TicketSetSchema(strict=True)

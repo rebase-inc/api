@@ -1,5 +1,4 @@
 import datetime
-from functools import lru_cache
 
 from flask.ext.login import login_user, logout_user
 from sqlalchemy import and_
@@ -9,6 +8,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 from rebase.common.database import DB, PermissionMixin
 from rebase.common.query import query_from_class_to_user
+
 
 class User(DB.Model, PermissionMixin):
     __pluralname__ = 'users'
@@ -70,7 +70,6 @@ class User(DB.Model, PermissionMixin):
             .union(cls.as_contractor_get_cleared_contractors(user))
 
     @classmethod
-    @lru_cache(maxsize=None)
     def as_manager(cls, user):
         '''
         As a manager, there are 3 types of users you can read:
@@ -194,4 +193,6 @@ class User(DB.Model, PermissionMixin):
 
     def __repr__(self):
         return '<User[id:{}] {} email={}>'.format(self.id, self.name, self.email)
+
+
 

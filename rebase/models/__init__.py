@@ -1,7 +1,6 @@
 from inspect import isclass
 from sys import modules
 
-from rebase.common.database import DB
 from rebase.models.bid_limit import *
 from rebase.models.contract import *
 from rebase.models.bid import *

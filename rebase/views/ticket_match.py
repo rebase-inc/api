@@ -1,9 +1,9 @@
 from marshmallow import fields, post_load
-from rebase.common.schema import RebaseSchema
-from rebase.common.database import get_or_make_object, SecureNestedField
-from rebase.common.utils import get_model_primary_keys
+
+from rebase.common.schema import RebaseSchema, SecureNestedField
 from rebase.models import TicketMatch
 from rebase.views.job_fit import JobFitSchema
+
 
 class TicketMatchSchema(RebaseSchema):
     skill_requirement_id =  fields.Integer()
@@ -16,6 +16,7 @@ class TicketMatchSchema(RebaseSchema):
     @post_load
     def make_ticket_match(self, data):
         return self._get_or_make_object(TicketMatch, data)
+
 
 serializer =            TicketMatchSchema()
 deserializer =          TicketMatchSchema(strict=True)

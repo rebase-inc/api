@@ -1,8 +1,8 @@
-from marshmallow import fields, post_load
-from rebase.common.schema import RebaseSchema
 
-from rebase.views import NamespacedSchema
-from rebase.common.database import get_or_make_object, SecureNestedField
+from marshmallow import fields, post_load
+
+from rebase.common.schema import RebaseSchema, SecureNestedField
+
 
 class CommentSchema(RebaseSchema):
     id =        fields.Integer()

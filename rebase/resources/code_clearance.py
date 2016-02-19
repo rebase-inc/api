@@ -1,6 +1,6 @@
 from flask import current_app
 
-from rebase.common.database import make_collection_url, make_resource_url
+from rebase.common.keys import make_collection_url, make_resource_url
 from rebase.models import CodeClearance
 from rebase.resources import RestfulResource, RestfulCollection
 from rebase.git.users import generate_authorized_users
@@ -9,7 +9,7 @@ import rebase.views.code_clearance as code_clearance_views
 
 def update_git_server_authorized_users(clearance):
     current_app.git_queue.enqueue(generate_authorized_users, clearance.project.id)
-    return manager
+    return clearance
 
 resource_handlers = {
     'DELETE': {

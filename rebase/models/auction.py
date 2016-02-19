@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from functools import lru_cache
 
 from flask.ext.login import current_app
 from sqlalchemy.orm import validates
@@ -10,6 +9,7 @@ from rebase.common.exceptions import NoRole, UnknownRole, BadBid
 from rebase.common.query import query_from_class_to_user
 from rebase.common.state import StateMachine
 from rebase.models import BidLimit, Contract, Bid
+
 
 class Auction(DB.Model, PermissionMixin):
     __pluralname__ = 'auctions'
@@ -79,7 +79,6 @@ class Auction(DB.Model, PermissionMixin):
     allowed_to_be_modified_by = allowed_to_be_created_by
     allowed_to_be_deleted_by = allowed_to_be_created_by
 
-    @lru_cache(maxsize=None)
     def allowed_to_be_viewed_by(self, user):
         if user.is_admin():
             return True
@@ -109,6 +108,7 @@ class Auction(DB.Model, PermissionMixin):
         if not isinstance(value, datetime):
             raise ValueError('{} field on {} must be {}'.format(field, self.__tablename__, datetime))
         return value
+
 
 class AuctionStateMachine(StateMachine):
 
@@ -148,3 +148,5 @@ class AuctionStateMachine(StateMachine):
         self.add_event_transitions('bid', {self.created: self.waiting_for_bids, self.waiting_for_bids:self.waiting_for_bids})
         self.add_event_transitions('fail', {self.created:self.failed, self.waiting_for_bids:self.failed})
         self.add_event_transitions('end', {self.waiting_for_bids:self.ended})
+
+

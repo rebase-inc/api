@@ -1,6 +1,7 @@
 from marshmallow import fields, post_load
-from rebase.common.schema import RebaseSchema
-from rebase.common.database import SecureNestedField
+
+from rebase.common.schema import RebaseSchema, SecureNestedField
+
 
 class DebitSchema(RebaseSchema):
 
@@ -14,7 +15,7 @@ class DebitSchema(RebaseSchema):
         from rebase.models import Debit
         return self._get_or_make_object(Debit, data)
 
+
 serializer = DebitSchema()
 deserializer = DebitSchema(only=('work','price'))
-
 update_deserializer = DebitSchema(only=tuple(), context={'raw': True}, strict=True)

@@ -1,9 +1,10 @@
 from marshmallow import fields, post_load
-from rebase.common.schema import RebaseSchema
+
+from rebase.common.schema import RebaseSchema, SecureNestedField
 from rebase.models.github_project import GithubProject
-from rebase.common.database import SecureNestedField
 from rebase.views.github_repository import GithubRepositorySchema
 from rebase.views.work_repo import WorkRepoSchema
+
 
 class GithubProjectSchema(RebaseSchema):
 

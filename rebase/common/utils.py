@@ -6,7 +6,7 @@ from keyword import kwlist
 
 from sqlalchemy.inspection import inspect
 
-from rebase.common.database import get_model_primary_keys, make_collection_url, ids
+from rebase.common.keys import get_model_primary_keys, make_collection_url, ids
 
 def plural(text):
     known_forms = {

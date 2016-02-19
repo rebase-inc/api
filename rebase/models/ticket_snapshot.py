@@ -1,8 +1,8 @@
 from datetime import datetime
-from functools import lru_cache, partialmethod
 
-from rebase.common.database import DB, PermissionMixin, query_by_user_or_id
+from rebase.common.database import DB, PermissionMixin
 from rebase.common.query import query_from_class_to_user
+
 
 class TicketSnapshot(DB.Model, PermissionMixin):
     __pluralname__ = 'ticket_snapshots'
@@ -18,7 +18,6 @@ class TicketSnapshot(DB.Model, PermissionMixin):
         self.ticket = ticket
         self.title = ticket.title
 
-
     @classmethod
     def as_owner(cls, user):
         return cls.as_manager(user)
@@ -28,7 +27,6 @@ class TicketSnapshot(DB.Model, PermissionMixin):
         return cls.as_contractor_work_offers(user).union(cls.as_contractor_auctions(user))
 
     @classmethod
-    @lru_cache(maxsize=None)
     def as_manager(cls, user):
         import rebase.models
         return query_from_class_to_user(TicketSnapshot, [
@@ -72,3 +70,5 @@ class TicketSnapshot(DB.Model, PermissionMixin):
 
     def __repr__(self):
         return '<TicketSnapshot[id:{}] "{}" date={} ticket_id={}>'.format(self.id, self.title, self.date, self.ticket_id)
+
+

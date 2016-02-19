@@ -1,5 +1,5 @@
 from rebase.resources import add_restful_endpoint, RestfulResource
-from rebase.common.database import make_resource_url
+from rebase.common.keys import make_resource_url
 
 def register_routes(api):
 
@@ -56,13 +56,12 @@ def register_routes(api):
     import rebase.views.internal_ticket as it_view
     add_restful_endpoint(api, InternalTicket, it_view.serializer, it_view.deserializer, it_view.update_deserializer)
 
+    from rebase.resources.ticket import add_ticket_resource
+    add_ticket_resource(api)
+
     from rebase.models.github_ticket import GithubTicket
     import rebase.views.github_ticket as gt_view
     add_restful_endpoint(api, GithubTicket, gt_view.serializer, gt_view.deserializer, gt_view.update_deserializer)
-
-    from rebase.models.ticket import Ticket
-    import rebase.views.ticket as t_view
-    add_restful_endpoint(api, Ticket, t_view.serializer, t_view.deserializer, t_view.update_deserializer)
 
     from rebase.models.bid_limit import BidLimit
     import rebase.views.bid_limit as bl_view
@@ -83,13 +82,11 @@ def register_routes(api):
     from rebase.resources.manager import add_manager_resource
     add_manager_resource(api)
 
-    from rebase.models.work import Work
-    import rebase.views.work as w_view
-    add_restful_endpoint(api, Work, w_view.serializer, w_view.deserializer, w_view.update_deserializer)
+    from rebase.resources.work import add_work_resource
+    add_work_resource(api)
 
-    from rebase.models.review import Review
-    import rebase.views.review as r_view
-    add_restful_endpoint(api, Review, r_view.serializer, r_view.deserializer, r_view.update_deserializer)
+    from rebase.resources.review import add_review_resource
+    add_review_resource(api)
 
     from rebase.resources.project import add_project_resource
     add_project_resource(api)
@@ -175,14 +172,12 @@ def register_routes(api):
     import rebase.views.term_sheet as ts_view
     add_restful_endpoint(api, TermSheet, ts_view.serializer, ts_view.deserializer, ts_view.update_deserializer)
 
-    from rebase.models.contract import Contract
-    import rebase.views.contract as c_view
-    add_restful_endpoint(api, Contract, c_view.serializer, c_view.deserializer, c_view.update_deserializer)
+    from rebase.resources.contract import add_contract_resource
+    add_contract_resource(api)
 
     from rebase.models.feedback import Feedback
     import rebase.views.feedback as f_view
     add_restful_endpoint(api, Feedback, f_view.serializer, f_view.deserializer, f_view.update_deserializer)
 
-    from rebase.models.comment import Comment
-    import rebase.views.comment as c_view
-    add_restful_endpoint(api, Comment, c_view.serializer, c_view.deserializer, c_view.update_deserializer)
+    from rebase.resources.comment import add_comment_resource
+    add_comment_resource(api)

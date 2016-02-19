@@ -1,8 +1,8 @@
 from math import sqrt
 
 from marshmallow import fields, post_load
-from rebase.common.schema import RebaseSchema
-from rebase.common.database import SecureNestedField
+
+from rebase.common.schema import RebaseSchema, SecureNestedField
 from rebase.common.utils import get_model_primary_keys
 from rebase.models import JobFit
 from rebase.views.nomination import NominationSchema

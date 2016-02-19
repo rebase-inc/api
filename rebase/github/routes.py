@@ -8,9 +8,9 @@ from rebase.github import create_github_app
 from rebase.github.languages import detect_languages
 from rebase.github.scanners import (
     import_github_repos,
-    make_session,
     extract_repos_info,
 )
+from rebase.github.session import make_session
 from rebase.models.contractor import Contractor
 from rebase.models.github_account import GithubAccount
 from rebase.models.remote_work_history import RemoteWorkHistory

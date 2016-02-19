@@ -1,7 +1,8 @@
 from marshmallow import fields, post_load
-from rebase.common.schema import RebaseSchema
-from rebase.common.database import get_or_make_object, SecureNestedField
+
+from rebase.common.schema import RebaseSchema, SecureNestedField
 from rebase.models import WorkOffer
+
 
 class WorkOfferSchema(RebaseSchema):
 
@@ -20,6 +21,7 @@ class WorkOfferSchema(RebaseSchema):
     @post_load
     def make_work_offer(self, data):
         return self._get_or_make_object(WorkOffer, data)
+
 
 serializer = WorkOfferSchema()
 deserializer = WorkOfferSchema(strict=True)

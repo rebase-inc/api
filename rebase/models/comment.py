@@ -1,7 +1,7 @@
 from datetime import datetime
 
-from rebase.common.database import DB, PermissionMixin, query_by_user_or_id
-from rebase.common.query import query_from_class_to_user
+from rebase.common.database import DB, PermissionMixin
+from rebase.common.query import query_from_class_to_user, query_by_user_or_id
 
 class Comment(DB.Model, PermissionMixin):
     __pluralname__ = 'comments'

@@ -1,8 +1,6 @@
 from marshmallow import fields, post_load
-from rebase.common.schema import RebaseSchema
+from rebase.common.schema import RebaseSchema, SecureNestedField
 
-from rebase.views.ticket_set import TicketSetSchema
-from rebase.common.database import get_or_make_object, SecureNestedField
 
 class ContractSchema(RebaseSchema):
     id =  fields.Integer()

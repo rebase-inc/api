@@ -1,8 +1,8 @@
 
 from marshmallow import fields, post_load
 
-from rebase.common.schema import RebaseSchema
-from rebase.common.database import SecureNestedField
+from rebase.common.schema import RebaseSchema, SecureNestedField
+
 
 class BlockageSchema(RebaseSchema):
     id =            fields.Integer()

@@ -1,6 +1,6 @@
 from marshmallow import fields, post_load
-from rebase.common.schema import RebaseSchema
-from rebase.common.database import get_or_make_object, SecureNestedField
+from rebase.common.schema import RebaseSchema, SecureNestedField
+
 
 class CreditSchema(RebaseSchema):
 

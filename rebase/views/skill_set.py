@@ -1,11 +1,10 @@
 from flask.ext.restful import abort
 from marshmallow import fields, post_load
-from rebase.common.schema import RebaseSchema
+from rebase.common.schema import RebaseSchema, SecureNestedField
 
 from rebase.models.skill_set import SkillSet
 from rebase.models.contractor import Contractor
 from rebase.views.contractor import ContractorSchema
-from rebase.common.database import get_or_make_object, SecureNestedField
 
 class DictField(fields.Field):
 

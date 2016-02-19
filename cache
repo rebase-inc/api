@@ -1,0 +1,75 @@
+#!/venv/api/bin/python
+
+from functools import partial
+from http.server import HTTPServer, BaseHTTPRequestHandler
+import logging
+from multiprocessing import current_process
+from pickle import dumps, loads
+from queue import Empty
+from signal import signal, sigwait, SIGTERM, SIGQUIT, SIGINT
+from sys import exit
+from threading import Thread, current_thread
+
+from rebase.cache.process import CacheProcess
+from rebase.cache.request import CacheHandler
+
+
+def quit(sig, frame, server, processes):
+    server.shutdown()
+    for process in processes.values():
+        process.q.put({'action': 'cooldown'})
+        process.join()
+    exit()
+
+def refresh(processes):
+    return {
+        role_id: process for role_id, process in processes.items() if process.is_alive()
+    }
+
+def main():
+    current_process().name = 'Cache'
+    current_thread().name = 'main'
+    logging.basicConfig(
+        filename='/log/cache.log',
+        level=logging.DEBUG,
+        format='%(asctime)s %(levelname)s {%(processName)s[%(process)d] %(threadName)s} %(message)s'
+    )
+    processes = dict()
+    server = HTTPServer(('0.0.0.0', 5000), CacheHandler)
+    _quit = partial(quit, server=server, processes=processes)
+    signal(SIGTERM, _quit)
+    signal(SIGQUIT, _quit)
+    signal(SIGINT, _quit)
+    ip, port = server.server_address
+
+    server_thread = Thread(name='http', target=server.serve_forever)
+    server_thread.daemon = True
+    server_thread.start()
+    logging.info('HTTP server is listening at {}:{}'.format(ip, port))
+
+    while True:
+        try:
+            task = CacheHandler.q.get(timeout=10)
+        except Empty as e:
+            # processes may timeout if no action is sent to them for a while,
+            # so we need to keep the 'processes' dict up-to-date
+            processes = refresh(processes)
+            continue
+        #logging.debug('Received task: {}'.format(task))
+        CacheHandler.q.task_done()
+        processes = refresh(processes)
+        _id  = task['id']
+        if _id == 0:
+            # broadcast to all children
+            for process in processes.values():
+                process.q.put(task)
+            continue
+        if _id not in processes:
+            # create a new child process for this role
+            processes[_id] = CacheProcess(_id)
+            logging.debug('Processes: {}'.format(processes))
+        processes[_id].q.put(task)
+
+
+if __name__ == '__main__':
+    main()
