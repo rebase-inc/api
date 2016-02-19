@@ -1,8 +1,8 @@
 from collections import defaultdict
 from functools import wraps, partial
-from logging import debug
+from logging import warning
 from sys import exc_info
-from traceback import print_exc
+from traceback import format_exc
 
 from flask import current_app
 from flask.ext.restful import Resource
@@ -23,7 +23,7 @@ def convert_exceptions(verb):
         except ClientError as client_error:
             raise client_error
         except Exception as e:
-            print_exc(file=current_app.config['WEB_LOG_FILENAME'])
+            warning(format_exc())
             raise ServerError(message='Server error')
     return _handle_other_exceptions
 
@@ -51,13 +51,15 @@ def RestfulCollection(model, serializer, deserializer, handlers=None, cache=Fals
     '''
     _handlers = default_to_None(handlers)
 
-    get_all = partial(get_collection, model=model, serializer=serializer, handlers=_handlers['GET'])
     if cache:
         def get_all(role_id):
             return memoized_get_collection(model, serializer, role_id, handlers=_handlers['GET'])
         def clear_cache(role_id):
             current_app.redis.delete_memoized(memoized_get_collection, model, serializer, role_id, _handlers['GET'])
         setattr(get_all, 'clear_cache', clear_cache)
+    else:
+        def get_all(role_id):
+            return get_collection(model, serializer, role_id, handlers=_handlers['GET'])
 
     class CustomRestfulCollection(Resource):
 

@@ -19,11 +19,11 @@ function _shell() {
 }
 
 function _recreate() {
-    docker exec -t api_web_1 /venv/api/bin/python manage data recreate
+    docker exec -t api_rq_git_1 /venv/api/bin/python manage data recreate
 }
 
 function _populate() {
-    docker exec -t api_web_1 /venv/api/bin/python manage data populate
+    docker exec -t api_rq_git_1 /venv/api/bin/python manage data populate
 }
 
 function _log_cache() {
@@ -40,4 +40,8 @@ function _error_log() {
 
 function _web_log() {
     docker exec -t api_web_1 tail -f /log/rebase_web.log
+}
+
+function _super() {
+    docker exec -t api_rq_git_1 /venv/super/bin/supervisorctl -c /etc/git/supervisor.conf
 }
