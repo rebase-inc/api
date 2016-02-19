@@ -7,6 +7,15 @@ web:
    - database:db
   command: ["/venv/api/bin/gunicorn", "-c", "/api/etc/gunicorn.pro.conf", "wsgi:app"]
 
+cache:
+  extends:
+    service: webserver
+    file: docker/api-production.yml
+  links:
+   - redis
+   - database:db
+  command: ["/api/cache"]
+
 client:
   image: rebase/client-production
   volumes:
@@ -20,11 +29,13 @@ rq_git:
     service: webserver
     file: docker/api-production.yml
   image: rebase/rq_git
+  ports:
+   - "2222:22"
   links:
    - redis
    - database:db
-  ports:
-   - "2222:22"
+  volumes:
+   - git:/git
 
 rq_default:
   extends:
@@ -33,6 +44,7 @@ rq_default:
   links:
    - redis
    - database:db
+   - cache
   command: ["/venv/api/bin/python", "run-worker.py"]
 
 nginx:
@@ -50,3 +62,7 @@ redis:
 
 database:
   image: postgres
+  environment:
+    PGDATA: "/var/lib/postgresql/data/rebase"
+  volumes:
+   - sql:/var/lib/postgresql/data/rebase
