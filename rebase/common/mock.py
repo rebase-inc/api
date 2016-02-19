@@ -370,8 +370,8 @@ class ManagerUserStory(object):
         for contractor in the_contractors:
             skills = sample(FAKE_SKILLS, randint(3,6))
             skill_sets.append(SkillSet(contractor, {skill: uniform(0.2, 1.0) for skill in skills}))
-        organization = create_one_organization(db, 'Parks and Recreation', self.user)
-        project = create_one_project(db, organization, 'Lot 48')
+        organization = create_one_organization(db, 'facebook', self.user)
+        project = create_one_project(db, organization, 'redux-devtools')
         mgr = project.managers[0]
         the_new_tickets = [create_one_internal_ticket(db, fake_ticket, project=project, created=datetime.now() + timedelta(hours=randint(-72,0))) for fake_ticket in FAKE_TICKETS]
         
