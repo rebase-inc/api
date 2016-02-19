@@ -8,7 +8,7 @@ from rebase.resources import RestfulResource, RestfulCollection
 import rebase.views.comment as comment_views
 
 
-def enqueue_push_to_github(new_comment):
+def enqueue_save_comment(new_comment):
     if new_comment.ticket and new_comment.ticket.discriminator == 'github_ticket':
         current_app.default_queue.enqueue(
             save_comment,
@@ -20,7 +20,7 @@ def enqueue_push_to_github(new_comment):
 
 collection_handlers = {
     'POST': {
-        'pre_serialization': enqueue_push_to_github
+        'pre_serialization': enqueue_save_comment
     },
 }
 
