@@ -60,6 +60,14 @@ rq_default:
    - cache
   command: ["/venv/api/bin/python", "run-worker.py"]
 
+scheduler:
+  extends:
+    service: webserver
+    file: docker/api-dev.yml
+  links:
+   - database:db
+  command: ["/venv/api/bin/python", "scheduler.py"]
+
 redis:
   image: redis
   restart: always

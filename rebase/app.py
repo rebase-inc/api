@@ -12,7 +12,7 @@ from rebase.features import install
 
 def create(testing=False):
     '''
-    Use create_app when you need an app to interact with the database
+    Use 'create' when you need an app to interact with the database
     or Flask at a very low level and basically don't really care abot the routes and widgets.
     Example: in the parsers, in run-workers.
     '''
@@ -37,3 +37,5 @@ def create(testing=False):
     register_routes(api)
     register_github_routes(app)
     return app, app_context, DB
+
+

@@ -38,8 +38,8 @@ function _error_log() {
     docker exec -t api_web_1 tail -f /log/error.log
 }
 
-function _web_log() {
-    docker exec -t api_web_1 tail -f /log/rebase_web.log
+function _log() {
+    docker exec -t $1 tail -f /log/rebase_web.log
 }
 
 function _super() {
