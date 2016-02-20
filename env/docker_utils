@@ -43,5 +43,5 @@ function _log() {
 }
 
 function _super() {
-    docker exec -t api_rq_git_1 /venv/super/bin/supervisorctl -c /etc/git/supervisor.conf
+    docker exec -it api_rq_git_1 /venv/super/bin/supervisorctl -c /etc/git/supervisor.conf
 }

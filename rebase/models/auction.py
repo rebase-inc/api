@@ -145,8 +145,17 @@ class AuctionStateMachine(StateMachine):
         self.auction = auction_instance
         StateMachine.__init__(self, initial_state = getattr(self, initial_state))
         self.add_event_transitions('initialize', {None: self.created})
-        self.add_event_transitions('bid', {self.created: self.waiting_for_bids, self.waiting_for_bids:self.waiting_for_bids})
-        self.add_event_transitions('fail', {self.created:self.failed, self.waiting_for_bids:self.failed})
-        self.add_event_transitions('end', {self.waiting_for_bids:self.ended})
+        self.add_event_transitions('bid', {
+            self.created:           self.waiting_for_bids,
+            self.waiting_for_bids:  self.waiting_for_bids
+        })
+        self.add_event_transitions('fail', {
+            self.created:           self.failed,
+            self.waiting_for_bids:  self.failed
+        })
+        self.add_event_transitions('end', {
+            self.created:           self.ended,
+            self.waiting_for_bids:  self.ended,
+        })
 
 
