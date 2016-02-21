@@ -31,23 +31,27 @@ class AuctionSchema(RebaseSchema):
 
 
 class BidEventSchema(RebaseSchema):
+
     bid = SecureNestedField('BidSchema', required=True, strict=True)
 
     @post_load
     def make_bid(self, data):
         return 'bid', data.pop('bid')
 
+
 class EndEventSchema(RebaseSchema):
 
     @post_load
     def make_end(self, data):
-        return 'end'
+        return ('end',)
+
 
 class FailEventSchema(RebaseSchema):
 
     @post_load
     def make_fail(self, data):
-        return 'fail'
+        return ('fail',)
+
 
 serializer = AuctionSchema()
 deserializer = AuctionSchema(only=('duration', 'finish_work_by', 'redundancy', 'ticket_set', 'term_sheet', 'approved_talents'), strict=True)
@@ -59,4 +63,5 @@ update_deserializer = AuctionSchema(only=('id', 'duration', 'term_sheet', 'redun
 bid_event_deserializer = BidEventSchema(only=('bid',), strict=True)
 end_event_deserializer = EndEventSchema()
 fail_event_deserializer = FailEventSchema()
+
 

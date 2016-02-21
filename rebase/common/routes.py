@@ -14,13 +14,8 @@ def register_routes(api):
     api.add_resource(UploadCollection, UploadCollection.url)
     api.add_resource(UploadResource, UploadResource.url)
 
-    from rebase.resources.auction import AuctionCollection, AuctionResource
-    from rebase.resources.auction import AuctionBidEvents, AuctionEndEvents, AuctionFailEvents
-    api.add_resource(AuctionCollection, '/auctions', endpoint='auctions')
-    api.add_resource(AuctionResource, '/auctions/<int:id>', endpoint='auction')
-    api.add_resource(AuctionBidEvents, '/auctions/<int:id>/bid_events', endpoint='auction_bid_events')
-    api.add_resource(AuctionEndEvents, '/auctions/<int:id>/end_events', endpoint='auction_end_events')
-    api.add_resource(AuctionFailEvents, '/auctions/<int:id>/fail_events', endpoint='auction_fail_events')
+    from rebase.resources.auction import add_auction_resource
+    add_auction_resource(api)
 
     from rebase.resources.github_account import GithubAccountCollection
     api.add_resource(GithubAccountCollection, '/github_accounts', endpoint='github_accounts')

@@ -1,13 +1,7 @@
-from flask import current_app
-from flask.ext.restful import Resource
-from flask.ext.login import login_required
-from flask import jsonify, request
 
-from rebase.cache.rq_jobs import invalidate
-from rebase.common.database import DB
-from rebase.common.state import ManagedState
+from rebase.common.keys import make_collection_url, make_resource_url
 from rebase.models import Auction
-from rebase.resources import RestfulResource, RestfulCollection
+from rebase.resources import RestfulResource, RestfulCollection, Event
 from rebase.views import auction as auction_views
 
 
@@ -30,28 +24,28 @@ AuctionCollection = RestfulCollection(
 get_all_auctions = AuctionCollection.get_all
 
 
-class AuctionEvent(Resource):
-
-    @login_required
-    def post(self, id):
-        single_auction = Auction.query.get_or_404(id)
-        auction_event = self.deserializer.load(request.form or request.json).data
-
-        with ManagedState():
-            single_auction.machine.send(auction_event)
-
-        DB.session.commit()
-
-        # update the cache
-        invalidate([(Auction, id)])
-
-        response = jsonify(auction = auction_views.serializer.dump(single_auction).data)
-        response.status_code = 201
-        return response
+class AuctionEvent(Event):
+    model = Auction
+    serializer = auction_views.serializer
 
 
-AuctionBidEvents = type('AuctionBidEvents', (AuctionEvent,), dict(deserializer=auction_views.bid_event_deserializer))
-AuctionEndEvents = type('AuctionEndEvents', (AuctionEvent,), dict(deserializer=auction_views.end_event_deserializer))
-AuctionFailEvents = type('AuctionFailEvents', (AuctionEvent,), dict(deserializer=auction_views.fail_event_deserializer))
+class AuctionBidEvent(AuctionEvent):
+    deserializer = auction_views.bid_event_deserializer
+
+
+class AuctionEndEvent(AuctionEvent):
+    deserializer = auction_views.end_event_deserializer
+
+
+class AuctionFailEvent(AuctionEvent):
+    deserializer = auction_views.fail_event_deserializer
+
+
+def add_auction_resource(api):
+    api.add_resource(AuctionCollection, make_collection_url(Auction), endpoint = Auction.__pluralname__)
+    api.add_resource(AuctionResource, make_resource_url(Auction), endpoint = Auction.__pluralname__ + '_resource')
+    api.add_resource(AuctionBidEvent, '/auctions/<int:id>/bid', endpoint='auction_bid_events')
+    api.add_resource(AuctionEndEvent, '/auctions/<int:id>/end', endpoint='auction_end_events')
+    api.add_resource(AuctionFailEvent, '/auctions/<int:id>/fail', endpoint='auction_fail_events')
 
 

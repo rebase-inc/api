@@ -4,13 +4,16 @@ from logging import warning
 from sys import exc_info
 from traceback import format_exc
 
-from flask import current_app
+from flask import current_app, jsonify, request
 from flask.ext.restful import Resource
 from flask.ext.login import login_required, current_user
 
-from rebase.common.keys import get_model_primary_keys, make_collection_url, make_resource_url
+from rebase.cache.rq_jobs import invalidate
+from rebase.common.database import DB
 from rebase.common.exceptions import ServerError, ClientError
+from rebase.common.keys import get_model_primary_keys, make_collection_url, make_resource_url
 from rebase.common.rest import get_collection, add_to_collection, get_resource, update_resource, delete_resource
+from rebase.common.state import ManagedState
 
 
 def convert_exceptions(verb):
@@ -106,5 +109,28 @@ def add_restful_endpoint(api, model, serializer, deserializer, update_deserializ
     restful_resource = RestfulResource(model, serializer, deserializer, update_deserializer)
     api.add_resource(restful_collection, make_collection_url(model), endpoint = model.__pluralname__)
     api.add_resource(restful_resource, make_resource_url(model), endpoint = model.__pluralname__ + '_resource')
+
+
+class Event(Resource):
+    model=None
+    deserializer=None
+    serializer=None
+
+    @login_required
+    def post(self, id):
+        instance = self.model.query.get_or_404(id)
+        event = self.deserializer.load(request.form or request.json).data
+
+        with ManagedState():
+            instance.machine.send(*event)
+
+        DB.session.commit()
+
+        # update the cache
+        invalidate([(self.model, id)])
+
+        response = jsonify({self.model.__tablename__: self.serializer.dump(instance).data})
+        response.status_code = 201
+        return response
 
 

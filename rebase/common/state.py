@@ -1,5 +1,7 @@
-import copy
 from contextlib import ContextDecorator
+import copy
+from logging import debug
+
 
 class Machines(set):
     def process_all_events(self):
@@ -7,6 +9,7 @@ class Machines(set):
             copy_self = copy.copy(self)
             for machine in copy_self:
                 machine.run()
+
 
 class StateMachine(object):
     machine_pool = None
@@ -120,4 +123,5 @@ class ManagedState(ContextDecorator):
     def __exit__(self, exc_type, exc, exc_tb):
         StateMachine.machine_pool.process_all_events()
         StateMachine.machine_pool = None
+
 

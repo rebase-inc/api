@@ -166,14 +166,14 @@ rebase-bid() {
             ] \
         } \
     }" \
-    /auctions/$1/bid_events
+    /auctions/$1/bid
 }
 
 #
 # rebase-end-auction <auction-id>
 #
 rebase-end-auction() {
-    rebase-post "{}" auctions/$1/end_events
+    rebase-post "{}" auctions/$1/end
 }
 
 extract_session () {
