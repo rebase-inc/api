@@ -44,8 +44,8 @@ class AuctionFailEvent(AuctionEvent):
 def add_auction_resource(api):
     api.add_resource(AuctionCollection, make_collection_url(Auction), endpoint = Auction.__pluralname__)
     api.add_resource(AuctionResource, make_resource_url(Auction), endpoint = Auction.__pluralname__ + '_resource')
-    api.add_resource(AuctionBidEvent, '/auctions/<int:id>/bid', endpoint='auction_bid_events')
-    api.add_resource(AuctionEndEvent, '/auctions/<int:id>/end', endpoint='auction_end_events')
-    api.add_resource(AuctionFailEvent, '/auctions/<int:id>/fail', endpoint='auction_fail_events')
+    api.add_resource(AuctionBidEvent,   '/auctions/<int:id>/bid')
+    api.add_resource(AuctionEndEvent,   '/auctions/<int:id>/end')
+    api.add_resource(AuctionFailEvent,  '/auctions/<int:id>/fail')
 
 

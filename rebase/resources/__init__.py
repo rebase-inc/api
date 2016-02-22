@@ -119,10 +119,10 @@ class Event(Resource):
     @login_required
     def post(self, id):
         instance = self.model.query.get_or_404(id)
-        event = self.deserializer.load(request.form or request.json).data
+        event, data = self.deserializer.load(request.form or request.json).data
 
         with ManagedState():
-            instance.machine.send(*event)
+            instance.machine.send(event, **data)
 
         DB.session.commit()
 

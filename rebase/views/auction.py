@@ -36,21 +36,21 @@ class BidEventSchema(RebaseSchema):
 
     @post_load
     def make_bid(self, data):
-        return 'bid', data.pop('bid')
+        return 'bid', data
 
 
 class EndEventSchema(RebaseSchema):
 
     @post_load
     def make_end(self, data):
-        return ('end',)
+        return 'end', data
 
 
 class FailEventSchema(RebaseSchema):
 
     @post_load
     def make_fail(self, data):
-        return ('fail',)
+        return 'fail', data
 
 
 serializer = AuctionSchema()

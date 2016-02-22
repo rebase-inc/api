@@ -46,28 +46,28 @@ class TimeoutEventSchema(RebaseSchema):
 
     @post_load
     def make_timeout(self, data):
-        return 'timeout'
+        return 'timeout', data
 
 
 class TimeoutAnswerEventSchema(RebaseSchema):
 
     @post_load
     def make_timeout_answer(self, data):
-        return 'timeout_answer'
+        return 'timeout_answer', data
 
 
 class AgreeEventSchema(RebaseSchema):
 
     @post_load
     def make_agree(self, data):
-        return 'agree'
+        return 'agree', data
 
 
 class ArbitrateEventSchema(RebaseSchema):
 
     @post_load
     def make_arbitrate(self, data):
-        return 'arbitrate'
+        return 'arbitrate', data
 
 
 serializer =            MediationSchema()

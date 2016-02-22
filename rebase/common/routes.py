@@ -24,28 +24,8 @@ def register_routes(api):
     github_account_resource = RestfulResource(GithubAccount, gh_account_views.serializer, gh_account_views.deserializer, gh_account_views.update_deserializer)
     api.add_resource(github_account_resource, make_resource_url(GithubAccount), endpoint = GithubAccount.__pluralname__ + '_resource')
 
-    from rebase.resources.work_events import WorkHaltEvents, WorkReviewEvents, WorkMediateEvents, WorkCompleteEvents, WorkResolveEvents, WorkFailEvents
-    api.add_resource(WorkHaltEvents, '/works/<int:id>/halt')
-    api.add_resource(WorkReviewEvents, '/works/<int:id>/review')
-    api.add_resource(WorkMediateEvents, '/works/<int:id>/mediate')
-    api.add_resource(WorkCompleteEvents, '/works/<int:id>/complete')
-    api.add_resource(WorkResolveEvents, '/works/<int:id>/resolve')
-    api.add_resource(WorkFailEvents, '/works/<int:id>/fail')
-
-    from rebase.resources.mediation_events import (
-        MediationDevAnswerEvents,
-        MediationClientAnswerEvents,
-        MediationTimeoutEvents,
-        MediationTimeoutAnswerEvents,
-        MediationAgreeEvents,
-        MediationArbitrateEvents
-    )
-    api.add_resource(MediationDevAnswerEvents,      '/mediations/<int:id>/dev_answer')
-    api.add_resource(MediationClientAnswerEvents,   '/mediations/<int:id>/client_answer')
-    api.add_resource(MediationTimeoutEvents,        '/mediations/<int:id>/timeout')
-    api.add_resource(MediationTimeoutAnswerEvents,  '/mediations/<int:id>/timeout_answer')
-    api.add_resource(MediationAgreeEvents,          '/mediations/<int:id>/agree')
-    api.add_resource(MediationArbitrateEvents,      '/mediations/<int:id>/arbitrate')
+    from rebase.resources.mediation import add_mediation_resource
+    add_mediation_resource(api)
 
     from rebase.models.internal_ticket import InternalTicket
     import rebase.views.internal_ticket as it_view
@@ -106,10 +86,6 @@ def register_routes(api):
     from rebase.models.code_repository import CodeRepository
     import rebase.views.code_repository as cr_view
     add_restful_endpoint(api, CodeRepository, cr_view.serializer, cr_view.deserializer, cr_view.update_deserializer)
-
-    from rebase.models.mediation import Mediation
-    import rebase.views.mediation as m_view
-    add_restful_endpoint(api, Mediation, m_view.serializer, m_view.deserializer, m_view.update_deserializer)
 
     from rebase.models.arbitration import Arbitration
     import rebase.views.arbitration as a_view

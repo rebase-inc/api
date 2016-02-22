@@ -73,7 +73,7 @@ class FailEventSchema(RebaseSchema):
 
     @post_load
     def make_fail(self, data):
-        return 'fail'
+        return 'fail', data
 
 
 serializer = WorkSchema()
