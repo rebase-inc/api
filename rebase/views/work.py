@@ -53,6 +53,7 @@ class MediateEventSchema(RebaseSchema):
     def make_mediate(self, data):
         return 'mediate', data
 
+
 class CompleteEventSchema(RebaseSchema):
     comment = fields.String(required=True)
     rating = fields.Integer(required=True)
@@ -60,6 +61,7 @@ class CompleteEventSchema(RebaseSchema):
     @post_load
     def make_complete(self, data):
         return 'complete', data
+
 
 class ResolveEventSchema(RebaseSchema):
     comment = fields.String(required=False)

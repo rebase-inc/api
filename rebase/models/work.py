@@ -152,7 +152,13 @@ class WorkStateMachine(StateMachine):
             self.in_mediation: self.wait_for_rating
         })
         self.add_event_transitions('mediate', {self.in_review: self.in_mediation})
-        self.add_event_transitions('complete', {self.in_review: self.complete, self.in_mediation: self.complete})
-        self.add_event_transitions('resolve', {self.in_mediation: self.resolved, self.blocked: self.resolved})
+        self.add_event_transitions('complete', {
+            self.in_review: self.complete,
+            self.in_mediation: self.complete
+        })
+        self.add_event_transitions('resolve', {
+            self.in_mediation: self.resolved,
+            self.blocked: self.resolved
+        })
         self.add_event_transitions('resume', {self.resolved: self.in_progress })
         self.add_event_transitions('fail', {self.in_mediation: self.failed})

@@ -176,6 +176,49 @@ rebase-end-auction() {
     rebase-post "{}" auctions/$1/end
 }
 
+rebase-fail-auction() {
+    rebase-post "{}" auctions/$1/fail
+}
+
+rebase-work-event() {
+    rebase-post \
+    "{ \
+        \"comment\": \"$2\" \
+    }" \
+    works/$1/$3
+}
+
+rebase-halt-work() {
+    rebase-work-event $1 "$2" 'halt'
+}
+
+rebase-resolve-work() {
+    rebase-work-event $1 "$2" 'resolve'
+}
+
+rebase-review-work() {
+    rebase-work-event $1 "$2" 'review'
+}
+
+#
+# rebase-complete-work <work-id> "<comment>" <rating>
+#
+rebase-complete-work() {
+    rebase-post \
+    "{ \
+        \"comment\": \"$2\", \
+        \"rating\": $3
+    }" \
+    works/$1/complete
+}
+
+#
+# rebase-mediate-work <work-id> "<comment>"
+#
+rebase-mediate-work() {
+    rebase-work-event $1 "$2" 'mediate'
+}
+
 extract_session () {
 	awk "/$1.*session/ { printf(\"%s=%s\", \$6, \$7) }" $REBASE_COOKIE_JAR
 }
