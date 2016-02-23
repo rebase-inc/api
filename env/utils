@@ -1,4 +1,4 @@
-. env/docker_utils
+. env/docker.bash
 _vm
 
 . env/api.bash
