@@ -1,0 +1,8 @@
+#!/bin/bash
+
+cd /api
+/venv/super/bin/supervisorctl -c /etc/git/supervisor.conf stop rq_git
+/venv/api/bin/python manage data recreate --yes
+/venv/super/bin/supervisorctl -c /etc/git/supervisor.conf start rq_git
+/venv/api/bin/python manage data populate
+

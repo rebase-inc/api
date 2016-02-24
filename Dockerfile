@@ -17,5 +17,4 @@ RUN easy_install3 -U pip && \
     /venv/api/bin/pip install -r /api/requirements.txt
 WORKDIR /api
 ENV APP_SETTINGS=/api/rebase/common/dev.py
-EXPOSE 5000
 CMD ["/venv/api/bin/gunicorn", "-c", "/api/etc/gunicorn.dev.conf", "wsgi:app"]

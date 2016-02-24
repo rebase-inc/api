@@ -8,8 +8,6 @@ COPY supervisor.conf /etc/git/supervisor.conf
 COPY filter /usr/bin/filter
 RUN mkdir -p /var/run/sshd \
     /root/.ssh && \
-    touch /log/error.log && \
-    chmod o+w /log/error.log && \
     adduser --quiet --disabled-password --gecos "Rebase Git" git && \
     echo "git:rebase_is_da_bomb" | chpasswd && \
     virtualenv -p python2.7 /venv/super && \

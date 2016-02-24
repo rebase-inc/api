@@ -1,5 +1,5 @@
 
-export REBASE_HOST="http://$(docker-machine ip default):3000"
+export REBASE_HOST="http://$(docker-machine ip $DOCKER_MACHINE_NAME):3000"
 
 export REBASE_COOKIE_JAR=/tmp/api-cookie-jar.txt
 

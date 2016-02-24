@@ -10,7 +10,7 @@ function _bash() {
 # $ _vm
 #
 function _vm() {
-    eval "$(docker-machine env default)"
+    eval "$(docker-machine env dev)"
     env|sort|grep DOCKER
 }
 
@@ -23,15 +23,12 @@ function _super() {
 }
 
 function _git() {
-    docker exec -it api_rq_git_1 $*
+    docker exec -t api_rq_git_1 $*
 }
 
 function _repopulate() {
     docker stop api_web_1 api_rq_default_1 api_cache_1
-    _super stop rq_git
-    _git bash -c "cd /api; /venv/api/bin/python manage data recreate --yes"
-    _super start rq_git
-    _git bash -c "cd /api; /venv/api/bin/python manage data populate"
+    _git /api/env/repopulate
     docker start api_cache_1 api_rq_default_1 api_web_1 
 }
 
@@ -49,4 +46,15 @@ function _error_log() {
 
 function _log() {
     docker exec -t $1 tail -f /log/rebase_web.log
+}
+
+#
+# _create_vm <name>
+#
+function _create_vm() {
+    docker-machine create \
+        --driver virtualbox \
+        --virtualbox-cpu-count "2" \
+        --virtualbox-memory "2048" \
+        dev
 }
