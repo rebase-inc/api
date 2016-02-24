@@ -10,7 +10,7 @@ function _bash() {
 # $ _vm
 #
 function _vm() {
-    eval "$(docker-machine env dev)"
+    eval "$(docker-machine env default)"
     env|sort|grep DOCKER
 }
 
@@ -50,6 +50,11 @@ function _log() {
 
 #
 # _create_vm <name>
+#
+# WARNING: this does not work with VirtualBox and Mac OS X 10.11.3 (Yosemite).
+# A CPU count greater than 1 will cause a kernel panic.
+#
+# It's been reported that it works with VMWare Fusion.
 #
 function _create_vm() {
     docker-machine create \
