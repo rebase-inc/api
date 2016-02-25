@@ -64,11 +64,12 @@ class LogElapsedTime(WhenDone):
     def __init__(self, log, start=None, stop=None):
         self.log = log
         self.stop = stop if stop else DebugElapsedTime.stop
-        self.start = start if start else DebugElapsedTime.start
+        self.start = start if start!=None else DebugElapsedTime.start
         super().__init__()
 
     def on_start(self):
-        self.log(self.start)
+        if self.start:
+            self.log(self.start)
 
     def on_stop(self):
         self.log(self.stop, self.elapsed)

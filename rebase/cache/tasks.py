@@ -11,7 +11,7 @@ from rebase.models import Role
 logger = getLogger()
 
 
-elapsed_time = DebugElapsedTime(start='Start get_collections', stop='Stop get_collections, Elapsed: %f seconds')
+elapsed_time = DebugElapsedTime(start='', stop='Running get_collections took: %f seconds')
 
 
 def login(role_id):
@@ -64,7 +64,7 @@ def invalidate_cache(delete_key, keys, changeset):
     'delete_key' is a function to delete keys from 'keys' which is a cache.
     'changeset' contains the list of new/updated/deleted instances' identities (type, ids)
     '''
-    logger.debug('# of cache keys before invalidation: %d', len(keys))
+    #logger.debug('# of cache keys before invalidation: %d', len(keys))
     q = Queue(maxsize=1024)
     # first, flatten the changeset into a dict with each (k,v) => (hash(instance), instance)
     instances_to_invalidate = dict()
@@ -95,7 +95,7 @@ def invalidate_cache(delete_key, keys, changeset):
                     q.put(parent_hash)
                 del keys[_hash]
 
-    logger.debug('# of cache keys after invalidation: %d', len(keys))
+    #logger.debug('# of cache keys after invalidation: %d', len(keys))
 
 
 def incremental(app, role_id, changeset):
@@ -105,7 +105,7 @@ def incremental(app, role_id, changeset):
     setattr(app.cache_in_process, 'misses', 0)
     with elapsed_time:
         get_collections(role_id)
-    logger.debug('cache misses: %s', app.cache_in_process.misses)
+    #logger.debug('cache misses: %s', app.cache_in_process.misses)
 
 
 def cooldown(app, role_id):
