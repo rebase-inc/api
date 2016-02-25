@@ -27,9 +27,9 @@ function _git() {
 }
 
 function _repopulate() {
-    docker stop api_web_1 api_rq_default_1 api_cache_1
+    docker stop api_scheduler_1 api_web_1 api_rq_default_1 api_cache_1
     _git /api/env/repopulate
-    docker start api_cache_1 api_rq_default_1 api_web_1 
+    docker start api_cache_1 api_rq_default_1 api_web_1 api_scheduler_1
 }
 
 function _log_cache() {
