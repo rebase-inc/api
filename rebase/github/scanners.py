@@ -1,3 +1,4 @@
+from logging import getLogger
 
 from flask import current_app
 
@@ -12,6 +13,9 @@ from rebase.models import (
     Manager,
 )
 from rebase.views.github_contributed_repo import serializer as contributed_repo_serializer
+
+
+logger = getLogger()
 
 
 def extract_repos_info(session):
@@ -42,7 +46,7 @@ def import_github_repos(repos, user, db_session):
     for repo_id, repo in repos.items():
         github_account = GithubAccount.query.filter(GithubAccount.id==repo['github_account_id']).first()
         if not github_account:
-            current_app.logger.debug('Cannot find GithubAccount[{}], so we cannot import repo[{}, {}]'.format(
+            logger.debug('Cannot find GithubAccount[{}], so we cannot import repo[{}, {}]'.format(
                 repo['github_account_id'],
                 repo['id'],
                 repo['name']

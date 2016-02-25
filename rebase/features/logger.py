@@ -1,11 +1,15 @@
-from logging import DEBUG, basicConfig
-from logging.handlers import RotatingFileHandler
+from logging import Formatter, getLogger
+from logging.handlers import SysLogHandler
+
+
+logger = getLogger()
 
 
 def setup_logger(app):
-    basicConfig(**app.config['WEB_LOG_CONFIG'])
-    handler = RotatingFileHandler(app.config['WEB_LOG_FILENAME'], maxBytes=10*(1024**2), backupCount=5)
-    handler.setLevel(DEBUG)
-    app.logger.addHandler(handler)
+    conf = app.config['BASIC_LOG_CONFIG']
+    logger.setLevel(conf['level'])
+    rsyslog = SysLogHandler(**app.config['RSYSLOG_CONFIG'])
+    rsyslog.setFormatter(Formatter(conf['format']))
+    logger.addHandler(rsyslog)
 
 

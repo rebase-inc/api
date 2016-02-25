@@ -40,11 +40,12 @@ class Config(object):
     UPLOAD_FOLDER = '/uploads'
     REDIS_HOST = 'redis_1'
     CACHE_HOST = 'cache_1:5000'
-    WEB_LOG_FILENAME =   '/log/rebase_web.log'
-    WEB_LOG_CONFIG = {
-        'filename': '/log/rebase_web.log',
+    BASIC_LOG_CONFIG = {
         'level':    logging.DEBUG,
-        'format':   '%(asctime)s %(levelname)s {%(processName)s[%(process)d] %(threadName)s} %(message)s',
+        'format':   '%(levelname)s {%(processName)s[%(process)d] %(threadName)s} %(message)s',
+    }
+    RSYSLOG_CONFIG = {
+        'address': ('rsyslog', 514),
     }
 
 

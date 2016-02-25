@@ -1,9 +1,12 @@
 from datetime import datetime
 from functools import lru_cache
-from logging import debug, info, warning
+from logging import getLogger
 from subprocess import check_call, call
 
 from rebase.github.session import make_admin_github_session
+
+
+logger = getLogger()
 
 
 _gh_datetime_format = '%Y-%m-%dT%H:%M:%SZ'
@@ -107,7 +110,7 @@ def save_comment(account_id, comment_id):
     if not new_comment:
         warning('There is no comment with id %d', comment_id)
     else:
-        info('Push new comment to Github: %s', new_comment)
+        logger.info('Push new comment to Github: %s', new_comment)
         response = session.api.post(
             '{repo_url}/issues/{number}/comments'.format(
                 repo_url=new_comment.ticket.project.remote_repo.url,
@@ -117,5 +120,5 @@ def save_comment(account_id, comment_id):
             format='json'
         )
         if response.status > 201:
-            debug('status: %s', response.status)
-            debug('data: %s', response.data)
+            logger.debug('status: %s', response.status)
+            logger.debug('data: %s', response.data)

@@ -1,11 +1,14 @@
 from functools import partialmethod
-from logging import debug, info
+from logging import getLogger
 from pickle import loads
 from queue import Queue
 import re
 
 from rebase.cache.base_request import CacheBaseHandler
 from rebase.cache.tasks import warmup, cooldown, invalidate
+
+
+logger = getLogger()
 
 
 class RoleResource(object):
@@ -61,7 +64,7 @@ class CacheHandler(CacheBaseHandler):
                 'id': matching_resource.destination(self, match),
                 'action': (function, args, kwargs)
             }
-            #debug('Sending {} to main thread'.format(task))
+            #logger.debug('Sending {} to main thread'.format(task))
             self.q.put(task)
         else:
             self.send_response(404)

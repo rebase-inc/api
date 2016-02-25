@@ -2,8 +2,9 @@
 
 from functools import partial
 from http.server import HTTPServer, BaseHTTPRequestHandler
-import logging
-from multiprocessing import current_process
+from logging import getLogger, Formatter
+from logging.handlers import SysLogHandler
+from multiprocessing import current_process, set_start_method
 from pickle import dumps, loads
 from queue import Empty
 from signal import signal, sigwait, SIGTERM, SIGQUIT, SIGINT
@@ -12,6 +13,10 @@ from threading import Thread, current_thread
 
 from rebase.cache.process import CacheProcess
 from rebase.cache.request import CacheHandler
+from rebase.common.config import Config
+
+
+logger = getLogger()
 
 
 def quit(sig, frame, server, processes):
@@ -29,11 +34,11 @@ def refresh(processes):
 def main():
     current_process().name = 'Cache'
     current_thread().name = 'main'
-    logging.basicConfig(
-        filename='/log/cache.log',
-        level=logging.DEBUG,
-        format='%(asctime)s %(levelname)s {%(processName)s[%(process)d] %(threadName)s} %(message)s'
-    )
+    conf = Config.BASIC_LOG_CONFIG
+    logger.setLevel(conf['level'])
+    rsyslog = SysLogHandler(**Config.RSYSLOG_CONFIG)
+    rsyslog.setFormatter(Formatter(conf['format']))
+    logger.addHandler(rsyslog)
     processes = dict()
     server = HTTPServer(('0.0.0.0', 5000), CacheHandler)
     _quit = partial(quit, server=server, processes=processes)
@@ -45,7 +50,7 @@ def main():
     server_thread = Thread(name='http', target=server.serve_forever)
     server_thread.daemon = True
     server_thread.start()
-    logging.info('HTTP server is listening at {}:{}'.format(ip, port))
+    logger.info('HTTP server is listening at {}:{}'.format(ip, port))
 
     while True:
         try:
@@ -55,7 +60,7 @@ def main():
             # so we need to keep the 'processes' dict up-to-date
             processes = refresh(processes)
             continue
-        #logging.debug('Received task: {}'.format(task))
+        #logger.debug('Received task: {}'.format(task))
         CacheHandler.q.task_done()
         processes = refresh(processes)
         _id  = task['id']
@@ -67,9 +72,10 @@ def main():
         if _id not in processes:
             # create a new child process for this role
             processes[_id] = CacheProcess(_id)
-            logging.debug('Processes: {}'.format(processes))
+            logger.debug('Processes: {}'.format(processes))
         processes[_id].q.put(task)
 
 
 if __name__ == '__main__':
+    set_start_method('spawn')
     main()

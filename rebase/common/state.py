@@ -1,6 +1,5 @@
 from contextlib import ContextDecorator
 import copy
-from logging import debug
 
 
 class Machines(set):

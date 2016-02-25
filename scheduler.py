@@ -1,7 +1,7 @@
 from copy import copy
 from datetime import datetime, timedelta
 from functools import partial
-from logging import info, debug
+from logging import getLogger
 from sched import scheduler
 from signal import signal, SIGINT, SIGTERM, SIGQUIT
 from sys import exit
@@ -21,6 +21,9 @@ from rebase.models import (
 _, _, db = create()
 
 
+logger = getLogger()
+
+
 def load_new_events(sched):
     for event in sched.queue:
         sched.cancel(event)
@@ -35,7 +38,7 @@ def load_new_events(sched):
     mediations = Mediation.query.filter(or_(Mediation.state=='waiting_for_client', Mediation.state=='waiting_for_dev')).all()
     for mediation in mediations:
         sched.enterabs(mediation.timeout, 0, mediation_timed_out, argument=(mediation.id,))
-    debug('%s', sched.queue)
+    logger.debug('%s', sched.queue)
 
 
 class Proxy(scheduler):
@@ -67,7 +70,7 @@ def auction_expired(auction_id):
         with ManagedState():
             auction.machine.send('fail')
         db.session.commit()
-        info('%s has expired now', auction)
+        logger.info('%s has expired now', auction)
 
 
 def work_expired(work_id):
@@ -76,7 +79,7 @@ def work_expired(work_id):
         with ManagedState():
             work.machine.send('review')
         db.session.commit()
-        info('%s has expired now', work)
+        logger.info('%s has expired now', work)
 
 
 def mediation_timed_out(mediation_id):
@@ -85,7 +88,7 @@ def mediation_timed_out(mediation_id):
         with ManagedState():
             mediation.machine.send('timeout')
         db.session.commit()
-        info('%s has expired now', mediation)
+        logger.info('%s has expired now', mediation)
 
 
 def quit(signal_number, frame):

@@ -1,4 +1,3 @@
-from logging import debug
 from pickle import dumps
 
 from flask import current_app

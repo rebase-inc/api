@@ -7,6 +7,7 @@ web:
   links:
    - redis
    - database:db
+   - rsyslog
   #stdin_open: true
   #tty: true
   #command: ["/venv/api/bin/python", "manage", "runserver", "-h", "0.0.0.0", "-p", "5000"]
@@ -19,8 +20,9 @@ cache:
   expose:
    - "5000"
   links:
-   - redis
    - database:db
+   - redis
+   - rsyslog
   #stdin_open: true
   #tty: true
   command: ["/api/cache"]
@@ -31,6 +33,7 @@ scheduler:
     file: docker/api-dev.yml
   links:
    - database:db
+   - rsyslog
   command: ["/venv/api/bin/python", "scheduler.py"]
 
 client:
@@ -53,8 +56,9 @@ rq_git:
   ports:
    - "2222:22"
   links:
-   - redis
    - database:db
+   - redis
+   - rsyslog
   volumes:
    - git:/git
 
@@ -63,9 +67,10 @@ rq_default:
     service: webserver
     file: docker/api-dev.yml
   links:
-   - redis
-   - database:db
    - cache
+   - database:db
+   - redis
+   - rsyslog
   command: ["/venv/api/bin/python", "run-worker.py"]
 
 redis:
@@ -78,3 +83,8 @@ database:
     PGDATA: "/var/lib/postgresql/data/rebase"
   volumes:
    - sql:/var/lib/postgresql/data/rebase
+
+rsyslog:
+  image: rebase/rsyslog
+  volumes:
+   - log:/var/log

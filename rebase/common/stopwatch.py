@@ -1,5 +1,8 @@
-from logging import debug, info
+from logging import getLogger
 from time import process_time
+
+
+logger = getLogger()
 
 
 class StopWatch(object):
@@ -75,12 +78,12 @@ class LogElapsedTime(WhenDone):
 class DebugElapsedTime(LogElapsedTime):
 
     def __init__(self, start=None, stop=None):
-        super().__init__(log=debug, start=start, stop=stop)
+        super().__init__(log=logger.debug, start=start, stop=stop)
 
 
 class InfoElapsedTime(LogElapsedTime):
 
     def __init__(self, start=None, stop=None):
-        super().__init__(log=info, start=start, stop=stop)
+        super().__init__(log=logger.info, start=start, stop=stop)
 
 

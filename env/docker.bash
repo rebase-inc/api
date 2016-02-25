@@ -45,7 +45,7 @@ function _error_log() {
 }
 
 function _log() {
-    docker exec -t $1 tail -f /log/rebase_web.log
+    docker exec -t api_rsyslog_1 tail -f /var/log/rebase.log
 }
 
 #
@@ -63,3 +63,4 @@ function _create_vm() {
         --virtualbox-memory "2048" \
         dev
 }
+

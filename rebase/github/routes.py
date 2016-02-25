@@ -1,4 +1,5 @@
 from functools import wraps
+from logging import getLogger
 
 from flask import redirect, url_for, request, jsonify, current_app
 from flask.ext.login import login_required, current_user
@@ -17,6 +18,10 @@ from rebase.models.remote_work_history import RemoteWorkHistory
 from rebase.models.skill_set import SkillSet
 from rebase.models.user import User
 
+
+logger = getLogger()
+
+
 def save_github_account(account_id, login, access_token):
     github_account = GithubAccount.query_by_user(current_user).filter(GithubAccount.login==login).first()
     github_account = github_account or GithubAccount(current_user, account_id, login, access_token)
@@ -24,6 +29,7 @@ def save_github_account(account_id, login, access_token):
     DB.session.add(github_account)
     DB.session.commit()
     return github_account
+
 
 def analyze_contractor_skills(github_account):
     contractor = next(filter(lambda r: r.type == 'contractor', current_user.roles), None)
@@ -34,6 +40,7 @@ def analyze_contractor_skills(github_account):
         DB.session.add(remote_work_history)
         DB.session.commit()
         current_app.default_queue.enqueue_call(func=detect_languages, args=(github_account.id,), timeout=360 ) # timeout = 6 minutes
+
 
 def register_github_routes(app):
 
@@ -48,7 +55,7 @@ def register_github_routes(app):
     @login_required
     def verify_all_github_tokens():
         for account in current_user.github_accounts:
-            app.logger.debug('Verifying Github account '+account.login)
+            logger.debug('Verifying Github account '+account.login)
             make_session(account, current_app, current_user, DB)
         return jsonify({'success':'complete'})
 
@@ -97,4 +104,5 @@ def register_github_routes(app):
         for account in current_user.github_accounts:
             current_app.default_queue.enqueue(detect_languages, account.id)
         return jsonify({'status':'Skills detection started'})
+
 

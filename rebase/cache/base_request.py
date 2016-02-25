@@ -1,10 +1,13 @@
 from http.server import BaseHTTPRequestHandler
-from logging import error, info
+from logging import getLogger
+
+
+logger = getLogger()
 
 
 class CacheBaseHandler(BaseHTTPRequestHandler):
     def log_error(self, message, *args):
-        error(message, *args)
+        logger.error(message, *args)
 
     def log_message(self, message, *args):
-        info(message, *args)
+        logger.info(message, *args)
