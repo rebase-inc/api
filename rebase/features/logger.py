@@ -2,14 +2,30 @@ from logging import Formatter, getLogger
 from logging.handlers import SysLogHandler
 
 
-logger = getLogger()
+
+def has_syslog(logger):
+    found = False
+    for handler in logger.handlers:
+        if isinstance(handler, SysLogHandler):
+            found = True
+            break
+    return found
+
+
+def setup(logger, level, syslog_address, format_str):
+    logger.setLevel(level)
+    if not has_syslog(logger):
+        rsyslog = SysLogHandler(syslog_address)
+        rsyslog.setFormatter(Formatter(format_str))
+        logger.addHandler(rsyslog)
+
+
+def setup_with_conf(logger, basic, syslog):
+    setup(logger, basic['level'], syslog['address'], basic['format'])
 
 
 def setup_logger(app):
-    conf = app.config['BASIC_LOG_CONFIG']
-    logger.setLevel(conf['level'])
-    rsyslog = SysLogHandler(**app.config['RSYSLOG_CONFIG'])
-    rsyslog.setFormatter(Formatter(conf['format']))
-    logger.addHandler(rsyslog)
+    logger = getLogger()
+    setup_with_conf(logger, app.config['BASIC_LOG_CONFIG'], app.config['RSYSLOG_CONFIG'])
 
 

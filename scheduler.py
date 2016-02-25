@@ -2,6 +2,7 @@ from copy import copy
 from datetime import datetime, timedelta
 from functools import partial
 from logging import getLogger
+from multiprocessing import current_process
 from sched import scheduler
 from signal import signal, SIGINT, SIGTERM, SIGQUIT
 from sys import exit
@@ -24,6 +25,9 @@ _, _, db = create()
 logger = getLogger()
 
 
+current_process().name = 'scheduler'
+
+
 def load_new_events(sched):
     for event in sched.queue:
         sched.cancel(event)
@@ -38,7 +42,7 @@ def load_new_events(sched):
     mediations = Mediation.query.filter(or_(Mediation.state=='waiting_for_client', Mediation.state=='waiting_for_dev')).all()
     for mediation in mediations:
         sched.enterabs(mediation.timeout, 0, mediation_timed_out, argument=(mediation.id,))
-    logger.debug('%s', sched.queue)
+    logger.debug('Loaded %d Events in the queue', len(sched.queue))
 
 
 class Proxy(scheduler):
