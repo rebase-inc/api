@@ -32,18 +32,6 @@ function _repopulate() {
     docker start api_cache_1 api_rq_default_1 api_web_1 api_scheduler_1
 }
 
-function _log_cache() {
-    docker exec -t api_cache_1 tail -f /log/cache.log
-}
-
-function _access_log() {
-    docker exec -t api_web_1 tail -f /log/access.log
-}
-
-function _error_log() {
-    docker exec -t api_web_1 tail -f /log/error.log
-}
-
 function _log() {
     docker exec -t api_rsyslog_1 tail -f /var/log/rebase.log
 }
