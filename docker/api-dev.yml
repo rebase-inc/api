@@ -1,6 +1,6 @@
 common_env:
   environment:
-    REBASE_CLIENT_HOST: "192.168.99.100"
+    REBASE_CLIENT_HOST:
     REBASE_CLIENT_PORT: 3000
     PYTHONHASHSEED: 2592602613
     APP_SETTINGS: "/api/rebase/common/dev.py"

@@ -11,6 +11,7 @@ function _bash() {
 #
 function _vm() {
     eval "$(docker-machine env default)"
+    export REBASE_CLIENT_HOST=$(docker-machine ip default)
     env|sort|grep DOCKER
 }
 
