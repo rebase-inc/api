@@ -6,12 +6,19 @@ function _bash() {
     docker exec -it api_$1_1 bash
 }
 
-# From any bash session, points Docker to the default VM
-# $ _vm
+# From any bash session, points Docker to a VM
+# If no name is provided, 'default' is the choice
+#
+# $ _vm [<name>]
 #
 function _vm() {
-    eval "$(docker-machine env default)"
-    export REBASE_CLIENT_HOST=$(docker-machine ip default)
+    if [ -z $1 ]; then
+        name=default
+    else
+        name=$1
+    fi
+    eval "$(docker-machine env $name)"
+    export REBASE_CLIENT_HOST=$(docker-machine ip $name)
     env|sort|grep DOCKER
 }
 
@@ -47,9 +54,9 @@ function _log() {
 #
 function _create_vm() {
     docker-machine create \
-        --driver virtualbox \
-        --virtualbox-cpu-count "2" \
-        --virtualbox-memory "2048" \
-        dev
+        --driver vmwarefusion \
+        --vmwarefusion-cpu-count "2" \
+        --vmwarefusion-memory-size "2048" \
+        $1
 }
 
