@@ -7,7 +7,6 @@ RUN apt-get update && \
         python3.4 \
         python3-pip \
         python-psycopg2
-VOLUME /log
 RUN easy_install3 -U pip && \
     pip install virtualenv && \
     virtualenv -p python3 /venv/api && \
