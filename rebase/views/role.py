@@ -18,6 +18,6 @@ class RoleSchema(RebaseSchema):
         from rebase.models import Role
         return self._get_or_make_object(Role, data)
 
-serializer = RoleSchema(only=('id','type','user','walkthrough_completed', 'project', 'skill_set', 'remote_work_history')) # TODO: Use load_only/dump_only
+serializer = RoleSchema()
 deserializer = RoleSchema(only=tuple(), strict=True)
 update_deserializer = RoleSchema(only=('walkthrough_completed',), context={'raw': True})

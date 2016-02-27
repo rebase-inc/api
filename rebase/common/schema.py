@@ -107,3 +107,10 @@ class SecureNestedField(fields.Nested):
         _schema.context = {} # hack
         return _schema
 
+
+@current_app.after_request
+def clear(response):
+    current_app.cache_in_process.clear()
+    return response
+
+

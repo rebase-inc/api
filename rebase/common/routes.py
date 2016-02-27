@@ -7,6 +7,10 @@ def register_routes(api):
     api.add_resource(UserCollection, UserCollection.url)
     api.add_resource(UserResource, UserResource.url)
 
+    from rebase.models.role import Role
+    import rebase.views.role as role_view
+    add_restful_endpoint(api, Role, role_view.serializer, role_view.deserializer, role_view.update_deserializer)
+
     from rebase.resources.auth import AuthCollection
     api.add_resource(AuthCollection, AuthCollection.url)
 
