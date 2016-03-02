@@ -77,16 +77,16 @@ def invalidate_cache(delete_key, keys, changeset):
             else:
                 # _id is a new obj that's never been cached, so we need to find its parents
                 instance = type_obj.query.get(_id)
-                foreign_keys = instance.__table__.foreign_keys
-                #if not foreign_keys:
-                    #logger.debug('%s was not found in cache and does not have any parent, skipping invalidation', instance)
-                for fk in foreign_keys:
-                    parent = getattr(instance, fk.column.table.name, None)
-                    if parent:
-                        _parent_hash = hash(parent)
-                        if _parent_hash in keys:
-                            q.put(_parent_hash)
-                            #logger.debug('Found parent %s for instance %s', parent, instance)
+                if not instance.__mapper__.relationships:
+                    logger.debug('%s was not found in cache and does not have any relationship, skipping invalidation', instance)
+                for relationship in instance.__mapper__.relationships:
+                    if relationship.direction.name == 'MANYTOONE':
+                        parent = getattr(instance, relationship.key, None)
+                        if parent:
+                            _parent_hash = hash(parent)
+                            if _parent_hash in keys:
+                                q.put(_parent_hash)
+                                #logger.debug('Found parent %s of %s in in-process cache', parent, instance)
             # now empty the q and delete the corresponding keys from the cache
             while not q.empty():
                 _hash = q.get()
