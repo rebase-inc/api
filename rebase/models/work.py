@@ -14,13 +14,13 @@ from rebase.git.repo import Repo
 class Work(DB.Model, PermissionMixin):
     __pluralname__ = 'works'
 
-    id =    DB.Column(DB.Integer, primary_key=True)
-    state = DB.Column(DB.String, nullable=False, default='in_progress')
-    branch = DB.Column(DB.String, nullable=False)
+    id =            DB.Column(DB.Integer, primary_key=True)
+    state =         DB.Column(DB.String, nullable=False, default='in_progress')
+    branch =        DB.Column(DB.String, nullable=False)
+    work_offer_id = DB.Column(DB.Integer, DB.ForeignKey('work_offer.id', ondelete='CASCADE'), nullable=False)
 
     debit =         DB.relationship('Debit',        backref='work', uselist=False, cascade='all, delete-orphan', passive_deletes=True)
     credit =        DB.relationship('Credit',       backref='work', uselist=False, cascade='all, delete-orphan', passive_deletes=True)
-    offer =         DB.relationship('WorkOffer',    backref='work', uselist=False, cascade='all, delete-orphan', passive_deletes=True)
     review =        DB.relationship('Review',       backref='work', lazy='joined', uselist=False, cascade='all, delete-orphan', passive_deletes=True)
     mediations =    DB.relationship('Mediation',    backref='work', lazy='joined', cascade='all, delete-orphan', passive_deletes=True, order_by='Mediation.id')
     comments =      DB.relationship('Comment',      backref='work', lazy='joined', cascade='all, delete-orphan', passive_deletes=True, order_by='Comment.created')
@@ -157,7 +157,7 @@ class WorkStateMachine(StateMachine):
             self.in_mediation: self.complete
         })
         self.add_event_transitions('resolve', {
-            self.in_mediation: self.resolved,
+            self.in_mediation: self.in_progress,
             self.blocked: self.resolved
         })
         self.add_event_transitions('resume', {self.resolved: self.in_progress })
