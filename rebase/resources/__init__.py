@@ -127,7 +127,7 @@ class Event(Resource):
         DB.session.commit()
 
         # update the cache
-        invalidate([(self.model, id)])
+        invalidate([(self.model, (id,))])
 
         response = jsonify({self.model.__tablename__: self.serializer.dump(instance).data})
         response.status_code = 201
