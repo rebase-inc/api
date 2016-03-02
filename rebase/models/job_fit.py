@@ -1,8 +1,7 @@
 
-from random import randint
-
 from rebase.common.database import DB, PermissionMixin
 from rebase.models import Nomination
+
 
 class JobFit(DB.Model, PermissionMixin):
     __pluralname__ = 'job_fits'
@@ -49,3 +48,5 @@ class JobFit(DB.Model, PermissionMixin):
 
     def allowed_to_be_viewed_by(self, user):
         return self.allowed_to_be_created_by(user)
+
+
