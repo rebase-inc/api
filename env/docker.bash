@@ -34,14 +34,42 @@ function _git() {
     docker exec -t api_rq_git_1 $*
 }
 
+#
+# Execute any bash command as 'postgres' user on database container
+# Example:
+# $ _db "psql -l"
+#
+function _db() {
+    echo "$1"
+    if [ -z "$1" ]; then
+        docker exec -it api_database_1 su -l postgres
+    else
+        docker exec -it api_database_1 su -l postgres -c "$1"
+    fi
+}
+
+#
+# Repopulate the database.
+# With the option '--hard', this will destroy and recreate the database itself.
+# Use '--hard' if calling '_repopulate' fails.
+# Without option, _repopulate will attempt a 'soft' 'DROP TABLE' .
+# Examples:
+# $ _repopulate
+# $ _repopulate --hard
+#
 function _repopulate() {
     docker stop api_scheduler_1 api_web_1 api_rq_default_1 api_cache_1
+    if [ "$1" == "--hard" ]; then
+        docker stop api_rq_git_1
+        _db "dropdb postgres && createdb postgres"
+        docker start api_rq_git_1
+    fi
     _git /api/env/repopulate
     docker start api_cache_1 api_rq_default_1 api_web_1 api_scheduler_1
 }
 
 function _log() {
-    docker exec -t api_rsyslog_1 tail -f /var/log/rebase.log
+    docker exec -t api_rsyslog_1 tail -100 -f /var/log/rebase.log
 }
 
 #
@@ -59,4 +87,5 @@ function _create_vm() {
         --vmwarefusion-memory-size "2048" \
         $1
 }
+
 
