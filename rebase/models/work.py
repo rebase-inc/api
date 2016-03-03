@@ -154,7 +154,8 @@ class WorkStateMachine(StateMachine):
         self.add_event_transitions('mediate', {self.in_review: self.in_mediation})
         self.add_event_transitions('complete', {
             self.in_review: self.complete,
-            self.in_mediation: self.complete
+            self.in_mediation: self.complete,
+            self.wait_for_rating: self.complete
         })
         self.add_event_transitions('resolve', {
             self.in_mediation: self.in_progress,
