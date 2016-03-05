@@ -97,7 +97,7 @@ class MediationStateMachine(StateMachine):
     def decision(self, answer, comment):
         self.ended = datetime.datetime.now()
         Comment(current_user, comment, mediation=self.mediation)
-        if hasattr(self.mediation, 'client_answer'):
+        if self.mediation.client_answer:
             self.mediation.dev_answer = answer
         else:
             self.mediation.client_answer = answer
