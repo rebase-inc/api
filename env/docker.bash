@@ -81,11 +81,38 @@ function _log() {
 # It's been reported that it works with VMWare Fusion.
 #
 function _create_vm() {
-    docker-machine create \
-        --driver vmwarefusion \
-        --vmwarefusion-cpu-count "2" \
-        --vmwarefusion-memory-size "2048" \
-        $1
+    if [ -z "$1" ]; then
+        echo "Missing machine name: $ _create_vm <machine_name>"
+    else
+        docker-machine create \
+            --driver vmwarefusion \
+            --vmwarefusion-cpu-count "2" \
+            --vmwarefusion-memory-size "2048" \
+            $1
+    fi
 }
 
+#
+# to manually set the IP address of a vm.
+# Defaults to 'default'.
+#
+# $ _fix_ip [<machine>]
+#
+function _fix_ip() {
+    if [ -z $1 ]; then
+        vm='default'
+    else
+        vm="$1"
+    fi
+    echo "ifconfig eth0 192.168.99.100 netmask 255.255.255.0 broadcast 192.168.99.255 up" | docker-machine ssh "$1" sudo tee /var/lib/boot2docker/bootsync.sh > /dev/null
+}
 
+# Add your VM's IP to /etc/hosts as 'dev'
+function _add_vm_to_hosts() {
+    if [ -z "$1" ]; then
+        echo "Missing machine name:  _dev_vm <machine_name>"
+    else
+        sudo sed -i -n  '/192.168.*.* dev/d' /etc/hosts
+        echo "$(docker-machine ip $1) dev" | sudo tee -a /etc/hosts
+    fi
+}
