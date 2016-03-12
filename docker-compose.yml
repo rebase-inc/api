@@ -48,19 +48,19 @@ client:
     service: common_env
     file: docker/api-dev.yml
 
-rq_git:
-  extends:
-    service: webserver
-    file: docker/api-dev.yml
-  image: rebase/rq_git
-  ports:
-   - "2222:22"
-  links:
-   - database:db
-   - redis
-   - rsyslog
-  volumes:
-   - git:/git
+#rq_git:
+  #extends:
+    #service: webserver
+    #file: docker/api-dev.yml
+  #image: rebase/rq_git
+  #ports:
+   #- "2222:22"
+  #links:
+   #- database:db
+   #- redis
+   #- rsyslog
+  #volumes:
+   #- git:/git
 
 rq_default:
   extends:

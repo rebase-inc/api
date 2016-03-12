@@ -2,8 +2,8 @@
 # Launch a bash session inside a running container:
 # $ _bash api_web_1
 #
-function _bash() {
-    docker exec -it api_$1_1 bash
+function _sh() {
+    docker exec -it api_$1_1 sh
 }
 
 # From any bash session, points Docker to a VM
