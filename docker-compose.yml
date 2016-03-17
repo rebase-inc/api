@@ -37,7 +37,7 @@ scheduler:
   command: ["/venv/api/bin/python", "scheduler.py"]
 
 client:
-  build: ../react-app/
+  image: rebase/client
   ports:
    - "3000:3000"
   volumes:
