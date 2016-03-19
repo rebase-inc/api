@@ -4,8 +4,9 @@ from rebase.models import Nomination
 
 class NominationSchema(RebaseSchema):
 
-    contractor_id =             fields.Integer()
-    ticket_set_id =             fields.Integer()
+    contractor_id = fields.Integer()
+    ticket_set_id = fields.Integer()
+    hide =          fields.Boolean()
 
     job_fit =    SecureNestedField('JobFitSchema',       only=('contractor_id', 'ticket_set_id', 'score'), default=None)
     contractor = SecureNestedField('ContractorSchema',   only=('id','user', 'skill_set', 'rating'), default=None)
