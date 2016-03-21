@@ -192,3 +192,10 @@ api-mediate-work() {
     api-work-event $1 "$2" 'mediate'
 }
 
+api-hide-nomination() {
+    api-put \
+    "{ \
+        \"hide\": true \
+    }" \
+    nominations/$1/$2
+}
