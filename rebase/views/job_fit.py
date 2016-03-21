@@ -41,7 +41,7 @@ class JobFitSchema(RebaseSchema):
 
     @post_load
     def make_job_fit(self, data):
-        return self._get_or_make_object(JobFit, data, self._primary_keys)
+        return self._get_or_make_object(JobFit, data)
 
 deserializer =          JobFitSchema()
 serializer =            JobFitSchema()
