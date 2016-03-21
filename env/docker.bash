@@ -6,6 +6,13 @@ function _bash() {
     docker exec -it api_$1_1 bash
 }
 
+# Launch a sh session inside a running container:
+# $ _sh api_client_1
+#
+function _sh() {
+    docker exec -it api_$1_1 sh
+}
+
 # From any bash session, points Docker to a VM
 # If no name is provided, 'default' is the choice
 #
