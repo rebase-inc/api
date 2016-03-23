@@ -5,6 +5,7 @@ web:
   links:
    - redis
    - database:db
+   - rsyslog
   command: ["/venv/api/bin/gunicorn", "-c", "/api/etc/gunicorn.pro.conf", "wsgi:app"]
 
 cache:
@@ -14,6 +15,7 @@ cache:
   links:
    - redis
    - database:db
+   - rsyslog
   command: ["/api/cache"]
 
 scheduler:
@@ -22,15 +24,18 @@ scheduler:
     file: docker/api-production.yml
   links:
    - database:db
+   - rsyslog
   command: ["/venv/api/bin/python", "scheduler.py"]
 
 client:
-  image: rebase/client-production
+  image: rebase/client
   volumes:
    - ../react-app:/code
+   - www:/www
   extends:
     service: common_env
     file: docker/api-production.yml
+  command: ["/code/init"]
 
 rq_git:
   extends:
@@ -40,8 +45,9 @@ rq_git:
   ports:
    - "2222:22"
   links:
-   - redis
    - database:db
+   - redis
+   - rsyslog
   volumes:
    - git:/git
 
@@ -50,9 +56,10 @@ rq_default:
     service: webserver
     file: docker/api-production.yml
   links:
-   - redis
-   - database:db
    - cache
+   - database:db
+   - redis
+   - rsyslog
   command: ["/venv/api/bin/python", "run-worker.py"]
 
 nginx:
@@ -74,3 +81,8 @@ database:
     PGDATA: "/var/lib/postgresql/data/rebase"
   volumes:
    - sql:/var/lib/postgresql/data/rebase
+
+rsyslog:
+  image: rebase/rsyslog
+  volumes:
+   - log:/var/log
