@@ -1,4 +1,4 @@
 #!/bin/sh
 
-rsyslogd -n
 rm -f /var/run/rsyslogd.pid
+rsyslogd -n

@@ -1,0 +1,8 @@
+#!/bin/bash
+
+docker build -t rebase/api .
+docker build -t rebase/rq_git docker/git
+docker build -t rebase/rsyslog docker/rsyslog
+docker build -t rebase/client ../react-app/
+
+docker-compose -f production-compose.yml build

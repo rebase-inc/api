@@ -9,6 +9,4 @@ COPY main /usr/bin/main
 
 EXPOSE 514/udp
 
-STOPSIGNAL SIGTERM
-
-CMD ["/usr/sbin/rsyslogd", "-n"]
+CMD ["/usr/bin/main"]
