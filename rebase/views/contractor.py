@@ -7,6 +7,7 @@ class ContractorSchema(RebaseSchema):
     id =                    fields.Integer()
     type =                  fields.String()
     busyness =              fields.Integer()
+    rate =                  fields.Integer()
     rating =                fields.Integer()
     user =                  SecureNestedField('UserSchema',              only=('id', 'name', 'photo'))
     work_offers =           SecureNestedField('WorkOfferSchema',         only=('id',), many=True)
@@ -23,4 +24,4 @@ class ContractorSchema(RebaseSchema):
 
 serializer =            ContractorSchema()
 deserializer =          ContractorSchema(only=('user',), strict=True)
-update_deserializer =   ContractorSchema(only=('busyness',), context={'raw': True})
+update_deserializer =   ContractorSchema(only=('busyness', 'rate'), context={'raw': True})

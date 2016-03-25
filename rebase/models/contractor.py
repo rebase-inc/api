@@ -14,6 +14,7 @@ class Contractor(Role):
 
     id =            DB.Column(DB.Integer, DB.ForeignKey('role.id', ondelete='CASCADE'), primary_key=True)
     busyness =      DB.Column(DB.Integer, nullable=False, default=1)
+    rate =          DB.Column(DB.Integer, nullable=False, default=0)
     rating =        DB.Column(DB.Float, nullable=False) # this will probably end up being a composite of the users reviews, but I needed something temporarily
 
     clearances =          DB.relationship('CodeClearance',     backref='contractor', cascade='all, delete-orphan', passive_deletes=True)
