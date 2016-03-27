@@ -63,11 +63,13 @@ rq_default:
   command: ["/venv/api/bin/python", "run-worker.py"]
 
 nginx:
-    build: nginx
+    image: rebase/nginx
     ports:
      - "${REBASE_CLIENT_PORT}:80"
     links:
      - web
+    volumes:
+     - certificates:/etc/letsencrypt/webrootauth
     volumes_from:
      - client:ro
 

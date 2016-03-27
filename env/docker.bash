@@ -123,3 +123,11 @@ function _add_vm_to_hosts() {
         echo "$(docker-machine ip $1) dev" | sudo tee -a /etc/hosts
     fi
 }
+
+function _gen_certs() {
+    docker run -it --rm -v certificates:/certificates \
+        rebase/letsencrypt auth \
+        --webroot-path /certificates \
+        -c /config/webroot.ini \
+        -d alpha.rebaseapp.com
+}

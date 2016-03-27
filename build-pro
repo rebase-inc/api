@@ -1,8 +1,9 @@
 #!/bin/bash
 
 docker build -t rebase/api .
-docker build -t rebase/rq_git docker/git
-docker build -t rebase/rsyslog docker/rsyslog
 docker build -t rebase/client ../react-app/
+docker build -t rebase/letsencrypt docker/letsencrypt
+docker build -t rebase/nginx docker/nginx
+docker build -t rebase/rsyslog docker/rsyslog
 
 docker-compose -f production-compose.yml build
