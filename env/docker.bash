@@ -133,10 +133,10 @@ function _gen_certs() {
         echo 'Generating test certificates'
     fi
 
-    docker run -it --rm -v certificates:/certificates \
+    docker run -it --rm -v etc_letsencrypt:/etc/letsencrypt \
         rebase/letsencrypt certonly \
             $test_flag \
-            --webroot-path /certificates \
+            --webroot-path /etc/letsencrypt/webrootauth \
             -c /config/webroot.ini \
             -d alpha.rebaseapp.com
 }
