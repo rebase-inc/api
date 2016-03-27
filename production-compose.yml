@@ -69,7 +69,7 @@ nginx:
     links:
      - web
     volumes:
-     - certificates:/etc/letsencrypt/webrootauth
+     - certificates:/etc/letsencrypt/webrootauth:ro
     volumes_from:
      - client:ro
 

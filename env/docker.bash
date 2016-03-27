@@ -125,9 +125,18 @@ function _add_vm_to_hosts() {
 }
 
 function _gen_certs() {
+    test_flag='--test-cert'
+    if [ "$1" == "--production" ]; then
+        test_flag=
+        echo 'Generating real production certificates'
+    else
+        echo 'Generating test certificates'
+    fi
+
     docker run -it --rm -v certificates:/certificates \
-        rebase/letsencrypt auth \
-        --webroot-path /certificates \
-        -c /config/webroot.ini \
-        -d alpha.rebaseapp.com
+        rebase/letsencrypt certonly \
+            $test_flag \
+            --webroot-path /certificates \
+            -c /config/webroot.ini \
+            -d alpha.rebaseapp.com
 }
