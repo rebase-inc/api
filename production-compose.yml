@@ -66,6 +66,7 @@ nginx:
     image: rebase/nginx
     ports:
      - "${REBASE_CLIENT_PORT}:80"
+     - 443:443
     links:
      - web
     volumes:
