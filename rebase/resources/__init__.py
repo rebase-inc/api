@@ -1,12 +1,13 @@
 from collections import defaultdict
 from functools import wraps, partial
-from logging import warning
+from logging import warning, error
 from sys import exc_info
 from traceback import format_exc
 
 from flask import current_app, jsonify, request
 from flask.ext.restful import Resource
 from flask.ext.login import login_required, current_user
+from sqlalchemy.exc import InternalError
 
 from rebase.cache.rq_jobs import invalidate
 from rebase.common.database import DB
@@ -25,6 +26,10 @@ def convert_exceptions(verb):
             raise server_error
         except ClientError as client_error:
             raise client_error
+        except InternalError as sql_error:
+            error(format_exc())
+            DB.session.rollback()
+            raise ServerError('Database error')
         except Exception as e:
             warning(format_exc())
             raise ServerError(message='Server error')

@@ -1,6 +1,5 @@
 from marshmallow import fields, post_load
 import marshmallow.exceptions as marsh
-import sqlalchemy.orm.exc as orm_exc
 
 from rebase.common.schema import RebaseSchema, SecureNestedField
 from rebase.views.role import RoleSchema
@@ -28,11 +27,11 @@ class UserSchema(RebaseSchema):
     @post_load
     def make_user(self, data):
         from rebase.models import User
-        if tuple(data.keys()) == ('email',):
-            try:
-                return User.query.filter(User.email == data.get('email')).one()
-            except orm_exc.NoResultFound as error:
+        if 'email' in data:
+            user = User.query.filter(User.email == data.get('email')).first()
+            if not user:
                 raise marsh.ValidationError('Bad email', fields=['email',])
+            return user
         return self._get_or_make_object(User, data)
 
 serializer = UserSchema()
