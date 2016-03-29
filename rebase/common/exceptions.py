@@ -65,6 +65,8 @@ def marshmallow_exceptions(data=None):
         yield
     except marsh_exc.ValidationError as error:
         raise ValidationError(error, data)
+    except ValidationError as error:
+        raise error
     except Exception as error:
         import traceback
         traceback.print_exc()
