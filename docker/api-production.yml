@@ -1,11 +1,12 @@
 common_env:
   environment:
+    APP_SETTINGS: "/api/rebase/common/pro.py"
+    GITHUB_CLIENT_SECRET:
+    NOTIFICATION_EMAIL_PASSWORD:
+    PYTHONHASHSEED:
     REBASE_CLIENT_HOST:
     REBASE_CLIENT_PORT:
-    GITHUB_CLIENT_SECRET:
     SECRET_KEY:
-    PYTHONHASHSEED:
-    APP_SETTINGS: "/api/rebase/common/pro.py"
 
 webserver:
   image: rebase/api
