@@ -3,6 +3,8 @@ DEBUG = True
 DEBUG_TB_INTERCEPT_REDIRECTS = False
 FLASK_LOGIN_SESSION_PROTECTION = "basic"
 NOMINATE_ALL_CONTRACTORS = True
+NOTIFICATION_EMAIL = 'com.rebaseapp.alpha@gmail.com'
+NOTIFICATION_EMAIL_PASSWORD = 'JgQ-b9q-en2-B7g'
 
 SECRET_KEY = "\x86\xa1\xb8\xfbP\x8f\xd6\x1c'\xad-\xdb\xf8+K=\x820g<5\x16|l"
 GITHUB_CLIENT_ID = 'ccfe7b7be7560c9a112e'

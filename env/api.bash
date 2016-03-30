@@ -199,3 +199,25 @@ api-hide-nomination() {
     }" \
     nominations/$1/$2
 }
+
+#
+# api-nominate <contractor-id> <ticket-set-id> [<auction-id>]
+#
+api-nominate() {
+    if [ $# -gt 3 ] || [ $# -lt 2 ]; then
+        echo "Invalid number of arguments.\nCorrect syntax:\n $  api-nominate <contractor-id> <ticket-set-id> [<auction-id>]"
+        exit 1; 
+    fi;
+    if [ $# -eq 3 ]; then
+        auction="\"auction\": { \"id\": $3 }, "
+    else
+        auction=
+    fi
+    api-post \
+    "{ \
+        \"contractor\": { \"id\": $1 }, \
+        \"ticket_set\": { \"id\": $2 }, \
+        $auction
+     }" \
+     nominations
+}

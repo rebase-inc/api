@@ -1,10 +1,13 @@
 from datetime import datetime, timedelta
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 from flask.ext.login import current_app
 from sqlalchemy.orm import validates
 from sqlalchemy.ext.hybrid import hybrid_property
 
 from rebase.common.database import DB, PermissionMixin
+from rebase.common.email import Email, send
 from rebase.common.exceptions import NoRole, UnknownRole, BadBid
 from rebase.common.query import query_from_class_to_user
 from rebase.common.state import StateMachine
@@ -133,6 +136,7 @@ class AuctionStateMachine(StateMachine):
 
         bid.contract = Contract(bid)
         if self.auction.bids.filter(Bid.contract != None).count() >= self.auction.redundancy:
+            send_emails(self.auction, bid)
             self.send('end')
 
     def failed(self):
@@ -158,4 +162,43 @@ class AuctionStateMachine(StateMachine):
             self.waiting_for_bids:  self.ended,
         })
 
+
+def send_emails(auction, bid):
+    ticket = auction.ticket_set.bid_limits[0].ticket_snapshot.ticket
+    contractor = bid.contractor.user
+    managers_emails = [ mgr.user.email for mgr in ticket.project.managers ]
+    msg = MIMEMultipart('alternative')
+    msg['Subject'] = 'Rebase Auction: match found for ticket "{}"'.format(ticket.title)
+    msg['From'] = 'do_not_reply@rebaseapp.com'
+    msg['To'] = ','.join(managers_emails)
+    text = '{contractor} won the bid for ticket "{title}" and is now working on it.'.format(
+        contractor=contractor.name,
+        title=ticket.title
+    )
+    html = """\
+    <html>
+        <head></head>
+        <body>
+            <p>
+            {text}
+            </p>
+        </body>
+    </html>
+    """.format(text=text)
+    msg.attach(MIMEText(text, 'plain'))
+    msg.attach(MIMEText(html, 'html'))
+    send([
+        Email(
+            'com.rebaseapp.alpha@rebaseapp.com',
+            managers_emails,
+            msg.as_string()
+        ),
+        Email(
+            'com.rebaseapp.alpha@rebaseapp.com',
+            [contractor.email],
+            'You won the bid for the ticket: "{title}"'.format(
+                title=ticket.title
+            )
+        ),
+    ])
 
