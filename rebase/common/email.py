@@ -2,6 +2,8 @@ from logging import info
 from smtplib import SMTP_SSL
 
 from flask.ext.login import current_app
+from flask import current_app
+
 
 class Email(object):
 
@@ -14,13 +16,22 @@ class Email(object):
         return 'from: {}, to: {}, msg: {}'.format(self.from_addr, self.to_addrs, self.msg)
 
 
-def send(emails):
+def _send(emails, login_email, login_password):
     server = SMTP_SSL('smtp.gmail.com')
-    server.login(current_app.config['NOTIFICATION_EMAIL'], current_app.config['NOTIFICATION_EMAIL_PASSWORD'])
+    server.login(login_email, login_password)
     for email in emails:
         isinstance(email, Email)
         info('Sending email: %s', email)
         server.sendmail(email.from_addr, email.to_addrs, email.msg)
     server.quit()
+
+
+def send(emails):
+    current_app.default_queue.enqueue(
+        _send,
+        emails,
+        current_app.config['NOTIFICATION_EMAIL'],
+        current_app.config['NOTIFICATION_EMAIL_PASSWORD']
+    )
 
 
