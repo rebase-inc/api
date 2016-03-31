@@ -167,14 +167,42 @@ def send_emails(auction, bid):
     ticket = auction.ticket_set.bid_limits[0].ticket_snapshot.ticket
     contractor = bid.contractor.user
     managers_emails = [ mgr.user.email for mgr in ticket.project.managers ]
-    msg = MIMEMultipart('alternative')
-    msg['Subject'] = 'Rebase Auction: match found for ticket "{}"'.format(ticket.title)
-    msg['From'] = 'do_not_reply@rebaseapp.com'
-    msg['To'] = ','.join(managers_emails)
     text = '{contractor} won the bid for ticket "{title}" and is now working on it.'.format(
         contractor=contractor.name,
         title=ticket.title
     )
+    client_msg = msg(
+        'Rebase Auction: match found for ticket "{}"'.format(ticket.title),
+        ','.join(managers_emails),
+        text,
+        text,
+    )
+    contractor_text = 'You won the bid for the ticket: "{title}"'.format(title=ticket.title)
+    contractor_msg = msg(
+        'Rebase Auction: you won the bid for ticket "{}"'.format(ticket.title),
+        ','.join([contractor.email]),
+        contractor_text,
+        contractor_text,
+    )
+    send([
+        Email(
+            'com.rebaseapp.alpha@rebaseapp.com',
+            managers_emails,
+            client_msg.as_string()
+        ),
+        Email(
+            'com.rebaseapp.alpha@rebaseapp.com',
+            [contractor.email],
+            contractor_msg.as_string()
+        ),
+    ])
+
+
+def msg(subject, to, plain_text_msg, html_msg):
+    _msg = MIMEMultipart('alternative')
+    _msg['Subject'] = subject
+    _msg['From'] = 'do_not_reply@rebaseapp.com'
+    _msg['To'] = to
     html = """\
     <html>
         <head></head>
@@ -184,21 +212,9 @@ def send_emails(auction, bid):
             </p>
         </body>
     </html>
-    """.format(text=text)
-    msg.attach(MIMEText(text, 'plain'))
-    msg.attach(MIMEText(html, 'html'))
-    send([
-        Email(
-            'com.rebaseapp.alpha@rebaseapp.com',
-            managers_emails,
-            msg.as_string()
-        ),
-        Email(
-            'com.rebaseapp.alpha@rebaseapp.com',
-            [contractor.email],
-            'You won the bid for the ticket: "{title}"'.format(
-                title=ticket.title
-            )
-        ),
-    ])
+    """.format(text=plain_text_msg)
+    _msg.attach(MIMEText(plain_text_msg, 'plain'))
+    _msg.attach(MIMEText(html_msg, 'html'))
+    return _msg
+
 
