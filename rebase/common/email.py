@@ -16,9 +16,9 @@ class Email(object):
         return 'from: {}, to: {}, msg: {}'.format(self.from_addr, self.to_addrs, self.msg)
 
 
-def _send(emails, login_email, login_password):
-    server = SMTP_SSL('smtp.gmail.com')
-    server.login(login_email, login_password)
+def send_emails(emails, smtp_host, smtp_login, smtp_password):
+    server = SMTP_SSL(smtp_host)
+    server.login(smtp_login, smtp_password)
     for email in emails:
         isinstance(email, Email)
         info('Sending email: %s', email)
@@ -28,8 +28,9 @@ def _send(emails, login_email, login_password):
 
 def send(emails):
     current_app.default_queue.enqueue(
-        _send,
+        send_emails,
         emails,
+        current_app.config['SMTP_HOST'],
         current_app.config['NOTIFICATION_EMAIL'],
         current_app.config['NOTIFICATION_EMAIL_PASSWORD']
     )

@@ -47,5 +47,6 @@ class Config(object):
     RSYSLOG_CONFIG = {
         'address': ('rsyslog', 514),
     }
+    SMTP_HOST='smtp.gmail.com'
 
 
