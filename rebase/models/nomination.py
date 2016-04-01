@@ -1,5 +1,7 @@
 from sqlalchemy import or_, sql
+
 from rebase.common.database import DB, PermissionMixin
+from rebase.common.email import Email, send
 
 class Nomination(DB.Model, PermissionMixin):
     __pluralname__ = 'nominations'
@@ -26,6 +28,7 @@ class Nomination(DB.Model, PermissionMixin):
         if not CodeClearance.query.filter(CodeClearance.contractor_id == self.contractor_id).filter(CodeClearance.project_id == project.id).first():
             CodeClearance(project, self.contractor)
         self._auction = value
+        send_email(self)
 
     def __init__(self, contractor, ticket_set, auction=None):
         from rebase.models import Contractor, TicketSet, TicketMatch, JobFit
@@ -79,4 +82,19 @@ class Nomination(DB.Model, PermissionMixin):
 
     def __repr__(self):
         return '<Nomination[contractor({}), ticket_set({})]>'.format(self.contractor_id, self.ticket_set_id)
+
+
+def send_email(nomination):
+    ticket = nomination.ticket_set.bid_limits[0].ticket_snapshot.ticket
+    contractor = nomination.contractor.user
+    contractor_text = 'Waiting for your bid on ticket:\n"{title}"'.format(title=ticket.title)
+    contractor_email = Email(
+        'do_not_reply@rebaseapp.com',
+        [ contractor.email ],
+        'Rebase Auction: bid for ticket "{}"'.format(ticket.title),
+        contractor_text,
+        contractor_text,
+    )
+    send([ contractor_email ])
+
 

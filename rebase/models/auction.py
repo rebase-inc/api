@@ -1,6 +1,4 @@
 from datetime import datetime, timedelta
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 
 from flask.ext.login import current_app
 from sqlalchemy.orm import validates
@@ -167,54 +165,25 @@ def send_emails(auction, bid):
     ticket = auction.ticket_set.bid_limits[0].ticket_snapshot.ticket
     contractor = bid.contractor.user
     managers_emails = [ mgr.user.email for mgr in ticket.project.managers ]
-    text = '{contractor} won the bid for ticket "{title}" and is now working on it.'.format(
+    text = '{contractor} won the bid for ticket:\n"{title}" and is now working on it.'.format(
         contractor=contractor.name,
         title=ticket.title
     )
-    client_msg = msg(
+    client_email = Email(
+        'do_not_reply@rebaseapp.com',
+        managers_emails,
         'Rebase Auction: match found for ticket "{}"'.format(ticket.title),
-        ','.join(managers_emails),
         text,
         text,
     )
-    contractor_text = 'You won the bid for the ticket: "{title}"'.format(title=ticket.title)
-    contractor_msg = msg(
+    contractor_text = 'You won the bid for the ticket:\n"{title}"'.format(title=ticket.title)
+    contractor_email = Email(
+        'do_not_reply@rebaseapp.com',
+        [contractor.email],
         'Rebase Auction: you won the bid for ticket "{}"'.format(ticket.title),
-        ','.join([contractor.email]),
         contractor_text,
         contractor_text,
     )
-    send([
-        Email(
-            'com.rebaseapp.alpha@rebaseapp.com',
-            managers_emails,
-            client_msg.as_string()
-        ),
-        Email(
-            'com.rebaseapp.alpha@rebaseapp.com',
-            [contractor.email],
-            contractor_msg.as_string()
-        ),
-    ])
-
-
-def msg(subject, to, plain_text_msg, html_msg):
-    _msg = MIMEMultipart('alternative')
-    _msg['Subject'] = subject
-    _msg['From'] = 'do_not_reply@rebaseapp.com'
-    _msg['To'] = to
-    html = """\
-    <html>
-        <head></head>
-        <body>
-            <p>
-            {text}
-            </p>
-        </body>
-    </html>
-    """.format(text=plain_text_msg)
-    _msg.attach(MIMEText(plain_text_msg, 'plain'))
-    _msg.attach(MIMEText(html_msg, 'html'))
-    return _msg
+    send([ client_email, contractor_email ])
 
 
