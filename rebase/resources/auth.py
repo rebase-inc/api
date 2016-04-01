@@ -55,7 +55,7 @@ class AuthCollection(Resource):
             return jsonify(**{'user': user.serializer.dump(current_user).data})
         else:
             response = jsonify(message=self.bad_credentials)
-            response.status_code = 400
+            response.status_code = 401
             return response
 
     def delete(self):
