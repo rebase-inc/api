@@ -48,5 +48,6 @@ class Config(object):
         'address': ('rsyslog', 514),
     }
     SMTP_HOST='smtp.gmail.com'
+    REBASE_CLIENT_HOST = environ['REBASE_CLIENT_HOST']
 
 

@@ -7,6 +7,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 
 from rebase.models.comment import Comment
 from rebase.common.database import DB, PermissionMixin
+from rebase.common.email import Email, send
 from rebase.common.state import StateMachine
 from rebase.git.repo import Repo
 
@@ -117,6 +118,7 @@ class WorkStateMachine(StateMachine):
     def in_review(self, comment=None):
         if comment:
             Comment(current_user, comment, work=self.work)
+        send_email(self.work)
 
     def resolved(self, comment):
         Comment(current_user, comment, work=self.work)
@@ -163,3 +165,20 @@ class WorkStateMachine(StateMachine):
         })
         self.add_event_transitions('resume', {self.resolved: self.in_progress })
         self.add_event_transitions('fail', {self.in_mediation: self.failed})
+
+
+def send_email(work):
+    ticket = work.offer.ticket_snapshot.ticket
+    managers_emails = [ mgr.user.email for mgr in ticket.project.managers ]
+    contractor = work.offer.bid.contractor.user
+    client_text = 'Waiting for your review on ticket:\n"{title}"'.format(title=ticket.title)
+    client_email = Email(
+        'do_not_reply@rebaseapp.com',
+        managers_emails,
+        'Rebase Review: ticket "{}"'.format(ticket.title),
+        client_text,
+        client_text,
+    )
+    send([ client_email ])
+
+

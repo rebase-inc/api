@@ -19,13 +19,14 @@ class Email(object):
         html = """\
         <html>
             <head></head>
+            <title href='{host}'>Rebase</title>
             <body>
                 <p>
                 {text}
                 </p>
             </body>
         </html>
-        """.format(text=html_msg)
+        """.format(host=current_app.config['REBASE_CLIENT_HOST'], text=html_msg)
         _msg.attach(MIMEText(text_msg, 'plain'))
         _msg.attach(MIMEText(html, 'html'))
         self.msg = _msg.as_string()
