@@ -102,48 +102,8 @@ class Work(DB.Model, PermissionMixin):
     def __repr__(self):
         return '<Work[{}] from Offer[{}]>'.format(self.id, self.offer.id)
 
+
 class WorkStateMachine(StateMachine):
-
-    def set_state(self, _, new_state):
-        self.work.state = new_state.__name__
-
-    def in_progress(self, comment=None):
-        if comment:
-            Comment(current_user, comment, work=self.work)
-
-    def blocked(self, comment):
-        from rebase.models.blockage import Blockage
-        Blockage(self.work, comment)
-
-    def in_review(self, comment=None):
-        if comment:
-            Comment(current_user, comment, work=self.work)
-        send_email(self.work)
-
-    def resolved(self, comment):
-        Comment(current_user, comment, work=self.work)
-        # this ending date is a hack that should be fixed by adding a state machine to the blockage
-        if len(self.work.blockages):
-            self.work.blockages[-1].ended = datetime.datetime.now()
-        self.send('resume')
-
-    def in_mediation(self, comment):
-        from rebase.models.mediation import Mediation
-        Mediation(self.work, comment)
-
-    def wait_for_rating(self):
-        pass
-
-    def complete(self, comment, rating):
-        from rebase.models import Debit, Credit, Review
-        review = Review(self.work, comment)
-        review.rating = rating
-        DB.session.add(review)
-        Debit(self.work, int(self.work.offer.price*current_app.config['REVENUE_FACTOR']))
-        Credit(self.work, self.work.offer.price)
-
-    def failed(self):
-        pass
 
     def __init__(self, work_instance, initial_state):
         self.work = work_instance
@@ -166,8 +126,51 @@ class WorkStateMachine(StateMachine):
         self.add_event_transitions('resume', {self.resolved: self.in_progress })
         self.add_event_transitions('fail', {self.in_mediation: self.failed})
 
+    def set_state(self, _, new_state):
+        self.work.state = new_state.__name__
 
-def send_email(work):
+    def in_progress(self, comment=None):
+        if comment:
+            Comment(current_user, comment, work=self.work)
+
+    def blocked(self, comment):
+        from rebase.models.blockage import Blockage
+        Blockage(self.work, comment)
+
+    def in_review(self, comment=None):
+        if comment:
+            Comment(current_user, comment, work=self.work)
+        send_in_review_email(self.work)
+
+    def resolved(self, comment):
+        Comment(current_user, comment, work=self.work)
+        # this ending date is a hack that should be fixed by adding a state machine to the blockage
+        if len(self.work.blockages):
+            self.work.blockages[-1].ended = datetime.datetime.now()
+        self.send('resume')
+
+    def in_mediation(self, comment):
+        from rebase.models.mediation import Mediation
+        Mediation(self.work, comment)
+        send_in_mediation_email(self.work, comment)
+
+    def wait_for_rating(self):
+        send_in_review_email(self.work)
+
+    def complete(self, comment, rating):
+        from rebase.models import Debit, Credit, Review
+        review = Review(self.work, comment)
+        review.rating = rating
+        DB.session.add(review)
+        Debit(self.work, int(self.work.offer.price*current_app.config['REVENUE_FACTOR']))
+        Credit(self.work, self.work.offer.price)
+        send_complete_email(self.work)
+
+    def failed(self):
+        send_in_arbitration_email(self.work)
+
+
+def send_in_review_email(work):
     ticket = work.offer.ticket_snapshot.ticket
     managers_emails = [ mgr.user.email for mgr in ticket.project.managers ]
     contractor = work.offer.bid.contractor.user
@@ -182,3 +185,121 @@ def send_email(work):
     send([ client_email ])
 
 
+def send_in_mediation_email(work, comment):
+    ticket = work.offer.ticket_snapshot.ticket
+    contractor = work.offer.bid.contractor.user
+    contractor_text = '''
+    The work you did for Ticket:
+    "{title}"
+    has been reviewed.
+    {client} is not ready to mark the work as complete yet.
+    {client} commented:
+    "{comment}"
+    The work is now in a mediation state and you are welcome to 
+    discuss it in order to come to an agreement.
+    If in the end both sides cannot agree, the work for this ticket will be placed in arbitration.
+    '''.format(
+        title=ticket.title,
+        client=current_user.name,
+        comment=comment,
+    )
+    contractor_email = Email(
+        'do_not_reply@rebaseapp.com',
+        [ contractor.email ],
+        'Rebase Review: ticket "{}"'.format(ticket.title),
+        contractor_text,
+        contractor_text,
+    )
+    send([ contractor_email ])
+
+
+def send_in_arbitration_email(work):
+    ticket = work.offer.ticket_snapshot.ticket
+    managers_emails = [ mgr.user.email for mgr in ticket.project.managers ]
+    contractor = work.offer.bid.contractor.user
+    contractor_text = '''
+    An independent arbitration has been requested for the work you did for ticket:
+    "{title}"
+    The work, review and mediation will be assessed and a decision will be provided
+    within 5 business days.
+    Thank you for your patience.
+
+    The Rebase Team
+    '''.format(
+        title=ticket.title,
+    )
+    contractor_email = Email(
+        'do_not_reply@rebaseapp.com',
+        [ contractor.email ],
+        'Rebase Review: ticket "{}"'.format(ticket.title),
+        contractor_text,
+        contractor_text,
+    )
+    client_text = '''
+    An independent arbitration has been requested for the work you requested for ticket:
+    "{title}"
+    The work, review and mediation will be assessed and a decision will be provided
+    within 5 business days.
+    Thank you for your patience.
+
+    The Rebase Team
+    '''.format(
+        title=ticket.title,
+    )
+    client_email = Email(
+        'do_not_reply@rebaseapp.com',
+        managers_emails,
+        'Rebase Review: ticket "{}"'.format(ticket.title),
+        client_text,
+        client_text,
+    )
+    send([ contractor_email, client_email ])
+
+
+def send_complete_email(work):
+    ticket = work.offer.ticket_snapshot.ticket
+    managers_emails = [ mgr.user.email for mgr in ticket.project.managers ]
+    contractor = work.offer.bid.contractor.user
+    contractor_text = '''
+    Congratulations!
+    Your work for ticket:
+    "{title}"
+    has been completed.
+    You will be paid ${price}.
+
+    Thank you for hard work!
+
+    The Rebase Team
+    '''.format(
+        title=ticket.title,
+        price=work.credit.price
+    )
+    contractor_email = Email(
+        'do_not_reply@rebaseapp.com',
+        [ contractor.email ],
+        'Rebase: completed ticket "{}"'.format(ticket.title),
+        contractor_text,
+        contractor_text,
+    )
+    client_text = '''
+    Work for the ticket:
+    "{title}"
+    has been completed.
+
+    You will be charged ${price}.
+
+    Thank you for your business.
+
+    The Rebase Team
+    '''.format(
+        title=ticket.title,
+        price=work.debit.price
+    )
+    client_email = Email(
+        'do_not_reply@rebaseapp.com',
+        managers_emails,
+        'Rebase: completed ticket "{}"'.format(ticket.title),
+        client_text,
+        client_text,
+    )
+    send([ contractor_email, client_email ])

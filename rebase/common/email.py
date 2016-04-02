@@ -19,8 +19,8 @@ class Email(object):
         html = """\
         <html>
             <head></head>
-            <title href='{host}'>Rebase</title>
             <body>
+                <title href='{host}'>Rebase</title>
                 <p>
                 {text}
                 </p>
