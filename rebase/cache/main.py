@@ -34,7 +34,7 @@ def cache_main(role_id, q, name):
                 register_routes(api)
                 routes_are_registered = True
             try:
-                task = q.get(timeout=3600)
+                task = q.get()
             except Empty as e:
                 logger.info('TIMEOUT')
                 break
