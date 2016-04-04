@@ -49,10 +49,14 @@ class AuthCollection(Resource):
             response.status_code = 401
             return response
 
-    @login_required
     def get(self):
-        warmup(current_user.current_role.id)
-        return jsonify(**{'user': user.serializer.dump(current_user).data})
+        if current_user.is_authenticated():
+            warmup(current_user.current_role.id)
+            return jsonify(**{'user': user.serializer.dump(current_user).data})
+        else:
+            response = jsonify(message=self.bad_credentials)
+            response.status_code = 401
+            return response
 
     def delete(self):
         ''' logout '''
