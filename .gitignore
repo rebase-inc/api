@@ -8,6 +8,5 @@ venv/
 *.swo
 app.db
 rebase/.noseids
-migrations
 .ssh
 git/.ssh
