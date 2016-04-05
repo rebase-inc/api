@@ -8,6 +8,7 @@ class Ticket(DB.Model, PermissionMixin):
     title =         DB.Column(DB.String, nullable=False)
     project_id =    DB.Column(DB.Integer, DB.ForeignKey('project.id', ondelete='CASCADE'), nullable=False)
     discriminator = DB.Column(DB.String)
+    hidden =        DB.Column(DB.Boolean, default=False)
 
     skill_requirement =     DB.relationship('SkillRequirement',     backref='ticket', cascade='all, delete-orphan', passive_deletes=False, uselist=False)
     snapshots =             DB.relationship('TicketSnapshot',       backref='ticket', cascade='all, delete-orphan', passive_deletes=False)

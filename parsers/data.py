@@ -34,5 +34,6 @@ def populate():
     mock.DeveloperUserStory(db, 'Phil Meyman', 'philmeyman@joinrebase.com', 'lem')
     mock.ManagerUserStory(db, 'Ron Swanson', 'ron@joinrebase.com', 'ron')
     mock.create_one_user(db, 'New User', 'new@joinrebase.com', 'new') 
-
     db.session.commit()
+
+
