@@ -65,14 +65,27 @@ function _db() {
 # $ _repopulate --hard
 #
 function _repopulate() {
-    docker stop api_scheduler_1 api_web_1 api_rq_default_1 api_cache_1
+    declare -a containers=(scheduler web rq_default cache)
+    docker-compose stop ${containers[@]}
     if [ "$1" == "--hard" ]; then
-        docker stop api_rq_git_1
+        docker-compose stop rq_git
         _db "dropdb postgres && createdb postgres"
-        docker start api_rq_git_1
+        docker-compose start rq_git
     fi
     _git /api/env/repopulate
-    docker start api_cache_1 api_rq_default_1 api_web_1 api_scheduler_1
+    docker-compose start ${containers[@]}
+}
+
+#
+# _upgrade
+# 
+# Migrates the DB to the latest revision
+#
+function _upgrade() {
+    declare -a containers=(scheduler web rq_default cache)
+    docker-compose stop ${containers[@]}
+    _git /api/env/upgrade_db
+    docker-compose start ${containers[@]}
 }
 
 function _log() {
