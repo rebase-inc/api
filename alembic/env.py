@@ -1,7 +1,18 @@
 from __future__ import with_statement
+from logging import warning
+from logging.config import fileConfig
+from multiprocessing import current_process
+from os import getcwd
+from os.path import abspath, join
+import sys
+from threading import current_thread
+
 from alembic import context
 from sqlalchemy import engine_from_config, pool
-from logging.config import fileConfig
+
+# clarifies log entries by setting actual names instead of anonymous processes and threads
+current_process().name='Alembic'
+current_thread().name='env.py'
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -11,12 +22,21 @@ config = context.config
 # This line sets up loggers basically.
 fileConfig(config.config_file_name)
 
-# add your model's MetaData object here
-# for 'autogenerate' support
-# from myapp import mymodel
-# target_metadata = mymodel.Base.metadata
-from rebase.common.database import DB
+parent_dir = abspath(getcwd())
+sys.path.append(parent_dir)
+import rebase.models
+# we could not use create and import DB directly
+# but with create, any log entry will be sent to rsyslog container
+from rebase.app import create
+_, _, DB = create()
 target_metadata = DB.Model.metadata
+if(len(target_metadata.tables) == 0):
+    warning('''
+    No table detected.
+    You can ignore this warning if your code does not have any model created yet.
+    If it does, you must import these models before you attempt to set the target_metadata.
+    Otherwise, the autogeneration of revision will not work as you would expect!
+    ''')
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
@@ -38,7 +58,10 @@ def run_migrations_offline():
     """
     url = config.get_main_option("sqlalchemy.url")
     context.configure(
-        url=url, target_metadata=target_metadata, literal_binds=True)
+        url=url,
+        target_metadata=target_metadata,
+        literal_binds=True,
+    )
 
     with context.begin_transaction():
         context.run_migrations()
@@ -59,7 +82,7 @@ def run_migrations_online():
     with connectable.connect() as connection:
         context.configure(
             connection=connection,
-            target_metadata=target_metadata
+            target_metadata=target_metadata,
         )
 
         with context.begin_transaction():
