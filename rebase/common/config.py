@@ -49,6 +49,6 @@ class Config(object):
     }
     SMTP_HOST='smtp.gmail.com'
     REBASE_CLIENT_HOST = environ['REBASE_CLIENT_HOST']
-    COOKIE_SECURE_HTTPPONLY = { 'secure': True, 'httponly': True }
+    COOKIE_SECURE_HTTPPONLY = { 'secure': True, 'httponly': False }
 
 
