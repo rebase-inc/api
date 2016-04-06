@@ -41,7 +41,12 @@ class AuthCollection(Resource):
                 })
                 warmup(current_role.id)
                 response.status_code = 201
-                response.set_cookie('role_id', str(current_role.id), expires=datetime.now()+timedelta(days=1))
+                response.set_cookie(
+                    'role_id',
+                    str(current_role.id),
+                    expires=datetime.now()+timedelta(days=1),
+                    **current_app.config['COOKIE_SECURE_HTTPPONLY']
+                )
                 return response
         except ValidationError as e:
             logout_user()

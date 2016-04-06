@@ -1,6 +1,6 @@
 
 from flask.ext.login import current_user
-from flask import session
+from flask import session, current_app
 
 from rebase.common.keys import make_collection_url, make_resource_url
 from rebase.git.repo import Repo
@@ -12,7 +12,7 @@ def pick_a_new_role(response):
     if current_user.current_role.type == 'manager' and current_user.current_role.project.id == id:
         new_role = current_user.set_role(0)
         session['role_id']=new_role.id
-        response.set_cookie('role_id', str(session['role_id']))
+        response.set_cookie('role_id', str(session['role_id']), **current_app.config['COOKIE_SECURE_HTTPPONLY'])
     return response
 
 def on_new_project(project):

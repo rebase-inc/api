@@ -1,7 +1,7 @@
 
 from flask.ext.login import login_required, current_user
 from flask.ext.restful import Resource
-from flask import jsonify, request, session
+from flask import jsonify, request, session, current_app
 
 from rebase.models import User, Manager
 from rebase.views import user
@@ -51,7 +51,7 @@ class UserResource(Resource):
     @login_required
     def put(self, id):
         response = update_resource(self.model, id, self.update_deserializer, self.serializer, handlers=resource_handlers)
-        response.set_cookie('role_id', session['role_id'])
+        response.set_cookie('role_id', session['role_id'], **current_app.config['COOKIE_SECURE_HTTPPONLY'])
         return response
 
     @login_required
