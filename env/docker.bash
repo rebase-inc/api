@@ -81,11 +81,25 @@ function _repopulate() {
 # 
 # Migrates the DB to the latest revision
 #
+# Usage:
+# $ _upgrade [--production]
+#
 function _upgrade() {
+    if [ "$(basename $PWD)" != "api" ]; then
+        echo "Error: you must run this command from the 'api' repo dir"
+        return 1
+    fi
+    layout='-f production-compose.yml'
+    if [ "$1" == "--production" ]; then
+        layout=
+        echo 'Migrating to the latest version of the database in PRODUCTION.'
+    else
+        echo 'Migrating to the latest version of the database in DEVELOPMENT.'
+    fi
     declare -a containers=(scheduler web rq_default cache)
-    docker-compose stop ${containers[@]}
+    docker-compose $layout stop ${containers[@]}
     _git /api/env/upgrade_db
-    docker-compose start ${containers[@]}
+    docker-compose $layout start ${containers[@]}
 }
 
 function _log() {
