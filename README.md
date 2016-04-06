@@ -27,4 +27,22 @@ export GITHUB_CLIENT_ID=<your_github_app_id>
 export GITHUB_CLIENT_SECRET=<your_github_app_secret_key>
 ```
 
+# Database Migration
+## How to create a migration script:
+0. Make some change in the models (add a column, etc.)
+```bash
+source env/docker.bash
+# get inside a container that has the api virtualenv
+_bash web
+/venv/api/bin/alembic current
+/venv/api/bin/alembic revision --autogenerate -m "Add account table"
+# exit the container (ctrl-d)
+```
+1. Review the generated script! This is very important, as the auto-generation is far from perfect.
+```bash
+# upgrade your local database to verify the generated script works
+_upgrade
+```
+2. ideally, run the unit and functional tests now...
+3. commit your migration script
 
