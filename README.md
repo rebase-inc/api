@@ -21,7 +21,7 @@ nosetests --processes=-1 --process-timeout=999 rebase/tests
 ## Register a new GitHub application
 0. Go here: https://github.com/settings/applications/new
 1. In the field 'Authorization callback URL', copy: 'http://localhost:3000/api/v1/github/authorized'
-1. Save these 2 lines into .github_setup and source it:
+2. Save these 2 lines into .github_setup and source it:
 ```bash
 export GITHUB_CLIENT_ID=<your_github_app_id>
 export GITHUB_CLIENT_SECRET=<your_github_app_secret_key>
@@ -29,7 +29,7 @@ export GITHUB_CLIENT_SECRET=<your_github_app_secret_key>
 
 # Database Migration
 ## How to create a migration script:
-0. Make some change in the models (add a column, etc.)
+### Make some change in the models (add a column, etc.)
 ```bash
 source env/docker.bash
 # get inside a container that has the api virtualenv
@@ -38,11 +38,11 @@ _bash web
 /venv/api/bin/alembic revision --autogenerate -m "Add account table"
 # exit the container (ctrl-d)
 ```
-1. Review the generated script! This is very important, as the auto-generation is far from perfect.
+### Review the generated script! This is very important, as the auto-generation is far from perfect.
 ```bash
 # upgrade your local database to verify the generated script works
 _upgrade
 ```
-2. ideally, run the unit and functional tests now...
-3. commit your migration script
+### ideally, run the unit and functional tests now...
+### commit your migration script
 
