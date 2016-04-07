@@ -7,6 +7,15 @@ All logs are centralized in the rsyslog container.
 
 
 # Development
+## getting up and running with Docker
+0. Install docker on your dev machine
+1. Go to [Docker Hub](https://hub.docker.com) and register
+2. Tell the Rebase organization admin to add your username to the org.
+3. ```cd ~/repo/api``
+4. ```docker login```
+5. ```docker-compose pull```
+6. ```docker-compose up```
+
 
 ## Testing
 Testing is currently mostly broken...
