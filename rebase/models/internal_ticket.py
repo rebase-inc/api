@@ -10,12 +10,20 @@ class InternalTicket(Ticket):
 
     __mapper_args__ = { 'polymorphic_identity': 'internal_ticket' }
 
-    def __init__(self, project, title):
-        from rebase.models.skill_requirement import SkillRequirement
-        self.project = project
+    def __init__(self, title, first_comment=None, project=None):
+        from rebase.models import Comment, SkillRequirement
+        from flask.ext.login import current_user
+        if project:
+            self.project = project
+        elif current_user.current_role.type == 'manager':
+            self.project = current_user.current_role.project
+        else:
+            raise ClientError(message='Missing project field')
         self.title = title
         self.created = datetime.datetime.now()
         self.skill_requirement = SkillRequirement(self)
+        if first_comment:
+            Comment(current_user, first_comment, ticket=self)
 
     def __repr__(self):
         return '<InternalTicket[id:{}]>'.format(self.id)

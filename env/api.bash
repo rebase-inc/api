@@ -221,3 +221,21 @@ api-nominate() {
      }" \
      nominations
 }
+
+#
+# api-new-ticket <title> <comment> [<project_id>]
+#
+api-new-ticket() {
+    if [ $# -eq 3 ]; then
+        project=", \"project\": { \"id\": $3 }, "
+    else
+        project=
+    fi
+    api-post \
+    "{ \
+        \"title\": \"$1\", \
+        \"first_comment\": \"$2\" \
+        $project \
+    }" \
+    internal_tickets
+}

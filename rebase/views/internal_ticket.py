@@ -9,6 +9,7 @@ class InternalTicketSchema(RebaseSchema):
     created =       fields.DateTime()
     title =         fields.String(required=True, validate=validate.Length(min=1, error='Please provide a title for this ticket'))
     discriminator = fields.String()
+    first_comment = fields.String()
 
     project =           SecureNestedField('ProjectSchema',          only=('id','name','organization', 'work_repo', 'deploy', 'test', 'readme'), allow_null=True)
     skill_requirement = SecureNestedField('SkillRequirementSchema', only=('id','skills'), allow_null=True)

@@ -21,5 +21,5 @@ class TicketSchema(RebaseSchema):
         return self._get_or_make_object(Ticket, data)
 
 serializer =            TicketSchema()
-deserializer =          TicketSchema(only=('id', 'title'), strict=True)
+deserializer =          TicketSchema(strict=True)
 update_deserializer =   TicketSchema(context={'raw': True})
