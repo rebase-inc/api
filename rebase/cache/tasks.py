@@ -46,6 +46,7 @@ def get_collections(role_id):
 
 
 def warmup(app, role_id):
+    #logger.debug('Wiping out Redis and child cache for role: %d', role_id)
     login(role_id)
     clear_collections_from_redis(role_id)
     app.cache_in_process.clear()

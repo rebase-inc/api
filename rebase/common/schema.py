@@ -1,4 +1,5 @@
 from functools import partialmethod
+from logging import getLogger
 
 from flask import current_app
 from flask.ext.login import current_user
@@ -7,6 +8,9 @@ from sqlalchemy.orm.collections import InstrumentedList
 
 from rebase.common.exceptions import marshmallow_exceptions, NotFoundError, BadDataError
 from rebase.common.keys import get_model_primary_keys
+
+
+logger = getLogger()
 
 
 class RebaseSchema(Schema):
@@ -108,9 +112,9 @@ class SecureNestedField(fields.Nested):
         return _schema
 
 
-@current_app.after_request
-def clear(response):
+@current_app.before_request
+def clear():
+    #logger.info('Wiping out worker process-level cache')
     current_app.cache_in_process.clear()
-    return response
 
 
