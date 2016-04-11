@@ -4,6 +4,8 @@ web:
     file: docker/api-dev.yml
   expose:
    - "5000"
+  volumes:
+   - uploads:/uploads
   links:
    - database:db
    - redis
