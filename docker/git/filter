@@ -8,14 +8,23 @@ git_cmd: must be in ['git-receive-pack', 'git-upload-archive', 'git-upload-pack'
 git_dir: a valid git repository path on this server.
 '''
 
-from logging import basicConfig, warning, WARNING
+from logging import Formatter, getLogger, DEBUG
+from logging.handlers import SysLogHandler
+from multiprocessing import current_process
 from os.path import exists, join
 from subprocess import call
 from sys import argv, exit
 
+current_process().name = 'ssh->filter'
+
 GIT_ROOT='/git'
-error_log = '/var/log/filter/error.log'
-basicConfig(filename=error_log, level=WARNING, format='%(asctime)s %(message)s')
+
+logger = getLogger()
+logger.setLevel(DEBUG)
+rsyslog = SysLogHandler(('rsyslog', 514))
+rsyslog.setFormatter(Formatter('%(levelname)s {%(processName)s[%(process)d] %(threadName)s} %(message)s'))
+logger.addHandler(rsyslog)
+
     
 class FilterException(Exception):
     error_message = 'FilterException base class message '
@@ -81,7 +90,7 @@ def main(argv):
 
     if not authenticated:
         raise UnauthorizedUser()
-    warning('Successfull authentication with: {}'.format(argv))
+    logger.info('Successfull authentication with: {}'.format(argv))
 
     original_cmd = [git_cmd, git_dir]
     call(original_cmd)
@@ -90,5 +99,5 @@ if __name__ == '__main__':
     try:
         main(argv)
     except FilterException as e:
-        warning(e.message)
+        logger.warning(e.message)
         exit(e.code)
