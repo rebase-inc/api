@@ -6,6 +6,7 @@ RUN apk add --update \
 
 COPY rsyslog.conf /etc/rsyslog.conf
 COPY main /usr/bin/main
+COPY rotate_log /usr/bin/rotate_log
 
 EXPOSE 514/udp
 
