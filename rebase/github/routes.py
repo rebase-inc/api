@@ -64,6 +64,14 @@ def register_github_routes(app):
     def github_login():
         return github.authorize(callback=url_for('github_auth_callback', _external=True))
 
+    @app.route('/api/v1/github/skills_login')
+    def github_skills_login():
+        return github.authorize(callback=url_for('github_auth_callback', _external=True), redirect_to=url_for('github_skills'))
+
+    @login_required
+    def github_skills():
+        pass
+
     @app.route('/api/v1/github/logout')
     @login_required
     def github_logout():

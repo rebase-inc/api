@@ -3,7 +3,6 @@ from datetime import datetime, timedelta
 from flask import jsonify, request, session, current_app
 from flask.ext.restful import Resource
 from flask.ext.login import (
-    login_required,
     login_user,
     logout_user,
     current_user,
