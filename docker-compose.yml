@@ -39,7 +39,7 @@ scheduler:
    - rsyslog
   command: ["/venv/api/bin/python", "scheduler.py"]
 
-client:
+app:
   image: rebase/client
   ports:
    - "3000:3000"
@@ -50,6 +50,22 @@ client:
   extends:
     service: common_env
     file: docker/api-dev.yml
+
+code2resume:
+    image: rebase/client
+    environment:
+      REBASE_CLIENT_HOST: "dev"
+      REBASE_CLIENT_PORT: 3001
+    ports:
+     - "3001:3001"
+    volumes:
+     - ../react-app:/code
+    links:
+     - web
+    extends:
+      service: common_env
+      file: docker/api-dev.yml
+    command: ["/code/start", "code2resume"]
 
 rq_git:
   extends:
