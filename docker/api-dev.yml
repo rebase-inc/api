@@ -2,6 +2,8 @@ common_env:
   environment:
     REBASE_CLIENT_HOST: "dev"
     REBASE_CLIENT_PORT: 3000
+    CODE2RESUME_HOST: "dev"
+    CODE2RESUME_PORT: 3001
     PYTHONHASHSEED: 2592602613
     APP_SETTINGS: "/api/rebase/common/dev.py"
 

@@ -1,4 +1,3 @@
-from functools import wraps
 from logging import getLogger
 
 from flask import redirect, url_for, request, jsonify, current_app
@@ -64,13 +63,13 @@ def register_github_routes(app):
     def github_login():
         return github.authorize(callback=url_for('github_auth_callback', _external=True))
 
-    @app.route('/api/v1/github/skills_login')
+    @app.route('/api/v1/github/code2resume_login')
     def github_skills_login():
-        return github.authorize(callback=url_for('github_auth_callback', _external=True), redirect_to=url_for('github_skills'))
-
-    @login_required
-    def github_skills():
-        pass
+        code2resume_url = app.config['CODE2RESUME_URL']
+        logger.debug('code2resume_url: %s', code2resume_url)
+        callback_url = 'http://dev:3000/api/v1/github/authorized?redirect_to={}'.format(code2resume_url)
+        logger.debug('callback_url: %s', callback_url)
+        return github.authorize(callback=callback_url)
 
     @app.route('/api/v1/github/logout')
     @login_required
@@ -91,6 +90,9 @@ def register_github_routes(app):
             github_user = github.get('user', token=(resp['access_token'], '')).data
             github_account = save_github_account(github_user['id'], github_user['login'], resp['access_token'])
             analyze_contractor_skills(github_account)
+        logger.debug('request.args: %s', request.args)
+        if 'redirect_to' in request.args:
+            return redirect(request.args['redirect_to'])
         return redirect('/')
 
     @app.route('/api/v1/github/import_repos', methods=['POST'])
