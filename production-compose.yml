@@ -84,8 +84,7 @@ nginx:
      - web
     volumes:
      - etc_letsencrypt:/etc/letsencrypt:ro
-    volumes_from:
-     - client:ro
+     - www:/www:ro
 
 redis:
   image: redis
