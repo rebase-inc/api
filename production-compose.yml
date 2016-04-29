@@ -30,7 +30,7 @@ scheduler:
    - rsyslog
   command: ["/venv/api/bin/python", "scheduler.py"]
 
-client:
+app:
   image: rebase/client
   volumes:
    - ../react-app:/code
@@ -38,7 +38,17 @@ client:
   extends:
     service: common_env
     file: docker/api-production.yml
-  command: ["/code/init"]
+  command: ["/code/init", "app"]
+
+code2resume:
+  image: rebase/client
+  volumes:
+   - ../react-app:/code
+   - www:/www
+  extends:
+    service: common_env
+    file: docker/api-production.yml
+  command: ["/code/init", "code2resume"]
 
 rq_git:
   extends:
