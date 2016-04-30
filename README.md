@@ -59,6 +59,10 @@ _upgrade
 # Creating/Renewing SSL Certificates
 We use LetsEncrypt.org as the Certificate Authority.
 Their certificates expires after 90 days.
+
+## Build the letsencrypt image
+docker build -t rebase/letsencrypt docker/letsencrypt
+
 ```bash
 $ cd repo/api
 $ source env/docker.bash
