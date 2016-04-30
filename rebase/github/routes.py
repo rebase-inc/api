@@ -65,9 +65,10 @@ def register_github_routes(app):
 
     @app.route('/api/v1/github/code2resume_login')
     def github_skills_login():
-        code2resume_url = app.config['CODE2RESUME_URL']
-        logger.debug('code2resume_url: %s', code2resume_url)
-        callback_url = 'http://dev:3000/api/v1/github/authorized?redirect_to={}'.format(code2resume_url)
+        callback_url = '{}/api/v1/github/authorized?redirect_to={}'.format(
+            app.config['APP_URL'],
+            request.url_root
+        )
         logger.debug('callback_url: %s', callback_url)
         return github.authorize(callback=callback_url)
 

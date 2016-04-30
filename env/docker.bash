@@ -151,6 +151,10 @@ function _add_vm_to_hosts() {
     fi
 }
 
+function _nginx_reload () {
+    docker exec -it api_nginx_1 nginx -s reload
+}
+
 function _nginx_listen () {
     docker exec -it api_nginx_1 listen $1
 }

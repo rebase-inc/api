@@ -8,17 +8,11 @@ from rebase.common.env import check
 check([
     'REBASE_CLIENT_HOST',
     'REBASE_CLIENT_PORT',
-    'CODE2RESUME_HOST',
-    'CODE2RESUME_PORT',
 ])
 
 
-SERVER_NAME = '{HOST}:{PORT}'.format(
-    HOST=environ['REBASE_CLIENT_HOST'],
-    PORT=environ['REBASE_CLIENT_PORT']
-)
-c2r_host = environ['CODE2RESUME_HOST']
-c2r_port = environ['CODE2RESUME_PORT']
+app_host = environ['REBASE_CLIENT_HOST']
+app_port = int(environ['REBASE_CLIENT_PORT'])
 
 
 class Config(object):
@@ -54,10 +48,10 @@ class Config(object):
     SMTP_HOST='smtp.gmail.com'
     REBASE_CLIENT_HOST = environ['REBASE_CLIENT_HOST']
     COOKIE_SECURE_HTTPPONLY = { 'secure': True, 'httponly': False }
-    CODE2RESUME_URL = 'http{}://{}{}'.format(
-        's' if c2r_port == 443 else '',
-        c2r_host,
-        '' if c2r_port == 443 else ':{}'.format(c2r_port)
+    APP_URL = 'http{}://{}{}'.format(
+        's' if app_port == 443 else '',
+        app_host,
+        '' if app_port == 443 else ':{}'.format(app_port)
     )
 
 
