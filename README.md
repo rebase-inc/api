@@ -56,3 +56,16 @@ _upgrade
 ### 4. Ideally, run the unit and functional tests now...
 ### 5. Commit your migration script
 
+# Creating/Renewing SSL Certificates
+We use LetsEncrypt.org as the Certificate Authority.
+Their certificates expires after 90 days.
+```bash
+$ cd repo/api
+$ source env/docker.bash
+# Letsencrypt has very strict limits on the number of certs generated per day for one domain.
+# So, first, let's test the certificate generation so we can verify it will work without hurting our rate limit.
+$ _generate_certificate alpha.rebaseapp.com
+# If this succeeds, run the same command with the --production flag
+$ _generate_certificate --production alpha.rebaseapp.com
+# In your web browser, go to https://alpha.rebaseapp.com and verify the certificate expiration date (today+90days).
+```

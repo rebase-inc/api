@@ -151,21 +151,31 @@ function _add_vm_to_hosts() {
     fi
 }
 
-function _gen_certs() {
+function _nginx_listen () {
+    docker exec -it api_nginx_1 listen $1
+}
+
+#
+# _generate_certificate
+#
+# $ _generate_certificate [--production] alpha.rebaseapp.com
+#
+function _generate_certificate() {
     test_flag='--test-cert'
     if [ "$1" == "--production" ]; then
+        shift
         test_flag=
-        echo 'Generating real production certificates'
+        echo 'Generating a production certificate for one domain'
     else
-        echo 'Generating test certificates'
+        echo 'Generating a test certificate, to generate a production certificate, add --production '
     fi
 
-    docker exec -it api_nginx_1 listen 80
+    _nginx_listen 80 && \
     docker run -it -v etc_letsencrypt:/etc/letsencrypt \
         rebase/letsencrypt certonly \
             $test_flag \
-            --webroot-path /etc/letsencrypt/webrootauth \
             -c /config/webroot.ini \
-            -d alpha.rebaseapp.com
-    docker exec -it api_nginx_1 listen 443
+            --webroot-path /etc/letsencrypt/webrootauth \
+            -d $1 && \
+    _nginx_listen 443
 }
