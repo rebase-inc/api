@@ -1,4 +1,5 @@
 from logging import getLogger
+from urllib.parse import urljoin
 
 from flask import redirect, url_for, request, jsonify, current_app
 from flask.ext.login import login_required, current_user
@@ -48,7 +49,7 @@ def register_github_routes(app):
     @app.route('/api/v1/github', methods=['GET'])
     @login_required
     def github_root():
-        return github.authorize(callback=url_for('github_auth_callback', _external=True))
+        return github.authorize(callback=urljoin(request.environ['HTTP_REFERER'], url_for('authorized')))
 
     @app.route('/api/v1/github/verify')
     @login_required
@@ -61,13 +62,13 @@ def register_github_routes(app):
     @app.route('/api/v1/github/login')
     @login_required
     def github_login():
-        return github.authorize(callback=url_for('github_auth_callback', _external=True))
+        return github.authorize(callback=urljoin(request.environ['HTTP_REFERER'], url_for('authorized')))
 
     @app.route('/api/v1/github/code2resume_login')
     def github_skills_login():
-        callback_url = '{}/api/v1/github/authorized?redirect_to={}'.format(
+        callback_url = urljoin(
             app.config['APP_URL'],
-            request.url_root
+            url_for('authorized', redirect_to=request.environ['HTTP_REFERER'])
         )
         logger.debug('callback_url: %s', callback_url)
         return github.authorize(callback=callback_url)
@@ -80,7 +81,7 @@ def register_github_routes(app):
 
     @app.route('/api/v1/github/authorized')
     @login_required
-    def github_auth_callback():
+    def authorized():
         resp = github.authorized_response()
         if resp is None:
             return 'Access denied: reason={error} error={error_description}'.format(**request.args)
