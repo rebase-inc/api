@@ -1,10 +1,16 @@
+from logging import getLogger
+
 from flask.ext.restful import abort
 from marshmallow import fields, post_load
-from rebase.common.schema import RebaseSchema, SecureNestedField
 
+from rebase.common.schema import RebaseSchema, SecureNestedField
 from rebase.models.skill_set import SkillSet
 from rebase.models.contractor import Contractor
 from rebase.views.contractor import ContractorSchema
+
+
+logger = getLogger()
+
 
 class DictField(fields.Field):
 
@@ -23,13 +29,16 @@ class DictField(fields.Field):
         return ret
 
     def _serialize(self, value, attr, obj):
+        #logger.debug('in DictField._serializer, value: %s', value)
         ret = {}
         if value:
             for key, val in value.items():
                 k = self.key_field._serialize(key, attr, obj)
                 v = self.nested_field.serialize(key, self.get_value(attr, obj))
                 ret[k] = v
+        #logger.debug('in DictField._serialize, ret: %s', ret)
         return ret
+
 
 class SkillSetSchema(RebaseSchema):
     id =            fields.Integer()
