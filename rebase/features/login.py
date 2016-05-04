@@ -1,19 +1,31 @@
 from flask import session, request
-from flask.ext.login import LoginManager
+from flask.ext.login import LoginManager, AnonymousUserMixin
 
-from rebase.common.exceptions import NoRole
 from rebase.models import User
 
-class AnonymousUser(object):
-    is_active = False
+
+class AnonymousUser(AnonymousUserMixin):
+
     admin = False
-    def is_authenticated(self): return False
-    def is_anonymous(self): return True
-    def get_id(self): return None
-    def allowed_to_get(self, instace): return False
-    def allowed_to_create(self, instance): return isinstance(instance, User)
-    def allowed_to_modify(self, instance): return False
-    def allowed_to_delete(self, instance): return False
+
+    def is_admin(self):
+        return False
+    
+    def get_id(self):
+        return None
+
+    def allowed_to_get(self, instace):
+        return False
+
+    def allowed_to_create(self, instance):
+        return isinstance(instance, User)
+
+    def allowed_to_modify(self, instance):
+        return False
+
+    def allowed_to_delete(self, instance):
+        return False
+
 
 def setup_login(app):
     login_manager = LoginManager()
@@ -28,3 +40,5 @@ def setup_login(app):
         else:
             session['role_id'] = user.set_role(int(request.cookies.get('role_id', 0))).id
         return user
+
+

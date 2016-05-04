@@ -1,6 +1,6 @@
 import datetime
 
-from flask.ext.login import login_user, logout_user
+from flask.ext.login import UserMixin
 from sqlalchemy import and_
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import aliased
@@ -10,7 +10,7 @@ from rebase.common.database import DB, PermissionMixin
 from rebase.common.query import query_from_class_to_user
 
 
-class User(DB.Model, PermissionMixin):
+class User(DB.Model, PermissionMixin, UserMixin):
     __pluralname__ = 'users'
 
     id =                DB.Column(DB.Integer,   primary_key=True)
@@ -171,12 +171,13 @@ class User(DB.Model, PermissionMixin):
         return True
         return self.found(self, user)
 
+    def is_admin(self):
+        return self.admin
+
     # flask login helper functions
-    def is_admin(self): return self.admin
-    def is_authenticated(self): return True
-    def is_active(self): return True
-    def is_anonymous(self): return False
-    def get_id(self): return str(self.id)
+    def get_id(self):
+        return str(self.id)
+
     def get_role(self): return self.current_role
 
     @property

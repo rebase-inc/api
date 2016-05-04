@@ -3,10 +3,7 @@ from uuid import uuid1
 
 from flask import jsonify, request, session, current_app
 from flask.ext.restful import Resource
-from flask.ext.login import (
-    login_user,
-    current_user,
-)
+from flask.ext.login import login_user, current_user
 
 from rebase.cache.rq_jobs import warmup
 from rebase.common.database import DB
@@ -30,7 +27,7 @@ class C2RAuthCollection(Resource):
     url = '/c2r_auth'
 
     def get(self):
-        if current_user.is_authenticated():
+        if current_user.is_authenticated:
             warmup(current_user.current_role.id)
             return jsonify(**{'user': user.serializer.dump(current_user).data})
         else:
