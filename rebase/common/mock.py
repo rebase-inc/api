@@ -160,8 +160,8 @@ def create_one_internal_ticket(db, title=None, description=None, project=None, c
     project = project or create_one_project(db)
     title = title or ' '.join(pick_a_word() for i in range(5))
     description = description or ' '.join(pick_a_word() for i in range(5))
-    ticket = InternalTicket(title, first_comment=description, project=project)
-    user = project.managers[0].user
+    ticket = InternalTicket(title, project=project)
+    Comment(project.managers[0].user, description, ticket=ticket)
     SkillRequirement(ticket)
     if created:
         ticket.created = created
@@ -332,7 +332,7 @@ class DeveloperUserStory(object):
         org_veridian = create_one_organization(db, 'veridian', user_ted)
         project_matchmaker = create_one_project(db, org_veridian, 'matchmaker')
         manager_ted = project_matchmaker.managers[0]
-        the_tickets = [create_one_internal_ticket(db, fake_ticket, project=project_matchmaker) for fake_ticket in FAKE_TICKETS]
+        the_tickets = [create_one_internal_ticket(db, title=fake_ticket, project=project_matchmaker) for fake_ticket in FAKE_TICKETS]
         for ticket in the_tickets:
             for fake_comment in FAKE_COMMENTS:
                 Comment(user_ted, fake_comment, ticket=ticket)
@@ -372,7 +372,7 @@ class ManagerUserStory(object):
         organization = create_one_organization(db, 'facebook', self.user)
         project = create_one_project(db, organization, 'redux-devtools')
         mgr = project.managers[0]
-        the_new_tickets = [create_one_internal_ticket(db, fake_ticket, project=project, created=datetime.now() + timedelta(hours=randint(-72,0))) for fake_ticket in FAKE_TICKETS]
+        the_new_tickets = [create_one_internal_ticket(db, title=fake_ticket, project=project, created=datetime.now() + timedelta(hours=randint(-72,0))) for fake_ticket in FAKE_TICKETS]
         
         for ticket in the_new_tickets:
             for fake_comment in sample(FAKE_COMMENTS, randint(2, 5)):
@@ -389,7 +389,7 @@ def create_the_world(db):
     steve = create_one_user(db, 'Steve Gildred', 'steve@rebase.io')
     bigdough_project = create_one_github_project(db, project_name='Big Dough')
     internal_project = create_one_project(db)
-    internal_project_tickets = [create_one_internal_ticket(db, 'Issue #{}'.format(i), project=internal_project) for i in range(10)]
+    internal_project_tickets = [create_one_internal_ticket(db, title='Issue #{}'.format(i), project=internal_project) for i in range(10)]
 
     manhattan_project = create_one_github_project(db, project_name='Manhattan')
     manhattan_tickets = [ create_one_github_ticket(db, number=ticket_number, project=manhattan_project) for ticket_number in range(10) ]

@@ -3,6 +3,7 @@ import datetime
 from rebase.common.database import DB
 from rebase.models.ticket import Ticket
 
+
 class InternalTicket(Ticket):
     __pluralname__ = 'internal_tickets'
 
@@ -15,7 +16,7 @@ class InternalTicket(Ticket):
         from flask.ext.login import current_user
         if project:
             self.project = project
-        elif current_user.current_role.type == 'manager':
+        elif current_user and current_user.current_role.type == 'manager':
             self.project = current_user.current_role.project
         else:
             raise ClientError(message='Missing project field')
