@@ -66,9 +66,9 @@ function _db() {
 #
 function _repopulate() {
     declare -a containers=(scheduler web rq_default cache)
-    docker-compose stop ${containers[@]}
+    docker-compose stop -t 60 ${containers[@]}
     if [ "$1" == "--hard" ]; then
-        docker-compose stop rq_git
+        docker-compose stop -t 60 rq_git
         _db "dropdb postgres && createdb postgres"
         docker-compose start rq_git
     fi
