@@ -126,21 +126,6 @@ function _create_vm() {
     fi
 }
 
-#
-# to manually set the IP address of a vm.
-# Defaults to 'default'.
-#
-# $ _fix_ip [<machine>]
-#
-function _fix_ip() {
-    if [ -z $1 ]; then
-        vm='default'
-    else
-        vm="$1"
-    fi
-    echo "ifconfig eth0 192.168.99.100 netmask 255.255.255.0 broadcast 192.168.99.255 up" | docker-machine ssh "$1" sudo tee /var/lib/boot2docker/bootsync.sh > /dev/null
-}
-
 # Add your VM's IP to /etc/hosts as 'dev'
 function _add_vm_to_hosts() {
     if [ -z "$1" ]; then
