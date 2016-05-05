@@ -160,9 +160,8 @@ def create_one_internal_ticket(db, title=None, description=None, project=None, c
     project = project or create_one_project(db)
     title = title or ' '.join(pick_a_word() for i in range(5))
     description = description or ' '.join(pick_a_word() for i in range(5))
-    ticket = InternalTicket(project, title)
+    ticket = InternalTicket(title, first_comment=description, project=project)
     user = project.managers[0].user
-    #Comment(user, description, ticket=ticket)
     SkillRequirement(ticket)
     if created:
         ticket.created = created
@@ -186,7 +185,7 @@ def create_some_tickets(db, ticket_titles=None):
     ticket_titles = ticket_titles or ['Foo', 'Bar', 'Baz', 'Qux']
     tickets = []
     for title in ticket_titles:
-        ticket = InternalTicket(project, title)
+        ticket = InternalTicket(title, first_comment=None, project=project)
         SkillRequirement(ticket)
         tickets.append(ticket)
     db.session.add_all(tickets)
@@ -205,10 +204,10 @@ def create_ticket_matches(db, tickets=None, contractor=None):
 def create_one_snapshot(db, ticket=None):
     from rebase.models import InternalTicket, TicketSnapshot, SkillRequirement
     if not ticket:
-        ticket = InternalTicket(create_one_project(db), 'for a snapshot')
+        ticket = InternalTicket('for a snapshot', first_comment=None, project=create_one_project(db))
         SkillRequirement(ticket)
         db.session.add(ticket)
-    ts = TicketSnapshot(ticket or InternalTicket(create_one_project(db), 'for a snapshot'))
+    ts = TicketSnapshot(ticket or InternalTicket('for a snapshot', first_comment=None, project=create_one_project(db)))
     db.session.add(ts)
     return ts
 
