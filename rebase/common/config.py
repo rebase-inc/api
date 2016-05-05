@@ -5,16 +5,6 @@ from os import environ
 from rebase.common.env import check
 
 
-check([
-    'REBASE_CLIENT_HOST',
-    'REBASE_CLIENT_PORT',
-])
-
-
-app_host = environ['REBASE_CLIENT_HOST']
-app_port = int(environ['REBASE_CLIENT_PORT'])
-
-
 class Config(object):
     DEBUG = False
     TESTING = False
@@ -31,7 +21,6 @@ class Config(object):
     FINISH_WORK_BY = timedelta(days=7)
     AUCTION_EXPIRATION = timedelta(days=3)
     SQLALCHEMY_DATABASE_URI = 'postgres://postgres:@db/postgres'
-    GIT_SERVER_NAME=environ['REBASE_CLIENT_HOST']
     WORK_REPOS_HOST = 'rq_git_1'
     WORK_REPOS_ROOT = '/git'
     SSH_AUTHORIZED_KEYS = '/home/git/.ssh/authorized_keys'
@@ -46,12 +35,6 @@ class Config(object):
         'address': ('rsyslog', 514),
     }
     SMTP_HOST='smtp.gmail.com'
-    REBASE_CLIENT_HOST = environ['REBASE_CLIENT_HOST']
     COOKIE_SECURE_HTTPPONLY = { 'secure': True, 'httponly': False }
-    APP_URL = 'http{}://{}{}'.format(
-        's' if app_port == 443 else '',
-        app_host,
-        '' if app_port == 443 else ':{}'.format(app_port)
-    )
 
 

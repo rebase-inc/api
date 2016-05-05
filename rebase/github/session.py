@@ -1,7 +1,7 @@
 from requests import get
 
 from rebase.common.exceptions import InvalidGithubAccessToken
-from rebase.github import create_github_app
+from rebase.github import create_github_apps
 from rebase.models import (
     GithubAccount,
     User,
@@ -42,7 +42,7 @@ class GithubSession(object):
 
 
 def make_session(github_account, app, user, db):
-    github = create_github_app(app)
+    github = create_github_apps(app)[github_account.product]
     @github.tokengetter
     def get_github_oauth_token():
         return (github_account.access_token, '')

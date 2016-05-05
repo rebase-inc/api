@@ -1,11 +1,11 @@
 from logging import getLogger
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
 
 from flask import redirect, url_for, request, jsonify, current_app
 from flask.ext.login import login_required, current_user
 
 from rebase.common.database import DB
-from rebase.github import create_github_app
+from rebase.github import create_github_apps
 from rebase.github.languages import detect_languages
 from rebase.github.scanners import (
     import_github_repos,
@@ -22,10 +22,12 @@ from rebase.models.user import User
 logger = getLogger()
 
 
-def save_github_account(account_id, login, access_token):
+def save_github_account(account_id, login, access_token, product):
     github_account = GithubAccount.query_by_user(current_user).filter(GithubAccount.login==login).first()
-    github_account = github_account or GithubAccount(current_user, account_id, login, access_token)
-    github_account.access_token = access_token
+    if github_account:
+        github_account.access_token = access_token
+    else:
+        github_account = GithubAccount(current_user, account_id, login, access_token, product)
     DB.session.add(github_account)
     DB.session.commit()
     return github_account
@@ -44,12 +46,14 @@ def analyze_contractor_skills(github_account):
 
 def register_github_routes(app):
 
-    github = create_github_app(app)
+    github_apps = create_github_apps(app)
 
     @app.route('/api/v1/github', methods=['GET'])
     @login_required
-    def github_root():
-        return github.authorize(callback=urljoin(request.environ['HTTP_REFERER'], url_for('authorized')))
+    def login():
+        referer = request.environ['HTTP_REFERER']
+        product = urlparse(referer).hostname
+        return github_apps[product].authorize(callback=urljoin(referer, url_for('authorized')))
 
     @app.route('/api/v1/github/verify')
     @login_required
@@ -59,29 +63,18 @@ def register_github_routes(app):
             make_session(account, current_app, current_user, DB)
         return jsonify({'success':'complete'})
 
-    @app.route('/api/v1/github/login')
-    @login_required
-    def github_login():
-        return github.authorize(callback=urljoin(request.environ['HTTP_REFERER'], url_for('authorized')))
-
-    @app.route('/api/v1/github/code2resume_login')
-    def github_skills_login():
-        callback_url = urljoin(
-            app.config['APP_URL'],
-            url_for('authorized', redirect_to=request.environ['HTTP_REFERER'])
-        )
-        logger.debug('callback_url: %s', callback_url)
-        return github.authorize(callback=callback_url)
-
     @app.route('/api/v1/github/logout')
     @login_required
-    def github_logout():
+    def logout():
         session.pop('github_token', None)
-        return redirect(url_for('github_root'))
+        return redirect(url_for('login'))
 
     @app.route('/api/v1/github/authorized')
     @login_required
     def authorized():
+        referer = request.environ['HTTP_REFERER']
+        product = urlparse(referer).hostname
+        github = github_apps[product]
         resp = github.authorized_response()
         if resp is None:
             return 'Access denied: reason={error} error={error_description}'.format(**request.args)
@@ -90,9 +83,13 @@ def register_github_routes(app):
             else: return 'Unknown error: {}'.format(resp['error'])
         else:
             github_user = github.get('user', token=(resp['access_token'], '')).data
-            github_account = save_github_account(github_user['id'], github_user['login'], resp['access_token'])
+            github_account = save_github_account(
+                github_user['id'],
+                github_user['login'],
+                resp['access_token'],
+                product
+            )
             analyze_contractor_skills(github_account)
-        logger.debug('request.args: %s', request.args)
         if 'redirect_to' in request.args:
             return redirect(request.args['redirect_to'])
         return redirect('/')

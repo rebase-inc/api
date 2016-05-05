@@ -9,12 +9,13 @@ class GithubAccount(DB.Model, PermissionMixin):
     account_id =    DB.Column(DB.Integer, nullable=False)
     login =         DB.Column(DB.String, nullable=False)
     access_token =  DB.Column(DB.String, nullable=False)
+    product =       DB.Column(DB.String, nullable=False) # product is either 'app' or 'code2resume'
     remote_work_history_id = DB.Column(DB.Integer, DB.ForeignKey('remote_work_history.id', ondelete='CASCADE'))
 
     orgs = DB.relationship('GithubOrgAccount', backref='account', cascade="all, delete-orphan", passive_deletes=True)
     contributed_repos = DB.relationship('GithubContributedRepo', backref='account', cascade="all, delete-orphan", passive_deletes=True)
 
-    def __init__(self, user, account_id, login, access_token):
+    def __init__(self, user, account_id, login, access_token, product):
         '''
         user: a User object
         login: Github login field from the authenticated user
@@ -24,6 +25,7 @@ class GithubAccount(DB.Model, PermissionMixin):
         self.account_id = account_id
         self.login = login
         self.access_token = access_token
+        self.product = product
 
     def query_by_user(user):
         if user.is_admin():

@@ -4,8 +4,6 @@ common_env:
     GITHUB_CLIENT_SECRET:
     NOTIFICATION_EMAIL_PASSWORD:
     PYTHONHASHSEED:
-    REBASE_CLIENT_HOST: "alpha.rebaseapp.com"
-    REBASE_CLIENT_PORT: 443
     SECRET_KEY:
 
 webserver:
