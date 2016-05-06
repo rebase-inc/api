@@ -20,6 +20,6 @@ GITHUB_APP_SECRET = environ['GITHUB_APP_SECRET']
 GITHUB_CODE2RESUME_ID = '93bc2584d7e443514e7c'
 GITHUB_CODE2RESUME_SECRET = environ['GITHUB_CODE2RESUME_SECRET']
 
-GIT_SERVER_NAME='app.rebaseapp.com'
-APP_URL='https://app.rebaseapp.com'
+GIT_SERVER_NAME='alpha.rebaseapp.com'
+APP_URL='https://alpha.rebaseapp.com'
 CODE2RESUME_URL='https://code2resume.rebaseapp.com'
