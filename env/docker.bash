@@ -55,6 +55,15 @@ function _db() {
     fi
 }
 
+function _compose () {
+    if [[ -v SECRET_KEY ]]
+    then 
+        docker-compose -f production-compose.yml $*
+    else
+        docker-compose $*
+    fi 
+}
+
 #
 # Repopulate the database.
 # With the option '--hard', this will destroy and recreate the database itself.
@@ -67,13 +76,11 @@ function _db() {
 function _repopulate() {
    if [[ -v SECRET_KEY ]]; then 
        declare -a containers=(nginx scheduler web rq_default cache)
-       alias _compose='docker-compose -f production-compose.yml'
        echo "You are running in production mode!"
        echo "Do you wish to wipe out the database and repopulate it?"
        echo "Type 1 or 2 to select your answer"
        select yn in Yes No
        do
-           echo $yn
            case $yn in
                Yes ) break;;
                No ) return;;
@@ -81,13 +88,12 @@ function _repopulate() {
        done
    else
        declare -a containers=(scheduler web rq_default cache)
-       alias _compose='docker-compose'
    fi 
     _compose stop -t 60 ${containers[@]}
         if [ "$1" == "--hard" ]; then
-            docker-compose stop -t 60 rq_git
+            _compose stop -t 60 rq_git
                 _db "dropdb postgres && createdb postgres"
-            docker-compose start rq_git
+            _compose start rq_git
         fi
         _git /api/env/repopulate
     _compose start ${containers[@]}
