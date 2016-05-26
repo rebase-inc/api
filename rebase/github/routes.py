@@ -43,14 +43,14 @@ def analyze_contractor_skills(github_account):
         DB.session.commit()
         current_app.default_queue.enqueue_call(func=detect_languages, args=(github_account.id,), timeout=360 ) # timeout = 6 minutes
 
-def host_product(request):
+def get_product(request):
     host = request.environ['HTTP_HOST']
     if not host.startswith('http'):
         host2 = '//'+host
     else:
         host2 = host
     product = urlparse(host2).hostname
-    return host, product
+    return product
 
 def register_github_routes(app):
 
@@ -59,7 +59,7 @@ def register_github_routes(app):
     @app.route('/api/v1/github', methods=['GET'])
     @login_required
     def login():
-        host, product = host_product(request)
+        product = get_product(request)
         return github_apps[product].authorize(callback=url_for('authorized', _external=True))
 
     @app.route('/api/v1/github/verify')
@@ -81,7 +81,7 @@ def register_github_routes(app):
     @app.route('/api/v1/github/authorized')
     @login_required
     def authorized():
-        host, product = host_product(request)
+        product = get_product(request)
         github = github_apps[product]
         resp = github.authorized_response()
         if resp is None:
