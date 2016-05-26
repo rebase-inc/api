@@ -14,4 +14,4 @@ GITHUB_CODE2RESUME_SECRET = 'faa6edb95cfc81616604f21cad2be491beefbe50'
 COOKIE_SECURE_HTTPPONLY = { 'secure': False, 'httponly': False }
 GIT_SERVER_NAME='dev'
 APP_URL='http://dev:3000'
-CODE2RESUME_URL='http://dev:3001'
+CODE2RESUME_URL='http://c2r:3001'

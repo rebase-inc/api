@@ -16,6 +16,12 @@ All logs are centralized in the rsyslog container.
 5. ```docker-compose pull```
 6. ```docker-compose up```
 
+## Modify /etc/hosts on your machine
+Add 2 lines:
+192.168.29.128 dev
+192.168.29.128 c2r
+Note that the IP should match your docker machine's IP.
+If you are running hypervisor or native on linux, just put 127.0.0.1
 
 ## Testing
 Testing is currently mostly broken...
