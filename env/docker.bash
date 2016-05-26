@@ -56,8 +56,9 @@ function _db() {
 }
 
 function _compose () {
-    if [[ -v SECRET_KEY ]]
+    if [ ! -z ${SECRET_KEY+x} ]
     then 
+        echo "Production mode"
         docker-compose -f production-compose.yml $*
     else
         docker-compose $*
@@ -74,7 +75,7 @@ function _compose () {
 # $ _repopulate --hard
 #
 function _repopulate() {
-   if [[ -v SECRET_KEY ]]; then 
+   if [ -z ${SECRET_KEY+x} ]; then 
        declare -a containers=(nginx scheduler web rq_default cache)
        echo "You are running in production mode!"
        echo "Do you wish to wipe out the database and repopulate it?"
