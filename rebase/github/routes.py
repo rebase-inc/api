@@ -69,7 +69,7 @@ def register_github_routes(app):
         logger.debug('%s', request.environ)
         for account in current_user.github_accounts:
             logger.debug('Verifying Github account '+account.login)
-            make_session(account, current_app, current_user, DB)
+            make_session(account, current_app, current_user)
         return jsonify({'success':'complete'})
 
     @app.route('/api/v1/github/logout')
@@ -110,7 +110,7 @@ def register_github_routes(app):
     @login_required
     def importable_repos(github_account_id):
         account = GithubAccount.query.get_or_404(github_account_id)
-        session = make_session(account, current_app, current_user, DB)
+        session = make_session(account, current_app, current_user)
         return jsonify({ 'repos': extract_repos_info(session) })
 
     @app.route('/api/v1/github/analyze_skills')

@@ -1,5 +1,6 @@
 from requests import get
 
+from rebase.common.database import DB
 from rebase.common.exceptions import InvalidGithubAccessToken
 from rebase.github import create_github_apps
 from rebase.models import (
@@ -8,11 +9,11 @@ from rebase.models import (
 )
 
 class GithubSession(object):
-    def __init__(self, api, account, user, DB):
+    def __init__(self, app, api, account, user):
+        self.app = app
         self.api = api
         self.account = account
         self.user = user
-        self.DB = DB
         self.verify()
 
     def __hash__(self):
@@ -36,25 +37,30 @@ class GithubSession(object):
             auth=(self.api.consumer_key, self.api.consumer_secret)
         )
         if response.status_code != 200:
-            self.DB.session.delete(self.account)
-            self.DB.session.commit()
+            DB.session.delete(self.account)
+            DB.session.commit()
             raise InvalidGithubAccessToken(self.user, self.account.login)
 
 
-def make_session(github_account, app, user, db):
+def make_session(github_account, app, user):
     github = create_github_apps(app)[github_account.product]
     @github.tokengetter
     def get_github_oauth_token():
         return (github_account.access_token, '')
-    return GithubSession(github, github_account, user, db)
+    return GithubSession(app, github, github_account, user)
 
-def make_admin_github_session(account_id):
+
+def create_admin_github_session(account_id):
+    ''' you MUST call 'destroy_session' when you are using the session returned by 'create_admin_github_session'
+    '''
     from rebase.app import create
-    app, _, db = create()
+    app = create()
+    app_context = app.app_context()
+    app_context.push()
     user = User('RQ', 'RQ', 'RQ')
     user.admin = True
     github_account = GithubAccount.query.filter(GithubAccount.id==account_id).first()
     if not github_account:
         raise RuntimeError('Could not find a GithubAccount with id \'{}\''.format(account_id))
-    return make_session(github_account, app, user, db)
+    return make_session(github_account, app, user), app_context
 

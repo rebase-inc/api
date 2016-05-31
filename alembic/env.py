@@ -28,7 +28,9 @@ import rebase.models
 # we could not use create and import DB directly
 # but with create, any log entry will be sent to rsyslog container
 from rebase.app import create
-_, _, DB = create()
+from rebase.common.database import DB
+app = create()
+
 target_metadata = DB.Model.metadata
 if(len(target_metadata.tables) == 0):
     warning('''

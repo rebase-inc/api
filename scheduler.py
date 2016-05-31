@@ -11,15 +11,13 @@ from time import sleep
 from sqlalchemy import or_
 
 from rebase.app import create
+from rebase.common.database import DB
 from rebase.common.state import ManagedState
 from rebase.models import (
     Auction,
     Work,
     Mediation,
 )
-
-
-_, _, db = create()
 
 
 logger = getLogger()
@@ -29,23 +27,26 @@ current_process().name = 'scheduler'
 
 
 def load_new_events(sched):
-    for event in sched.queue:
-        sched.cancel(event)
-    auctions = Auction.query.filter(or_(Auction.state=='waiting_for_bids', Auction.state=='created')).all()
-    for auction in auctions:
-        sched.enterabs(auction.expires, 0, auction_expired, argument=(auction.id,))
+    app = create()
+    with app.app_context():
+        for event in sched.queue:
+            sched.cancel(event)
+        auctions = Auction.query.filter(or_(Auction.state=='waiting_for_bids', Auction.state=='created')).all()
+        for auction in auctions:
+            sched.enterabs(auction.expires, 0, auction_expired, argument=(auction.id,))
 
-    works = Work.query.filter_by(state='in_progress').all()
-    for work in works:
-        sched.enterabs(work.offer.bid.auction.finish_work_by, 0, work_expired, argument=(work.id,))
+        works = Work.query.filter_by(state='in_progress').all()
+        for work in works:
+            sched.enterabs(work.offer.bid.auction.finish_work_by, 0, work_expired, argument=(work.id,))
 
-    mediations = Mediation.query.filter(or_(Mediation.state=='waiting_for_client', Mediation.state=='waiting_for_dev')).all()
-    for mediation in mediations:
-        sched.enterabs(mediation.timeout, 0, mediation_timed_out, argument=(mediation.id,))
+        mediations = Mediation.query.filter(or_(Mediation.state=='waiting_for_client', Mediation.state=='waiting_for_dev')).all()
+        for mediation in mediations:
+            sched.enterabs(mediation.timeout, 0, mediation_timed_out, argument=(mediation.id,))
     logger.debug('Loaded %d Events in the queue', len(sched.queue))
 
 
 class Proxy(scheduler):
+
     check_queue_period = timedelta(hours=1)
 
     def reset(self, obj):
@@ -73,7 +74,7 @@ def auction_expired(auction_id):
     if auction and (auction.state == 'waiting_for_bids' or auction.state == 'created'):
         with ManagedState():
             auction.machine.send('fail')
-        db.session.commit()
+        DB.session.commit()
         logger.info('%s has expired now', auction)
 
 
@@ -82,7 +83,7 @@ def work_expired(work_id):
     if work and work.state == 'in_progress':
         with ManagedState():
             work.machine.send('review')
-        db.session.commit()
+        DB.session.commit()
         logger.info('%s has expired now', work)
 
 
@@ -91,7 +92,7 @@ def mediation_timed_out(mediation_id):
     if mediation and (mediation.state == 'waiting_for_client' or mediation.state == 'waiting_for_dev'):
         with ManagedState():
             mediation.machine.send('timeout')
-        db.session.commit()
+        DB.session.commit()
         logger.info('%s has expired now', mediation)
 
 

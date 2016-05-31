@@ -9,10 +9,11 @@ from flask.ext.migrate import Migrate, MigrateCommand
 from inflection import underscore
 
 from rebase.app import create
+from rebase.common.database import DB
 import rebase.models
 
-app, _, db = create()
-migrate = Migrate(app, db)
+app = create()
+migrate = Migrate(app, DB)
 manager = Manager(app)
 
 manager.add_command('db', MigrateCommand)
@@ -32,7 +33,7 @@ for entry in Path('parsers').glob('*.py'):
 
 @manager.shell
 def make_shell_context():
-    return dict(app=app, db=db, models=rebase.models)
+    return dict(app=app, db=DB, models=rebase.models)
 
 if __name__ == '__main__':
     manager.run()
