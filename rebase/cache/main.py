@@ -5,8 +5,6 @@ from sys import getsizeof
 
 from flask import Flask, current_app
 from flask.ext.restful import Api
-from flask.ext.sqlalchemy import SQLAlchemy
-from werkzeug.routing import Map
 
 from rebase.common.exceptions import errors
 from rebase.features import install

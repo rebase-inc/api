@@ -36,15 +36,17 @@ def make_authorized_users_file(project):
 
 def generate_authorized_users(project_id):
     from rebase.app import create
-    app, _, _ = create()
-    project = Project.query.get(project_id)
-    if not project:
-        return 'Invalid project with id:'+str(project_id)
-    make_authorized_users_file(project)
+    app = create()
+    with app.app_context():
+        project = Project.query.get(project_id)
+        if not project:
+            return 'Invalid project with id:'+str(project_id)
+        make_authorized_users_file(project)
 
 def generate_authorized_users_for_all_projects():
     from rebase.app import create
-    app, _, _ = create()
-    projects = Project.query.all()
-    for project in projects:
-        make_authorized_users_file(project)
+    app = create()
+    with app.app_context():
+        projects = Project.query.all()
+        for project in projects:
+            make_authorized_users_file(project)

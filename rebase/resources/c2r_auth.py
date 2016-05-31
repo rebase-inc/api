@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from logging import getLogger
 from uuid import uuid1
 
-from flask import jsonify, request, session, current_app
+from flask import jsonify, request, session, current_app, _app_ctx_stack
 from flask.ext.restful import Resource
 from flask.ext.login import login_user, current_user
 
@@ -31,6 +31,9 @@ class C2RAuthCollection(Resource):
 
     def get(self):
         if current_user.is_authenticated:
+            logger.debug('c2r_auth, SA session:  %d', id(DB))
+            logger.debug('c2r_auth, stack top: %s', _app_ctx_stack.top)
+            logger.debug('c2r_auth, identity map: %s', tuple(DB.session.identity_map))
             logger.debug('c2r_auth, %s', current_user.current_role.skill_set.skills)
             return jsonify(**{'user': user.serializer.dump(current_user).data})
         else:

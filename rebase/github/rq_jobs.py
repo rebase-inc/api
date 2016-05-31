@@ -3,7 +3,7 @@ from functools import lru_cache
 from logging import getLogger
 from subprocess import check_call, call
 
-from rebase.github.session import make_admin_github_session
+from rebase.github.session import create_admin_github_session
 
 
 logger = getLogger()
@@ -30,7 +30,7 @@ def get_or_make_user(session, user_id, user_login):
 
 
 def import_tickets(project_id, account_id):
-    session = make_admin_github_session(account_id)
+    session = create_admin_github_session(account_id)
     from rebase.models import (
         GithubProject,
         GithubTicket,
@@ -88,7 +88,7 @@ def import_tickets(project_id, account_id):
 
 
 def create_work_repo(project_id, account_id):
-    session = make_admin_github_session(account_id)
+    session = create_admin_github_session(account_id)
     config = session.api.oauth.app.config
     from rebase.models import GithubProject
     project = GithubProject.query.get(project_id)
@@ -104,7 +104,7 @@ def create_work_repo(project_id, account_id):
 
 
 def save_comment(account_id, comment_id):
-    session = make_admin_github_session(account_id)
+    session = create_admin_github_session(account_id)
     from rebase.models import Comment
     new_comment = Comment.query.get(comment_id)
     if not new_comment:

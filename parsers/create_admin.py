@@ -1,6 +1,7 @@
 from flask.ext.script import Command, Option
 
 from rebase.app import create
+from rebase.common.database import DB
 from rebase.models import User
 
 class CreateAdmin(Command):
@@ -16,6 +17,6 @@ class CreateAdmin(Command):
     def run(self, email, password, first, last):
         user = User(first, last, email, password)
         user.admin = True
-        _, _, db = create()
-        db.session.add(user)
-        db.session.commit()
+        app = create()
+        DB.session.add(user)
+        DB.session.commit()

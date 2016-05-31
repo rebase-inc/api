@@ -4,7 +4,8 @@ from os.path import splitext
 from pickle import load
 
 from rebase.cache.rq_jobs import invalidate
-from rebase.github.session import GithubSession, make_admin_github_session
+from rebase.common.database import DB
+from rebase.github.session import create_admin_github_session
 from rebase.models import (
     Contractor,
     SkillSet,
@@ -37,7 +38,8 @@ for language, extension_list in _language_list.items():
 
 
 def detect_languages(account_id):
-    github_session = make_admin_github_session(account_id)
+    # remember, we MUST pop this 'context' when we are done with this session
+    github_session, context = create_admin_github_session(account_id)
 
     author = github_session.account.login
     owned_repos = github_session.api.get('/user/repos').data
@@ -61,9 +63,12 @@ def detect_languages(account_id):
     contractor = next(filter(lambda r: r.type == 'contractor', github_session.account.user.roles), None) or Contractor(github_session.acccount.user)
     contractor.skill_set.skills = { language: scale_skill(commits) for language, commits in commit_count_by_language.items() }
     github_session.account.remote_work_history.analyzing = False
-    github_session.DB.session.commit()
+    DB.session.commit()
     invalidate([(SkillSet, (contractor.skill_set.id,))])
 
     logger.debug('%s skills: %s', contractor, contractor.skill_set.skills)
     for extension, count in unknown_extension_counter.most_common():
         logger.warning('Unrecognized extension "{}" ({} occurrences)'.format(extension, count))
+    # popping the context will close the current database connection.
+    context.pop()
+
