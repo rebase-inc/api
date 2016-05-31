@@ -31,10 +31,6 @@ class C2RAuthCollection(Resource):
 
     def get(self):
         if current_user.is_authenticated:
-            logger.debug('c2r_auth, SA session:  %d', id(DB))
-            logger.debug('c2r_auth, stack top: %s', _app_ctx_stack.top)
-            logger.debug('c2r_auth, identity map: %s', tuple(DB.session.identity_map))
-            logger.debug('c2r_auth, %s', current_user.current_role.skill_set.skills)
             return jsonify(**{'user': user.serializer.dump(current_user).data})
         else:
             auth_user, role_id = make_temp_dev_user()
