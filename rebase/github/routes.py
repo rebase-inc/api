@@ -43,13 +43,21 @@ def analyze_contractor_skills(github_account):
         DB.session.commit()
         current_app.default_queue.enqueue_call(func=detect_languages, args=(github_account.id,), timeout=360 ) # timeout = 6 minutes
 
+def for_each_line(thing, log):
+    for line in str(thing).splitlines():
+        log(line)
+
 def get_product(request):
-    host = request.environ['HTTP_HOST']
+    #logger.debug('============ Headers ==============================')
+    #for_each_line(request.headers, logger.debug)
+    #logger.debug('============ End Of Headers ==============================')
+    host = request.environ['HTTP_HOST'] 
     if not host.startswith('http'):
         host2 = '//'+host
     else:
         host2 = host
     product = urlparse(host2).hostname
+    #logger.debug('Product: %s', product)
     return product
 
 def register_github_routes(app):
