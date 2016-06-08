@@ -30,7 +30,7 @@ def get_or_make_user(session, user_id, user_login):
 
 
 def import_tickets(project_id, account_id):
-    session = create_admin_github_session(account_id)
+    session, context = create_admin_github_session(account_id)
     from rebase.models import (
         GithubProject,
         GithubTicket,
@@ -84,11 +84,13 @@ def import_tickets(project_id, account_id):
             komments.append(ticket_comment)
         session.DB.session.add(ticket)
     session.DB.session.commit()
+    # popping the context will close the current database connection.
+    context.pop()
     return tickets, komments
 
 
 def create_work_repo(project_id, account_id):
-    session = create_admin_github_session(account_id)
+    session, context = create_admin_github_session(account_id)
     config = session.api.oauth.app.config
     from rebase.models import GithubProject
     project = GithubProject.query.get(project_id)
@@ -101,10 +103,12 @@ def create_work_repo(project_id, account_id):
     oauth_url = project.remote_repo.url.replace('https://api.github.com', 'https://'+session.account.access_token+'@github.com', 1)
     oauth_url = oauth_url.replace('github.com/repos', 'github.com', 1)
     check_call(['git', '-C', repo_full_path, 'pull', oauth_url])
+    # popping the context will close the current database connection.
+    context.pop()
 
 
 def save_comment(account_id, comment_id):
-    session = create_admin_github_session(account_id)
+    session, context = create_admin_github_session(account_id)
     from rebase.models import Comment
     new_comment = Comment.query.get(comment_id)
     if not new_comment:
@@ -122,3 +126,5 @@ def save_comment(account_id, comment_id):
         if response.status > 201:
             logger.debug('status: %s', response.status)
             logger.debug('data: %s', response.data)
+    # popping the context will close the current database connection.
+    context.pop()
