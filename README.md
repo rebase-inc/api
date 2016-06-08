@@ -16,6 +16,22 @@ All logs are centralized in the rsyslog container.
 5. ```docker-compose pull```
 6. ```docker-compose up```
 
+## How to update production after a UI change
+```bash
+ssh alpha
+cd ~/repo/react
+git pull origin master
+cd ../api
+. ~/.rebase
+. env/docker.bash
+_compose ps
+# notice how app/code2resume container is Exited
+_compose up -d app
+# or _compose up -d code2resume
+# to see what's going in the Node.JS world:
+docker logs -f api_app_1 
+# reload the web page for changes to take effect (duh)
+```
 ## Modify /etc/hosts on your machine
 Add 2 lines:
 192.168.29.128 dev

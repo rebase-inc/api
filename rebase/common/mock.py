@@ -356,7 +356,7 @@ class ManagerUserStory(object):
         devs.append(create_one_user(db, 'April Ludgate', 'april@joinrebase.com'))
         devs.append(create_one_user(db, 'Leslie Knope', 'leslie@joinrebase.com'))
         devs.append(create_one_user(db, 'Donna Meagle', 'donna@joinrebase.com'))
-        devs.append(create_one_user(db, 'Tom Haverford', 'tom@joinrebase.com'))
+        devs.append(create_one_user(db, 'Tom Haverford', 'tomh@joinrebase.com'))
         devs.append(create_one_user(db, 'Chris Traeger', 'chris@joinrebase.com'))
         devs.append(create_one_user(db, 'Jean-Ralphio Saperstein', 'jean-ralphio@joinrebase.com'))
         devs.append(create_one_user(db, 'Jerry Gergich', 'jerry@joinrebase.com'))
