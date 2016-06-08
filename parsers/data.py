@@ -4,6 +4,7 @@ from flask.ext.script import Manager, prompt_bool
 
 from rebase.app import create as create_app
 from rebase.common import mock
+from rebase.common.database import DB
 
 
 app = create_app()
