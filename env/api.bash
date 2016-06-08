@@ -1,6 +1,10 @@
 
 export REBASE_HOST="http://dev:3000"
 
+api-use-alpha () {
+    export REBASE_HOST="https://alpha.rebaseapp.com"
+}
+
 export REBASE_COOKIE_JAR=/tmp/api-cookie-jar.txt
 
 api-curl () {
@@ -206,7 +210,7 @@ api-hide-nomination() {
 api-nominate() {
     if [ $# -gt 3 ] || [ $# -lt 2 ]; then
         echo "Invalid number of arguments.\nCorrect syntax:\n $  api-nominate <contractor-id> <ticket-set-id> [<auction-id>]"
-        exit 1; 
+        return 1; 
     fi;
     if [ $# -eq 3 ]; then
         auction="\"auction\": { \"id\": $3 }, "
@@ -238,4 +242,24 @@ api-new-ticket() {
         $project \
     }" \
     internal_tickets
+}
+
+#
+# api-github-importable-repos <github_account_id>
+#
+api-github-importable-repos() {
+    if [ $# -ne 1 ]; then
+        echo ""
+        echo "Correct syntax:"
+        echo "$(tput setaf 2)api-github-importable-repos $(tput setaf 1)<github_account_id>$(tput sgr0)"
+        echo ""
+        echo "To list your registered Github accounts, run this command:"
+        echo "$(tput setaf 2)api-get github_accounts$(tput sgr0)"
+        echo "If the return list is empty, go to https://alpha.rebaseapp.com, select your profile,"
+        echo "then click on 'Add Github Account'."
+        echo "Then, come back here, run 'api-get github_accounts' again and see your account being listed"
+        echo ""
+        return 1
+    fi
+    api-get "github_accounts/$1/importable_repos" | jq '.repos[] | .url'
 }
