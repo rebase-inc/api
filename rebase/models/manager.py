@@ -30,7 +30,7 @@ class Manager(Role):
     allowed_to_be_deleted_by = allowed_to_be_created_by
 
     def allowed_to_be_viewed_by(self, user):
-        return self.project.allowed_to_be_viewed_by(user)
+        return self.found(self, user)
 
     @classmethod
     def setup_queries(cls, models):

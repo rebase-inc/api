@@ -29,8 +29,5 @@ class Role(DB.Model, PermissionMixin):
     def allowed_to_be_deleted_by(self, user):
         return self.allowed_to_be_created_by(user)
 
-    def allowed_to_be_viewed_by(self, user):
-        return self.allowed_to_be_created_by(user)
-
     def __repr__(self):
         return '<User[id:{}] name={} email={}>'.format(self.id, self.name, self.email)
