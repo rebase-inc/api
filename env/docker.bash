@@ -33,6 +33,14 @@ function _shell() {
     docker exec -it api_web_1 /venv/api/bin/python manage shell
 }
 
+function _add_ipython() {
+    docker exec -it api_web_1 /venv/api/bin/pip3 install ipython
+}
+
+function _ishell() {
+    docker exec -it api_web_1 /venv/api/bin/ipython manage shell
+}
+
 function _super() {
     docker exec -it api_rq_git_1 /venv/super/bin/supervisorctl -c /etc/git/supervisor.conf $*
 }

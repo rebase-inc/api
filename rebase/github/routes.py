@@ -5,6 +5,7 @@ from flask import redirect, url_for, request, jsonify, current_app
 from flask.ext.login import login_required, current_user
 
 from rebase.common.database import DB
+from rebase.common.exceptions import NotFoundError
 from rebase.github import create_github_apps
 from rebase.github.languages import detect_languages
 from rebase.github.scanners import (
@@ -120,6 +121,17 @@ def register_github_routes(app):
         account = GithubAccount.query.get_or_404(github_account_id)
         session = make_session(account, current_app, current_user)
         return jsonify({ 'repos': extract_repos_info(session) })
+
+    @app.route('/api/v1/github_accounts/<int:github_account_id>/import/<int:project_id>', methods=['POST'])
+    @login_required
+    def import_project(github_account_id, project_id):
+        account = GithubAccount.query.get_or_404(github_account_id)
+        session = make_session(account, current_app, current_user)
+        repo = next(filter(lambda repo: repo['id']==project_id, extract_repos_info(session)), None)
+        if not repo:
+            raise NotFoundError('Github Project', project_id)
+        new_mgr_roles = import_github_repos({ repo['id']: repo }, current_user, DB.session)
+        return jsonify({'roles': new_mgr_roles});
 
     @app.route('/api/v1/github/analyze_skills')
     @login_required

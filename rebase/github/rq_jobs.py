@@ -1,8 +1,10 @@
 from datetime import datetime
 from functools import lru_cache
 from logging import getLogger
+from os.path import join, isfile, dirname
 from subprocess import check_call, call
 
+from rebase.common.database import DB
 from rebase.github.session import create_admin_github_session
 
 
@@ -82,8 +84,8 @@ def import_tickets(project_id, account_id):
                 ticket=ticket
             )
             komments.append(ticket_comment)
-        session.DB.session.add(ticket)
-    session.DB.session.commit()
+        DB.session.add(ticket)
+    DB.session.commit()
     # popping the context will close the current database connection.
     context.pop()
     return tickets, komments
@@ -95,14 +97,20 @@ def create_work_repo(project_id, account_id):
     from rebase.models import GithubProject
     project = GithubProject.query.get(project_id)
     if not project:
-        return 'Unknow project with id: {}'.format(project_id)
+        error_msg = 'Unknown project with id: {}'.format(project_id)
+        logger.error(error_msg)
+        raise RuntimeError(error_msg)
     repo_full_path = project.work_repo.full_repo_path
-    if call(['ls', repo_full_path]) == 0:
-        return 'Repo already exists, skipping.'
-    check_call(['git', 'init', repo_full_path])
+    if isfile(join(repo_full_path, '.git', 'HEAD')):
+        error_msg = 'Repo already exists, skipping.'
+        logger.error(error_msg)
+        return RuntimeError(error_msg)
     oauth_url = project.remote_repo.url.replace('https://api.github.com', 'https://'+session.account.access_token+'@github.com', 1)
     oauth_url = oauth_url.replace('github.com/repos', 'github.com', 1)
-    check_call(['git', '-C', repo_full_path, 'pull', oauth_url])
+    check_call(['git', '-C', dirname(repo_full_path), 'clone', oauth_url])
+    manager_user = project.managers[0].user
+    check_call(['git', '-C', repo_full_path, 'config', '--local', 'user.name', manager_user.name])
+    check_call(['git', '-C', repo_full_path, 'config', '--local', 'user.email', manager_user.email])
     # popping the context will close the current database connection.
     context.pop()
 

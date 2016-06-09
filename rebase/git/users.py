@@ -1,4 +1,5 @@
 from functools import wraps
+from os import makedirs
 from os.path import join
 from pprint import pprint
 from subprocess import check_call
@@ -29,7 +30,9 @@ def user_ids(project_id):
 def make_authorized_users_file(project):
     project_id = project.id
     ids = user_ids(project_id)
-    authorized_users_path = join(project.work_repo.full_repo_path, '.git', 'authorized_users')
+    dot_git =join(project.work_repo.full_repo_path, '.git')
+    makedirs(dot_git, exist_ok=True)
+    authorized_users_path = join(dot_git, 'authorized_users')
     with open(authorized_users_path, 'w') as authorized_users:
         for user_id in ids:
             authorized_users.write(str(user_id)+'\n')
