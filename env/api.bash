@@ -80,7 +80,7 @@ api-get () {
 #  api-rm users/3
 #
 api-rm () {
-    api-curl DELETE "" $1
+    process_errors "$(api-curl DELETE "" $1)"
 }
 
 
