@@ -1,4 +1,5 @@
 import datetime
+from logging import getLogger
 
 from flask.ext.login import UserMixin
 from sqlalchemy import and_
@@ -8,6 +9,9 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 from rebase.common.database import DB, PermissionMixin
 from rebase.common.query import query_from_class_to_user
+
+
+logger = getLogger()
 
 
 class User(DB.Model, PermissionMixin, UserMixin):
@@ -169,7 +173,6 @@ class User(DB.Model, PermissionMixin, UserMixin):
 
     def allowed_to_be_viewed_by(self, user):
         return True
-        return self.found(self, user)
 
     def is_admin(self):
         return self.admin
