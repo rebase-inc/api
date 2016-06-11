@@ -55,21 +55,29 @@ def import_tickets(project_id, account_id):
     tickets = []
     komments = []
     for issue in issues:
-        ticket = GithubTicket(project, issue['number'], issue['title'], datetime.strptime(issue['created_at'], _gh_datetime_format))
-        ticket.skill_requirement.skills = languages
-        tickets.append(ticket)
-        issue_user = issue['user']
-        if len(issue['body']):
-            body = Comment(
-                get_or_make_user(
-                    session,
-                    issue_user['id'],
-                    issue_user['login'],
-                ),
-                issue['body'],
-                ticket=ticket
-            )
-            komments.append(body)
+        ticket  = GithubTicket.query.filter_by(project=project, number=issue['number']).first()
+        if not ticket:
+            ticket_created = datetime.strptime(issue['created_at'], _gh_datetime_format)
+            ticket = GithubTicket(project, issue['number'], issue['title'], ticket_created)
+            ticket.skill_requirement.skills = languages
+            tickets.append(ticket)
+            issue_user = issue['user']
+            if len(issue['body']):
+                body = Comment(
+                    get_or_make_user(
+                        session,
+                        issue_user['id'],
+                        issue_user['login'],
+                    ),
+                    issue['body'],
+                    created=ticket_created,
+                    ticket=ticket
+                )
+                komments.append(body)
+        else:
+            for _comment in ticket.comments[1:]:
+                ticket.comments.remove(_comment)
+            DB.session.commit()
         comments = session.api.get(issue['url']+'/comments').data
         for comment in comments:
             comment_user = comment['user']
@@ -88,7 +96,6 @@ def import_tickets(project_id, account_id):
     DB.session.commit()
     # popping the context will close the current database connection.
     context.pop()
-    return tickets, komments
 
 
 def create_work_repo(project_id, account_id):

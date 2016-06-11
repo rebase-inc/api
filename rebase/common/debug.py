@@ -6,8 +6,9 @@ logger = getLogger()
 
 
 def dump_stack():
-    big_string = format_stack()
-    for line in big_string.splitlines():
-        logger.debug(line)
+    bunch_of_lines = format_stack()
+    for line in bunch_of_lines:
+        for _line in line.splitlines():
+            logger.debug(line)
 
 
