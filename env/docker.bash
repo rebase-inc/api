@@ -1,3 +1,4 @@
+. env/colors.bash
 
 # Launch a bash session inside a running container:
 # $ _bash api_web_1
@@ -85,9 +86,9 @@ function _compose () {
 function _repopulate() {
    if [ ! -z ${SECRET_KEY+x} ]; then 
        declare -a containers=(nginx scheduler web rq_default cache)
-       echo "You are running in production mode!"
+       echo "${bold}Production mode${off}"
        echo "Do you wish to wipe out the database and repopulate it?"
-       echo "Type 1 or 2 to select your answer"
+       echo "Type ${bold}1${off} or ${bold}2${off} to select your answer"
        select yn in Yes No
        do
            case $yn in
@@ -96,6 +97,7 @@ function _repopulate() {
            esac
        done
    else
+       echo "${bold}Development Mode${off}"
        declare -a containers=(scheduler web rq_default cache)
    fi 
     _compose stop -t 60 ${containers[@]}
