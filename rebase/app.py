@@ -27,6 +27,7 @@ def create(testing=False):
     toolbar = DebugToolbarExtension(app)
 
     install(app)
+    DB.init_app(app)
     logger = getLogger()
     api = Api(app, prefix=app.config['URL_PREFIX'], errors=errors)
     register_home(app)
@@ -36,7 +37,6 @@ def create(testing=False):
         from rebase.github.routes import register_github_routes
         register_routes(api)
         register_github_routes(app)
-    DB.init_app(app)
     return app
 
 

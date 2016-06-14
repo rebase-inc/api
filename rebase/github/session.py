@@ -2,11 +2,9 @@ from requests import get
 
 from rebase.common.database import DB
 from rebase.common.exceptions import InvalidGithubAccessToken
-from rebase.github import create_github_apps
-from rebase.models import (
-    GithubAccount,
-    User,
-)
+from rebase.github import apps, oauth_app_from_github_account
+from rebase.models import GithubAccount, User
+
 
 class GithubSession(object):
     def __init__(self, app, api, account, user):
@@ -39,11 +37,11 @@ class GithubSession(object):
         if response.status_code != 200:
             DB.session.delete(self.account)
             DB.session.commit()
-            raise InvalidGithubAccessToken(self.user, self.account.login)
+            raise InvalidGithubAccessToken(self.account.user, self.account.github_user.login)
 
 
 def make_session(github_account, app, user):
-    github = create_github_apps(app)[github_account.product]
+    github = oauth_app_from_github_account(apps(app), github_account)
     @github.tokengetter
     def get_github_oauth_token():
         return (github_account.access_token, '')
@@ -51,7 +49,7 @@ def make_session(github_account, app, user):
 
 
 def create_admin_github_session(account_id):
-    ''' you MUST call 'destroy_session' when you are using the session returned by 'create_admin_github_session'
+    ''' you MUST call 'app_context.pop' when you are done using the return session
     '''
     from rebase.app import create
     app = create()
@@ -59,8 +57,9 @@ def create_admin_github_session(account_id):
     app_context.push()
     user = User('RQ', 'RQ', 'RQ')
     user.admin = True
-    github_account = GithubAccount.query.filter(GithubAccount.id==account_id).first()
+    github_account = GithubAccount.query.get_or_404(account_id)
     if not github_account:
         raise RuntimeError('Could not find a GithubAccount with id \'{}\''.format(account_id))
     return make_session(github_account, app, user), app_context
+
 

@@ -20,24 +20,28 @@ def get_or_make_user(session, user_id, user_login):
     return a User or GithubUser instance for the 'user_id' and 'user_login' provided
     '''
     from rebase.models import GithubAccount, GithubUser
-    account = GithubAccount.query.filter(GithubAccount.account_id==user_id).first()
-    if not account:
-        _user = GithubUser.query.filter(GithubUser.github_id==user_id).first()
-        if not _user:
-            gh_user = session.api.get('/users/{username}'.format(username=user_login)).data
-            _user = GithubUser(user_id, user_login, gh_user['name'])
+    github_user = GithubUser.query.filter_by(id=user_id).first()
+    if not github_user:
+        gh_user = session.api.get('/users/{username}'.format(username=user_login)).data
+        github_user = GithubUser(user_id, user_login, gh_user['name'], gh_user['email'])
+        _user = GithubAnonymousUser(github_user)
+        DB.session.add(github_user)
     else:
-        _user = account.user
+        if github_user.anonymous_user:
+            _user = github_user.anonymous_user
+        else:
+            github_account = GithubAccount.query.filter_by(github_user=github_user).first()
+            if github_account:
+                _user = github_account.user
+            else:
+                # a GithubUser must either have a GithubAccount or a GithubAnonymousUser attached to it
+                raise ServerError(message='Orphan {}'.format(github_user))
     return _user
 
 
 def import_tickets(project_id, account_id):
     session, context = create_admin_github_session(account_id)
-    from rebase.models import (
-        GithubProject,
-        GithubTicket,
-        Comment,
-    )
+    from rebase.models import  Comment, GithubProject, GithubTicket
     project = GithubProject.query.get_or_404(project_id)
     if not project:
         return 'Unknow project with id: {}'.format(project_id)

@@ -1,30 +1,26 @@
 
-from rebase.models.user import User
-from rebase.common.database import DB
+from rebase.common.database import DB, PermissionMixin
 
-class GithubUser(User):
+
+class GithubUser(DB.Model, PermissionMixin):
     __pluralname__ = 'github_users'
 
-    id =        DB.Column(DB.Integer, DB.ForeignKey('user.id', ondelete='CASCADE'), primary_key=True)
-    github_id = DB.Column(DB.Integer, unique=True)
+    id =        DB.Column(DB.Integer, primary_key=True, unique=True)
     login =     DB.Column(DB.String, unique=True)
+    name =      DB.Column(DB.String)
+    email =     DB.Column(DB.String, nullable=True)
 
-    __mapper_args__ = { 'polymorphic_identity': 'github_user' }
+    accounts =          DB.relationship('GithubAccount', backref='github_user', cascade="all, delete-orphan", passive_deletes=True)
+    anonymous_user =    DB.relationship('GithubAnonymousUser', backref='github_user', uselist=False, cascade='all, delete-orphan', passive_deletes=True)
 
-    def __init__(self, github_id, login, name):
-        self.github_id = github_id
+    def __init__(self, id, login, name, email=None):
+        self.id = id
         self.login = login
-        super().__init__(
-            name,
-            '__github_user_{id}_{login}@joinrebase.com'.format(
-                id=self.github_id,
-                login=self.login
-            ),
-            ''
-        )
+        self.name = name
+        self.email = email
 
     def __repr__(self):
-        return '<GithubUser[{}] {}>'.format(self.id, self.name)
+        return '<GithubUser[id({}), login({}), name({})]>'.format(self.id, self.login, self.name)
 
     def allowed_to_be_created_by(self, user):
         return user.admin
@@ -39,3 +35,5 @@ class GithubUser(User):
     def setup_queries(cls, models):
         cls.filter_based_on_current_role = False
         cls.as_manager_path = cls.as_owner_path = cls.as_contractor_path = []
+
+

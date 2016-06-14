@@ -3,7 +3,6 @@ from logging import getLogger
 
 from flask.ext.login import UserMixin
 from sqlalchemy import and_
-from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import aliased
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -35,7 +34,6 @@ class User(DB.Model, PermissionMixin, UserMixin):
     }
 
     def __init__(self, name, email, password):
-        from rebase.models.contractor import Contractor
         self.name = name
         self.email = email
         self.last_seen = datetime.datetime.now()
@@ -44,6 +42,7 @@ class User(DB.Model, PermissionMixin, UserMixin):
 
     def set_password(self, password):
         self.hashed_password = generate_password_hash(password)
+        self.last_seen = datetime.datetime.now()
 
     def check_password(self, password):
         return check_password_hash(self.hashed_password, password)
@@ -62,6 +61,7 @@ class User(DB.Model, PermissionMixin, UserMixin):
                     # TODO raise instead when user doesn't have a role
                     # we should first create a Role instance and then add the role as a param of the User __init__
                     self.current_role = Contractor(self)
+        self.last_seen = datetime.datetime.now()
         return self.current_role
 
     @classmethod

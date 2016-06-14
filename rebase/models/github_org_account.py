@@ -1,11 +1,22 @@
 
 from rebase.common.database import DB, PermissionMixin
+from rebase.models.github_account import GithubAccount
+
 
 class GithubOrgAccount(DB.Model, PermissionMixin):
     __pluralname__ = 'github_org_accounts'
 
-    org_id =        DB.Column(DB.Integer, DB.ForeignKey('github_organization.id',   ondelete='CASCADE'), primary_key=True)
-    account_id =    DB.Column(DB.Integer, DB.ForeignKey('github_account.id',        ondelete='CASCADE'), primary_key=True)
+    org_id =            DB.Column(DB.Integer, DB.ForeignKey('github_organization.id', ondelete='CASCADE'), primary_key=True)
+    app_id =            DB.Column(DB.String,  primary_key=True)
+    github_user_id =    DB.Column(DB.Integer, primary_key=True)
+    user_id =           DB.Column(DB.Integer, primary_key=True)
+
+    __table_args__ = (
+        DB.ForeignKeyConstraint(
+            [app_id, github_user_id, user_id],
+            [GithubAccount.app_id, GithubAccount.github_user_id, GithubAccount.user_id],
+            ondelete='CASCADE'
+        ), {})
 
     def __init__(self, github_organization, github_account):
         self.org = github_organization
@@ -21,7 +32,12 @@ class GithubOrgAccount(DB.Model, PermissionMixin):
         return self.org.allowed_to_be_viewed_by(user)
 
     def __repr__(self):
-        return '<GithubOrgAccount[{}, {}]>'.format(self.org_id, self.account_id)
+        return '<GithubOrgAccount({})>'.format(
+            self.org_id,
+            self.app_id,
+            self.github_user_id,
+            self.user_id,
+        )
 
     @classmethod
     def setup_queries(cls, models):

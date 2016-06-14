@@ -40,8 +40,7 @@ for language, extension_list in _language_list.items():
 def detect_languages(account_id):
     # remember, we MUST pop this 'context' when we are done with this session
     github_session, context = create_admin_github_session(account_id)
-
-    author = github_session.account.login
+    author = github_session.account.github_user.login
     owned_repos = github_session.api.get('/user/repos').data
 
     commit_count_by_language = Counter()
