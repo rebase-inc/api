@@ -56,7 +56,7 @@ rq_git:
     file: docker/api-production.yml
   image: rebase/rq_git
   ports:
-   - "2222:22"
+   - "22:22"
   links:
    - database:db
    - redis

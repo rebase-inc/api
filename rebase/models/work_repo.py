@@ -6,13 +6,16 @@ from sqlalchemy.orm import reconstructor
 from rebase.common.database import DB
 from rebase.models.code_repository import CodeRepository
 
+
 chars = {
     ord(' '): '_',
     ord('\''): None
 }
 
+
 def normalize(s):
     return s.lower().translate(chars)
+
 
 class WorkRepo(CodeRepository):
     __pluralname__ = 'rebase_repos'
@@ -36,10 +39,7 @@ class WorkRepo(CodeRepository):
             current_app.config['WORK_REPOS_ROOT'], 
             self.repo_path
         )
-        self.url = '{hostname}:{path}'.format(
-            hostname=current_app.config['GIT_SERVER_NAME'],
-            path=self.repo_path
-        )
+        self.url = current_app.config['GIT_SERVER_URL_PREFIX']+self.repo_path
         self.clone = 'git clone {}'.format(self.url)
 
     @classmethod

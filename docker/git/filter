@@ -15,9 +15,12 @@ from os.path import exists, join
 from subprocess import call
 from sys import argv, exit
 
-current_process().name = 'ssh->filter'
+
+current_process().name = 'SSH -> Rebase filter'
+
 
 GIT_ROOT='/git'
+
 
 logger = getLogger()
 logger.setLevel(DEBUG)
@@ -38,41 +41,79 @@ class FilterException(Exception):
             code=self.code
         )
 
+
 class MissingArguments(FilterException):
     error_message = 'Missing arguments'
     code = 1
+
 
 class InvalidGitDirectoryTooShort(FilterException):
     error_message = 'Invalid Git directory: too short'
     code = 2
 
+
 class InvalidCommand(FilterException):
     error_message = 'Invalid command'
     code = 4
+
 
 class GitDirDoesNotExist(FilterException):
     error_message = 'Git directory does not exist'
     code = 5
 
+
 class MissingAuthorizedUsersFile(FilterException):
     error_message = 'Missing authorized_users file'
     code = 6
+
 
 class UnauthorizedUser(FilterException):
     error_message = 'Unauthorized user'
     code = 7
 
 
+class TooManyArguments(FilterException):
+    error_message = 'Too many arguments'
+    code = 8
+
+
+class CannotParseUserId(FilterException):
+    error_message = 'Cannot parse the user ID. Check format of authorized_keys file.'
+    code = 9
+
+
+class RepoPathArgumentIsNotAString(FilterException):
+    error_message = 'The repository path argument is not a string'
+    code = 10
+
+
 def main(argv):
     valid_commands = ['git-receive-pack', 'git-upload-archive', 'git-upload-pack']
-    if len(argv) != 4:
+    if len(argv) < 4:
         raise MissingArguments()
-    user_id = int(argv[1])
+    if len(argv) > 4:
+        raise TooManyArguments()
+    try:
+        user_id = int(argv[1])
+    except:
+        raise CannotParseUserId()
     git_cmd = argv[2]
-    if len(argv[3]) < 6:
-        raise InvalidGitDirectoryTooShort()
+    repo_path_arg = argv[3]
     # the [1:-1] index is to remove the extraneous double-quotes around the string
-    git_dir = join(GIT_ROOT, argv[3][1:-1])
+    if repo_path_arg[0] != "'" or repo_path_arg[-1] != "'":
+        raise RepoPathArgumentIsNotAString()
+    # eliminate the leading and trailing single-quote
+    repo_path = repo_path_arg[1:-1]
+    # First character of repo path can be a '/'.
+    # This happens when the clone URL contains a port specifier.
+    # For example:
+    # git clone ssh://git@dev:2222/facebook/redux-tools
+    if repo_path[0] == '/':
+        repo_path = repo_path[1:]
+    # Repo path should at least 3 characters: 1 for the org, 1 '/', and 1 for the repo
+    if len(repo_path) < 3:
+        raise InvalidGitDirectoryTooShort()
+    git_dir = join(GIT_ROOT, repo_path)
     if git_cmd not in valid_commands:
         raise InvalidCommand()
     if not exists(git_dir):
