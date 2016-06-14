@@ -67,9 +67,10 @@ function _db() {
 function _compose () {
     if [ ! -z ${SECRET_KEY+x} ]
     then 
-        echo "Production mode"
+        echo "${bold}Production mode${off}"
         docker-compose -f production-compose.yml $*
     else
+        echo "${bold}Development mode${off}"
         docker-compose $*
     fi 
 }
