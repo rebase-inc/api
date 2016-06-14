@@ -87,9 +87,7 @@ api-rm () {
 # Silent version of api-post
 # Useful for intermediate POST where user msgs interfere with output processing
 _api-post () {
-    previous=$(api-silent)
-    process_errors "$( \
-        curl \
+    curl \
         -s \
         -L \
         -w "\n%{http_code}" \
@@ -99,9 +97,8 @@ _api-post () {
         -H 'Accept: application/json' \
         -X POST \
         --data-binary "$1" \
-        $REBASE_HOST/api/v1/$2 \
-        )"
-    export API_SILENT_MODE=$previous_mode
+        $REBASE_HOST/api/v1/$2
+    return $?
 }
 
 #
@@ -110,7 +107,7 @@ _api-post () {
 # api-post "{\"first_name\": \"$1\", \"last_name\":\"$2\", \"email\":\"$3\", \"password\":\"$4\"}" users
 #
 api-post () {
-    process_errors $(_api-post $*)
+    process_errors "$(_api-post $*)"
 }
 
 #
@@ -136,6 +133,7 @@ api-login-raw () {
 	_api-post \
         "{ \"user\": {\"email\": \"$1\"}, \"password\": \"$2\"}" \
         auth
+    return $?
 }
 
 #
@@ -149,7 +147,13 @@ api-login () {
         echo ""
         return 1
     fi
-	export CURRENT_USER=$(_api-post "{ \"user\": {\"email\": \"$1\"}, \"password\": \"$2\"}" auth | jq -c '.user') 
+    response=$(api-login-raw $1 $2)
+    last_code=$?
+    if [ $last_code -ne 0 ]; then
+        echo "$response"
+        return $last_code
+    fi
+    export CURRENT_USER=$(echo $response | jq -c '.user')
     echo $CURRENT_USER | jq .
 }
 
@@ -341,14 +345,11 @@ api-new-ticket() {
     internal_tickets
 }
 
-#
-# api-github-importable-repos <github_account_id>
-#
-api-github-projects () {
+api-github-importable-projects () {
     if [ $# -ne 1 ]; then
         echo
         echo "Correct syntax:"
-        echo "${green}api-github-importable-repos ${red}<github_account_id>${off}"
+        echo "${green}api-github-importable-projects ${red}<github_user_id>${off}"
         echo
         echo "To list your registered Github accounts, run this command:"
         echo "${green}api-get github_accounts${off}"
@@ -365,17 +366,17 @@ api-import-github-project () {
     if [ $# -ne 2 ]; then
         echo
         echo "Correct syntax:"
-        echo "${green} api-import-github-project ${red}<github_account_id> <project_id>${off}"
+        echo "${green} api-import-github-project ${red}<github_user_id> <project_id>${off}"
         echo
         echo "To list the projects you can import, run this command:"
-        echo "${green}api-github-projects${off}"
+        echo "${green}api-github-importable-projects${off}"
         echo "If the return list is empty, go to ${blue}$REBASE_HOST${off}, select your profile,"
         echo "then click on 'Add Github Account'."
-        echo "Then, come back here, run 'api-github-projects' again and see your account being listed"
+        echo "Then, come back here, run 'api-github-importable-projects' again and see your account being listed"
         echo
         return 1
     fi
-    echo "Importing Github Project [$2] using Github Account [$1] "
+    echo "Importing Github Project [$2] with Github User [$1] "
     output=$(api-post "{}" "github_accounts/$1/import/$2")
     if [ $? -eq 0 ]; then
         echo "$output" | jq '.roles[]'
