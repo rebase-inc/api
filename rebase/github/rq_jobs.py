@@ -1,6 +1,7 @@
 from datetime import datetime
 from functools import lru_cache
 from logging import getLogger
+from os import makedirs
 from os.path import join, isfile, dirname
 from subprocess import check_call, call
 
@@ -118,7 +119,9 @@ def create_work_repo(project_id, account_id):
         return RuntimeError(error_msg)
     oauth_url = project.remote_repo.url.replace('https://api.github.com', 'https://'+session.account.access_token+'@github.com', 1)
     oauth_url = oauth_url.replace('github.com/repos', 'github.com', 1)
-    check_call(['git', '-C', dirname(repo_full_path), 'clone', oauth_url])
+    organization_path = dirname(repo_full_path)
+    makedirs(organization_path, exist_ok=True)
+    check_call(['git', '-C', organization_path, 'clone', oauth_url])
     manager_user = project.managers[0].user
     check_call(['git', '-C', repo_full_path, 'config', '--local', 'user.name', manager_user.name])
     check_call(['git', '-C', repo_full_path, 'config', '--local', 'user.email', manager_user.email])
