@@ -5,6 +5,7 @@ from flask import jsonify, request, session, current_app
 
 from rebase.models import User, Manager
 from rebase.views import user
+from rebase.cache.rq_jobs import warmup
 from rebase.common.database import DB
 from rebase.common.rest import (
     get_collection,
@@ -29,8 +30,11 @@ class UserCollection(Resource):
 
 def update_current_role(user):
     if user == current_user:
-        role_id = str(user.current_role.id)
-        session['role_id'] = role_id
+        new_role_id = str(user.current_role.id)
+        old_role_id = session['role_id']
+        if old_role_id != new_role_id:
+            warmup(user.current_role.id)
+        session['role_id'] = new_role_id
     return user
 
 resource_handlers = {
