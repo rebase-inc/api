@@ -204,3 +204,13 @@ function _generate_certificate() {
             -d $1 && \
     _nginx_listen 443
 }
+
+#
+# Gracefully restart web worker processes.
+# This allows not having to restart the web container which
+# would trigger the need to restart the Nginx container as well
+# and, in Dev mode, the app and code2resume containers too.
+#
+function _restart_web_workers() {
+    docker exec -t api_web_1 kill -SIGHUP 1
+}
