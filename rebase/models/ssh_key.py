@@ -11,7 +11,7 @@ class SSHKey(DB.Model, PermissionMixin):
     id =            DB.Column(DB.Integer, primary_key=True)
     user_id =       DB.Column(DB.Integer, DB.ForeignKey('user.id', ondelete='CASCADE'))
     title =         DB.Column(DB.String, nullable=True)
-    key =           DB.Column(DB.String, nullable=False)
+    key =           DB.Column(DB.String, nullable=False, unique=True)
     fingerprint =   DB.Column(DB.String, nullable=False)
 
     def __init__(self, user, key, title=None):

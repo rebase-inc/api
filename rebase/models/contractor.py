@@ -44,15 +44,17 @@ class Contractor(Role):
     @reconstructor
     def init(self):
         from rebase.models.review import Review
-        self.user.set_role(self.id)
+        old_filter = Review.filter_based_on_current_role
+        Review.filter_based_on_current_role = False
         reviews = Review.as_contractor(self.user).all()
+        Review.filter_based_on_current_role = old_filter
         if reviews:
             _sum = 0.0
             for review in reviews:
                 _sum += review.rating
             self.rating = _sum/len(reviews)
         else:
-            self.rating = 0
+            self.rating = 0.0
 
     @hybrid_property
     def auctions_approved_for(self):

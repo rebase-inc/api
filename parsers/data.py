@@ -34,6 +34,13 @@ def recreate(yes):
 @data.command
 def populate():
     "Populate database with default data"
+    from rebase.models import GithubOAuthApp
+
+    alpha =         GithubOAuthApp(app.config['GITHUB_APP_ID'],         'alpha',        app.config['APP_URL'])
+    code2resume =   GithubOAuthApp(app.config['GITHUB_CODE2RESUME_ID'], 'code2resume',  app.config['CODE2RESUME_URL'])
+    DB.session.add(alpha)
+    DB.session.add(code2resume)
+
     mock.DeveloperUserStory(DB, 'Phil Meyman', 'philmeyman@joinrebase.com', 'lem')
     mock.ManagerUserStory(DB, 'Ron Swanson', 'ron@joinrebase.com', 'ron')
     mock.create_one_user(DB, 'New User', 'new@joinrebase.com', 'new') 

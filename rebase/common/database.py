@@ -55,19 +55,19 @@ class PermissionMixin(object):
 
     @classmethod
     def as_owner(cls, user):
-        if cls.as_owner_path == None:
+        if cls.as_owner_path == None and cls.filter_based_on_current_role:
             raise AsOwnerPathUndefined(cls)
         return cls.query_from_class_to_user(cls.as_owner_path, user)
 
     @classmethod
     def as_contractor(cls, user):
-        if cls.as_contractor_path == None:
+        if cls.as_contractor_path == None and cls.filter_based_on_current_role:
             raise AsContractorPathUndefined(cls)
         return cls.query_from_class_to_user(cls.as_contractor_path, user)
 
     @classmethod
     def as_manager(cls, user):
-        if cls.as_manager_path == None:
+        if cls.as_manager_path == None and cls.filter_based_on_current_role:
             raise AsManagerPathUndefined(cls)
         return cls.query_from_class_to_user(cls.as_manager_path, user)
 

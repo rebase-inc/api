@@ -5,12 +5,13 @@ from rebase.common.schema import RebaseSchema, SecureNestedField
 from rebase.views.role import RoleSchema
 from rebase.views.ssh_key import SSHKeySchema
 
+
 class PhotoSchema(RebaseSchema):
     id =  fields.Integer()
     url = fields.String(required=True)
 
-class UserSchema(RebaseSchema):
 
+class UserSchema(RebaseSchema):
     id =            fields.Integer()
     name =          fields.String(required=False)
     email =         fields.Email(required=True)
@@ -34,6 +35,9 @@ class UserSchema(RebaseSchema):
             return user
         return self._get_or_make_object(User, data)
 
+
 serializer = UserSchema()
 deserializer = UserSchema(strict=True)
 update_deserializer = UserSchema(context={'raw': True})
+
+

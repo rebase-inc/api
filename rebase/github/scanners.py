@@ -44,7 +44,7 @@ def import_github_repos(repos, user, db_session):
     new_mgr_roles_for_existing_projects = []
     new_projects = []
     for repo_id, repo in repos.items():
-        github_account = GithubAccount.query.filter(GithubAccount.id==repo['github_account_id']).first()
+        github_account = GithubAccount.query.get(repo['github_account_id'])
         if not github_account:
             logger.debug('Cannot find GithubAccount[{}], so we cannot import repo[{}, {}]'.format(
                 repo['github_account_id'],

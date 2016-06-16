@@ -1,3 +1,4 @@
+. env/colors.bash
 
 # Launch a bash session inside a running container:
 # $ _bash api_web_1
@@ -33,6 +34,14 @@ function _shell() {
     docker exec -it api_web_1 /venv/api/bin/python manage shell
 }
 
+function _add_ipython() {
+    docker exec -it api_web_1 /venv/api/bin/pip3 install ipython
+}
+
+function _ishell() {
+    docker exec -it api_web_1 /venv/api/bin/ipython manage shell
+}
+
 function _super() {
     docker exec -it api_rq_git_1 /venv/super/bin/supervisorctl -c /etc/git/supervisor.conf $*
 }
@@ -58,9 +67,10 @@ function _db() {
 function _compose () {
     if [ ! -z ${SECRET_KEY+x} ]
     then 
-        echo "Production mode"
+        echo "${bold}Production mode${off}"
         docker-compose -f production-compose.yml $*
     else
+        echo "${bold}Development mode${off}"
         docker-compose $*
     fi 
 }
@@ -77,9 +87,9 @@ function _compose () {
 function _repopulate() {
    if [ ! -z ${SECRET_KEY+x} ]; then 
        declare -a containers=(nginx scheduler web rq_default cache)
-       echo "You are running in production mode!"
+       echo "${bold}Production mode${off}"
        echo "Do you wish to wipe out the database and repopulate it?"
-       echo "Type 1 or 2 to select your answer"
+       echo "Type ${bold}1${off} or ${bold}2${off} to select your answer"
        select yn in Yes No
        do
            case $yn in
@@ -88,6 +98,7 @@ function _repopulate() {
            esac
        done
    else
+       echo "${bold}Development Mode${off}"
        declare -a containers=(scheduler web rq_default cache)
    fi 
     _compose stop -t 60 ${containers[@]}
@@ -192,4 +203,14 @@ function _generate_certificate() {
             --webroot-path /etc/letsencrypt/webrootauth \
             -d $1 && \
     _nginx_listen 443
+}
+
+#
+# Gracefully restart web worker processes.
+# This allows not having to restart the web container which
+# would trigger the need to restart the Nginx container as well
+# and, in Dev mode, the app and code2resume containers too.
+#
+function _restart_web_workers() {
+    docker exec -t api_web_1 kill -SIGHUP 1
 }

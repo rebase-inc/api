@@ -5,32 +5,25 @@ from flask import redirect, url_for, request, jsonify, current_app
 from flask.ext.login import login_required, current_user
 
 from rebase.common.database import DB
-from rebase.github import create_github_apps
+from rebase.common.exceptions import NotFoundError
+from rebase.github import apps
 from rebase.github.languages import detect_languages
 from rebase.github.scanners import (
     import_github_repos,
     extract_repos_info,
 )
 from rebase.github.session import make_session
-from rebase.models.contractor import Contractor
-from rebase.models.github_account import GithubAccount
-from rebase.models.remote_work_history import RemoteWorkHistory
-from rebase.models.skill_set import SkillSet
-from rebase.models.user import User
+from rebase.models import (
+    Contractor,
+    GithubAccount,
+    GithubUser,
+    RemoteWorkHistory,
+    SkillSet,
+    User
+)
 
 
 logger = getLogger()
-
-
-def save_github_account(account_id, login, access_token, product):
-    github_account = GithubAccount.query_by_user(current_user).filter(GithubAccount.login==login).first()
-    if github_account:
-        github_account.access_token = access_token
-    else:
-        github_account = GithubAccount(current_user, account_id, login, access_token, product)
-    DB.session.add(github_account)
-    DB.session.commit()
-    return github_account
 
 
 def analyze_contractor_skills(github_account):
@@ -47,7 +40,7 @@ def for_each_line(thing, log):
     for line in str(thing).splitlines():
         log(line)
 
-def get_product(request):
+def get_oauth_app_hostname(request):
     #logger.debug('============ Headers ==============================')
     #for_each_line(request.headers, logger.debug)
     #logger.debug('============ End Of Headers ==============================')
@@ -56,19 +49,17 @@ def get_product(request):
         host2 = '//'+host
     else:
         host2 = host
-    product = urlparse(host2).hostname
-    #logger.debug('Product: %s', product)
-    return product
+    oauth_app_hostname = urlparse(host2).hostname
+    #logger.debug('oauth_app_hostname: %s', oauth_app_hostname)
+    return oauth_app_hostname
 
 def register_github_routes(app):
-
-    github_apps = create_github_apps(app)
-
     @app.route('/api/v1/github', methods=['GET'])
     @login_required
     def login():
-        product = get_product(request)
-        return github_apps[product].authorize(callback=url_for('authorized', _external=True))
+        github_apps = apps(app)
+        oauth_app_hostname = get_oauth_app_hostname(request)
+        return github_apps[oauth_app_hostname].authorize(callback=url_for('authorized', _external=True))
 
     @app.route('/api/v1/github/verify')
     @login_required
@@ -76,7 +67,7 @@ def register_github_routes(app):
         logger.debug('request.environ:')
         logger.debug('%s', request.environ)
         for account in current_user.github_accounts:
-            logger.debug('Verifying Github account '+account.login)
+            logger.debug('Verifying Github account '+account.github_user.login)
             make_session(account, current_app, current_user)
         return jsonify({'success':'complete'})
 
@@ -89,8 +80,9 @@ def register_github_routes(app):
     @app.route('/api/v1/github/authorized')
     @login_required
     def authorized():
-        product = get_product(request)
-        github = github_apps[product]
+        github_apps = apps(app)
+        oauth_app_hostname = get_oauth_app_hostname(request)
+        github = github_apps[oauth_app_hostname]
         resp = github.authorized_response()
         if resp is None:
             return 'Access denied: reason={error} error={error_description}'.format(**request.args)
@@ -98,13 +90,23 @@ def register_github_routes(app):
             if resp['error'] == 'bad_verification_code': return redirect(url_for('github_login'))
             else: return 'Unknown error: {}'.format(resp['error'])
         else:
-            github_user = github.get('user', token=(resp['access_token'], '')).data
-            github_account = save_github_account(
-                github_user['id'],
-                github_user['login'],
-                resp['access_token'],
-                product
-            )
+            access_token = resp['access_token']
+            _github_user = github.get('user', token=(access_token, '')).data
+            github_user = GithubUser.query.get(_github_user['id'])
+            if not github_user:
+                github_user = GithubUser(*[ _github_user[k] for k in ('id', 'login', 'name') ])
+            github_app = github.github_app
+            github_account = GithubAccount.query.filter_by(
+                app_id=github_app.client_id,
+                github_user_id=github_user.id,
+                user_id=current_user.id
+            ).first()
+            if github_account:
+                github_account.access_token = access_token
+            else:
+                github_account = GithubAccount(github_app, github_user, current_user, access_token)
+            DB.session.add(github_account)
+            DB.session.commit()
             analyze_contractor_skills(github_account)
         return redirect('/')
 
@@ -114,12 +116,29 @@ def register_github_routes(app):
         new_mgr_roles = import_github_repos(request.json['repos'], current_user, DB.session)
         return jsonify({'roles': new_mgr_roles});
 
-    @app.route('/api/v1/github_accounts/<int:github_account_id>/importable_repos')
+    @app.route('/api/v1/github_accounts/<int:github_user_id>/importable_repos')
     @login_required
-    def importable_repos(github_account_id):
-        account = GithubAccount.query.get_or_404(github_account_id)
+    def importable_repos(github_user_id):
+        github_apps = apps(app)
+        oauth_app_hostname = get_oauth_app_hostname(request)
+        github = github_apps[oauth_app_hostname]
+        account = GithubAccount.query.get_or_404((github.github_app.client_id, github_user_id, current_user.id))
         session = make_session(account, current_app, current_user)
         return jsonify({ 'repos': extract_repos_info(session) })
+
+    @app.route('/api/v1/github_accounts/<int:github_user_id>/import/<int:project_id>', methods=['POST'])
+    @login_required
+    def import_project(github_user_id, project_id):
+        github_apps = apps(app)
+        oauth_app_hostname = get_oauth_app_hostname(request)
+        github = github_apps[oauth_app_hostname]
+        account = GithubAccount.query.get_or_404((github.github_app.client_id, github_user_id, current_user.id))
+        session = make_session(account, current_app, current_user)
+        repo = next(filter(lambda repo: repo['id']==project_id, extract_repos_info(session)), None)
+        if not repo:
+            raise NotFoundError('Github Project', project_id)
+        new_mgr_roles = import_github_repos({ repo['id']: repo }, current_user, DB.session)
+        return jsonify({'roles': new_mgr_roles});
 
     @app.route('/api/v1/github/analyze_skills')
     @login_required

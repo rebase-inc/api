@@ -1,22 +1,69 @@
 
-export REBASE_HOST="http://dev:3000"
+. env/colors.bash
+
+export REBASE_DEV='http://dev:3000'
+export REBASE_ALPHA='https://alpha.rebaseapp.com'
+export REBASE_HOST="$REBASE_DEV"
 
 api-use-alpha () {
-    export REBASE_HOST="https://alpha.rebaseapp.com"
+    export REBASE_HOST="$REBASE_ALPHA"
+}
+
+api-use-dev () {
+    export REBASE_HOST="$REBASE_DEV"
 }
 
 export REBASE_COOKIE_JAR=/tmp/api-cookie-jar.txt
 
+export API_SILENT_MODE=0
+
+api-set-silent-mode () {
+    previous=$API_SILENT_MODE
+    export API_SILENT_MODE=$1
+    return $previous
+}
+
+api-silent () {
+    return $(api-set-silent-mode 1)
+}
+
+api-verbose () {
+    return $(api-set-silent-mode 0)
+}
+
+__echo () {
+    echo "API_SILENT_MODE=$API_SILENT_MODE"
+    if [ $API_SILENT_MODE -ne 1 ]; then
+        echo $1
+    fi
+}
+
+process_errors () {
+    response_and_code="$1"
+    http_code=$(echo "$response_and_code" | tail -n 1)
+    response=$(echo "$response_and_code" | sed '$d')
+    if [ $http_code -gt 399 ] && [ $http_code -lt 600 ]; then
+        echo "${bold}HTTP Code${off}: $http_code"
+        echo "${bold}Message:${off}$response"
+        return 1
+    else
+        echo "$response"
+    fi
+}
+
 api-curl () {
-	curl \
-    -s \
-	-L \
-	-b $REBASE_COOKIE_JAR \
-	-c $REBASE_COOKIE_JAR \
-	-H "Content-Type: application/json" \
-	-X $1 \
-	-d "$2" \
-	 $REBASE_HOST/api/v1/$3
+    process_errors "$( \
+        curl \
+        -s \
+        -w "\n%{http_code}" \
+        -L \
+        -b $REBASE_COOKIE_JAR \
+        -c $REBASE_COOKIE_JAR \
+        -H "Content-Type: application/json" \
+        -X $1 \
+        -d "$2" \
+         $REBASE_HOST/api/v1/$3 \
+    )"
 }
 
 #
@@ -24,7 +71,7 @@ api-curl () {
 # $ api-get skill_sets
 #
 api-get () {
-	api-curl GET "{}" $1 | jq .
+	api-curl GET "{}" $1
 }
 
 
@@ -33,7 +80,25 @@ api-get () {
 #  api-rm users/3
 #
 api-rm () {
-    api-curl DELETE "" $1
+    process_errors "$(api-curl DELETE "" $1)"
+}
+
+
+# Silent version of api-post
+# Useful for intermediate POST where user msgs interfere with output processing
+_api-post () {
+    curl \
+        -s \
+        -L \
+        -w "\n%{http_code}" \
+        -b $REBASE_COOKIE_JAR \
+        -c $REBASE_COOKIE_JAR \
+        -H "Content-Type: application/json" \
+        -H 'Accept: application/json' \
+        -X POST \
+        --data-binary "$1" \
+        $REBASE_HOST/api/v1/$2
+    return $?
 }
 
 #
@@ -42,16 +107,7 @@ api-rm () {
 # api-post "{\"first_name\": \"$1\", \"last_name\":\"$2\", \"email\":\"$3\", \"password\":\"$4\"}" users
 #
 api-post () {
-	curl \
-    -s \
-	-L \
-	-b $REBASE_COOKIE_JAR \
-	-c $REBASE_COOKIE_JAR \
-	-H "Content-Type: application/json" \
-    -H 'Accept: application/json' \
-	-X POST \
-	--data-binary "$1" \
-	 $REBASE_HOST/api/v1/$2
+    process_errors "$(_api-post $*)"
 }
 
 #
@@ -65,18 +121,19 @@ api-put () {
 
 #
 # Create user in Rebase
-# $ api-new-user Joe Blow joe@blow.org foobar
+# $ api-new-user 'Joe Blow' joe@blow.org foobar
 #
 api-new-user () {
 	api-post \
-	"{\"first_name\": \"$1\", \"last_name\":\"$2\", \"email\":\"$3\", \"password\":\"$4\"}" \
+	"{\"name\": \"$1\", \"email\":\"$2\", \"password\":\"$3\"}" \
 	users
 }
 
 api-login-raw () {
-	api-post \
+	_api-post \
         "{ \"user\": {\"email\": \"$1\"}, \"password\": \"$2\"}" \
         auth
+    return $?
 }
 
 #
@@ -84,7 +141,19 @@ api-login-raw () {
 # $ api-login you@mail.com password
 # 
 api-login () {
-	export CURRENT_USER=$(api-post "{ \"user\": {\"email\": \"$1\"}, \"password\": \"$2\"}" auth | jq -c '.user') 
+    if [ $# -ne 2 ]; then
+        echo "Correct syntax:"
+        echo "${green}api-login ${red}<email> <password>${off}"
+        echo ""
+        return 1
+    fi
+    response=$(api-login-raw $1 $2)
+    last_code=$?
+    if [ $last_code -ne 0 ]; then
+        echo "$response"
+        return $last_code
+    fi
+    export CURRENT_USER=$(echo $response | jq -c '.user')
     echo $CURRENT_USER | jq .
 }
 
@@ -104,17 +173,49 @@ api-logout () {
 # $ api-role <user-id> <role-id>
 # 
 api-role () {
-	api-put \
-	"{ \"current_role\": { \"id\": \"$2\"} }" \
-	users/$1
+    if [ $# -ne 2 ]; then
+        echo ""
+        echo "Correct syntax:"
+        echo "${green}api-role ${red}<user-id> <role-id>${off}"
+        echo
+        return 1
+    fi
+    export CURRENT_USER=$(api-put "{ \"current_role\": { \"id\": \"$2\"} }" users/$1)
+    echo $CURRENT_USER | jq .
 }
 
 #
 # Create a new SSH public key
 # 
-# example: api-key "My public key" "$(cat ~/.ssh/id_rsa.pub)"
+# example: api-ssh-key "My public key" "$(cat ~/.ssh/id_rsa.pub)"
 #
-api-key () {
+api-ssh-key () {
+    if [ $# -ne 2 ]; then
+        echo ""
+        echo "Correct syntax:"
+        echo "${green}api-ssh-key ${red}\"My awesome public key\" \"<pub_key>\"${off}"
+        echo
+        echo "Example:"
+        echo "${green}api-ssh-key \"My public key\" \"\$(cat ~/.ssh/id_rsa.pub)\"${off}"
+        echo 
+        echo "To list your existing SSH public key, run this command:"
+        echo "${green}api-get ssh_keys${off}"
+        echo
+        echo "If the return list is empty, go to ${blue}$REBASE_HOST${off}, select your profile,"
+        echo "then click on ${magenta}'Add SSH key'${off}."
+        echo "Then, run '${green}api-get ssh_keys${off}' again and see your new key being listed"
+        echo
+        return 1
+    fi
+    if [ -z ${CURRENT_USER+x} ]; then 
+        echo "${red}Please login first, using ${green}'api-login'${red}!${off}"
+        return 2
+    fi
+    echo
+    echo "${bold}Title${off}: $1"
+    echo "${bold}Public Key${off}:"
+    echo "$2"
+    echo
     api-post \
     "{ \"user\": $CURRENT_USER, \"title\": \"$1\", \"key\": \"$2\" }" \
     ssh_keys
@@ -244,22 +345,42 @@ api-new-ticket() {
     internal_tickets
 }
 
-#
-# api-github-importable-repos <github_account_id>
-#
-api-github-importable-repos() {
+api-github-importable-projects () {
     if [ $# -ne 1 ]; then
-        echo ""
+        echo
         echo "Correct syntax:"
-        echo "$(tput setaf 2)api-github-importable-repos $(tput setaf 1)<github_account_id>$(tput sgr0)"
-        echo ""
+        echo "${green}api-github-importable-projects ${red}<github_user_id>${off}"
+        echo
         echo "To list your registered Github accounts, run this command:"
-        echo "$(tput setaf 2)api-get github_accounts$(tput sgr0)"
-        echo "If the return list is empty, go to https://alpha.rebaseapp.com, select your profile,"
+        echo "${green}api-get github_accounts${off}"
+        echo "If the return list is empty, go to $REBASE_HOST, select your profile,"
         echo "then click on 'Add Github Account'."
         echo "Then, come back here, run 'api-get github_accounts' again and see your account being listed"
-        echo ""
+        echo
         return 1
     fi
-    api-get "github_accounts/$1/importable_repos" | jq '.repos[] | .url'
+    api-get "github_accounts/$1/importable_repos" | jq '.repos[] | { owner:.owner.login, name, id}'
+}
+
+api-import-github-project () {
+    if [ $# -ne 2 ]; then
+        echo
+        echo "Correct syntax:"
+        echo "${green} api-import-github-project ${red}<github_user_id> <project_id>${off}"
+        echo
+        echo "To list the projects you can import, run this command:"
+        echo "${green}api-github-importable-projects${off}"
+        echo "If the return list is empty, go to ${blue}$REBASE_HOST${off}, select your profile,"
+        echo "then click on 'Add Github Account'."
+        echo "Then, come back here, run 'api-github-importable-projects' again and see your account being listed"
+        echo
+        return 1
+    fi
+    echo "Importing Github Project [$2] with Github User [$1] "
+    output=$(api-post "{}" "github_accounts/$1/import/$2")
+    if [ $? -eq 0 ]; then
+        echo "$output" | jq '.roles[]'
+    else
+        echo "$output"
+    fi
 }

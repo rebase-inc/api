@@ -5,9 +5,11 @@ from rebase.models.github_contributed_repo import GithubContributedRepo
 
 
 class GithubContributedRepoSchema(RebaseSchema):
-    id =                        fields.Integer()
+    app_id =                    fields.String()
+    github_user_id =            fields.Integer()
+    user_id =                   fields.Integer()
     remote_work_history_id =    fields.Integer()
-    account_id =                fields.Integer()
+
     github_id =                 fields.Integer()
     name =                      fields.String()
     description =               fields.String()
@@ -20,5 +22,5 @@ class GithubContributedRepoSchema(RebaseSchema):
 
 
 serializer =            GithubContributedRepoSchema()
-deserializer =          GithubContributedRepoSchema(exclude=('id',), strict=True)
+deserializer =          GithubContributedRepoSchema(exclude=('app_id', 'github_user_id', 'user_id', 'remote_work_history_id'), strict=True)
 update_deserializer =   GithubContributedRepoSchema(context={'raw': True})

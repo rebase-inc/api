@@ -1,10 +1,8 @@
 
-from rebase.models import (
-    Role,
-    User,
-)
+from rebase.models import Role, User
 
 from rebase.common.database import DB, PermissionMixin
+
 
 class Owner(Role):
     __pluralname__ = 'owners'
@@ -55,3 +53,5 @@ class Owner(Role):
             models.Project,
             models.Manager,
         ]
+
+

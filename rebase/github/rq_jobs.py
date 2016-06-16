@@ -1,8 +1,11 @@
 from datetime import datetime
 from functools import lru_cache
 from logging import getLogger
+from os import makedirs
+from os.path import join, isfile, dirname
 from subprocess import check_call, call
 
+from rebase.common.database import DB
 from rebase.github.session import create_admin_github_session
 
 
@@ -18,24 +21,28 @@ def get_or_make_user(session, user_id, user_login):
     return a User or GithubUser instance for the 'user_id' and 'user_login' provided
     '''
     from rebase.models import GithubAccount, GithubUser
-    account = GithubAccount.query.filter(GithubAccount.account_id==user_id).first()
-    if not account:
-        _user = GithubUser.query.filter(GithubUser.github_id==user_id).first()
-        if not _user:
-            gh_user = session.api.get('/users/{username}'.format(username=user_login)).data
-            _user = GithubUser(user_id, user_login, gh_user['name'])
+    github_user = GithubUser.query.filter_by(id=user_id).first()
+    if not github_user:
+        gh_user = session.api.get('/users/{username}'.format(username=user_login)).data
+        github_user = GithubUser(user_id, user_login, gh_user['name'], gh_user['email'])
+        _user = GithubAnonymousUser(github_user)
+        DB.session.add(github_user)
     else:
-        _user = account.user
+        if github_user.anonymous_user:
+            _user = github_user.anonymous_user
+        else:
+            github_account = GithubAccount.query.filter_by(github_user=github_user).first()
+            if github_account:
+                _user = github_account.user
+            else:
+                # a GithubUser must either have a GithubAccount or a GithubAnonymousUser attached to it
+                raise ServerError(message='Orphan {}'.format(github_user))
     return _user
 
 
 def import_tickets(project_id, account_id):
     session, context = create_admin_github_session(account_id)
-    from rebase.models import (
-        GithubProject,
-        GithubTicket,
-        Comment,
-    )
+    from rebase.models import  Comment, GithubProject, GithubTicket
     project = GithubProject.query.get_or_404(project_id)
     if not project:
         return 'Unknow project with id: {}'.format(project_id)
@@ -53,21 +60,29 @@ def import_tickets(project_id, account_id):
     tickets = []
     komments = []
     for issue in issues:
-        ticket = GithubTicket(project, issue['number'], issue['title'], datetime.strptime(issue['created_at'], _gh_datetime_format))
-        ticket.skill_requirement.skills = languages
-        tickets.append(ticket)
-        issue_user = issue['user']
-        if len(issue['body']):
-            body = Comment(
-                get_or_make_user(
-                    session,
-                    issue_user['id'],
-                    issue_user['login'],
-                ),
-                issue['body'],
-                ticket=ticket
-            )
-            komments.append(body)
+        ticket  = GithubTicket.query.filter_by(project=project, number=issue['number']).first()
+        if not ticket:
+            ticket_created = datetime.strptime(issue['created_at'], _gh_datetime_format)
+            ticket = GithubTicket(project, issue['number'], issue['title'], ticket_created)
+            ticket.skill_requirement.skills = languages
+            tickets.append(ticket)
+            issue_user = issue['user']
+            if len(issue['body']):
+                body = Comment(
+                    get_or_make_user(
+                        session,
+                        issue_user['id'],
+                        issue_user['login'],
+                    ),
+                    issue['body'],
+                    created=ticket_created,
+                    ticket=ticket
+                )
+                komments.append(body)
+        else:
+            for _comment in ticket.comments[1:]:
+                ticket.comments.remove(_comment)
+            DB.session.commit()
         comments = session.api.get(issue['url']+'/comments').data
         for comment in comments:
             comment_user = comment['user']
@@ -82,11 +97,10 @@ def import_tickets(project_id, account_id):
                 ticket=ticket
             )
             komments.append(ticket_comment)
-        session.DB.session.add(ticket)
-    session.DB.session.commit()
+        DB.session.add(ticket)
+    DB.session.commit()
     # popping the context will close the current database connection.
     context.pop()
-    return tickets, komments
 
 
 def create_work_repo(project_id, account_id):
@@ -95,14 +109,22 @@ def create_work_repo(project_id, account_id):
     from rebase.models import GithubProject
     project = GithubProject.query.get(project_id)
     if not project:
-        return 'Unknow project with id: {}'.format(project_id)
+        error_msg = 'Unknown project with id: {}'.format(project_id)
+        logger.error(error_msg)
+        raise RuntimeError(error_msg)
     repo_full_path = project.work_repo.full_repo_path
-    if call(['ls', repo_full_path]) == 0:
-        return 'Repo already exists, skipping.'
-    check_call(['git', 'init', repo_full_path])
+    if isfile(join(repo_full_path, '.git', 'HEAD')):
+        error_msg = 'Repo already exists, skipping.'
+        logger.error(error_msg)
+        return RuntimeError(error_msg)
     oauth_url = project.remote_repo.url.replace('https://api.github.com', 'https://'+session.account.access_token+'@github.com', 1)
     oauth_url = oauth_url.replace('github.com/repos', 'github.com', 1)
-    check_call(['git', '-C', repo_full_path, 'pull', oauth_url])
+    organization_path = dirname(repo_full_path)
+    makedirs(organization_path, exist_ok=True)
+    check_call(['git', '-C', organization_path, 'clone', oauth_url])
+    manager_user = project.managers[0].user
+    check_call(['git', '-C', repo_full_path, 'config', '--local', 'user.name', manager_user.name])
+    check_call(['git', '-C', repo_full_path, 'config', '--local', 'user.email', manager_user.email])
     # popping the context will close the current database connection.
     context.pop()
 

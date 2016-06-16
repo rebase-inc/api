@@ -15,12 +15,15 @@ from rebase.models.contractor import *
 from rebase.models.credit import *
 from rebase.models.debit import *
 from rebase.models.feedback import *
-from rebase.models.github_project import *
+from rebase.models.github_anonymous_user import *
+from rebase.models.github_user import *
+from rebase.models.github_oauth_app import *
 from rebase.models.github_account import *
+from rebase.models.github_org_account import *
+from rebase.models.github_project import *
 from rebase.models.github_contributed_repo import *
 from rebase.models.github_repository import *
 from rebase.models.github_organization import *
-from rebase.models.github_org_account import *
 from rebase.models.internal_ticket import *
 from rebase.models.internal_project import *
 from rebase.models.remote_ticket import *
@@ -44,7 +47,6 @@ from rebase.models.ticket_match import *
 from rebase.models.ticket_set import *
 from rebase.models.ticket_snapshot import *
 from rebase.models.user import *
-from rebase.models.github_user import *
 from rebase.models.work import *
 from rebase.models.work_offer import *
 from rebase.models.work_repo import *

@@ -55,7 +55,6 @@ class AuthCollection(Resource):
 
     def get(self):
         if current_user.is_authenticated:
-            warmup(current_user.current_role.id)
             return jsonify(**{'user': user.serializer.dump(current_user).data})
         else:
             response = jsonify(message=self.bad_credentials)
@@ -64,8 +63,6 @@ class AuthCollection(Resource):
 
     def delete(self):
         ''' logout '''
-        role_id = int(request.cookies.get('role_id', 0))
-        cooldown(role_id)
         logout_user()
         response = jsonify(message = 'Logged out')
         response.status_code = 200
