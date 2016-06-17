@@ -1,3 +1,4 @@
+from collections import defaultdict, namedtuple
 from datetime import datetime, timedelta
 
 
@@ -85,6 +86,8 @@ class TechProfile(defaultdict):
         for dates in self.values():
             freshnesses.append(freshness(dates))
         # freshness is average over all technologies
+        if len(freshnesses) == 0:
+            return 0.0
         return  sum(freshnesses)/len(freshnesses)
 
     @property

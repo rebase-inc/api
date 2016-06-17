@@ -5,12 +5,13 @@ from os.path import splitext
 from rebase.cache.rq_jobs import invalidate
 from rebase.common.database import DB
 from rebase.common.debug import pdebug
+from rebase.github.python import scan_tech_in_patch, scan_tech_in_contents
 from rebase.github.session import create_admin_github_session
 from rebase.models import (
     Contractor,
     SkillSet,
 )
-from rebase.github.python import scan_tech_in_commit
+from rebase.skills.tech_profile import TechProfile
 
 
 _language_list = {
@@ -53,6 +54,9 @@ def detect_languages(account_id):
     commit_count = 0
     for repo in owned_repos:
         logger.debug('processing repo [{name}]'.format(**repo))
+        #if repo['name'] != 'headhunt-marketing':
+            #logger.debug('skipping')
+            #continue
         if commit_count > 10:
             break
         commits = github_session.api.get('{url}/commits'.format(**repo), data={ 'author': author }).data
@@ -71,7 +75,9 @@ def detect_languages(account_id):
                 # TODO write a scanner for each language
                 if 'Python' in languages:
                     if 'patch' in file_obj:
-                        technologies.add(scan_tech_in_commit(github_session.api, file_obj, commit['commit']['author']['date']))
+                        technologies.add(scan_tech_in_patch(github_session.api, file_obj, commit['commit']['author']['date']))
+                    elif file_obj['status'] == 'added':
+                        technologies.add(scan_tech_in_contents(github_session.api, file_obj, commit['commit']['author']['date']))
                     else:
                         pdebug(file_obj, 'No patch here')
                         # TODO handle 'added' & 'removed' status
