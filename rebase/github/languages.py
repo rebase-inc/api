@@ -87,7 +87,6 @@ def detect_languages(account_id):
     scale_skill = lambda number: (1 - (1 / (0.01*number + 1 ) ) )
     contractor = next(filter(lambda r: r.type == 'contractor', github_session.account.user.roles), None) or Contractor(github_session.acccount.user)
     contractor.skill_set.skills = { language: scale_skill(commits) for language, commits in commit_count_by_language.items() }
-    contractor.skill_set.technologies = technologies
     github_session.account.remote_work_history.analyzing = False
     DB.session.commit()
     invalidate([(SkillSet, (contractor.skill_set.id,))])

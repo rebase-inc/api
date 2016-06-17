@@ -8,14 +8,12 @@ class SkillSet(DB.Model, PermissionMixin):
 
     id =            DB.Column(DB.Integer, DB.ForeignKey('contractor.id', ondelete='CASCADE'), primary_key=True)
     skills =        DB.Column(DB.PickleType, nullable=True)
-    technologies =  DB.Column(DB.PickleType, nullable=True)
 
     ticket_matches = DB.relationship('TicketMatch', backref='skill_set', cascade="all, delete-orphan", passive_deletes=True)
 
     def __init__(self, contractor, skills=None):
         self.contractor = contractor
         self.skills = skills or {}
-        self.technologies = {}
 
     @classmethod
     def setup_queries(cls, models):
