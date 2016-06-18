@@ -35,7 +35,6 @@ scheduler:
     file: docker/api-dev.yml
   links:
    - database:db
-   - redis
    - rsyslog
   command: ["/venv/api/bin/python", "scheduler.py"]
 
