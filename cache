@@ -20,12 +20,12 @@ logger = getLogger()
 
 
 def quit(sig, frame, server, processes):
-    logger.info('Shutting down child processes')
+    #logger.info('Shutting down child processes')
     server.shutdown()
     for process in processes.values():
         process.q.put({'action': 'cooldown'})
         process.join()
-    logger.info('All children are shutdown. Quitting')
+    #logger.info('All children are shutdown. Quitting')
     exit()
 
 

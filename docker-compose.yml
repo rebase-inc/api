@@ -38,6 +38,17 @@ scheduler:
    - rsyslog
   command: ["/venv/api/bin/python", "scheduler.py"]
 
+crawler:
+  extends:
+    service: webserver
+    file: docker/api-dev.yml
+  links:
+   - database:db
+   - rsyslog
+  volumes:
+   - crawler:/crawler
+  command: ["/venv/api/bin/python", "crawler.py"]
+
 app:
   image: rebase/client
   environment:
