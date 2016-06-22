@@ -83,7 +83,7 @@ nginx:
     links:
      - web
     volumes:
-     - etc_letsencrypt:/etc/letsencrypt:ro
+     - etc_letsencrypt:/etc/letsencrypt
      - www:/www:ro
 
 redis:

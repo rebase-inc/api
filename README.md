@@ -84,16 +84,18 @@ _upgrade
 We use LetsEncrypt.org as the Certificate Authority.
 Their certificates expires after 90 days.
 
-## Build the letsencrypt image
-docker build -t rebase/letsencrypt docker/letsencrypt
-
 ```bash
 $ cd repo/api
 $ source env/docker.bash
+# Make sure the system is up and running (nginx in particular)
+$ _compose ps
+$ _bash nginx
+# Switch Nginx to ACME challenge mode (listen to 80 and respond to 'well-known ACME challenge'
+$ listen 80
 # Letsencrypt has very strict limits on the number of certs generated per day for one domain.
-# So, first, let's test the certificate generation so we can verify it will work without hurting our rate limit.
-$ _generate_certificate alpha.rebaseapp.com
-# If this succeeds, run the same command with the --production flag
-$ _generate_certificate --production alpha.rebaseapp.com
+# So, first, let's test the certificate renewal so we can verify it will work without hurting our rate limit.
+$ ./certbot-auto renew --dry-run
+# If this succeeds, run the same command without the --dry-run:
+$ ./certbot-auto renew
 # In your web browser, go to https://alpha.rebaseapp.com and verify the certificate expiration date (today+90days).
 ```
