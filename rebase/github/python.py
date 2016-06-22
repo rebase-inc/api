@@ -46,7 +46,7 @@ def extract_technology_exposure(code, prefixes, date):
 def scan_tech_in_patch(api, file_obj, date):
     date = datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ")
     LANGUAGE_PREFIX = 'Python.'
-    python_code = b64decode(api.get(file_obj['contents_url']).data['content'])
+    python_code = b64decode(api.get(file_obj['contents_url'])['content'])
     prefixes = extract_prefixes(python_code)
     #pdebug(prefixes, 'Prefixes')
     # taken the original patch and remove:
@@ -71,7 +71,13 @@ def scan_tech_in_patch(api, file_obj, date):
 
 def scan_tech_in_contents(api, file_obj, date):
     date = datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ")
-    python_code = b64decode(api.get(file_obj['contents_url']).data['content'])
+    contents = api.get(file_obj['contents_url'])
+    if 'content' not in contents.keys():
+        pdebug(locals(), 'scan_tech_in_contents locals()')
+        pdebug(contents, 'contents')
+        python_code = ''
+    else:
+        python_code = b64decode(contents['content'])
     prefixes = extract_prefixes(python_code)
     return extract_technology_exposure(python_code, prefixes, date)
 
