@@ -97,5 +97,7 @@ $ listen 80
 $ ./certbot-auto renew --dry-run
 # If this succeeds, run the same command without the --dry-run:
 $ ./certbot-auto renew
+# Switch back to listening for 443 traffic
+$ listen 443
 # In your web browser, go to https://alpha.rebaseapp.com and verify the certificate expiration date (today+90days).
 ```
