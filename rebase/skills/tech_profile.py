@@ -1,4 +1,4 @@
-from collections import defaultdict, namedtuple
+from collections import defaultdict, namedtuple, Counter
 from datetime import datetime, timedelta
 
 
@@ -63,18 +63,18 @@ class TechProfile(defaultdict):
     '''
 
     def __init__(self):
-        self.default_factory = list
+        self.default_factory = DateCounter
 
     def __str__(self):
         return 'TechProfile(experience[{}], readiness[{}])'.format(self.experience, self.readiness)
 
     @property
     def breadth(self):
-        return len(list(self.keys()))
+        return len(self)
 
     @property
     def depth(self):
-        return sum(map(len, self.values()))
+        return sum(map(lambda date_counter: date_counter.depth, self.values()))
 
     @property
     def experience(self):
@@ -82,50 +82,36 @@ class TechProfile(defaultdict):
 
     @property
     def freshness(self):
-        freshnesses = []
-        for dates in self.values():
-            freshnesses.append(freshness(dates))
-        # freshness is average over all technologies
-        if len(freshnesses) == 0:
+        ''' freshness is average over all technologies '''
+        if len(self) == 0:
             return 0.0
-        return  sum(freshnesses)/len(freshnesses)
+        return  sum(map(lambda date_counter: date_counter.freshness, self.values()))/len(self)
 
     @property
     def readiness(self):
         return self.breadth * self.freshness
 
     def __reduce__(self):
+        ''' this allows pickle.dump/load to work. '''
         return (TechProfile, tuple(), None, None, iter(self.items()))
 
     def add(self, exposure):
-        for component, dates in exposure.items():
-            assert dates
-            self[component].extend(dates)
-            self[component].sort()
-
-    def summarize(self, component=''):
-        matching_keys = list(filter(lambda key: key.startswith(component), self.keys()))
-        if not matching_keys:
-            raise RuntimeError('Could not find any technology name starting with '+component)
-        matching_dates = []
-        freshnesses = []
-        for key in matching_keys:
-            dates = self[key]
-            freshnesses.append(freshness(dates))
-            matching_dates.extend(dates)
-        breadth = len(matching_keys)
-        depth = len(matching_dates)
-        # freshness is average over all technologies
-        average_freshness = sum(freshnesses)/len(freshnesses)
-        return TechSummary(breadth, depth, average_freshness, breadth*depth, breadth*average_freshness)
+        for component, date_counters in exposure.items():
+            assert date_counters
+            self[component].update(date_counters)
 
 
-TechSummary = namedtuple('TechSummary', ['breadth', 'depth', 'freshness', 'experience', 'readiness'])
+class DateCounter(Counter):
 
+    @property
+    def freshness(self):
+        sorted_dates = sorted(self)
+        learning_period = sorted_dates[-1] - sorted_dates[0] if len(self) > 1 else timedelta(days=1)
+        time_to_last_exposure = datetime.utcnow() - sorted_dates[-1]
+        return len(self)*learning_period/time_to_last_exposure
 
-def freshness(dates):
-    learning_period = dates[-1] - dates[0] if len(dates) > 1 else timedelta(days=1)
-    time_to_last_exposure = datetime.utcnow() - dates[-1]
-    return len(dates)*learning_period/time_to_last_exposure
+    @property
+    def depth(self):
+        return sum(self.values())
 
 

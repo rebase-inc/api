@@ -1,19 +1,40 @@
 from ast import parse, walk, Import, ImportFrom
 from base64 import b64decode
-from collections import defaultdict
+from collections import defaultdict, Counter
 from datetime import datetime, timedelta
+from logging import getLogger
 
 from rebase.common.debug import pdebug
+from rebase.github import old_version, fix_patch
+from rebase.skills.tech_profile import TechProfile
+
+
+logger = getLogger()
 
 
 LANGUAGE_PREFIX = 'Python.'
-    
 
-def extract_prefixes(code):
-    tree = parse(code, 'string')
-    # prefixes is a dictionary where a key is a sub-component of a techs 
-    # (e.g. 'sqlalchemy.orm') and the value is a list of prefixes (['sa', 'sqlalchemy.orm'])
-    # prefixes is thus a collection of search keywords to be applied on the commit patches
+
+_syntax_error_fields = ['filename', 'lineno', 'offset', 'text']
+
+
+def safe_parse(code, filename):
+    try:
+        return parse(code, filename)
+    except SyntaxError as syntax_error:
+        logger.debug('======== Syntax Error ========')
+        for f in _syntax_error_fields:
+            logger.debug('{}: %s'.format(f), getattr(syntax_error, f))
+        pdebug(code, 'Code')
+        raise syntax_error
+
+    
+def extract_prefixes(code, filename):
+    ''' return prefixes where prefixes is a dictionary where a key is a sub-component of a techs 
+     (e.g. 'sqlalchemy.orm') and the value is a list of prefixes (['sa', 'sqlalchemy.orm'])
+     prefixes is thus a collection of search keywords to be applied on the commit patches
+    '''
+    tree = safe_parse(code, filename)
     prefixes = defaultdict(list)
     for node in walk(tree):
         if isinstance(node, Import):
@@ -28,57 +49,80 @@ def extract_prefixes(code):
     return prefixes
 
 
-def extract_technology_exposure(code, prefixes, date):
+def language_use(code, filename, date):
+    ''' returns a dict of language elements to dates counter
+    '''
+    tree = safe_parse(code, filename)
+    exposure = TechProfile()
+    for node in walk(tree):
+        exposure[LANGUAGE_PREFIX+'__language__.'+node.__class__.__name__].update([date])
+    return exposure
+
+
+def language_exposure(new_code, old_code, filename, date):
+    new_language_use = language_use(new_code, filename, date)
+    old_language_use = language_use(old_code, filename, date)
+    abs_diff = TechProfile()
+    all_keys = set(new_language_use) | set(old_language_use)
+    for k in all_keys:
+        # not the best option, but until we can diff 2 abstract syntax trees,
+        # we can only look at the aggregate change
+        use_count = abs(new_language_use[k][date] - old_language_use[k][date])
+        if use_count > 0:
+            abs_diff[k][date] = use_count
+    return abs_diff
+
+
+def tech_exposure(code, prefixes, date):
     ''' Return a dictionary in which each key is a tech item
     and each value is a list of date, one for each time the user
     has introduced the key in the code
     '''
-    exposure = defaultdict(list)
+    exposure = TechProfile()
     for component, keywords in prefixes.items():
         for prefix in keywords:
             for line in code:
                 if prefix in line:
-                    exposure[component].append(date)
+                    exposure[component].update([date])
     #pdebug(exposure, 'Technology Exposure')
     return exposure
 
 
 def scan_tech_in_patch(api, file_obj, date):
     date = datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ")
-    LANGUAGE_PREFIX = 'Python.'
-    python_code = b64decode(api.get(file_obj['contents_url'])['content'])
-    prefixes = extract_prefixes(python_code)
-    #pdebug(prefixes, 'Prefixes')
+    filename = file_obj['filename']
+    python_code = b64decode(api.get(file_obj['contents_url'])['content']).decode()
+    patch = fix_patch(file_obj['patch'])
+    previous_code = old_version(python_code, patch)
+    prefixes = extract_prefixes(python_code, filename)
     # taken the original patch and remove:
     # - context lines
     # - deleted lines
     # - comments
-    # TODO:
-    # - detect and remove 'move' operations (whole file deletion and re-creation)
-    #   -> look in commit['status'] for 'added' & 'removed'
-    # - other non-relevant changes?
     reduced_patch = []
-    for line in file_obj['patch'].splitlines():
+    for line in patch.splitlines():
         if line.startswith('+'):
             line = line[1:].lstrip()
             if line:
                 if line[0] == '#':
                     continue
                 reduced_patch.append(line)
-    #pdebug(reduced_patch, 'Reduced Patch')
-    return extract_technology_exposure(reduced_patch, prefixes, date)
+    total_exposure = TechProfile()
+    # we can use 'update' here because keys for tech and language exposure don't overlap
+    # otherwise, we would use 'add'
+    total_exposure.update(tech_exposure(reduced_patch, prefixes, date))
+    total_exposure.update(language_exposure(python_code, previous_code, filename, date))
+    return total_exposure
 
 
 def scan_tech_in_contents(api, file_obj, date):
     date = datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ")
     contents = api.get(file_obj['contents_url'])
     if 'content' not in contents.keys():
-        pdebug(locals(), 'scan_tech_in_contents locals()')
-        pdebug(contents, 'contents')
         python_code = ''
     else:
-        python_code = b64decode(contents['content'])
-    prefixes = extract_prefixes(python_code)
-    return extract_technology_exposure(python_code, prefixes, date)
+        python_code = b64decode(contents['content']).decode()
+    prefixes = extract_prefixes(python_code, file_obj['filename'])
+    return tech_exposure(python_code, prefixes, date)
 
 
