@@ -47,17 +47,18 @@ def scan_commits(github_api, owned_repos, login):
     technologies = TechProfile()
 
     commit_count = 0
+    file_count = 0
     for repo in owned_repos:
         logger.debug('processing repo [{name}]'.format(**repo))
-        if commit_count > 10:
-            break
+        #if commit_count > 10:
+            #break
         try:
             commits = github_api.get('{url}/commits'.format(**repo), data={ 'author': login })
             for commit in commits:
                 commit = github_api.get(commit['url'])
                 commit_count += 1
-                if commit_count > 10:
-                    break
+                #if commit_count > 10:
+                    #break
 
                 for file_obj in commit['files']:
                     _, extension = splitext(file_obj['filename'])
@@ -67,20 +68,28 @@ def scan_commits(github_api, owned_repos, login):
                         unknown_extension_counter.update([extension.lower()])
                     # TODO write a scanner for each language
                     if 'Python' in languages:
-                        if 'patch' in file_obj:
-                            try:
-                                technologies.add(scan_tech_in_patch(github_api, file_obj, commit['commit']['author']['date']))
-                            except SyntaxError as syntax:
-                                logger.debug('Found syntax error: %s', syntax)
-                        elif file_obj['status'] == 'added':
-                            technologies.add(scan_tech_in_contents(github_api, file_obj, commit['commit']['author']['date']))
-                        else:
-                            pdebug(file_obj, 'No patch here')
-                            # TODO handle 'added' & 'removed' status
+                        try:
+                            file_count += 1
+                            if 'patch' in file_obj:
+                                    technologies.add(scan_tech_in_patch(
+                                        github_api,
+                                        file_obj,
+                                        commit['commit']['author']['date']
+                                    ))
+                            elif file_obj['status'] == 'added':
+                                technologies.add(scan_tech_in_contents(github_api, file_obj, commit['commit']['author']['date']))
+                            else:
+                                pdebug(file_obj, 'No patch here')
+                                # TODO handle 'removed' and other status
+                        except:
+                            logger.debug('Caught exception! Moving on to next file in commit')
+                            continue
         except GithubException as e:
             logger.debug('Caught Github Error Message: %s', e.message)
             logger.debug('Skipping repo: %s', repo['name'])
             break
+    logger.debug('file_count: %d', file_count)
+    logger.debug('commit_count: %d', commit_count)
     return commit_count_by_language, unknown_extension_counter, technologies
 
 
