@@ -1,13 +1,11 @@
 from collections import defaultdict
 from logging import getLogger, Formatter
-from logging.handlers import SysLogHandler
 from multiprocessing import current_process
 from pickle import dump
 from signal import signal, SIGINT, SIGTERM, SIGQUIT
 from sys import exit
 
-from rebase.common.config import Config
-from rebase.common.debug import pdebug
+from rebase.common.debug import pdebug, setup_logging
 from rebase.github import GithubApiRequests, GithubException
 from rebase.github.languages import scan_commits
 
@@ -40,14 +38,10 @@ def main():
     signal(SIGINT, quit)
     signal(SIGTERM, quit)
     signal(SIGQUIT, quit)
-    conf = Config.BASIC_LOG_CONFIG
-    logger.setLevel(conf['level'])
-    rsyslog = SysLogHandler(**Config.RSYSLOG_CONFIG)
-    rsyslog.setFormatter(Formatter(conf['format']))
-    logger.addHandler(rsyslog)
+    setup_logging(logger)
     logger.debug('Started crawler')
     github = GithubApiRequests('rebase-dev', 'bf5547c0319871a085b42294d2e2abebf4e08f54')
-    pdebug(github.get('/users/rapha-opensource'), 'rapha-opensource')
+    #pdebug(github.get('/users/rapha-opensource'), 'rapha-opensource')
     all_the_data = defaultdict(dict)
     for user_login in rebase_users:
         try:

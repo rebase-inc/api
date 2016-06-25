@@ -14,6 +14,7 @@ from threading import Thread, current_thread
 from rebase.cache.process import CacheProcess
 from rebase.cache.request import CacheHandler
 from rebase.common.config import Config
+from rebase.common.debug import setup_logging
 
 
 logger = getLogger()
@@ -38,11 +39,7 @@ def refresh(processes):
 def main():
     current_process().name = 'Cache'
     current_thread().name = 'main'
-    conf = Config.BASIC_LOG_CONFIG
-    logger.setLevel(conf['level'])
-    rsyslog = SysLogHandler(**Config.RSYSLOG_CONFIG)
-    rsyslog.setFormatter(Formatter(conf['format']))
-    logger.addHandler(rsyslog)
+    setup_logging(logger)
     processes = dict()
     server = HTTPServer(('0.0.0.0', 5000), CacheHandler)
     _quit = partial(quit, server=server, processes=processes)

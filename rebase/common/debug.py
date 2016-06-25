@@ -18,6 +18,17 @@ def dump_stack():
     bunch_of_lines = format_stack()
     for line in bunch_of_lines:
         for _line in line.splitlines():
-            logger.debug(line)
+            logger.debug(_line)
+
+
+def setup_logging(logger):
+    from rebase.common.config import Config
+    from logging import Formatter
+    from logging.handlers import SysLogHandler
+    conf = Config.BASIC_LOG_CONFIG
+    logger.setLevel(conf['level'])
+    rsyslog = SysLogHandler(**Config.RSYSLOG_CONFIG)
+    rsyslog.setFormatter(Formatter(conf['format']))
+    logger.addHandler(rsyslog)
 
 
