@@ -63,6 +63,7 @@ def main():
         dump(all_the_data, all_data_file)
 
     logger.debug('Finished crawler')
+    exit()
 
 
 if __name__ == '__main__':

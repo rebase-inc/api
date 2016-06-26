@@ -36,6 +36,7 @@ function _shell() {
 
 function _add_ipython() {
     docker exec -it api_web_1 /venv/api/bin/pip3 install ipython
+    docker cp ~/.ipython/profile_default/ipython_config.py api_web_1:/root/.ipython/profile_default/ipython_config.py
 }
 
 function _ishell() {
