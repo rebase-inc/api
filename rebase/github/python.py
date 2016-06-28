@@ -5,7 +5,6 @@ from datetime import datetime, timedelta
 from logging import getLogger
 
 from rebase.common.debug import pdebug
-from rebase.github import old_version, fix_patch
 from rebase.skills.tech_profile import TechProfile
 
 
@@ -88,19 +87,33 @@ def tech_exposure(code, prefixes, date):
     return exposure
 
 
-def scan_tech_in_patch(api, file_obj, date):
+class UnsupportedContentEncoding(Exception):
+
+    message_format = 'Unsupported Github content encoding "{}" for "{}"'.format
+
+    def __init__(url, encoding):
+        self.message = UnsupportedContentEncoding.message_format(encoding, url)
+
+
+def decode(contents):
+    if contents['encoding'] == 'base64':
+        return b64decode(contents['content']).decode()
+    else:
+        raise UnsupportedContentEncoding(contents['encoding'], contents['url'])
+
+
+def scan_tech_in_patch(api, file_obj, previous_version_url, date):
     date = datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ")
     filename = file_obj['filename']
-    python_code = b64decode(api.get(file_obj['contents_url'])['content']).decode()
-    patch = fix_patch(file_obj['patch'])
-    previous_code = old_version(python_code, patch)
+    python_code = decode(api.get(file_obj['contents_url']))
+    previous_code = decode(api.get(previous_version_url))
     prefixes = extract_prefixes(python_code, filename)
     # taken the original patch and remove:
     # - context lines
     # - deleted lines
     # - comments
     reduced_patch = []
-    for line in patch.splitlines():
+    for line in file_obj['patch'].splitlines():
         if line.startswith('+'):
             line = line[1:].lstrip()
             if line:

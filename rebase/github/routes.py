@@ -34,11 +34,13 @@ def analyze_contractor_skills(github_account):
         remote_work_history.analyzing = True
         DB.session.add(remote_work_history)
         DB.session.commit()
-        current_app.default_queue.enqueue_call(func=detect_languages, args=(github_account.id,), timeout=360 ) # timeout = 6 minutes
+        current_app.default_queue.enqueue_call(func=detect_languages, args=(github_account.id,), timeout=3600 ) # timeout = 1h
+
 
 def for_each_line(thing, log):
     for line in str(thing).splitlines():
         log(line)
+
 
 def get_oauth_app_hostname(request):
     #logger.debug('============ Headers ==============================')
@@ -52,6 +54,7 @@ def get_oauth_app_hostname(request):
     oauth_app_hostname = urlparse(host2).hostname
     #logger.debug('oauth_app_hostname: %s', oauth_app_hostname)
     return oauth_app_hostname
+
 
 def register_github_routes(app):
     @app.route('/api/v1/github', methods=['GET'])

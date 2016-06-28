@@ -4,7 +4,6 @@ from logging import getLogger
 from re import compile, MULTILINE
 from urllib.parse import urlparse
 
-from diff_match_patch import diff_match_patch as dmp
 from flask_oauthlib.client import OAuth
 from requests import get, Session
 
@@ -99,47 +98,5 @@ class GithubApiFlaskOAuthlib(GithubApi):
 
     def get(self, url_or_path, *args, **kwargs):
         return self.api.get(url_or_path, *args, **kwargs).data
-
-
-re_diff_headers = compile("^(@@ -(\d+),?(\d*) \+(\d+),?(\d*) @@)", flags=MULTILINE)
-    
-
-def reverse(patches):
-    ''' return a list of reversed patches.
-    Reversed patches can be applied to the new file to retrieve the old file
-    '''
-    reverse_patches = []
-    for patch in patches:
-        new_patch = copy(patch)
-        reverse_patches.append(new_patch)
-        new_diffs = []
-        for diff in new_patch.diffs:
-            # works because the library implementation uses 1 for insert and -1 for delete.
-            # a more future-proof code would use if diff[0] == DIFF_INSERT ....
-            new_diffs.append( (-1*diff[0], diff[1]) )
-        new_patch.diffs = new_diffs
-    return reverse_patches
-
-
-def old_version(new, patches_as_text):
-    ''' given a 'new' version of a file and the patch that created it,
-    return the 'old' version of the file, by simply applying the patch in reverse
-    '''
-    diff_tool = dmp()
-    patches = diff_tool.patch_fromText(patches_as_text)
-    reverse_patches = reverse(patches)
-    return diff_tool.patch_apply(reverse_patches, new)[0]
-
-
-def fix_patch(patch):
-    ''' return new patch with fixed unified diff headers.
-    For some reason, github returns some headers with a missing EOL, which
-    prevents the diff_match_patch regex from matching because it has a $ at its end.
-    I played with the Accept header in the request to set the media type to 'diff',
-    but it doesn't work.
-    Instead, I'm now fixing the patch directly. We just need to add a newline after the
-    diff headers.
-    '''
-    return re_diff_headers.sub(r'\1\n', patch)
 
 
