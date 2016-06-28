@@ -104,6 +104,13 @@ rq_default:
    - rsyslog
   command: ["/venv/api/bin/python", "run-worker.py"]
 
+rq_dashboard:
+    image: rebase/rq_dashboard
+    links:
+     - redis
+    ports:
+     - "4444:4444"
+
 redis:
   image: redis
   restart: always

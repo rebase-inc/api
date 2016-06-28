@@ -13,6 +13,7 @@ RUN easy_install3 -U pip && \
     mkdir -p \
     /uploads \
     /root/.ssh && \
+    /venv/api/bin/pip install --upgrade pip && \
     /venv/api/bin/pip install -r /api/requirements.txt
 WORKDIR /api
 ENV APP_SETTINGS=/api/rebase/common/dev.py

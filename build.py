@@ -6,12 +6,13 @@ from subprocess import check_call
 Container = namedtuple('Container', ['tag', 'path'])
 
 containers = {
-    'api':          Container('rebase/api',         '.'),
-    'rq_git':       Container('rebase/rq_git',      'docker/git'),
-    'rsyslog':      Container('rebase/rsyslog',     'docker/rsyslog'),
-    'client':       Container('rebase/client',      '../react-app'),
-    #'letsencrypt':  Container('rebase/letsencrypt', 'docker/letsencrypt'),
-    'nginx':        Container('rebase/nginx',       'docker/nginx'),
+    'api':          Container('rebase/api',             '.'),
+    'rq_git':       Container('rebase/rq_git',          'docker/git'),
+    'rsyslog':      Container('rebase/rsyslog',         'docker/rsyslog'),
+    'client':       Container('rebase/client',          '../react-app'),
+    'rq_dashboard': Container('rebase/rq_dashboard',    'docker/git'),
+    #'letsencrypt':  Container('rebase/letsencrypt',    'docker/letsencrypt'),
+    'nginx':        Container('rebase/nginx',           'docker/nginx'),
 }
 
 def docker_build(name, container):
