@@ -8,6 +8,7 @@ from rq.job import JobStatus
 from rebase.cache.rq_jobs import invalidate
 from rebase.common.database import DB
 from rebase.common.debug import pdebug
+from rebase.features.rq import setup_rq
 from rebase.github import GithubApiFlaskOAuthlib, GithubException
 from rebase.github.python import scan_tech_in_patch, scan_tech_in_contents
 from rebase.github.session import create_admin_github_session
@@ -108,6 +109,15 @@ class Queues(object):
         self.low_queue = None
 
 
+queues = Queues()
+
+
+setup_rq(queues)
+
+
+done_states = (JobStatus.FINISHED, JobStatus.FAILED)
+
+
 def scan_commits(account_id, github_api, owned_repos, login):
     commit_count_by_language = Counter()
     unknown_extension_counter = Counter()
@@ -115,9 +125,6 @@ def scan_commits(account_id, github_api, owned_repos, login):
     technologies = TechProfile()
 
     scan_one_commit_jobs = set()
-    from rebase.features.rq import setup_rq
-    queues = Queues()
-    setup_rq(queues)
 
     for repo in owned_repos:
         logger.debug('processing repo [{name}]'.format(**repo))
@@ -138,10 +145,10 @@ def scan_commits(account_id, github_api, owned_repos, login):
             logger.debug('Caught Github Error Message: %s', e.message)
             logger.debug('Skipping repo: %s', repo['name'])
             break
-    while scan_one_commit_jobs:
+    while True:
         logger.info('Sleeping 3 seconds')
         sleep(3)
-        finished_jobs = filter(lambda job: job.get_status() in [JobStatus.FINISHED, JobStatus.FAILED], scan_one_commit_jobs)
+        finished_jobs = tuple(filter(lambda job: job.get_status() in done_states, scan_one_commit_jobs))
         for finished_job in finished_jobs:
             if finished_job.get_status() == JobStatus.FINISHED:
                 _commit_count_by_language, _unknown_extensions, _technologies = finished_job.result
@@ -151,6 +158,8 @@ def scan_commits(account_id, github_api, owned_repos, login):
                 unknown_extension_counter.update(_unknown_extensions)
                 technologies.add(_technologies)
             scan_one_commit_jobs.remove(finished_job)
+        if not scan_one_commit_jobs:
+            break
     return commit_count_by_language, unknown_extension_counter, technologies
 
 
