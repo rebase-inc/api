@@ -176,7 +176,7 @@ def detect_languages(account_id):
         unknown_extension_counter,
         technologies
     ) = scan_commits(
-        github_session.account.access_token,
+        GithubApiRequests(github_session.account.access_token),
         owned_repos,
         author
     )
