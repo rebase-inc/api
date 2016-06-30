@@ -19,16 +19,21 @@ def quit(signal_number, frame):
 
 # from webflow:
 rebase_users = [
-    'kerseyi',
-    'alexpchin',
-    'gacpro',
-    'Eveykilel',
-    'Johnathon332',
-    'jitorrent',
-    'arunanson',
-    'MarkTJBrown',
-    'ezynda3',
-    'mgraham134',
+    # famous python devs:
+    # Alex Gaynor (PyPy, etc.)
+    alex
+    # Mike Bayer (SqlAlchemy)
+    zzzeek
+    #'kerseyi',
+    #'alexpchin',
+    #'gacpro',
+    #'Eveykilel',
+    #'Johnathon332',
+    #'jitorrent',
+    #'arunanson',
+    #'MarkTJBrown',
+    #'ezynda3',
+    #'mgraham134',
 ]
 
 # not a valid user: 'Toahniwalakshay'
@@ -40,8 +45,7 @@ def main():
     signal(SIGQUIT, quit)
     setup_logging(logger)
     logger.debug('Started crawler')
-    github = GithubApiRequests('rebase-dev', 'bf5547c0319871a085b42294d2e2abebf4e08f54')
-    #pdebug(github.get('/users/rapha-opensource'), 'rapha-opensource')
+    github = GithubApiRequests('bf5547c0319871a085b42294d2e2abebf4e08f54')
     all_the_data = defaultdict(dict)
     for user_login in rebase_users:
         try:
