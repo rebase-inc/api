@@ -9,7 +9,7 @@ from rebase.cache.rq_jobs import invalidate
 from rebase.common.database import DB
 from rebase.common.debug import pdebug
 from rebase.features.rq import setup_rq
-from rebase.github import GithubApiFlaskOAuthlib, GithubException
+from rebase.github import GithubApiRequests, GithubException
 from rebase.github.python import scan_tech_in_patch, scan_tech_in_contents
 from rebase.github.session import create_admin_github_session
 from rebase.models import (
@@ -44,14 +44,12 @@ for language, extension_list in _language_list.items():
         EXTENSION_TO_LANGUAGES[extension].append(language)
 
 
-def scan_one_commit(account_id, commit_url):
+def scan_one_commit(api, commit_url):
     # remember, we MUST pop this 'context' when we are done with this session
-    github_session, context = create_admin_github_session(account_id)
-    github_api = GithubApiFlaskOAuthlib(github_session.api)
-    commit = github_api.get(commit_url)
+    commit = api.get(commit_url)
     if commit['parents']:
-        parent_commit = github_api.get(commit['parents'][0]['url'])
-        parent_tree = github_api.get(parent_commit['commit']['tree']['url']+'?recursive=1')
+        parent_commit = api.get(commit['parents'][0]['url'])
+        parent_tree = api.get(parent_commit['commit']['tree']['url']+'?recursive=1')
         if parent_tree['truncated']:
             # TODO support recursive tree queries with truncated results
             logger.warning('Truncated tree for commit: %s', commit_url)
@@ -82,13 +80,13 @@ def scan_one_commit(account_id, commit_url):
                         setattr(e, 'message', '{} not found in previous files'.format(filename))
                         raise e
                     technologies.add(scan_tech_in_patch(
-                        github_api,
+                        api,
                         file_obj,
                         all_files_before_commit[filename],
                         commit['commit']['author']['date']
                     ))
                 elif file_obj['status'] == 'added':
-                    technologies.add(scan_tech_in_contents(github_api, file_obj, commit['commit']['author']['date']))
+                    technologies.add(scan_tech_in_contents(api, file_obj, commit['commit']['author']['date']))
                 else:
                     pdebug(file_obj, 'No patch here')
                     # TODO handle 'removed' and other status
@@ -97,7 +95,6 @@ def scan_one_commit(account_id, commit_url):
                     logger.debug(e.message)
                 logger.debug(e)
                 raise e
-    context.pop()
     return commit_count_by_language, unknown_extension_counter, technologies
 
 
@@ -118,7 +115,7 @@ setup_rq(queues)
 done_states = (JobStatus.FINISHED, JobStatus.FAILED)
 
 
-def scan_commits(account_id, github_api, owned_repos, login):
+def scan_commits(api, owned_repos, login):
     commit_count_by_language = Counter()
     unknown_extension_counter = Counter()
 
@@ -134,13 +131,13 @@ def scan_commits(account_id, github_api, owned_repos, login):
                 repo_commits = {
                     queues.default_queue.enqueue(
                         scan_one_commit,
-                        args=(account_id, commit['url']),
+                        args=(api, commit['url']),
                         meta={'url': commit['url']},
                         timeout=600
                     ) for commit in commits
                 }
                 scan_one_commit_jobs.update(repo_commits)
-            github_api.for_each_page(
+            api.for_each_page(
                 '{url}/commits'.format(**repo),
                 handle_one_page_of_commits,
                 data={ 'author': login }
@@ -174,7 +171,15 @@ def detect_languages(account_id):
     author = github_session.account.github_user.login
     owned_repos = github_session.api.get('/user/repos').data
 
-    commit_count_by_language, unknown_extension_counter, technologies = scan_commits(account_id, GithubApiFlaskOAuthlib(github_session.api), owned_repos, author)
+    (
+        commit_count_by_language,
+        unknown_extension_counter,
+        technologies
+    ) = scan_commits(
+        github_session.account.access_token,
+        owned_repos,
+        author
+    )
 
     pdebug(technologies, 'Tech Profile')
     pdebug(str(technologies), 'Tech Profile')
