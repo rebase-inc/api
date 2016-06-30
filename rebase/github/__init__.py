@@ -132,14 +132,18 @@ class GithubException(Exception):
     
 class GithubApiRequests(GithubApi):
 
-    def __init__(self, username, token):
+    def __init__(self, token):
         self.root_url = 'https://api.github.com'
         self.session = Session()
-        self.session.auth = (username, token)
+        self.auth_header = { 'Authorization': 'token '+token }
         super().__init__()
 
     def get_raw(self, path, *args, **kwargs):
         full_path = path if path.startswith('http') else self.root_url+path
+        if 'headers' in kwargs:
+            kwargs['headers'].update(self.auth_header)
+        else:
+            kwargs['headers'] = self.auth_header
         response = self.session.get(full_path, *args, **kwargs)
         self.data = response.json()
         self.status = response.status_code
