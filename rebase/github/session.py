@@ -12,7 +12,8 @@ class GithubSession(object):
         self.api = api
         self.account = account
         self.user = user
-        self.verify()
+        # TODO verify why verify fails (returns 404 right after a successful OAuth authorization cycle)
+        #self.verify()
 
     def __hash__(self):
         return hash('{account_id}_{user_id}'.format(
@@ -35,9 +36,10 @@ class GithubSession(object):
             auth=(self.api.consumer_key, self.api.consumer_secret)
         )
         if response.status_code != 200:
+            error = InvalidGithubAccessToken(self.account.user, self.account.github_user.login)
             DB.session.delete(self.account)
             DB.session.commit()
-            raise InvalidGithubAccessToken(self.account.user, self.account.github_user.login)
+            raise error
 
 
 def make_session(github_account, app, user):
