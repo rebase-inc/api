@@ -129,22 +129,27 @@ def scan_commits(account_id, github_api, owned_repos, login):
     for repo in owned_repos:
         logger.debug('processing repo [{name}]'.format(**repo))
         try:
-            commits = github_api.get('{url}/commits'.format(**repo), data={ 'author': login })
-            repo_commits = {
-                queues.default_queue.enqueue(
-                    scan_one_commit,
-                    args=(account_id, commit['url']),
-                    meta={'url': commit['url']},
-                    timeout=60
-                ) for commit in commits
-            }
-            logger.info('Enqueued {} jobs for repo "{}"'.format(len(repo_commits), repo['name']))
-            scan_one_commit_jobs.update(repo_commits)
-
+            def handle_one_page_of_commits(commits):
+                logger.debug('Number of commits in this page: %d', len(commits))
+                repo_commits = {
+                    queues.default_queue.enqueue(
+                        scan_one_commit,
+                        args=(account_id, commit['url']),
+                        meta={'url': commit['url']},
+                        timeout=600
+                    ) for commit in commits
+                }
+                scan_one_commit_jobs.update(repo_commits)
+            github_api.for_each_page(
+                '{url}/commits'.format(**repo),
+                handle_one_page_of_commits,
+                data={ 'author': login }
+            )
         except GithubException as e:
             logger.debug('Caught Github Error Message: %s', e.message)
             logger.debug('Skipping repo: %s', repo['name'])
             break
+    # now every 3 seconds, aggregate the commit_count, unknown extensions and technologies detected by finished jobs at that point
     while True:
         logger.info('Sleeping 3 seconds')
         sleep(3)

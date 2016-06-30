@@ -1,7 +1,7 @@
 from copy import copy
 from functools import lru_cache
 from logging import getLogger
-from re import compile, MULTILINE
+from re import compile as re_compile
 from urllib.parse import urlparse
 
 from flask_oauthlib.client import OAuth
@@ -52,51 +52,113 @@ def oauth_app_from_github_account(apps, account):
     return apps[urlparse(account.app.url).hostname]
 
 
+relations = frozenset(['first', 'prev', 'next', 'last'])
+
+
+re_link = re_compile(r'^\s*<(?P<link>https://api\.github\.com/.*)>; rel="(?P<rel>first|prev|next|last)"$')
+
+
+class InvalidLinksHeader(Exception):
+    def __init__(self, links_header):
+        self.message = 'Invalid Links header: '+links_header
+
+
+def pagination(link_header):
+    '''
+    Return a dict with keys in ('first', 'prev', 'next', 'last')
+    For each relationship to the current page, the value is the HTTP link to the corresponding page.
+    '''
+    links = link_header.split(',')
+    pages = dict()
+    for link in links:
+        match = re_link.fullmatch(link) 
+        if not match:
+            raise InvalidLinksHeader(link_header)
+        pages[match.group('rel')] = match.group('link')
+    assert set(pages.keys()).issubset(relations)
+    return pages
+
+
 class GithubApi(object):
     '''Base class to read data from Github's API.
     We need this to write code that works with either Flask-OAuthlib or Requests.
     (Our crawler does not depend on Flask)
     '''
 
-    def get(url_or_path, *args, **kwargs):
+    def __init__(self):
+        self.data = None
+        self.status = None
+        self.headers = None
+
+    def get_raw(url_or_path, *args, **kwargs):
+        '''
+        Return a tuple (response, data) where response is the raw response
+        from the underlying implementation and data is the JSON decoded body
+        of the response
+        '''
+        raise NotImplemented('GithubApi.get_raw is abstract')
+
+    def get(self, url_or_path, *args, **kwargs):
         ''' return a JSON object, given a Github URL or a Github path '''
-        raise NotImplemented('GithubApi.get is abstract')
+        self.get_raw(url_or_path, *args, **kwargs)
+        if self.status >= 400 and self.status <= 599:
+            pdebug(self.data, 'data')
+            raise GithubException(self.status, self.data['message'])
+        return self.data
+
+    def rate_limit(self):
+        return self.get('/rate_limit')
+
+    def for_each_page(self, url_or_path, handle_one_page, *args, **kwargs):
+        _url = url_or_path
+        while True:
+            self.get_raw(_url, *args, **kwargs)
+            handle_one_page(self.data)
+            if 'Link' not in self.headers:
+                break
+            pages = pagination(self.headers['Link'])
+            if 'next' in pages:
+                _url = pages['next']
+            else:
+                break
 
 
 class GithubException(Exception):
+
     def __init__(self, status, message):
         self.status = status
         self.message = message
 
     
 class GithubApiRequests(GithubApi):
+
     def __init__(self, username, token):
         self.root_url = 'https://api.github.com'
         self.session = Session()
         self.session.auth = (username, token)
+        super().__init__()
 
-    def get(self, path, *args, **kwargs):
+    def get_raw(self, path, *args, **kwargs):
         full_path = path if path.startswith('http') else self.root_url+path
-        #logger.debug('GithubApiRequests.get: %s', full_path)
         response = self.session.get(full_path, *args, **kwargs)
-        pdebug(response.text, 'response.text')
-        pdebug(response.headers, 'GithubApiRequests.get, response.headers: %s')
-        response_data = response.json()
-        if response.status_code >= 400 and response.status_code <= 599:
-            pdebug(response_data, 'response_data')
-            raise GithubException(response.status_code, response_data['message'])
-        #pdebug(response_data, 'GithubApiRequests.get, response_data: %s')
-        return response_data
+        self.data = response.json()
+        self.status = response.status_code
+        self.headers = response.headers
 
     def close(self):
         self.session.close()
 
 
 class GithubApiFlaskOAuthlib(GithubApi):
+
     def __init__(self, flask_oauth_api):
         self.api = flask_oauth_api
+        super().__init__()
 
-    def get(self, url_or_path, *args, **kwargs):
-        return self.api.get(url_or_path, *args, **kwargs).data
+    def get_raw(self, url_or_path, *args, **kwargs):
+        response = self.api.get(url_or_path, *args, **kwargs)
+        self.data = response.data
+        self.status = response.status
+        self.headers = response._resp.headers
 
 
