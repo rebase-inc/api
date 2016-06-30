@@ -44,6 +44,7 @@ crawler:
     file: docker/api-dev.yml
   links:
    - rsyslog
+   - redis
   volumes:
    - crawler:/crawler
   command: ["/venv/api/bin/python", "crawler.py"]

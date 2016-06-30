@@ -75,6 +75,13 @@ rq_default:
    - rsyslog
   command: ["/venv/api/bin/python", "run-worker.py"]
 
+rq_dashboard:
+    image: rebase/rq_dashboard
+    links:
+     - redis
+    ports:
+     - "4444:4444"
+
 nginx:
     image: rebase/nginx
     ports:
@@ -101,3 +108,14 @@ rsyslog:
   image: rebase/rsyslog
   volumes:
    - log:/var/log
+
+crawler:
+  extends:
+    service: webserver
+    file: docker/api-production.yml
+  links:
+   - rsyslog
+   - redis
+  volumes:
+   - crawler:/crawler
+  command: ["/venv/api/bin/python", "crawler.py"]

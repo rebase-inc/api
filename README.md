@@ -101,3 +101,14 @@ $ ./certbot-auto renew
 $ listen 443
 # In your web browser, go to https://alpha.rebaseapp.com and verify the certificate expiration date (today+90days).
 ```
+
+# Manage RQ Workers & Queues
+## in development
+[RQ Dashboard](http://c2r:4444)
+## in production
+First you need to tunnel through to the Docker host.
+```bash
+# assuming your SSH config has an 'alpha' Host defined...
+ssh -L 55555:localhost:4444 alpha
+```
+[RQ Dashboard](http://localhost:55555)
