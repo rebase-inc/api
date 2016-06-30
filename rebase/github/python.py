@@ -3,6 +3,7 @@ from base64 import b64decode
 from collections import defaultdict, Counter
 from datetime import datetime, timedelta
 from logging import getLogger
+from os.path import dirname, split
 
 from rebase.common.debug import pdebug
 from rebase.skills.tech_profile import TechProfile
@@ -27,6 +28,42 @@ def safe_parse(code, filename):
         pdebug(code, 'Code')
         raise syntax_error
 
+
+def split_dir(dir):
+    '''
+    Return an iterator over the elements of directory 'dir'.
+    '''
+    elements = []
+    _dir = dir
+    while True:
+        _dir, leaf = split(_dir)
+        elements.append(leaf)
+        if not _dir:
+            break
+    return tuple(reversed(elements))
+
+
+class InvalidImportFromLevel(Exception):
+    def __init__(self, filename):
+        self.message = 'Invalid ast.ImportFrom node level'
+
+
+def module(import_from_node, filename):
+    '''
+    Return the proper module path equivalent to the . or .., etc. syntax
+    with ImportFrom, when used in the form:
+    from .. import Foo as Bar
+    '''
+    if import_from_node.module:
+        return import_from_node.module
+    module_elements = split_dir(dirname(filename))
+    level = import_from_node.level - 1
+    if level > 0:
+        module_elements = module_elements[:-level]
+    elif level < 0:
+        raise InvalidImportFromLevel(filename)
+    return '.'.join(module_elements)
+
     
 def extract_prefixes(code, filename):
     ''' return prefixes where prefixes is a dictionary where a key is a sub-component of a techs 
@@ -43,7 +80,7 @@ def extract_prefixes(code, filename):
                 prefixes[LANGUAGE_PREFIX+_alias.name].append(_alias.name)
         if isinstance(node, ImportFrom):
             for _alias in node.names:
-                sub_component = node.module+'.'+_alias.name
+                sub_component = module(node, filename)+'.'+_alias.name
                 prefixes[LANGUAGE_PREFIX+sub_component].append(_alias.asname if _alias.asname else _alias.name)
     return prefixes
 
