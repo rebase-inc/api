@@ -135,7 +135,8 @@ class GithubApiRequests(GithubApi):
     def __init__(self, token):
         self.root_url = 'https://api.github.com'
         self.session = Session()
-        self.auth_header = { 'Authorization': 'token '+token }
+        self.token = token
+        self.auth_header = { 'Authorization': 'token ' + self.token }
         super().__init__()
 
     def get_raw(self, path, *args, **kwargs):
@@ -151,6 +152,9 @@ class GithubApiRequests(GithubApi):
 
     def close(self):
         self.session.close()
+
+    def __reduce__(self):
+        return (GithubApiRequests, (self.token,))
 
 
 class GithubApiFlaskOAuthlib(GithubApi):
