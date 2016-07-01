@@ -132,25 +132,27 @@ class UnsupportedContentEncoding(Exception):
         self.message = UnsupportedContentEncoding.message_format(encoding, url)
 
 
-def decode(contents):
-    if contents['encoding'] == 'base64':
-        return b64decode(contents['content']).decode()
+def decode(content_file):
+    if not content_file.content:
+        logger.debug('Empty content at URL: %s', content_file.url)
+        return ''
+    if content_file.encoding == 'base64':
+        return b64decode(content_file.content).decode()
     else:
-        raise UnsupportedContentEncoding(contents['encoding'], contents['url'])
+        raise UnsupportedContentEncoding(content_file.encoding, content_file.url)
 
 
-def scan_tech_in_patch(api, file_obj, previous_version_url, date):
-    date = datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ")
-    filename = file_obj['filename']
-    python_code = decode(api.get(file_obj['contents_url']))
-    previous_code = decode(api.get(previous_version_url))
+def scan_tech_in_patch(api, repo, file, previous_version_sha, date):
+    filename = file.filename
+    python_code = decode(repo.get_contents(filename))
+    previous_code = decode(repo.get_git_blob(previous_version_sha))
     prefixes = extract_prefixes(python_code, filename)
     # taken the original patch and remove:
     # - context lines
     # - deleted lines
     # - comments
     reduced_patch = []
-    for line in file_obj['patch'].splitlines():
+    for line in file.patch.splitlines():
         if line.startswith('+'):
             line = line[1:].lstrip()
             if line:
@@ -165,14 +167,10 @@ def scan_tech_in_patch(api, file_obj, previous_version_url, date):
     return total_exposure
 
 
-def scan_tech_in_contents(api, file_obj, date):
-    date = datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ")
-    contents = api.get(file_obj['contents_url'])
-    if 'content' not in contents.keys():
-        python_code = ''
-    else:
-        python_code = b64decode(contents['content']).decode()
-    prefixes = extract_prefixes(python_code, file_obj['filename'])
+def scan_tech_in_contents(api, repo, file, date):
+    filename = file.filename
+    python_code = decode(repo.get_contents(filename))
+    prefixes = extract_prefixes(python_code, file.filename)
     return tech_exposure(python_code, prefixes, date)
 
 
