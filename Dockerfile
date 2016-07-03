@@ -10,9 +10,6 @@ RUN apt-get update && \
 RUN easy_install3 -U pip && \
     pip install virtualenv && \
     virtualenv -p python3 /venv/api && \
-    mkdir -p \
-    /uploads \
-    /root/.ssh && \
     /venv/api/bin/pip install --upgrade pip && \
     /venv/api/bin/pip install -r /api/requirements.txt
 WORKDIR /api

@@ -7,11 +7,11 @@ Container = namedtuple('Container', ['tag', 'path'])
 
 containers = {
     'api':          Container('rebase/api',             '.'),
-    'rq_git':       Container('rebase/rq_git',          'docker/git'),
+    'rq_git':       Container('rebase/rq_git',          'docker/rq_git'),
+    'rq_default':   Container('rebase/rq_default',      'docker/rq_default'),
     'rsyslog':      Container('rebase/rsyslog',         'docker/rsyslog'),
     'client':       Container('rebase/client',          '../react-app'),
-    'rq_dashboard': Container('rebase/rq_dashboard',    'docker/git'),
-    #'letsencrypt':  Container('rebase/letsencrypt',    'docker/letsencrypt'),
+    'rq_dashboard': Container('rebase/rq_dashboard',    'docker/rq_dashboard'),
     'nginx':        Container('rebase/nginx',           'docker/nginx'),
 }
 
