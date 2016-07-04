@@ -1,4 +1,4 @@
-FROM python:slim
+FROM python:alpine
 
 RUN pip install --upgrade pip && \
     pip install rq-dashboard
