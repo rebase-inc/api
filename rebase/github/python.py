@@ -1,9 +1,10 @@
 from ast import parse, walk, Import, ImportFrom
-from base64 import b64decode
 from collections import defaultdict, Counter
 from datetime import datetime, timedelta
 from logging import getLogger
 from os.path import dirname, split
+
+from github import GithubException
 
 from rebase.common.debug import pdebug
 from rebase.skills.tech_profile import TechProfile
@@ -124,35 +125,14 @@ def tech_exposure(code, prefixes, date):
     return exposure
 
 
-class UnsupportedContentEncoding(Exception):
-
-    message_format = 'Unsupported Github content encoding "{}" for "{}"'.format
-
-    def __init__(url, encoding):
-        self.message = UnsupportedContentEncoding.message_format(encoding, url)
-
-
-def decode(content_file):
-    if not content_file.content:
-        logger.debug('Empty content at URL: %s', content_file.url)
-        return ''
-    if content_file.encoding == 'base64':
-        return b64decode(content_file.content).decode()
-    else:
-        raise UnsupportedContentEncoding(content_file.encoding, content_file.url)
-
-
-def scan_tech_in_patch(api, repo, file, previous_version_sha, date):
-    filename = file.filename
-    python_code = decode(repo.get_contents(filename))
-    previous_code = decode(repo.get_git_blob(previous_version_sha))
-    prefixes = extract_prefixes(python_code, filename)
+def scan_tech_in_patch(filename, code, previous_code, patch, date):
+    prefixes = extract_prefixes(code, filename)
     # taken the original patch and remove:
     # - context lines
     # - deleted lines
     # - comments
     reduced_patch = []
-    for line in file.patch.splitlines():
+    for line in patch.splitlines():
         if line.startswith('+'):
             line = line[1:].lstrip()
             if line:
@@ -163,14 +143,12 @@ def scan_tech_in_patch(api, repo, file, previous_version_sha, date):
     # we can use 'update' here because keys for tech and language exposure don't overlap
     # otherwise, we would use 'add'
     total_exposure.update(tech_exposure(reduced_patch, prefixes, date))
-    total_exposure.update(language_exposure(python_code, previous_code, filename, date))
+    total_exposure.update(language_exposure(code, previous_code, filename, date))
     return total_exposure
 
 
-def scan_tech_in_contents(api, repo, file, date):
-    filename = file.filename
-    python_code = decode(repo.get_contents(filename))
-    prefixes = extract_prefixes(python_code, file.filename)
-    return tech_exposure(python_code, prefixes, date)
+def scan_tech_in_contents(filename, code, date):
+    prefixes = extract_prefixes(code, filename)
+    return tech_exposure(code, prefixes, date)
 
 

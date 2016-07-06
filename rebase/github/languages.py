@@ -1,3 +1,4 @@
+from base64 import b64decode
 from collections import defaultdict, Counter, namedtuple
 from logging import getLogger
 from os.path import splitext
@@ -36,12 +37,33 @@ _language_list = {
 
 
 logger = getLogger()
+github_logger = getLogger('github')
+# set the level to 'DEBUG' to open the firehose of data from PyGithub
+github_logger.setLevel('INFO')
 
 
 EXTENSION_TO_LANGUAGES = defaultdict(list)
 for language, extension_list in _language_list.items():
     for extension in extension_list:
         EXTENSION_TO_LANGUAGES[extension].append(language)
+
+
+class UnsupportedContentEncoding(Exception):
+
+    message_format = 'Unsupported Github content encoding "{}" for "{}"'.format
+
+    def __init__(url, encoding):
+        self.message = UnsupportedContentEncoding.message_format(encoding, url)
+
+
+def decode(content_file):
+    if not content_file.content:
+        logger.warning('Empty content at URL: %s', content_file.url)
+        return ''
+    if content_file.encoding == 'base64':
+        return b64decode(content_file.content).decode()
+    else:
+        raise UnsupportedContentEncoding(content_file.encoding, content_file.url)
 
 
 def scan_one_commit(token, repo_id, commit_sha):
@@ -69,29 +91,31 @@ def scan_one_commit(token, repo_id, commit_sha):
         if 'Python' in languages:
             try:
                 file_status = file.status
+                filename = file.filename
                 if file_status == 'modified' and file.patch:
-                    filename = file.filename
                     if filename not in all_files_before_commit:
                         pdebug(all_files_before_commit, 'all files before commit')
                         e = Exception()
                         setattr(e, 'message', '{} not found in previous files'.format(filename))
                         raise e
                     technologies.add(scan_tech_in_patch(
-                        api,
-                        repo,
-                        file,
-                        all_files_before_commit[filename],
+                        filename,
+                        decode(repo.get_file_contents(filename, commit.sha)),
+                        decode(repo.get_git_blob(all_files_before_commit[filename])),
+                        file.patch,
                         commit.commit.author.date
                     ))
                 elif file.status == 'added':
-                    technologies.add(scan_tech_in_contents(api, repo, file, commit.commit.author.date))
+                    technologies.add(scan_tech_in_contents(
+                        filename,
+                        decode(repo.get_file_contents(filename, commit.sha)),
+                        commit.commit.author.date
+                    ))
                 else:
                     pdebug(file, 'No patch here')
                     # TODO handle 'removed' and other status
-            except Exception as e:
-                if hasattr(e, 'message'):
-                    logger.debug(e.message)
-                logger.debug(e)
+            except GithubException as e:
+                logger.debug('GithubException Status: %d, Data: %s', e.status, e.data)
                 raise e
     return commit_count_by_language, unknown_extension_counter, technologies
 
@@ -186,4 +210,5 @@ def detect_languages(account_id):
         logger.warning('Unrecognized extension "{}" ({} occurrences)'.format(extension, count))
     # popping the context will close the current database connection.
     context.pop()
+
 
