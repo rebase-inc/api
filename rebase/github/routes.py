@@ -37,15 +37,7 @@ def analyze_contractor_skills(github_account):
         current_app.default_queue.enqueue_call(func=detect_languages, args=(github_account.id,), timeout=3600 ) # timeout = 1h
 
 
-def for_each_line(thing, log):
-    for line in str(thing).splitlines():
-        log(line)
-
-
 def get_oauth_app_hostname(request):
-    #logger.debug('============ Headers ==============================')
-    #for_each_line(request.headers, logger.debug)
-    #logger.debug('============ End Of Headers ==============================')
     host = request.environ['HTTP_HOST'] 
     if not host.startswith('http'):
         host2 = '//'+host
