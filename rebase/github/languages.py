@@ -1,12 +1,14 @@
 from base64 import b64decode
-from collections import defaultdict, Counter, namedtuple
+from collections import defaultdict, Counter
+from datetime import datetime
 from logging import getLogger
 from os.path import splitext
 from time import sleep
 
 from github import Github, GithubException
-from rq.job import JobStatus
+from rq.job import JobStatus, get_current_job
 
+from rebase.github.api import RebaseGithub
 from rebase.cache.rq_jobs import invalidate
 from rebase.common.database import DB
 from rebase.common.debug import pdebug
@@ -36,7 +38,7 @@ _language_list = {
 }
 
 
-logger = getLogger()
+logger = getLogger(__name__)
 github_logger = getLogger('github')
 # set the level to 'DEBUG' to open the firehose of data from PyGithub
 github_logger.setLevel('INFO')
@@ -68,7 +70,7 @@ def decode(content_file):
 
 def scan_one_commit(token, repo_id, commit_sha):
     # remember, we MUST pop this 'context' when we are done with this session
-    api = Github(token)
+    api = RebaseGithub(token)
     repo = api.get_repo(repo_id)
     commit = repo.get_commit(commit_sha)
     technologies = TechProfile()
@@ -115,8 +117,11 @@ def scan_one_commit(token, repo_id, commit_sha):
                     pdebug(file, 'No patch here')
                     # TODO handle 'removed' and other status
             except GithubException as e:
-                logger.debug('GithubException Status: %d, Data: %s', e.status, e.data)
+                logger.warning('GithubException Status: %d, Data: %s', e.status, e.data)
                 raise e
+            except RebaseGithubException as rebase_exception:
+                logger.warning(rebase_exception)
+                raise rebase_exception
     return commit_count_by_language, unknown_extension_counter, technologies
 
 
@@ -134,10 +139,11 @@ queues = Queues()
 setup_rq(queues)
 
 
-done_states = (JobStatus.FINISHED, JobStatus.FAILED)
+done_states = (None, '', JobStatus.FINISHED, JobStatus.FAILED)
 
 
 def scan_commits(api, token, owned_repos, login):
+    this_job = get_current_job(connection=queues.default_queue.connection)
     commit_count_by_language = Counter()
     unknown_extension_counter = Counter()
 
@@ -159,10 +165,11 @@ def scan_commits(api, token, owned_repos, login):
             logger.debug('Caught Github Exception. Status: %d Data: %s', e.status, e.data)
             logger.debug('Skipping repo: %s', repo.name)
             break
-    # now every 3 seconds, aggregate the commit_count, unknown extensions and technologies detected by finished jobs at that point
+    # now every 5 seconds, aggregate the commit_count, unknown extensions and technologies detected by finished jobs at that point
     while True:
-        logger.info('Sleeping 3 seconds')
-        sleep(3)
+        logger.info('scan_commit job is waiting for %d "scan_one_commit" jobs to finish', len(all_jobs))
+        logger.info('scan_commit job sleeping 5 seconds')
+        sleep(5)
         finished_jobs = tuple(filter(lambda job: job.get_status() in done_states, all_jobs))
         for finished_job in finished_jobs:
             if finished_job.get_status() == JobStatus.FINISHED:
@@ -172,7 +179,9 @@ def scan_commits(api, token, owned_repos, login):
                 unknown_extension_counter.update(_unknown_extensions)
                 technologies.add(_technologies)
             all_jobs.remove(finished_job)
-        if not all_jobs:
+        this_job_status = this_job.get_status()
+        logger.debug('scan_commit job status: %s', this_job_status)
+        if not all_jobs or this_job_status in done_states:
             break
     return commit_count_by_language, unknown_extension_counter, technologies
 
@@ -182,7 +191,7 @@ def detect_languages(account_id):
     github_session, context = create_admin_github_session(account_id)
     author = github_session.account.github_user.login
     token = github_session.account.access_token
-    api = Github(token)
+    api = RebaseGithub(token)
     owned_repos = api.get_user().get_repos()
 
     (
@@ -196,7 +205,6 @@ def detect_languages(account_id):
         author
     )
 
-    pdebug(technologies, 'Tech Profile')
     pdebug(str(technologies), 'Tech Profile')
     scale_skill = lambda number: (1 - (1 / (0.01*number + 1 ) ) )
     contractor = next(filter(lambda r: r.type == 'contractor', github_session.account.user.roles), None) or Contractor(github_session.acccount.user)
