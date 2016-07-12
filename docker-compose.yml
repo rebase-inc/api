@@ -99,6 +99,8 @@ rq_default:
     service: webserver
     file: docker/api-dev.yml
   image: rebase/rq_default
+  volumes:
+   - repos:/repos
   links:
    - cache
    - database:db

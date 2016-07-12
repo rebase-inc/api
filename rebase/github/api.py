@@ -7,8 +7,13 @@ from github import Github
 from github.MainClass import DEFAULT_BASE_URL, DEFAULT_TIMEOUT, DEFAULT_PER_PAGE
 from github.Requester import Requester
 
+from rebase.common.debug import pdebug
+
 
 logger = getLogger(__name__)
+
+
+min_delta = 3600/5000 # min seconds to wait before next request
 
 
 class RebaseGithubException(Exception):
@@ -39,6 +44,7 @@ class RebaseRequester(Requester):
         self.rate_limit_retries = 0
         self.max_retries = max_retries
         self.delay = delay
+        self.last_request_time = None
         super().__init__(token,
                          None,
                          DEFAULT_BASE_URL,
@@ -61,21 +67,43 @@ class RebaseRequester(Requester):
         Raises GithubAbuseBlock if Github is blocking us because we do not abide by the limit.
 
         '''
+        if self.last_request_time:
+            delta_ = datetime.now() - self.last_request_time
+            logger.debug('delta_: %.2f', delta_.total_seconds())
+            if delta_.total_seconds() < min_delta:
+                nap_time = min_delta - delta_.total_seconds()
+                logger.debug('Going too fast! Sleeping %.2f', nap_time)
+                sleep(nap_time)
+        url_ = args[1]
+        pdebug(url_, 'Request URL: ')
         status, responseHeaders, output = request_method(*args, **kwargs)
+        self.last_request_time = datetime.utcnow()
         _output = self._Requester__structuredFromJson(output)
         if self.rate_limiting[0] < 10:
             logger.debug('Rate Limit | Remaining Calls: %d, Limit: %d', self.rate_limiting[0], self.rate_limiting[1])
         if status == 403 and _output.get("message").startswith("API Rate Limit Exceeded"):
+            if 'Retry-After' in responseHeaders:
+                logger.debug('Found Retry-After header!!! wait %d seconds pleeze', responseHeaders['Retry-After'])
             self.rate_limit_retries += 1
             if self.rate_limit_retries > self.max_retries:
                 raise GithubRateLimitMaxRetries(*args[0:3])
             delta = datetime.utcfromtimestamp(self.rate_limiting_resettime) - datetime.utcnow()
-            logger.debug('Rate Limited! Sleeping for %d minutes and %d seconds', delta.total_seconds()//60, delta.total_seconds())
-            sleep(delta.total_seconds()+randint(1, self.delay))
+            nap_time = delta.total_seconds()+randint(1, self.delay)
+            logger.debug('Rate Limited! Sleeping for %d minutes and %d seconds', nap_time // 60, nap_time % 60)
+            sleep(nap_time)
             # recurse up to max_retries calls
             status, responseHeaders, output = self._request_encode(request_method, *args, **kwargs)
         if status == 403 and _output.get('message').startswith('You have triggered an abuse detection mechanism'):
-            raise GithubAbuseBlock(_output.get('message'), *args[0:3])
+            if self.rate_limit_retries > self.max_retries:
+                raise GithubRateLimitMaxRetries(*args[0:3])
+            if 'Retry-After' in responseHeaders:
+                nap_time = int(responseHeaders['Retry-After'])
+                logger.debug('Detect Abuse Blocking Message from Github. Sleeping for %d minutes and %d seconds', nap_time // 60, nap_time % 60)
+                sleep(nap_time)
+                self.rate_limit_retries += 1
+                status, responseHeaders, output = self._request_encode(request_method, *args, **kwargs)
+            else:
+                raise GithubAbuseBlock(_output.get('message'), *args[0:3])
         self.rate_limit_retries = 0
         return status, responseHeaders, output
 

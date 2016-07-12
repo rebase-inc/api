@@ -5,10 +5,10 @@ from logging import getLogger
 from os.path import splitext
 from time import sleep
 
-from github import Github, GithubException
+from github import GithubException
 from rq.job import JobStatus, get_current_job
 
-from rebase.github.api import RebaseGithub
+from rebase.github.api import RebaseGithub, RebaseGithubException
 from rebase.cache.rq_jobs import invalidate
 from rebase.common.database import DB
 from rebase.common.debug import pdebug
@@ -68,11 +68,8 @@ def decode(content_file):
         raise UnsupportedContentEncoding(content_file.encoding, content_file.url)
 
 
-def scan_one_commit(token, repo_id, commit_sha):
+def scan_one_commit(api, repo, commit):
     # remember, we MUST pop this 'context' when we are done with this session
-    api = RebaseGithub(token)
-    repo = api.get_repo(repo_id)
-    commit = repo.get_commit(commit_sha)
     technologies = TechProfile()
     commit_count_by_language = Counter()
     unknown_extension_counter = Counter()
@@ -116,6 +113,8 @@ def scan_one_commit(token, repo_id, commit_sha):
                 else:
                     pdebug(file, 'No patch here')
                     # TODO handle 'removed' and other status
+            except SyntaxError as e:
+                logger.warning('Syntax error: %s', e)
             except GithubException as e:
                 logger.warning('GithubException Status: %d, Data: %s', e.status, e.data)
                 raise e
@@ -155,33 +154,14 @@ def scan_commits(api, token, owned_repos, login):
         logger.debug('processing repo %s', repo)
         try:
             for commit in repo.get_commits(author=login):
-                job = queues.default_queue.enqueue(
-                    scan_one_commit,
-                    args=(token, repo.id, commit.sha),
-                    timeout=600
-                )
-                all_jobs.add(job)
-        except GithubException as e:
-            logger.debug('Caught Github Exception. Status: %d Data: %s', e.status, e.data)
-            logger.debug('Skipping repo: %s', repo.name)
-            break
-    # now every 5 seconds, aggregate the commit_count, unknown extensions and technologies detected by finished jobs at that point
-    while True:
-        logger.info('scan_commit job is waiting for %d "scan_one_commit" jobs to finish', len(all_jobs))
-        logger.info('scan_commit job sleeping 5 seconds')
-        sleep(5)
-        finished_jobs = tuple(filter(lambda job: job.get_status() in done_states, all_jobs))
-        for finished_job in finished_jobs:
-            if finished_job.get_status() == JobStatus.FINISHED:
-                _commit_count_by_language, _unknown_extensions, _technologies = finished_job.result
-                pdebug(_technologies, '_technologies')
+                _commit_count_by_language, _unknown_extensions, _technologies = scan_one_commit(api, repo, commit)
+                #pdebug(_technologies, '_technologies')
                 commit_count_by_language.update(_commit_count_by_language)
                 unknown_extension_counter.update(_unknown_extensions)
                 technologies.add(_technologies)
-            all_jobs.remove(finished_job)
-        this_job_status = this_job.get_status()
-        logger.debug('scan_commit job status: %s', this_job_status)
-        if not all_jobs or this_job_status in done_states:
+        except GithubException as e:
+            logger.debug('Caught Github Exception. Status: %d Data: %s', e.status, e.data)
+            logger.debug('Skipping repo: %s', repo.name)
             break
     return commit_count_by_language, unknown_extension_counter, technologies
 
