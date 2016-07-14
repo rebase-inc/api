@@ -68,12 +68,14 @@ rq_default:
   extends:
     service: webserver
     file: docker/api-production.yml
+  image: rebase/rq_default
+  volumes:
+   - repos:/repos
   links:
    - cache
    - database:db
    - redis
    - rsyslog
-  command: ["/venv/api/bin/python", "run-worker.py"]
 
 rq_dashboard:
     image: rebase/rq_dashboard
