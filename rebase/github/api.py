@@ -69,7 +69,7 @@ class RebaseRequester(Requester):
         '''
         if self.last_request_time:
             delta_ = datetime.now() - self.last_request_time
-            logger.debug('delta_: %.2f', delta_.total_seconds())
+            #logger.debug('delta_: %.2f', delta_.total_seconds())
             if delta_.total_seconds() < min_delta:
                 nap_time = min_delta - delta_.total_seconds()
                 logger.debug('Going too fast! Sleeping %.2f', nap_time)

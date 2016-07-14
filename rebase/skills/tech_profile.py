@@ -1,5 +1,5 @@
 from collections import defaultdict, namedtuple, Counter
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 
 class TechProfile(defaultdict):
@@ -107,7 +107,7 @@ class DateCounter(Counter):
     def freshness(self):
         sorted_dates = sorted(self)
         learning_period = sorted_dates[-1] - sorted_dates[0] if len(self) > 1 else timedelta(days=1)
-        time_to_last_exposure = datetime.utcnow() - sorted_dates[-1]
+        time_to_last_exposure = datetime.now(timezone.utc) - sorted_dates[-1]
         return len(self)*learning_period/time_to_last_exposure
 
     @property
