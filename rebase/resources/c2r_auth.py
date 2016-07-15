@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from logging import getLogger
 from uuid import uuid1
 
-from flask import jsonify, request, session, current_app, _app_ctx_stack
+from flask import jsonify, session, current_app
 from flask.ext.restful import Resource
 from flask.ext.login import login_user, current_user
 
@@ -11,7 +11,7 @@ from rebase.models import User, Contractor
 from rebase.views import user
 
 
-logger = getLogger()
+logger = getLogger(__name__)
 
 
 def make_temp_dev_user():
