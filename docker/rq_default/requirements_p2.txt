@@ -1,1 +1,2 @@
+future==0.15.2
 msgpack-python==0.4.7

@@ -1,5 +1,8 @@
+from __future__ import division
 from collections import defaultdict, namedtuple, Counter
 from datetime import datetime, timedelta, timezone
+
+from builtins import map
 
 
 class TechProfile(defaultdict):
