@@ -1,33 +1,22 @@
 from ast import parse, walk, Import, ImportFrom
 from collections import defaultdict, Counter
 from datetime import datetime, timedelta
+from functools import wraps
 from logging import getLogger
 from os.path import dirname, split
 
-from github import GithubException
-
 from rebase.common.debug import pdebug
 from rebase.skills.tech_profile import TechProfile
+from rebase.github.technology_scanner import TechnologyScanner, Proxy
 
 
-logger = getLogger()
+logger = getLogger(__name__)
 
 
 LANGUAGE_PREFIX = 'Python.'
 
 
-_syntax_error_fields = ['filename', 'lineno', 'offset', 'text']
-
-
-def safe_parse(code, filename):
-    try:
-        return parse(code, filename)
-    except SyntaxError as syntax_error:
-        logger.debug('======== Syntax Error ========')
-        for f in _syntax_error_fields:
-            logger.debug('{}: %s'.format(f), getattr(syntax_error, f))
-        pdebug(code, 'Code')
-        raise syntax_error
+_syntax_error_fields = ('filename', 'lineno', 'offset', 'text')
 
 
 def split_dir(dir):
@@ -65,50 +54,6 @@ def module(import_from_node, filename):
         raise InvalidImportFromLevel(filename)
     return '.'.join(module_elements)
 
-    
-def extract_prefixes(code, filename):
-    ''' return prefixes where prefixes is a dictionary where a key is a sub-component of a techs 
-     (e.g. 'sqlalchemy.orm') and the value is a list of prefixes (['sa', 'sqlalchemy.orm'])
-     prefixes is thus a collection of search keywords to be applied on the commit patches
-    '''
-    tree = safe_parse(code, filename)
-    prefixes = defaultdict(list)
-    for node in walk(tree):
-        if isinstance(node, Import):
-            for _alias in node.names:
-                if _alias.asname:
-                    prefixes[_alias.name].append(_alias.asname)
-                prefixes[LANGUAGE_PREFIX+_alias.name].append(_alias.name)
-        if isinstance(node, ImportFrom):
-            for _alias in node.names:
-                sub_component = module(node, filename)+'.'+_alias.name
-                prefixes[LANGUAGE_PREFIX+sub_component].append(_alias.asname if _alias.asname else _alias.name)
-    return prefixes
-
-
-def language_use(code, filename, date):
-    ''' returns a dict of language elements to dates counter
-    '''
-    tree = safe_parse(code, filename)
-    exposure = TechProfile()
-    for node in walk(tree):
-        exposure[LANGUAGE_PREFIX+'__language__.'+node.__class__.__name__].update([date])
-    return exposure
-
-
-def language_exposure(new_code, old_code, filename, date):
-    new_language_use = language_use(new_code, filename, date)
-    old_language_use = language_use(old_code, filename, date)
-    abs_diff = TechProfile()
-    all_keys = set(new_language_use) | set(old_language_use)
-    for k in all_keys:
-        # not the best option, but until we can diff 2 abstract syntax trees,
-        # we can only look at the aggregate change
-        use_count = abs(new_language_use[k][date] - old_language_use[k][date])
-        if use_count > 0:
-            abs_diff[k][date] = use_count
-    return abs_diff
-
 
 def tech_exposure(code, prefixes, date):
     ''' Return a dictionary in which each key is a tech item
@@ -125,30 +70,107 @@ def tech_exposure(code, prefixes, date):
     return exposure
 
 
-def scan_tech_in_patch(filename, code, previous_code, patch, date):
-    prefixes = extract_prefixes(code, filename)
-    # taken the original patch and remove:
-    # - context lines
-    # - deleted lines
-    # - comments
-    reduced_patch = []
-    for line in patch.splitlines():
-        if line.startswith('+'):
-            line = line[1:].lstrip()
-            if line:
-                if line[0] == '#':
-                    continue
-                reduced_patch.append(line)
-    total_exposure = TechProfile()
-    # we can use 'update' here because keys for tech and language exposure don't overlap
-    # otherwise, we would use 'add'
-    total_exposure.update(tech_exposure(reduced_patch, prefixes, date))
-    total_exposure.update(language_exposure(code, previous_code, filename, date))
-    return total_exposure
+class PythonScanner(TechnologyScanner):
+
+    def safe_parse(self, code, filename):
+        try:
+            return parse(code, filename)
+        except SyntaxError as syntax_error:
+            logger.debug('======== Syntax Error:  ========')
+            for f in _syntax_error_fields:
+                logger.debug('{}: %s'.format(f), getattr(syntax_error, f))
+            pdebug(code, 'Code')
+            raise syntax_error
+
+    def language_use(self, code, filename, date):
+        ''' returns a dict of language elements to dates counter
+        '''
+        tree = self.safe_parse(code, filename)
+        exposure = TechProfile()
+        for node in walk(tree):
+            exposure[LANGUAGE_PREFIX+'__language__.'+node.__class__.__name__].update([date])
+        return exposure
 
 
-def scan_tech_in_contents(filename, code, date):
-    prefixes = extract_prefixes(code, filename)
-    return tech_exposure(code, prefixes, date)
+    def language_exposure(self, new_code, old_code, filename, date):
+        new_language_use = self.language_use(new_code, filename, date)
+        old_language_use = self.language_use(old_code, filename, date)
+        abs_diff = TechProfile()
+        all_keys = set(new_language_use) | set(old_language_use)
+        for k in all_keys:
+            # not the best option, but until we can diff 2 abstract syntax trees,
+            # we can only look at the aggregate change
+            use_count = abs(new_language_use[k][date] - old_language_use[k][date])
+            if use_count > 0:
+                abs_diff[k][date] = use_count
+        return abs_diff
+
+
+    def extract_prefixes(self, code, filename):
+        ''' return prefixes where prefixes is a dictionary where a key is a sub-component of a techs 
+         (e.g. 'sqlalchemy.orm') and the value is a list of prefixes (['sa', 'sqlalchemy.orm'])
+         prefixes is thus a collection of search keywords to be applied on the commit patches
+        '''
+        tree = self.safe_parse(code, filename)
+        prefixes = defaultdict(list)
+        for node in walk(tree):
+            if isinstance(node, Import):
+                for _alias in node.names:
+                    if _alias.asname:
+                        prefixes[_alias.name].append(_alias.asname)
+                    prefixes[LANGUAGE_PREFIX+_alias.name].append(_alias.name)
+            if isinstance(node, ImportFrom):
+                for _alias in node.names:
+                    sub_component = module(node, filename)+'.'+_alias.name
+                    prefixes[LANGUAGE_PREFIX+sub_component].append(_alias.asname if _alias.asname else _alias.name)
+        return prefixes
+
+    def scan_patch(self, filename, code, previous_code, patch, date):
+        prefixes = self.extract_prefixes(code, filename)
+        # taken the original patch and remove:
+        # - context lines
+        # - deleted lines
+        # - comments
+        reduced_patch = []
+        for line in patch.splitlines():
+            if line.startswith('+'):
+                line = line[1:].lstrip()
+                if line:
+                    if line[0] == '#':
+                        continue
+                    reduced_patch.append(line)
+        total_exposure = TechProfile()
+        # we can use 'update' here because keys for tech and language exposure don't overlap
+        # otherwise, we would use 'add'
+        total_exposure.update(tech_exposure(reduced_patch, prefixes, date))
+        total_exposure.update(self.language_exposure(code, previous_code, filename, date))
+        return total_exposure
+
+    def scan_contents(self, filename, code, date):
+        prefixes = self.extract_prefixes(code, filename)
+        return tech_exposure(code, prefixes, date)
+
+
+class Py2Scanner(Proxy):
+
+    def __init__(self):
+        super().__init__('/api/docker/rq_default/parse_python2.py')
+
+
+class Py2Py3Scanner(PythonScanner):
+
+    def __init__(self):
+        self.use_py2 = False
+        self.py2 = Py2Scanner()
+
+    def scan_patch(self, *args):
+        if self.use_py2:
+            return self.py2.scan_patch(*args)
+        return super().scan_patch(*args)
+
+    def scan_contents(self, filename, code, date):
+        if self.use_py2:
+            return self.py2.scan_contents(*args)
+        return super().scan_contents(*args)
 
 

@@ -8,11 +8,11 @@ from time import sleep
 
 from github import GithubException
 
-from rebase.github.api import RebaseGithub, RebaseGithubException
 from rebase.cache.rq_jobs import invalidate
 from rebase.common.database import DB
 from rebase.common.debug import pdebug
-from rebase.github.python import scan_tech_in_patch, scan_tech_in_contents
+from rebase.github.api import RebaseGithub, RebaseGithubException
+from rebase.github.python import PythonScanner
 from rebase.github.session import create_admin_github_session
 from rebase.models import (
     Contractor,
@@ -126,11 +126,11 @@ def scan_one_commit_with_github(api, repo, commit):
     return commit_count_by_language, unknown_extension_counter, technologies
 
 
-def scan_commits_with_github(api, owned_repos, login):
+def scan_commits_with_github(api, login):
     commit_count_by_language = Counter()
     unknown_extension_counter = Counter()
     technologies = TechProfile()
-    for repo in owned_repos:
+    for repo in api.get_user().get_repos():
         logger.debug('processing repo %s', repo)
         try:
             for commit in repo.get_commits(author=login):
@@ -146,42 +146,90 @@ def scan_commits_with_github(api, owned_repos, login):
     return commit_count_by_language, unknown_extension_counter, technologies
 
 
-def scan_one_commit_on_disk(local_repo, commit):
-    technologies = TechProfile()
-    commit_count_by_language = Counter()
-    unknown_extension_counter = Counter()
-    local_commit = local_repo.commit(commit.sha)
-    pdebug(local_commit, 'local_commit')
-    if local_commit.parents:
-        if len(local_commit.parents) > 1:
-            # merge commit, ignore it
-            return commit_count_by_language, unknown_extension_counter, technologies
+def count_languages(commit_count_by_language, unknown_extension_counter, filepath):
+    '''
+    return a list of potential languages for the file at 'filepath'
+    '''
+    _, extension = splitext(filepath)
+    languages = EXTENSION_TO_LANGUAGES[extension.lower()]
+    commit_count_by_language.update(languages)
+    if not languages:
+        unknown_extension_counter.update([extension.lower()])
+    return languages
+
+
+class GithubAccountScanner(object):
+
+    def __init__(self, account):
+        self.api = RebaseGithub(account.access_token)
+        self.login = account.github_user.login
+        self.new_url_prefix = 'https://'+account.access_token+'@github.com'
+        assert isdir(CLONED_REPOS_ROOT_DIR)
+        self.scanners = {
+            'Python': PythonScanner(),
+        }
+
+    def find_scanners(self, languages):
+        for language in languages:
+            if language in self.scanners:
+                yield self.scanners[language]
+            else:
+                continue
+
+    def scan_one_commit_on_disk(self, local_repo, commit):
+        technologies = TechProfile()
+        commit_count_by_language = Counter()
+        unknown_extension_counter = Counter()
+        local_commit = local_repo.commit(commit.sha)
+        pdebug(local_commit, 'local_commit')
+        if local_commit.parents:
+            if len(local_commit.parents) > 1:
+                # merge commit, ignore it
+                return commit_count_by_language, unknown_extension_counter, technologies
+            else:
+                for diff in local_commit.parents[0].diff(local_commit, create_patch=True):
+                    if diff.deleted_file or diff.renamed:
+                        continue
+                    languages = count_languages(
+                        commit_count_by_language,
+                        unknown_extension_counter,
+                        diff.b_path if diff.new_file else diff.a_path
+                    )
+                    for scanner in self.find_scanners(languages):
+                        try:
+                            if diff.new_file:
+                                technologies.add(scanner.scan_contents(
+                                    diff.b_path,
+                                    local_commit.tree[diff.b_path].data_stream.read().decode(),
+                                    local_commit.authored_datetime
+                                ))
+                            else:
+                                technologies.add(scanner.scan_patch(
+                                    diff.b_path,
+                                    local_commit.tree[diff.b_path].data_stream.read().decode(),
+                                    local_commit.parents[0].tree[diff.a_path].data_stream.read().decode(),
+                                    diff.diff.decode('UTF-8'),
+                                    local_commit.authored_datetime
+                                ))
+                        except SyntaxError as e:
+                            logger.warning('Syntax error: %s', e)
+                        except GithubException as e:
+                            logger.warning('GithubException Status: %d, Data: %s', e.status, e.data)
+                            raise e
+                        except RebaseGithubException as rebase_exception:
+                            logger.warning(rebase_exception)
+                            raise rebase_exception
         else:
-            for diff in local_commit.parents[0].diff(local_commit, create_patch=True):
-                if diff.deleted_file or diff.renamed:
-                    continue
-                _, extension = splitext(diff.b_path if diff.new_file else diff.a_path)
-                languages = EXTENSION_TO_LANGUAGES[extension.lower()]
-                commit_count_by_language.update(languages)
-                if not languages:
-                    unknown_extension_counter.update([extension.lower()])
-                # TODO write a scanner for each language
-                if 'Python' in languages:
+            logger.info('This commit has no parent: %s', local_commit.summary)
+            for blob in local_commit.tree.traverse(lambda i,d: i.type=='blob'):
+                languages = count_languages(commit_count_by_language, unknown_extension_counter, blob.name)
+                for scanner in self.find_scanners(languages):
                     try:
-                        if diff.new_file:
-                            technologies.add(scan_tech_in_contents(
-                                diff.b_path,
-                                local_commit.tree[diff.b_path].data_stream.read().decode(),
-                                local_commit.authored_datetime
-                            ))
-                        else:
-                            technologies.add(scan_tech_in_patch(
-                                diff.b_path,
-                                local_commit.tree[diff.b_path].data_stream.read().decode(),
-                                local_commit.parents[0].tree[diff.a_path].data_stream.read().decode(),
-                                diff.diff.decode('UTF-8'),
-                                local_commit.authored_datetime
-                            ))
+                        technologies.add(scanner.scan_contents(
+                            blob.name,
+                            blob.data_stream.read().decode(),
+                            local_commit.authored_datetime
+                        ))
                     except SyntaxError as e:
                         logger.warning('Syntax error: %s', e)
                     except GithubException as e:
@@ -190,83 +238,43 @@ def scan_one_commit_on_disk(local_repo, commit):
                     except RebaseGithubException as rebase_exception:
                         logger.warning(rebase_exception)
                         raise rebase_exception
-    else:
-        logger.info('This commit has no parent: %s', local_commit.summary)
-        for blob in local_commit.tree.traverse(lambda i,d: i.type=='blob'):
-            _, extension = splitext(blob.name)
-            languages = EXTENSION_TO_LANGUAGES[extension.lower()]
-            commit_count_by_language.update(languages)
-            if not languages:
-                unknown_extension_counter.update([extension.lower()])
-            # TODO write a scanner for each language
-            if 'Python' in languages:
-                try:
-                    technologies.add(scan_tech_in_contents(
-                        blob.name,
-                        blob.data_stream.read().decode(),
-                        local_commit.authored_datetime
-                    ))
-                except SyntaxError as e:
-                    logger.warning('Syntax error: %s', e)
-                except GithubException as e:
-                    logger.warning('GithubException Status: %d, Data: %s', e.status, e.data)
-                    raise e
-                except RebaseGithubException as rebase_exception:
-                    logger.warning(rebase_exception)
-                    raise rebase_exception
 
-    return commit_count_by_language, unknown_extension_counter, technologies
+        return commit_count_by_language, unknown_extension_counter, technologies
 
-
-def scan_commits_on_disk(api, token, owned_repos, login):
-    from git import Repo
-    commit_count_by_language = Counter()
-    unknown_extension_counter = Counter()
-    technologies = TechProfile()
-    new_url_prefix = 'https://'+token+'@github.com'
-    assert isdir(CLONED_REPOS_ROOT_DIR)
-    for repo in owned_repos:
-        logger.debug('processing repo %s', repo)
-        repo_url = repo.clone_url
-        oauth_url = repo_url.replace('https://github.com', new_url_prefix, 1)
-        logger.debug('oauth_url: %s', oauth_url)
-        local_repo_dir = join(CLONED_REPOS_ROOT_DIR, repo.name)
-        if isdir(local_repo_dir):
+    def scan_all_repos(self):
+        commit_count_by_language = Counter()
+        unknown_extension_counter = Counter()
+        technologies = TechProfile()
+        from git import Repo
+        for repo in self.api.get_user().get_repos():
+            logger.debug('processing repo %s', repo)
+            repo_url = repo.clone_url
+            oauth_url = repo_url.replace('https://github.com', self.new_url_prefix, 1)
+            logger.debug('oauth_url: %s', oauth_url)
+            local_repo_dir = join(CLONED_REPOS_ROOT_DIR, repo.name)
+            if isdir(local_repo_dir):
+                rmtree(local_repo_dir)
+            local_repo = Repo.clone_from(oauth_url, local_repo_dir)
+            try:
+                for commit in repo.get_commits(author=self.login):
+                    _commit_count_by_language, _unknown_extensions, _technologies = self.scan_one_commit_on_disk(local_repo, commit)
+                    #pdebug(_technologies, '_technologies')
+                    commit_count_by_language.update(_commit_count_by_language)
+                    unknown_extension_counter.update(_unknown_extensions)
+                    technologies.add(_technologies)
+            except GithubException as e:
+                logger.debug('Caught Github Exception. Status: %d Data: %s', e.status, e.data)
+                logger.debug('Skipping repo: %s', repo.name)
+                break
+            # keep algo O(1) in space
             rmtree(local_repo_dir)
-        local_repo = Repo.clone_from(oauth_url, local_repo_dir)
-        try:
-            for commit in repo.get_commits(author=login):
-                _commit_count_by_language, _unknown_extensions, _technologies = scan_one_commit_on_disk(local_repo, commit)
-                #pdebug(_technologies, '_technologies')
-                commit_count_by_language.update(_commit_count_by_language)
-                unknown_extension_counter.update(_unknown_extensions)
-                technologies.add(_technologies)
-        except GithubException as e:
-            logger.debug('Caught Github Exception. Status: %d Data: %s', e.status, e.data)
-            logger.debug('Skipping repo: %s', repo.name)
-            break
-        rmtree(local_repo_dir)
-    return commit_count_by_language, unknown_extension_counter, technologies
+        return commit_count_by_language, unknown_extension_counter, technologies
 
 
 def detect_languages(account_id):
     # remember, we MUST pop this 'context' when we are done with this session
     github_session, context = create_admin_github_session(account_id)
-    author = github_session.account.github_user.login
-    api = RebaseGithub(github_session.account.access_token)
-    owned_repos = api.get_user().get_repos()
-
-    (
-        commit_count_by_language,
-        unknown_extension_counter,
-        technologies
-    ) = scan_commits_on_disk(
-        api,
-        github_session.account.access_token,
-        owned_repos,
-        author
-    )
-
+    commit_count_by_language, unknown_extension_counter, technologies = GithubAccountScanner(github_session.account).scan_all_repos()
     pdebug(str(technologies), 'Tech Profile')
     scale_skill = lambda number: (1 - (1 / (0.01*number + 1 ) ) )
     contractor = next(filter(lambda r: r.type == 'contractor', github_session.account.user.roles), None) or Contractor(github_session.acccount.user)
@@ -274,7 +282,6 @@ def detect_languages(account_id):
     github_session.account.remote_work_history.analyzing = False
     DB.session.commit()
     invalidate([(SkillSet, (contractor.skill_set.id,))])
-
     pdebug(contractor.skill_set.skills, '{} Skills'.format(contractor))
     for extension, count in unknown_extension_counter.most_common():
         logger.warning('Unrecognized extension "{}" ({} occurrences)'.format(extension, count))
