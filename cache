@@ -7,7 +7,7 @@ from logging.handlers import SysLogHandler
 from multiprocessing import current_process, set_start_method
 from pickle import dumps, loads
 from queue import Empty
-from signal import signal, sigwait, SIGTERM, SIGQUIT, SIGINT
+from signal import signal, SIGTERM, SIGQUIT, SIGINT
 from sys import exit
 from threading import Thread, current_thread
 
