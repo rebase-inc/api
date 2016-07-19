@@ -4,7 +4,15 @@
 from logging import Formatter, getLogger, DEBUG
 from logging.handlers import SysLogHandler
 from multiprocessing import current_process
-from sys import argv, exit
+from signal import signal, SIGTERM, SIGQUIT, SIGINT
+from sys import argv, exit, stdin, stdout, stderr
+from time import sleep
+
+from msgpack import unpackb
+
+from rebase.skills.python import PythonScanner
+
+logger = getLogger()
 
 
 class ParserException(Exception):
@@ -25,14 +33,26 @@ class MissingArguments(ParserException):
     code = 1
 
 
+def quit(sig, frame):
+    logger.debug('Received signal: %s', sig)
+    exit(-sig)
+
+
 def main(argv):
-    current_process().name = 'parse_python2'
-    logger = getLogger()
+    signal(SIGTERM, quit)
+    signal(SIGQUIT, quit)
+    signal(SIGINT, quit)
+    current_process().name = 'Python 2 Scanner'
     logger.setLevel(DEBUG)
     rsyslog = SysLogHandler(('rsyslog', 514))
-    rsyslog.setFormatter(Formatter('%(levelname)s {%(processName)s[%(process)d] %(threadName)s} %(message)s'))
+    rsyslog.setFormatter(Formatter('%(levelname)s {%(processName)s[%(process)d]} %(message)s'))
     logger.addHandler(rsyslog)
-    logger.debug('Booted.')
+    logger.debug('Listening to stdin for messages.')
+    while True:
+        next_object_length = int(stdin.readline().strip('\n'))
+        #logger.debug('length: %d', next_object_length)
+        obj = unpackb(stdin.read(next_object_length))
+        logger.debug('object: %s', obj)
 
 
 if __name__ == '__main__':

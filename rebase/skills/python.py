@@ -7,7 +7,7 @@ from os.path import dirname, split
 
 from rebase.common.debug import pdebug
 from rebase.skills.tech_profile import TechProfile
-from rebase.github.technology_scanner import TechnologyScanner, Proxy
+from rebase.skills.technology_scanner import TechnologyScanner, Proxy
 
 
 logger = getLogger(__name__)

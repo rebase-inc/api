@@ -1,6 +1,6 @@
 from __future__ import division
 from collections import defaultdict, namedtuple, Counter
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, tzinfo
 
 from builtins import map
 
@@ -104,13 +104,30 @@ class TechProfile(defaultdict):
             self[component].update(date_counters)
 
 
+ZERO = timedelta(0)
+
+
+class UTC(tzinfo):
+    def utcoffset(self, dt):
+        return ZERO
+
+    def tzname(self, dt):
+        return "UTC"
+
+    def dst(self, dt):
+        return ZERO
+
+
+utc = UTC()
+
+
 class DateCounter(Counter):
 
     @property
     def freshness(self):
         sorted_dates = sorted(self)
         learning_period = sorted_dates[-1] - sorted_dates[0] if len(self) > 1 else timedelta(days=1)
-        time_to_last_exposure = datetime.now(timezone.utc) - sorted_dates[-1]
+        time_to_last_exposure = datetime.now(utc) - sorted_dates[-1]
         return len(self)*learning_period/time_to_last_exposure
 
     @property

@@ -12,7 +12,7 @@ from rebase.cache.rq_jobs import invalidate
 from rebase.common.database import DB
 from rebase.common.debug import pdebug
 from rebase.github.api import RebaseGithub, RebaseGithubException
-from rebase.github.python import PythonScanner
+from rebase.skills.python import PythonScanner
 from rebase.github.session import create_admin_github_session
 from rebase.models import (
     Contractor,
