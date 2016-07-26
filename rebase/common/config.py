@@ -2,8 +2,6 @@ from datetime import timedelta
 import logging
 from os import environ
 
-from rebase.common.env import check
-
 
 class Config(object):
     DEBUG = False

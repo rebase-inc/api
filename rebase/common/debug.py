@@ -21,14 +21,16 @@ def dump_stack():
             logger.debug(_line)
 
 
-def setup_logging(logger):
+def setup_rsyslog():
     from rebase.common.config import Config
-    from logging import Formatter
+    from logging import getLogger, Formatter
     from logging.handlers import SysLogHandler
     conf = Config.BASIC_LOG_CONFIG
+    logger = getLogger()
     logger.setLevel(conf['level'])
     rsyslog = SysLogHandler(**Config.RSYSLOG_CONFIG)
     rsyslog.setFormatter(Formatter(conf['format']))
     logger.addHandler(rsyslog)
+    return logger
 
 
