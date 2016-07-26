@@ -11,8 +11,9 @@ from github import GithubException
 from rebase.cache.rq_jobs import invalidate
 from rebase.common.database import DB
 from rebase.common.debug import pdebug
+from rebase.datetime import time_to_epoch
 from rebase.github.api import RebaseGithub, RebaseGithubException
-from rebase.skills.python import PythonScanner
+from rebase.github.py2_py3_scanner import Py2Py3Scanner
 from rebase.github.session import create_admin_github_session
 from rebase.models import (
     Contractor,
@@ -104,13 +105,13 @@ def scan_one_commit_with_github(api, repo, commit):
                         decode(repo.get_file_contents(filename, commit.sha)),
                         decode(repo.get_git_blob(all_files_before_commit[filename])),
                         file.patch,
-                        commit.commit.author.date
+                        time_to_epoch(commit.commit.author.date)
                     ))
                 elif file.status == 'added':
                     technologies.add(scan_tech_in_contents(
                         filename,
                         decode(repo.get_file_contents(filename, commit.sha)),
-                        commit.commit.author.date
+                        time_to_epoch(commit.commit.author.date)
                     ))
                 else:
                     pdebug(file, 'No patch here')
@@ -166,7 +167,7 @@ class GithubAccountScanner(object):
         self.new_url_prefix = 'https://'+account.access_token+'@github.com'
         assert isdir(CLONED_REPOS_ROOT_DIR)
         self.scanners = {
-            'Python': PythonScanner(),
+            'Python': Py2Py3Scanner(),
         }
 
     def find_scanners(self, languages):
@@ -175,6 +176,10 @@ class GithubAccountScanner(object):
                 yield self.scanners[language]
             else:
                 continue
+
+    def close(self):
+        for scanner in self.scanners:
+            scanner.close()
 
     def scan_one_commit_on_disk(self, local_repo, commit):
         technologies = TechProfile()
@@ -201,7 +206,7 @@ class GithubAccountScanner(object):
                                 technologies.add(scanner.scan_contents(
                                     diff.b_path,
                                     local_commit.tree[diff.b_path].data_stream.read().decode(),
-                                    local_commit.authored_datetime
+                                    time_to_epoch(local_commit.authored_datetime)
                                 ))
                             else:
                                 technologies.add(scanner.scan_patch(
@@ -209,7 +214,7 @@ class GithubAccountScanner(object):
                                     local_commit.tree[diff.b_path].data_stream.read().decode(),
                                     local_commit.parents[0].tree[diff.a_path].data_stream.read().decode(),
                                     diff.diff.decode('UTF-8'),
-                                    local_commit.authored_datetime
+                                    time_to_epoch(local_commit.authored_datetime)
                                 ))
                         except SyntaxError as e:
                             logger.warning('Syntax error: %s', e)
@@ -228,7 +233,7 @@ class GithubAccountScanner(object):
                         technologies.add(scanner.scan_contents(
                             blob.name,
                             blob.data_stream.read().decode(),
-                            local_commit.authored_datetime
+                            time_to_epoch(local_commit.authored_datetime)
                         ))
                     except SyntaxError as e:
                         logger.warning('Syntax error: %s', e)

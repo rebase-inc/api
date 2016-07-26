@@ -7,7 +7,7 @@ from os.path import dirname, split
 
 from rebase.common.debug import pdebug
 from rebase.skills.tech_profile import TechProfile
-from rebase.skills.technology_scanner import TechnologyScanner, Proxy
+from rebase.skills.technology_scanner import TechnologyScanner
 
 
 logger = getLogger(__name__)
@@ -126,6 +126,13 @@ class PythonScanner(TechnologyScanner):
         return prefixes
 
     def scan_patch(self, filename, code, previous_code, patch, date):
+        '''
+            filename:  string identifying the 'code'
+            code: string containing the code to be analyzed
+            previous_code: string with the previous version of the code
+            patch: string with the corresponding diff between code and previous_code
+            date: string with ISO 8601 formatted date
+        '''
         prefixes = self.extract_prefixes(code, filename)
         # taken the original patch and remove:
         # - context lines
@@ -149,28 +156,5 @@ class PythonScanner(TechnologyScanner):
     def scan_contents(self, filename, code, date):
         prefixes = self.extract_prefixes(code, filename)
         return tech_exposure(code, prefixes, date)
-
-
-class Py2Scanner(Proxy):
-
-    def __init__(self):
-        super().__init__('/api/docker/rq_default/parse_python2.py')
-
-
-class Py2Py3Scanner(PythonScanner):
-
-    def __init__(self):
-        self.use_py2 = False
-        self.py2 = Py2Scanner()
-
-    def scan_patch(self, *args):
-        if self.use_py2:
-            return self.py2.scan_patch(*args)
-        return super().scan_patch(*args)
-
-    def scan_contents(self, filename, code, date):
-        if self.use_py2:
-            return self.py2.scan_contents(*args)
-        return super().scan_contents(*args)
 
 

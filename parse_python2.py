@@ -1,16 +1,20 @@
 #! /venv/rq_p2/bin/python
 
-
-from logging import Formatter, getLogger, DEBUG
-from logging.handlers import SysLogHandler
+from contextlib import contextmanager
+from functools import partial
+from inspect import getargspec
+from logging import getLogger
 from multiprocessing import current_process
 from signal import signal, SIGTERM, SIGQUIT, SIGINT
-from sys import argv, exit, stdin, stdout, stderr
+from sys import argv, exit
 from time import sleep
 
-from msgpack import unpackb
-
+from rebase.common.debug import setup_rsyslog
 from rebase.skills.python import PythonScanner
+from rebase.skills.technology_scanner import TechnologyScanner
+from rebase.subprocess import create_json_streaming_server
+from rebase.subprocess.exceptions import SubprocessException
+
 
 logger = getLogger()
 
@@ -28,9 +32,19 @@ class ParserException(Exception):
         )
 
 
-class MissingArguments(ParserException):
-    error_message = 'Missing arguments'
+class InvalidMessage(ParserException):
+    error_message = 'Invalid message'
     code = 1
+
+
+class InvalidMethod(ParserException):
+    error_message = 'Invalid method'
+    code = 2
+
+
+class InvalidMethodArguments(ParserException):
+    error_message = 'Invalid method arguments'
+    code = 3
 
 
 def quit(sig, frame):
@@ -38,21 +52,66 @@ def quit(sig, frame):
     exit(-sig)
 
 
-def main(argv):
+def validate_object(object_, methods):
+    if 'method' not in object_ or 'args' not in object_:
+        raise InvalidMethodCall()
+    method = object_['method']
+    if method not in methods:
+        raise InvalidMethod()
+    # +1 for self parameter
+    if len(object_['args'])+1 != methods[method]:
+        raise InvalidMethodArguments()
+
+
+scanner_methods = { fn.__name__: len(getargspec(fn)[0]) for fn in (TechnologyScanner.scan_contents, TechnologyScanner.scan_patch) }
+
+
+validate = partial(validate_object, methods=scanner_methods)
+
+
+def setup():
     signal(SIGTERM, quit)
     signal(SIGQUIT, quit)
     signal(SIGINT, quit)
     current_process().name = 'Python 2 Scanner'
-    logger.setLevel(DEBUG)
-    rsyslog = SysLogHandler(('rsyslog', 514))
-    rsyslog.setFormatter(Formatter('%(levelname)s {%(processName)s[%(process)d]} %(message)s'))
-    logger.addHandler(rsyslog)
-    logger.debug('Listening to stdin for messages.')
-    while True:
-        next_object_length = int(stdin.readline().strip('\n'))
-        #logger.debug('length: %d', next_object_length)
-        obj = unpackb(stdin.read(next_object_length))
-        logger.debug('object: %s', obj)
+    setup_rsyslog()
+    logger.debug('setup completed')
+
+
+def instance_method_call(instance, method_call):
+    validate(method_call)
+    return getattr(instance, method_call['method'])(*method_call['args'])
+
+python_scanner_call = partial(instance_method_call, PythonScanner())
+
+
+def handle_errors(exception_):
+    if isinstance(exception_, SyntaxError):
+        return (0, {
+            'filename': exception_.filename,
+            'lineno':   exception_.lineno,
+            'offset':   exception_.offset,
+            'text':     exception_.text
+        })
+    else:
+        return (1, str(exception_))
+
+
+@contextmanager
+def exit_on_error():
+    try:
+        yield
+    except SubprocessException as e:
+        logger.warning('%s', e)
+        exit(1)
+    else:
+        exit(0)
+
+def main(argv):
+    setup()
+    transport, protocol = create_json_streaming_server(argv[1])
+    with exit_on_error():
+        protocol.run_forever(python_scanner_call, handle_errors)
 
 
 if __name__ == '__main__':
