@@ -1,12 +1,20 @@
+from logging import getLogger
 from os import getpid, environ
 from subprocess import check_output, check_call, call
+
+
+logger = getLogger(__name__)
 
 
 TEST_DATABASE_PREFIX='rebase_test'
 DB_URL_PREFIX='postgresql://localhost'
 
 def all_databases():
-    output = check_output(['psql', '-lqt']).decode(encoding='UTF-8').splitlines()
+    try:
+        output = check_output(['psql', '-lqt']).decode(encoding='UTF-8').splitlines()
+    except Exception as e:
+        logger.debug('Caught exception: %s', e)
+        return []
     return map(lambda line: line.lstrip().partition(' ')[0], output)
 
 def all_test_databases():
