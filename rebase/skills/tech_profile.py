@@ -1,5 +1,5 @@
 from __future__ import division
-from builtins import map
+from builtins import bytes, map, super
 from collections import defaultdict, namedtuple, Counter
 from datetime import timedelta
 
@@ -66,8 +66,8 @@ class TechProfile(defaultdict):
 
     '''
 
-    def __init__(self):
-        self.default_factory = DateCounter
+    def __init__(self, *args, **kwargs):
+        super().__init__(DateCounter, *args, **kwargs)
 
     def __str__(self):
         return 'TechProfile(experience[{}], readiness[{}])'.format(self.experience, self.readiness)

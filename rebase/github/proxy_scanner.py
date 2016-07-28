@@ -13,16 +13,15 @@ def to_TechProfile_or_DateCounter(dct):
         JSON deserialization transforms dict keys into strings by default
         This rebuilds a TechProfile or a DateCounter from a dict
     '''
+    if not dct:
+        return TechProfile()
     if isinstance(next(iter(dct.values())), int):
         dc = DateCounter()
         for date, count in dct.items():
             dc[int(date)] = count
         return dc
     else:
-        tc = TechProfile()
-        for technology, counter in dct.items():
-            tc[technology] = counter
-        return tc
+        return TechProfile(dct)
 
 
 class Proxy(TechnologyScanner):
