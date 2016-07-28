@@ -16,7 +16,7 @@ class MessageIsTooBig(SubprocessException):
 
 
 class ClosedPipe(SubprocessException):
-    msg_fmt = 'process closed pipe with file descriptor: %d'
+    msg_fmt = 'process closed pipe with file descriptor: {}'
 
     def __init__(self, fd):
         self.fd = fd
