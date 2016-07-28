@@ -1,10 +1,28 @@
 from logging import getLogger
 
 from rebase.skills.technology_scanner import TechnologyScanner
+from rebase.skills.tech_profile import TechProfile, DateCounter
 from rebase.subprocess import create_json_streaming_subprocess
 
 
 logger = getLogger(__name__)
+
+
+def to_TechProfile_or_DateCounter(dct):
+    '''
+        JSON deserialization transforms dict keys into strings by default
+        This rebuilds a TechProfile or a DateCounter from a dict
+    '''
+    if isinstance(next(iter(dct.values())), int):
+        dc = DateCounter()
+        for date, count in dct.items():
+            dc[int(date)] = count
+        return dc
+    else:
+        tc = TechProfile()
+        for technology, counter in dct.items():
+            tc[technology] = counter
+        return tc
 
 
 class Proxy(TechnologyScanner):
@@ -13,7 +31,11 @@ class Proxy(TechnologyScanner):
     '''
 
     def __init__(self, executable_path, fifo_dir):
-        self.transport, self.protocol = create_json_streaming_subprocess(executable_path, fifo_dir)
+        self.transport, self.protocol = create_json_streaming_subprocess(
+            executable_path,
+            fifo_dir, 
+            loads_kwargs={ 'object_hook': to_TechProfile_or_DateCounter }
+        )
         self.scan_patch_call = {
             'method':   'scan_patch',
             'args':     None
