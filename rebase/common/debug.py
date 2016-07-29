@@ -1,9 +1,10 @@
 from logging import getLogger
 from pprint import pformat
+from sys import prefix, exec_prefix
 from traceback import format_stack
 
 
-logger = getLogger()
+logger = getLogger(__name__)
 
 
 def pdebug(thing, header=None):
@@ -31,6 +32,12 @@ def setup_rsyslog():
     rsyslog = SysLogHandler(**Config.RSYSLOG_CONFIG)
     rsyslog.setFormatter(Formatter(conf['format']))
     logger.addHandler(rsyslog)
+    return logger
+
+def setup_log_to_file(path):
+    from logging import FileHandler
+    logger = getLogger()
+    logger.addHandler(FileHandler(path))
     return logger
 
 

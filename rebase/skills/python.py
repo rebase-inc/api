@@ -1,9 +1,11 @@
 from ast import parse, walk, Import, ImportFrom
 from collections import defaultdict, Counter
+from copy import copy
 from datetime import datetime, timedelta
-from functools import wraps
 from logging import getLogger
 from os.path import dirname, split
+
+from six import iteritems
 
 from rebase.common.debug import pdebug
 from rebase.skills.tech_profile import TechProfile
@@ -61,9 +63,9 @@ def tech_exposure(code, prefixes, date):
     has introduced the key in the code
     '''
     exposure = TechProfile()
-    for component, keywords in prefixes.items():
+    for component, keywords in iteritems(prefixes):
         for prefix in keywords:
-            for line in code:
+            for line in code.splitlines():
                 if prefix in line:
                     exposure[component].update([date])
     #pdebug(exposure, 'Technology Exposure')
@@ -149,7 +151,7 @@ class PythonScanner(TechnologyScanner):
         total_exposure = TechProfile()
         # we can use 'update' here because keys for tech and language exposure don't overlap
         # otherwise, we would use 'add'
-        total_exposure.update(tech_exposure(reduced_patch, prefixes, date))
+        total_exposure.update(tech_exposure('\n'.join(reduced_patch), prefixes, date))
         total_exposure.update(self.language_exposure(code, previous_code, filename, date))
         return total_exposure
 
