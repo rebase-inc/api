@@ -29,12 +29,12 @@ def write(file_, object_, packb, max_len, fmt):
         raise MessageIsTooBig()
     packed_length = pack(fmt, length)
     data = packed_length+packed_object
-    logger.debug('Waiting for WRITE access on fd(%d)', fd)
+    logger.debug('Waiting for WRITE access to %s', file_.name)
     fd_, event = poll_.poll()[0]
     assert fd_ == fd
     log_event(event)
     if not bool(event & POLLOUT) and bool(event & POLLHUP):
-        raise ReadingProcessClosedPipe(fd)
+        raise ReadingProcessClosedPipe(file_.name)
     file_.write(data)
     file_.flush()
     poll_.unregister(fd)
@@ -50,12 +50,12 @@ def read(file_, unpackb, max_len, fmt):
     remaining = max_len
     packed_length = b''
     while True:
-        logger.debug('Waiting for READ access to fd(%d)', fd)
+        logger.debug('Waiting for READ access to %s', file_.name)
         fd_, event = poll_.poll()[0]
         assert fd == fd_
         log_event(event)
         if not bool(event & POLLIN) and bool(event & POLLHUP):
-            raise WritingProcessClosedPipe(fd)
+            raise WritingProcessClosedPipe(file_.name)
         received = file_.read(remaining)
         remaining -= len(received)
         packed_length += received
@@ -74,12 +74,12 @@ def read(file_, unpackb, max_len, fmt):
         if not remaining:
             break
         else:
-            logger.debug('Waiting for READ access to fd(%d)', fd)
+            logger.debug('Waiting for READ access to %s', file_.name)
             fd_, event = poll_.poll()[0]
             assert fd == fd_
             log_event(event)
             if not bool(event & POLLIN) and bool(event & POLLHUP):
-                raise WritingProcessClosedPipe(fd)
+                raise WritingProcessClosedPipe(file_.name)
     logger.debug('packed_object: %s', packed_object)
     poll_.unregister(fd)
     return unpackb(packed_object)

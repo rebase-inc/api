@@ -16,11 +16,11 @@ class MessageIsTooBig(SubprocessException):
 
 
 class ClosedPipe(SubprocessException):
-    msg_fmt = 'process closed pipe with file descriptor: {}'
+    msg_fmt = 'process closed pipe: {}'
 
-    def __init__(self, fd):
-        self.fd = fd
-        super().__init__(fd)
+    def __init__(self, file_name):
+        self.file_name = file_name
+        super().__init__(file_name)
 
 
 class ReadingProcessClosedPipe(ClosedPipe):
