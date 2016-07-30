@@ -42,12 +42,14 @@ crawler:
   extends:
     service: webserver
     file: docker/api-dev.yml
+  image: rebase/rq_default
   links:
    - rsyslog
    - redis
   volumes:
    - crawler:/crawler
-  command: ["/venv/api/bin/python", "crawler.py"]
+   - repos:/repos
+  command: ["/venv/rq/bin/python", "crawler.py"]
 
 app:
   image: rebase/client

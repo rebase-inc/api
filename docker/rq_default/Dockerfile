@@ -10,4 +10,4 @@ RUN pyvenv /venv/rq && \
     /venv/rq_p2/bin/pip install --upgrade pip && \
     /venv/rq_p2/bin/pip install -r /requirements_p2.txt
 WORKDIR /api
-ENTRYPOINT ["/venv/rq/bin/python", "run-worker.py"]
+CMD ["/venv/rq/bin/python", "run-worker.py"]

@@ -162,10 +162,10 @@ def count_languages(commit_count_by_language, unknown_extension_counter, filepat
 
 class GithubAccountScanner(object):
 
-    def __init__(self, account):
-        self.api = RebaseGithub(account.access_token)
-        self.login = account.github_user.login
-        self.new_url_prefix = 'https://'+account.access_token+'@github.com'
+    def __init__(self, access_token, login):
+        self.api = RebaseGithub(access_token)
+        self.login = login
+        self.new_url_prefix = 'https://'+access_token+'@github.com'
         assert isdir(CLONED_REPOS_ROOT_DIR)
         self.scanners = {
             'Python': Py2Py3Scanner(),
@@ -252,9 +252,7 @@ class GithubAccountScanner(object):
         unknown_extension_counter = Counter()
         technologies = TechProfile()
         from git import Repo
-        for repo in self.api.get_user().get_repos():
-            if repo.name != 'api':
-                continue
+        for repo in self.api.get_user(self.login).get_repos():
             logger.debug('processing repo %s', repo)
             repo_url = repo.clone_url
             oauth_url = repo_url.replace('https://github.com', self.new_url_prefix, 1)
@@ -282,7 +280,11 @@ class GithubAccountScanner(object):
 def detect_languages(account_id):
     # remember, we MUST pop this 'context' when we are done with this session
     github_session, context = create_admin_github_session(account_id)
-    commit_count_by_language, unknown_extension_counter, technologies = GithubAccountScanner(github_session.account).scan_all_repos()
+    account = github_session.account
+    commit_count_by_language, unknown_extension_counter, technologies = GithubAccountScanner(
+        account.access_token,
+        account.github_user.login
+    ).scan_all_repos()
     with open('/tmp/tech.json', 'w') as tech_f:
         tech_f.write(dumps(technologies))
     pdebug(str(technologies), 'Tech Profile')
