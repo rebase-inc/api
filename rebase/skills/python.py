@@ -81,7 +81,7 @@ class PythonScanner(TechnologyScanner):
             logger.debug('======== Syntax Error:  ========')
             for f in _syntax_error_fields:
                 logger.debug('{}: %s'.format(f), getattr(syntax_error, f))
-            pdebug(code, 'Code')
+            #pdebug(code, 'Code')
             raise syntax_error
 
     def language_use(self, code, filename, date):
