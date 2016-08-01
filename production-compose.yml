@@ -122,4 +122,4 @@ crawler:
   volumes:
    - crawler:/crawler
    - repos:/repos
-  command: ["/venv/api/bin/python", "crawler.py"]
+  command: ["/venv/rq/bin/python", "crawler.py"]
