@@ -1,5 +1,5 @@
 from datetime import timedelta
-import logging
+from logging import INFO
 from os import environ
 
 
@@ -26,8 +26,8 @@ class Config(object):
     REDIS_HOST = 'redis_1'
     CACHE_HOST = 'cache_1:5000'
     BASIC_LOG_CONFIG = {
-        'level':    logging.DEBUG,
-        'format':   '%(levelname)s {%(processName)s[%(process)d] %(threadName)s} %(message)s',
+        'level':    INFO,
+        'format':   '%(levelname)s {%(processName)s[%(process)d]} %(message)s',
     }
     RSYSLOG_CONFIG = {
         'address': ('rsyslog', 514),

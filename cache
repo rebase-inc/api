@@ -40,6 +40,9 @@ def main():
     current_process().name = 'Cache'
     current_thread().name = 'main'
     logger = setup_rsyslog()
+    rsyslog = logger.handlers[0]
+    # this format adds the thread name (cache is the only multithreaded component of our system)
+    rsyslog.setFormatter(Formatter('%(levelname)s {%(processName)s[%(process)d] %(threadName)s} %(message)s'))
     processes = dict()
     server = HTTPServer(('0.0.0.0', 5000), CacheHandler)
     _quit = partial(quit, server=server, processes=processes)
