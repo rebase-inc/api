@@ -30,6 +30,12 @@ function _vm() {
     env|sort|grep DOCKER
 }
 
+# remove unused containers and images to save space
+_cleanup(){
+    docker rm -v $(docker ps --filter status=exited -q 2>/dev/null) 2>/dev/null
+    docker rmi $(docker images --filter dangling=true -q 2>/dev/null) 2>/dev/null
+}
+
 function _shell() {
     docker exec -it api_web_1 /venv/api/bin/python manage shell
 }
