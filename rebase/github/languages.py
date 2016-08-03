@@ -256,7 +256,6 @@ class GithubAccountScanner(object):
             logger.info('processing repo %s', repo)
             repo_url = repo.clone_url
             oauth_url = repo_url.replace('https://github.com', self.new_url_prefix, 1)
-            logger.debug('oauth_url: %s', oauth_url)
             local_repo_dir = join(CLONED_REPOS_ROOT_DIR, repo.name)
             if isdir(local_repo_dir):
                 rmtree(local_repo_dir)
