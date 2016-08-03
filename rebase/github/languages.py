@@ -162,7 +162,11 @@ def count_languages(commit_count_by_language, unknown_extension_counter, filepat
 
 class GithubAccountScanner(object):
 
-    def __init__(self, access_token, login):
+    def __init__(self, access_token, login=None):
+        '''
+        login defaults to None to force Github api to use the authenticated user for the access token.
+        This is needed to scan all private repos (assuming scope of token is correct).
+        '''
         self.api = RebaseGithub(access_token)
         self.login = login
         self.new_url_prefix = 'https://'+access_token+'@github.com'
@@ -252,6 +256,10 @@ class GithubAccountScanner(object):
         unknown_extension_counter = Counter()
         technologies = TechProfile()
         from git import Repo
+        # Note: get_user returns 2 very differents objects depending on whether login is None or
+        # not. If login is None, it returns an AuthenticatedUser, otherwise, a NamedUser.
+        # get_repos() will then return all (public+private) repos for an AuthenticatedUser,
+        # but only public repos for a NamedUser, EVEN IF NamedUser is the actual owner of the access token and scope has private repos!
         for repo in self.api.get_user(self.login).get_repos():
             logger.info('processing repo %s', repo)
             repo_url = repo.clone_url
@@ -280,10 +288,12 @@ def detect_languages(account_id):
     # remember, we MUST pop this 'context' when we are done with this session
     github_session, context = create_admin_github_session(account_id)
     account = github_session.account
-    commit_count_by_language, unknown_extension_counter, technologies = GithubAccountScanner(
+    scanner = GithubAccountScanner(
         account.access_token,
         account.github_user.login
-    ).scan_all_repos()
+    )
+    commit_count_by_language, unknown_extension_counter, technologies = scanner.scan_all_repos()
+    logger.debug('detect_languages, oauth_scopes: %s', scanner.api.oauth_scopes)
     with open('/tmp/tech.json', 'w') as tech_f:
         tech_f.write(dumps(technologies))
     pdebug(str(technologies), 'Tech Profile')
