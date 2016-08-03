@@ -133,7 +133,7 @@ def scan_commits_with_github(api, login):
     unknown_extension_counter = Counter()
     technologies = TechProfile()
     for repo in api.get_user().get_repos():
-        logger.debug('processing repo %s', repo)
+        logger.warning('processing repo %s', repo)
         try:
             for commit in repo.get_commits(author=login):
                 _commit_count_by_language, _unknown_extensions, _technologies = scan_one_commit_with_github(api, repo, commit)
@@ -253,7 +253,7 @@ class GithubAccountScanner(object):
         technologies = TechProfile()
         from git import Repo
         for repo in self.api.get_user(self.login).get_repos():
-            logger.debug('processing repo %s', repo)
+            logger.info('processing repo %s', repo)
             repo_url = repo.clone_url
             oauth_url = repo_url.replace('https://github.com', self.new_url_prefix, 1)
             logger.debug('oauth_url: %s', oauth_url)
@@ -269,8 +269,8 @@ class GithubAccountScanner(object):
                     unknown_extension_counter.update(_unknown_extensions)
                     technologies.add(_technologies)
             except GithubException as e:
-                logger.debug('Caught Github Exception. Status: %d Data: %s', e.status, e.data)
-                logger.debug('Skipping repo: %s', repo.name)
+                logger.warning('Caught Github Exception. Status: %d Data: %s', e.status, e.data)
+                logger.warning('Skipping repo: %s', repo.name)
                 break
             # keep algo O(1) in space
             rmtree(local_repo_dir)
