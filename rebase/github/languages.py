@@ -162,12 +162,12 @@ def count_languages(commit_count_by_language, unknown_extension_counter, filepat
 
 class GithubAccountScanner(object):
 
-    def __init__(self, access_token, login=GithubObject.NotSet):
+    def __init__(self, access_token, login):
         '''
-        login defaults to None to force Github api to use the authenticated user for the access token.
-        This is needed to scan all private repos (assuming scope of token is correct).
+            'login' is the Github login for which the 'access_token' was generated.
         '''
         self.api = RebaseGithub(access_token)
+        # the authenticated user login:
         self.login = login
         self.new_url_prefix = 'https://'+access_token+'@github.com'
         assert isdir(CLONED_REPOS_ROOT_DIR)
@@ -186,12 +186,19 @@ class GithubAccountScanner(object):
         for scanner in self.scanners:
             scanner.close()
 
-    def scan_one_commit_on_disk(self, local_repo, commit):
+    def scan_one_commit_on_disk(self, repo_name, local_repo, commit):
         technologies = TechProfile()
         commit_count_by_language = Counter()
         unknown_extension_counter = Counter()
         local_commit = local_repo.commit(commit.sha)
-        pdebug(local_commit, 'local_commit')
+        pdebug(
+            {
+                'SHA1': local_commit.binsha.decode(local_commit.encoding),
+                'Author': local_commit.author,
+                'Message': local_commit.message
+            },
+            'Commit in repo: '+ repo_name
+        )
         if local_commit.parents:
             if len(local_commit.parents) > 1:
                 # merge commit, ignore it
@@ -251,7 +258,11 @@ class GithubAccountScanner(object):
 
         return commit_count_by_language, unknown_extension_counter, technologies
 
-    def scan_all_repos(self):
+    def scan_all_repos(self, login=GithubObject.NotSet):
+        '''
+            'login' is the account that will be scanned.
+            It may be a different login than the one provided with the access_token.
+        '''
         commit_count_by_language = Counter()
         unknown_extension_counter = Counter()
         technologies = TechProfile()
@@ -260,8 +271,8 @@ class GithubAccountScanner(object):
         # not. If login is None, it returns an AuthenticatedUser, otherwise, a NamedUser.
         # get_repos() will then return all (public+private) repos for an AuthenticatedUser,
         # but only public repos for a NamedUser, EVEN IF NamedUser is the actual owner of the access token and scope has private repos!
-        for repo in self.api.get_user(self.login).get_repos():
-            logger.info('processing repo %s', repo)
+        for repo in self.api.get_user(login).get_repos():
+            logger.info('processing repo: "%s"', repo.name)
             repo_url = repo.clone_url
             oauth_url = repo_url.replace('https://github.com', self.new_url_prefix, 1)
             local_repo_dir = join(CLONED_REPOS_ROOT_DIR, repo.name)
@@ -269,8 +280,8 @@ class GithubAccountScanner(object):
                 rmtree(local_repo_dir)
             local_repo = Repo.clone_from(oauth_url, local_repo_dir)
             try:
-                for commit in repo.get_commits(author=self.login):
-                    _commit_count_by_language, _unknown_extensions, _technologies = self.scan_one_commit_on_disk(local_repo, commit)
+                for commit in repo.get_commits(author=login if login != GithubObject.NotSet else self.login):
+                    _commit_count_by_language, _unknown_extensions, _technologies = self.scan_one_commit_on_disk(repo.name, local_repo, commit)
                     #pdebug(_technologies, '_technologies')
                     commit_count_by_language.update(_commit_count_by_language)
                     unknown_extension_counter.update(_unknown_extensions)
@@ -288,7 +299,7 @@ def detect_languages(account_id):
     # remember, we MUST pop this 'context' when we are done with this session
     github_session, context = create_admin_github_session(account_id)
     account = github_session.account
-    scanner = GithubAccountScanner(account.access_token)
+    scanner = GithubAccountScanner(account.access_token, account.github_user.login)
     commit_count_by_language, unknown_extension_counter, technologies = scanner.scan_all_repos()
     logger.debug('detect_languages, oauth_scopes: %s', scanner.api.oauth_scopes)
     with open('/tmp/tech.json', 'w') as tech_f:
