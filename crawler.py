@@ -7,6 +7,7 @@ from subprocess import check_output
 from sys import exit
 
 from rebase.common.debug import pdebug, setup_rsyslog
+from rebase.common.stopwatch import InfoElapsedTime
 from rebase.github.languages import GithubAccountScanner
 
 
@@ -44,19 +45,21 @@ def main():
     signal(SIGTERM, quit)
     signal(SIGQUIT, quit)
     setup_rsyslog()
-    logger.debug('Started crawler')
-    all_the_data = defaultdict(dict)
+    logger.info('Started crawler')
     for user_login in rebase_users:
-        commit_count_by_language, unknown_extension_counter, technologies = GithubAccountScanner(
-            'bf5547c0319871a085b42294d2e2abebf4e08f54',
-            user_login
-        ).scan_all_repos()
-        all_the_data[user_login]['commit_count_by_language'] = commit_count_by_language
-        all_the_data[user_login]['technologies'] = technologies
-        pdebug(all_the_data[user_login])
-    with open('/crawler/all_the_data', 'wb') as all_data_file:
-        dump(all_the_data, all_data_file)
-    logger.debug('Finished crawling')
+        user_data = dict()
+        start_msg = 'processing Github user: '+user_login
+        with InfoElapsedTime(start=start_msg, stop=start_msg+' took %f seconds'):
+            commit_count_by_language, unknown_extension_counter, technologies = GithubAccountScanner(
+                'bf5547c0319871a085b42294d2e2abebf4e08f54',
+                'rebase-dev'
+            ).scan_all_repos(login=user_login)
+            user_data['commit_count_by_language'] = commit_count_by_language
+            user_data['technologies'] = technologies
+            user_data['unknown_extension_counter'] = unknown_extension_counter
+            with open('/crawler/{}/data'.format(user_login), 'w') as f:
+                dump(user_data, f)
+    logger.info('Finished crawling')
     exit()
 
 
