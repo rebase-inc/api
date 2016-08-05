@@ -52,7 +52,7 @@ class RebaseRequester(Requester):
                          None,
                          None,
                          'PyGithub/Python',
-                         DEFAULT_PER_PAGE,
+                         100,
                          False)
 
     def _request_encode(self, request_method, *args, **kwargs):
