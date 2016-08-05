@@ -7,7 +7,7 @@ from os.path import splitext, join, isdir
 from shutil import rmtree
 from time import sleep
 
-from github import GithubException
+from github import GithubException, GithubObject
 
 from rebase.cache.rq_jobs import invalidate
 from rebase.common.database import DB
@@ -162,7 +162,7 @@ def count_languages(commit_count_by_language, unknown_extension_counter, filepat
 
 class GithubAccountScanner(object):
 
-    def __init__(self, access_token, login=None):
+    def __init__(self, access_token, login=GithubObject.NotSet):
         '''
         login defaults to None to force Github api to use the authenticated user for the access token.
         This is needed to scan all private repos (assuming scope of token is correct).
@@ -288,10 +288,7 @@ def detect_languages(account_id):
     # remember, we MUST pop this 'context' when we are done with this session
     github_session, context = create_admin_github_session(account_id)
     account = github_session.account
-    scanner = GithubAccountScanner(
-        account.access_token,
-        account.github_user.login
-    )
+    scanner = GithubAccountScanner(account.access_token)
     commit_count_by_language, unknown_extension_counter, technologies = scanner.scan_all_repos()
     logger.debug('detect_languages, oauth_scopes: %s', scanner.api.oauth_scopes)
     with open('/tmp/tech.json', 'w') as tech_f:
