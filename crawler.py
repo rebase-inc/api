@@ -1,6 +1,8 @@
 from collections import defaultdict
 from logging import getLogger, Formatter
 from multiprocessing import current_process
+from os import makedirs
+from os.path import isdir, join
 from pickle import dump
 from signal import signal, SIGINT, SIGTERM, SIGQUIT
 from subprocess import check_output
@@ -12,7 +14,12 @@ from rebase.github.languages import GithubAccountScanner
 
 
 logger = getLogger()
+
+
 current_process().name = 'crawler'
+
+
+DATA_ROOT = '/crawler'
 
 
 def quit(signal_number, frame):
@@ -24,7 +31,8 @@ rebase_users = [
     # Alex Gaynor (PyPy, etc.)
     #'alex',
     # Mike Bayer (SqlAlchemy)
-    'zzzeek',
+    #'zzzeek',
+    'rapha-opensource',
     #'kerseyi',
     #'alexpchin',
     #'gacpro',
@@ -57,7 +65,11 @@ def main():
             user_data['commit_count_by_language'] = commit_count_by_language
             user_data['technologies'] = technologies
             user_data['unknown_extension_counter'] = unknown_extension_counter
-            with open('/crawler/{}/data'.format(user_login), 'w') as f:
+            user_data_dir = join(DATA_ROOT, user_login)
+            user_data_path = join(user_data_dir, 'data')
+            if not isdir(user_data_dir):
+                makedirs(user_data_dir)
+            with open(user_data_path, 'wb') as f:
                 dump(user_data, f)
     logger.info('Finished crawling')
     exit()
