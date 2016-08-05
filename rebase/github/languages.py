@@ -193,7 +193,7 @@ class GithubAccountScanner(object):
         local_commit = local_repo.commit(commit.sha)
         pdebug(
             {
-                'SHA1': local_commit.binsha.decode(local_commit.encoding),
+                'SHA1': local_commit.binsha,
                 'Author': local_commit.author,
                 'Message': local_commit.message
             },
@@ -304,14 +304,14 @@ def detect_languages(account_id):
     logger.debug('detect_languages, oauth_scopes: %s', scanner.api.oauth_scopes)
     with open('/tmp/tech.json', 'w') as tech_f:
         tech_f.write(dumps(technologies))
-    pdebug(str(technologies), 'Tech Profile')
+    logger.info(str(technologies), 'Tech Profile')
     scale_skill = lambda number: (1 - (1 / (0.01*number + 1 ) ) )
     contractor = next(filter(lambda r: r.type == 'contractor', github_session.account.user.roles), None) or Contractor(github_session.acccount.user)
     contractor.skill_set.skills = { language: scale_skill(commits) for language, commits in commit_count_by_language.items() }
     github_session.account.remote_work_history.analyzing = False
     DB.session.commit()
     invalidate([(SkillSet, (contractor.skill_set.id,))])
-    pdebug(contractor.skill_set.skills, '{} Skills'.format(contractor))
+    logger.info(contractor.skill_set.skills, '{} Skills'.format(contractor))
     for extension, count in unknown_extension_counter.most_common():
         logger.warning('Unrecognized extension "{}" ({} occurrences)'.format(extension, count))
     # popping the context will close the current database connection.
