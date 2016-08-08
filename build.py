@@ -13,6 +13,7 @@ containers = {
     'client':       Container('rebase/client',          '../react-app'),
     'rq_dashboard': Container('rebase/rq_dashboard',    'docker/rq_dashboard'),
     'nginx':        Container('rebase/nginx',           'docker/nginx'),
+    'jupyter':      Container('rebase/jupyter',         'docker/jupyter'),
 }
 
 def docker_build(name, container):
