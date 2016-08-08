@@ -38,6 +38,19 @@ scheduler:
    - rsyslog
   command: ["/venv/api/bin/python", "scheduler.py"]
 
+jupyter:
+  extends:
+    service: webserver
+    file: docker/api-dev.yml
+  image: rebase/jupyter
+  links:
+   - rsyslog
+   - redis
+  ports:
+   - "8888:8888"
+  volumes:
+   - crawler:/crawler
+
 crawler:
   extends:
     service: webserver

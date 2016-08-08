@@ -123,3 +123,17 @@ crawler:
    - crawler:/crawler
    - repos:/repos
   command: ["/venv/rq/bin/python", "crawler.py"]
+
+jupyter:
+  extends:
+    service: webserver
+    file: docker/api-dev.yml
+  image: rebase/jupyter
+  links:
+   - rsyslog
+   - redis
+  ports:
+   - "8888:8888"
+  volumes:
+   - crawler:/crawler
+
