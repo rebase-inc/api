@@ -112,3 +112,15 @@ First you need to tunnel through to the Docker host.
 ssh -L 55555:localhost:4444 alpha
 ```
 [RQ Dashboard](http://localhost:55555)
+
+
+# Data Mining with Jupyter & Apache Spark
+## in development
+[Jupyter Dev](http://dev:8888)
+## in production
+First you need to tunnel through to the Docker host.
+```bash
+# assuming your SSH config has an 'alpha' Host defined...
+ssh -L 8888:localhost:8888 alpha
+```
+[Jupyter Production](http://localhost:8888)
