@@ -221,3 +221,7 @@ function _generate_certificate() {
 function _restart_web_workers() {
     docker exec -t api_web_1 kill -SIGHUP 1
 }
+
+function _redis() {
+    docker exec -it api_redis_1 redis-cli
+}

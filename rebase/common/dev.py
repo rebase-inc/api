@@ -22,4 +22,11 @@ GIT_SERVER_URL_PREFIX='ssh://git@dev:2222/'
 APP_URL='http://dev:3000'
 CODE2RESUME_URL='http://c2r:3001'
 
+CRAWLER_PUBLIC_REPOS_TOKENS = {
+    'Crawler 1': '553865b81fc7c79f92f854873f44e4cac71e9bae',
+    'Crawler 2': '79c3c30e27c93c1b7e1051bc3f34deb17a404fb0',
+    'Crawler 3': 'e71d1cfae0c037607d73bd1f9d075fac7a0d2219',
+    'Crawler 4': '218e823175e4760324a21a3a847aada9b8eb5184',
+}
+
 

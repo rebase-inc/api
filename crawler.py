@@ -1,25 +1,21 @@
-from collections import defaultdict
-from logging import getLogger, Formatter
+from logging import getLogger
 from multiprocessing import current_process
-from os import makedirs
-from os.path import isdir, join
-from pickle import dump
 from signal import signal, SIGINT, SIGTERM, SIGQUIT
-from subprocess import check_output
 from sys import exit
+from time import sleep
 
-from rebase.common.debug import pdebug, setup_rsyslog
-from rebase.common.stopwatch import InfoElapsedTime
-from rebase.github.languages import GithubAccountScanner
+from redis import StrictRedis
+
+from rebase.common.dev import CRAWLER_PUBLIC_REPOS_TOKENS
+from rebase.common.debug import setup_rsyslog
+from rebase.crawl.jobs import scan_user
+from rebase.features.rq import setup_rq
 
 
 logger = getLogger()
 
 
 current_process().name = 'crawler'
-
-
-DATA_ROOT = '/crawler'
 
 
 def quit(signal_number, frame):
@@ -29,9 +25,9 @@ def quit(signal_number, frame):
 rebase_users = [
     # famous python devs:
     # Alex Gaynor (PyPy, etc.)
-    #'alex',
+    'alex',
     # Mike Bayer (SqlAlchemy)
-    #'zzzeek',
+    'zzzeek',
     'rapha-opensource',
     #'kerseyi',
     #'alexpchin',
@@ -47,6 +43,8 @@ rebase_users = [
 
 # not a valid user: 'Toahniwalakshay'
 
+class Queues(object): pass
+
 
 def main():
     signal(SIGINT, quit)
@@ -54,23 +52,24 @@ def main():
     signal(SIGQUIT, quit)
     setup_rsyslog()
     logger.info('Started crawler')
-    for user_login in rebase_users:
-        user_data = dict()
-        start_msg = 'processing Github user: '+user_login
-        with InfoElapsedTime(start=start_msg, stop=start_msg+' took %f seconds'):
-            commit_count_by_language, unknown_extension_counter, technologies = GithubAccountScanner(
-                'bf5547c0319871a085b42294d2e2abebf4e08f54',
-                'rebase-dev'
-            ).scan_all_repos(login=user_login)
-            user_data['commit_count_by_language'] = commit_count_by_language
-            user_data['technologies'] = technologies
-            user_data['unknown_extension_counter'] = unknown_extension_counter
-            user_data_dir = join(DATA_ROOT, user_login)
-            user_data_path = join(user_data_dir, 'data')
-            if not isdir(user_data_dir):
-                makedirs(user_data_dir)
-            with open(user_data_path, 'wb') as f:
-                dump(user_data, f)
+    # load Github Personal Tokens
+    token_list = 'crawler_github_tokens'
+    redis = StrictRedis(host='redis')
+    redis.delete(token_list)
+    redis.lpush(token_list, *CRAWLER_PUBLIC_REPOS_TOKENS.values())
+    all_queues = Queues()
+    setup_rq(all_queues)
+    rq_default = all_queues.default_queue
+    all_jobs = [ rq_default.enqueue_call(func=scan_user, args=(user_login, token_list), timeout=7200) for user_login in rebase_users ]
+    jobs = all_jobs
+    while True:
+        sleep(60)
+        remaining_jobs = tuple(filter(lambda job: not bool(job.result), jobs))
+        logger.info('Crawling is %d%% complete', 100*((len(all_jobs) - len(remaining_jobs))//len(all_jobs)))
+        jobs = remaining_jobs
+        if not jobs:
+            break
+    redis.delete(token_list)
     logger.info('Finished crawling')
     exit()
 
