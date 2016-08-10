@@ -64,7 +64,7 @@ def main():
     jobs = all_jobs
     while True:
         sleep(60)
-        remaining_jobs = tuple(filter(lambda job: not bool(job.result), jobs))
+        remaining_jobs = tuple(filter(lambda job: not (job.is_finished or job.is_failed), jobs))
         logger.info('Crawling is %d%% complete', 100*((len(all_jobs) - len(remaining_jobs))//len(all_jobs)))
         jobs = remaining_jobs
         if not jobs:
