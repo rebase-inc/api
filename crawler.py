@@ -1,3 +1,4 @@
+from functools import partial
 from logging import getLogger
 from multiprocessing import current_process
 from signal import signal, SIGINT, SIGTERM, SIGQUIT
@@ -5,6 +6,7 @@ from sys import exit
 from time import sleep
 
 from redis import StrictRedis
+from rq.job import Job
 
 from rebase.common.dev import CRAWLER_PUBLIC_REPOS_TOKENS
 from rebase.common.debug import setup_rsyslog
@@ -18,16 +20,18 @@ logger = getLogger()
 current_process().name = 'crawler'
 
 
-def quit(signal_number, frame):
+def quit(signal_number, frame, jobs):
+    for job in jobs:
+        job.delete()
     exit()
 
 # from webflow:
 rebase_users = [
     # famous python devs:
     # Alex Gaynor (PyPy, etc.)
-    'alex',
+    #'alex',
     # Mike Bayer (SqlAlchemy)
-    'zzzeek',
+    #'zzzeek',
     'rapha-opensource',
     #'kerseyi',
     #'alexpchin',
@@ -47,6 +51,8 @@ class Queues(object): pass
 
 
 def main():
+    all_jobs = None
+    quit_ = partial(quit, jobs=all_jobs)
     signal(SIGINT, quit)
     signal(SIGTERM, quit)
     signal(SIGQUIT, quit)
@@ -64,7 +70,7 @@ def main():
     jobs = all_jobs
     while True:
         sleep(60)
-        remaining_jobs = tuple(filter(lambda job: not (job.is_finished or job.is_failed), jobs))
+        remaining_jobs = tuple(filter(lambda job: Job.exists(job.get_id(), connection=job.connection) and not (job.is_finished or job.is_failed), jobs))
         logger.info('Crawling is %d%% complete', 100*((len(all_jobs) - len(remaining_jobs))//len(all_jobs)))
         jobs = remaining_jobs
         if not jobs:
