@@ -1,8 +1,18 @@
-from builtins import super
-from collections import defaultdict, Counter
+from datetime import timedelta
+
+from rebase.datetime import utcnow_timestamp
 
 
-class TechProfile(defaultdict):
+def compress(profile):
+    '''
+        modifies 'profile' by translating all string keys into their corresponding
+        TechDictionary equivalents.
+        This massively reduces the profile footprint in memory.
+    '''
+    pass
+
+
+class TechProfileView(object):
     '''
     TechProfile gather metrics attempting to evaluate a developer's skill level.
     Obviously, this will always be somewhat incomplete, and not fool proof.
@@ -62,17 +72,50 @@ class TechProfile(defaultdict):
 
     '''
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(Counter, *args, **kwargs)
+    def __init__(self, profile):
+        self.profile = profile
 
-    def __reduce__(self):
-        ''' this allows pickle.dump/load to work. '''
-        return (TechProfile, tuple(), None, None, iter(self.items()))
+    def __str__(self):
+        return 'TechProfileView(experience[{}], readiness[{}])'.format(self.experience, self.readiness)
 
-    def add(self, exposure):
-        for component, date_counters in exposure.items():
-            assert date_counters
-            self[component].update(date_counters)
+    @property
+    def breadth(self):
+        return len(self.profile)
 
+    @property
+    def depth(self):
+        return sum(map(lambda date_counter: date_counter.depth, self.profile.values()))
+
+    @property
+    def experience(self):
+        return self.breadth * self.depth
+
+    @property
+    def freshness(self):
+        ''' freshness is average over all technologies '''
+        if len(self.profile) == 0:
+            return 0.0
+        return  sum(map(lambda date_counter: date_counter.freshness, self.profile.values()))/len(self.profile)
+
+    @property
+    def readiness(self):
+        return self.breadth * self.freshness
+
+
+class DateCounter(object):
+
+    def __init__(self, counter):
+        self.counter = counter
+
+    @property
+    def freshness(self):
+        sorted_dates = sorted(self.counter)
+        learning_period = sorted_dates[-1] - sorted_dates[0] if len(self.counter) > 1 else timedelta(days=1).total_seconds()
+        time_to_last_exposure = utcnow_timestamp() - sorted_dates[-1]
+        return len(self.counter)*learning_period/time_to_last_exposure
+
+    @property
+    def depth(self):
+        return sum(self.counter.values())
 
 
