@@ -12,6 +12,13 @@ from rebase.home.routes import register_home
 from rebase.features import install
 
 
+def basic_app():
+    app = Flask(__name__, static_url_path='')
+    app.config.from_object('rebase.common.config.Config')
+    app.config.from_envvar('APP_SETTINGS')
+    return app
+
+
 def create(routes=False):
     '''
     Use 'create' when you need an app to interact with the database
@@ -20,10 +27,7 @@ def create(routes=False):
     Note: calling 'create' resets the global variable 'rebase.common.database.DB',
     making it safe to use within an 'app context'.
     '''
-    app = Flask(__name__, static_url_path='')
-    app.config.from_object('rebase.common.config.Config')
-    app.config.from_envvar('APP_SETTINGS')
-
+    app = basic_app()
     install(app)
     DB.init_app(app)
     logger = getLogger()
