@@ -1,78 +1,68 @@
 from builtins import super
-from collections import defaultdict, Counter
+from collections import defaultdict
+
+
+class Exposure(object):
+
+    def __init__(self, first=0, last=0, total_reps=0):
+        self.first = first
+        self.last = last
+        self.total_reps = total_reps
+
+    def add(self, date, reps):
+        if (date < self.first) or (self.first == 0):
+            self.first = date
+        if date > self.last:
+            self.last = date
+        self.total_reps += reps
+
+    def merge(self, exposure):
+        if self.first == 0:
+            self.first = exposure.first
+        if self.last == 0:
+            self.last = exposure.last
+        if exposure.first < self.first:
+            self.first = exposure.first
+        if exposure.last > self.last:
+            self.last = exposure.last
+        self.total_reps += exposure.total_reps
 
 
 class TechProfile(defaultdict):
     '''
+
     TechProfile gather metrics attempting to evaluate a developer's skill level.
     Obviously, this will always be somewhat incomplete, and not fool proof.
     But the goal here is to get a good enough correlation that we can weed out
     most bad candidates or find out which areas people shine in.
-    
-    Metrics:  breadth & depth of knowledge, freshness.
-    Derived metrics: experience (breadth*depth), readiness (breadth*freshness)
-    As with most metrics, the number by itself is pretty useless.
-    It is more useful when used as comparison tool.
 
-    The basic element of comparison is the percentile in the population of developers.
-    Another type of comparison is against a given technology context.
-    From a client repository, we can run the same tech extraction code and determine
-    very finely the technologies used.
-    We can then compute the ranking of a set of devs precisely for these technologies,
-    allowing a more accurate matchmaking.
+    We measure:
 
-    Breadth:
-    Depth:
+    - language skills by parsing the AST of the code for all the possible grammar constructs.
+    - standard libraries knowledge (libraries managed with the language)
+    - ecosystem technologies (public libraries stored on package managers: PyPI, NPM, etc.)
+    - private technologies (the rest of libraries not the above two categories)
 
-    Freshness is a metrics that attempts to capture how fresh a particular piece of knowledge is
-    in the mind of a developer.
-    The higher the number, the better we estimate it will be able to remember completely a given fact.
-    This relates to notions of spaced repetition or spacing effect.
-    For the same given fact, between 2 different developers, which one is more likely to remember it?
-    This could be useful when looking for matches for a given client code base.
-    From it, we can extract the technologies they used with high resolution (function level or less),
-    and for each candidate, calculate an average freshness that is relevant only to these facts.
+    We do not measure (yet?):
 
-    Freshness = (number of repetitions)*(learning period)/(recall period)
-    
-    Number of repetitions:
-    it's the number of times one has had to express a fact in code.
-
-    Learning period:
-    it's the length of time one has been exposed to a given fact.
-    That would be the difference in time between the first time one has learnt a fact and the last time
-    one has had to express it in code.
-    If a fact has only been expressed once, we count that period as one day.
-
-    Recall period:
-    it's the time elapsed between now and the last time one expressed a fact.
-
-    Freshness of 0 means 'unknown'.
-    Freshness has no upper bound, although for a human, values have a practical upper bound in the sense
-    that one can hardly have expressed repeatedly a single fact in code, every second of his life.
-
-    Some examples to get a feel for freshness:
-
-    Assuming one has expressed that a fact once, 10 years ago, the freshness would be:
-    freshness = 1 * 1 / (10*365) = 0.0027.
-
-    Assuming one has expressed the same fact in code 3 times per day, 5 days a week, over the course of one month (4 weeks),
-    three months ago, we would have:
-    freshness = (3*5*4) * 30 / 90 = 2
+    Any contextual information about the nature of the problem being solved by the code (bioinformatics, rocketry, music, etc.)
 
     '''
 
     def __init__(self, *args, **kwargs):
-        super().__init__(Counter, *args, **kwargs)
+        super().__init__(Exposure, *args, **kwargs)
 
     def __reduce__(self):
         ''' this allows pickle.dump/load to work. '''
         return (TechProfile, tuple(), None, None, iter(self.items()))
 
-    def add(self, exposure):
-        for component, date_counters in exposure.items():
-            assert date_counters
-            self[component].update(date_counters)
+    def add(self, component, date, reps):
+        self[component].add(date, reps)
 
+    def merge(self, tech_profile):
+        assert isinstance(tech_profile, TechProfile)
+        for component, exposure in tech_profile.items():
+            assert exposure
+            self[component].merge(exposure)
 
 

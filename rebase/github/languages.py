@@ -101,7 +101,7 @@ def scan_one_commit_with_github(api, repo, commit):
                         e = Exception()
                         setattr(e, 'message', '{} not found in previous files'.format(filename))
                         raise e
-                    technologies.add(scan_tech_in_patch(
+                    technologies.merge(scan_tech_in_patch(
                         filename,
                         decode(repo.get_file_contents(filename, commit.sha)),
                         decode(repo.get_git_blob(all_files_before_commit[filename])),
@@ -109,7 +109,7 @@ def scan_one_commit_with_github(api, repo, commit):
                         time_to_epoch(commit.commit.author.date)
                     ))
                 elif file.status == 'added':
-                    technologies.add(scan_tech_in_contents(
+                    technologies.merge(scan_tech_in_contents(
                         filename,
                         decode(repo.get_file_contents(filename, commit.sha)),
                         time_to_epoch(commit.commit.author.date)
@@ -140,7 +140,7 @@ def scan_commits_with_github(api, login):
                 #pdebug(_technologies, '_technologies')
                 commit_count_by_language.update(_commit_count_by_language)
                 unknown_extension_counter.update(_unknown_extensions)
-                technologies.add(_technologies)
+                technologies.merge(_technologies)
         except GithubException as e:
             logger.debug('Caught Github Exception. Status: %d Data: %s', e.status, e.data)
             logger.debug('Skipping repo: %s', repo.name)
@@ -215,13 +215,13 @@ class GithubAccountScanner(object):
                     for scanner in self.find_scanners(languages):
                         try:
                             if diff.new_file:
-                                technologies.add(scanner.scan_contents(
+                                technologies.merge(scanner.scan_contents(
                                     diff.b_path,
                                     local_commit.tree[diff.b_path].data_stream.read().decode(),
                                     time_to_epoch(local_commit.authored_datetime)
                                 ))
                             else:
-                                technologies.add(scanner.scan_patch(
+                                technologies.merge(scanner.scan_patch(
                                     diff.b_path,
                                     local_commit.tree[diff.b_path].data_stream.read().decode(),
                                     local_commit.parents[0].tree[diff.a_path].data_stream.read().decode(),
@@ -242,7 +242,7 @@ class GithubAccountScanner(object):
                 languages = count_languages(commit_count_by_language, unknown_extension_counter, blob.name)
                 for scanner in self.find_scanners(languages):
                     try:
-                        technologies.add(scanner.scan_contents(
+                        technologies.merge(scanner.scan_contents(
                             blob.name,
                             blob.data_stream.read().decode(),
                             time_to_epoch(local_commit.authored_datetime)
@@ -285,7 +285,7 @@ class GithubAccountScanner(object):
                     #pdebug(_technologies, '_technologies')
                     commit_count_by_language.update(_commit_count_by_language)
                     unknown_extension_counter.update(_unknown_extensions)
-                    technologies.add(_technologies)
+                    technologies.merge(_technologies)
             except GithubException as e:
                 logger.warning('Caught Github Exception. Status: %d Data: %s', e.status, e.data)
                 logger.warning('Skipping repo: %s', repo.name)

@@ -48,8 +48,8 @@ jupyter:
    - redis
   ports:
    - "8888:8888"
-  volumes:
-   - crawler:/crawler
+  volumes_from:
+   - rq_default
 
 crawler:
   extends:
@@ -60,7 +60,6 @@ crawler:
    - rsyslog
    - redis
   volumes:
-   - crawler:/crawler
    - repos:/repos
   command: ["/venv/rq/bin/python", "crawler.py"]
 
@@ -116,6 +115,7 @@ rq_default:
   image: rebase/rq_default
   volumes:
    - repos:/repos
+   - crawler:/crawler
   links:
    - cache
    - database:db

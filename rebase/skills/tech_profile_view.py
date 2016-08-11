@@ -3,15 +3,6 @@ from datetime import timedelta
 from rebase.datetime import utcnow_timestamp
 
 
-def compress(profile):
-    '''
-        modifies 'profile' by translating all string keys into their corresponding
-        TechDictionary equivalents.
-        This massively reduces the profile footprint in memory.
-    '''
-    pass
-
-
 class TechProfileView(object):
     '''
     TechProfile gather metrics attempting to evaluate a developer's skill level.
@@ -84,7 +75,7 @@ class TechProfileView(object):
 
     @property
     def depth(self):
-        return sum(map(lambda date_counter: date_counter.depth, self.profile.values()))
+        return sum(map(lambda exposure: ExposureView(exposure).depth, self.profile.values()))
 
     @property
     def experience(self):
@@ -95,27 +86,29 @@ class TechProfileView(object):
         ''' freshness is average over all technologies '''
         if len(self.profile) == 0:
             return 0.0
-        return  sum(map(lambda date_counter: date_counter.freshness, self.profile.values()))/len(self.profile)
+        return  sum(map(lambda exposure: ExposureView(exposure).freshness, self.profile.values()))/len(self.profile)
 
     @property
     def readiness(self):
         return self.breadth * self.freshness
 
 
-class DateCounter(object):
+class ExposureView(object):
 
-    def __init__(self, counter):
-        self.counter = counter
+    def __init__(self, exposure):
+        self.exposure = exposure
 
     @property
     def freshness(self):
-        sorted_dates = sorted(self.counter)
-        learning_period = sorted_dates[-1] - sorted_dates[0] if len(self.counter) > 1 else timedelta(days=1).total_seconds()
-        time_to_last_exposure = utcnow_timestamp() - sorted_dates[-1]
-        return len(self.counter)*learning_period/time_to_last_exposure
+        day = timedelta(days=1).total_seconds()
+        learning_period = self.exposure.last - self.exposure.first
+        if learning_period < day:
+            learning_period = day
+        time_to_last_exposure = utcnow_timestamp() - self.exposure.last
+        return len(self.exposure.total_reps)*learning_period/time_to_last_exposure
 
     @property
     def depth(self):
-        return sum(self.counter.values())
+        return self.exposure.total_reps
 
 
