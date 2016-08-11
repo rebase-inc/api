@@ -11,6 +11,7 @@ from time import sleep
 
 from rebase.common.debug import setup_rsyslog
 from rebase.skills.python import PythonScanner
+from rebase.skills.tech_profile import ExposureEncoder
 from rebase.skills.technology_scanner import TechnologyScanner
 from rebase.subprocess import create_json_streaming_server
 from rebase.subprocess.exceptions import SubprocessException
@@ -45,7 +46,6 @@ class InvalidMethod(ParserException):
 class InvalidMethodArguments(ParserException):
     error_message = 'Invalid method arguments'
     code = 3
-
 
 def quit(sig, frame):
     logger.debug('Received signal: %s', sig)
@@ -109,7 +109,12 @@ def exit_on_error():
 
 def main(argv):
     setup()
-    transport, protocol = create_json_streaming_server(argv[1])
+    transport, protocol = create_json_streaming_server(
+        argv[1],
+        dumps_kwargs= {
+            'cls': ExposureEncoder
+        }
+    )
     with exit_on_error():
         protocol.run_forever(python_scanner_call, handle_errors)
 

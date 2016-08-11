@@ -1,5 +1,6 @@
 from builtins import super
 from collections import defaultdict
+from json import JSONEncoder
 
 
 class Exposure(object):
@@ -26,6 +27,14 @@ class Exposure(object):
         if exposure.last > self.last:
             self.last = exposure.last
         self.total_reps += exposure.total_reps
+
+
+class ExposureEncoder(JSONEncoder):
+
+    def default(self, obj):
+        if isinstance(obj, Exposure):
+            return obj.__dict__
+        return JSONEncoder.default(self, obj)
 
 
 class TechProfile(defaultdict):

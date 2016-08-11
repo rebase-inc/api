@@ -31,8 +31,8 @@ rebase_users = [
     # Alex Gaynor (PyPy, etc.)
     #'alex',
     # Mike Bayer (SqlAlchemy)
-    #'zzzeek',
-    'rapha-opensource',
+    'zzzeek',
+    #'rapha-opensource',
     #'kerseyi',
     #'alexpchin',
     #'gacpro',
