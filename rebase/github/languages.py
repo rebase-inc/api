@@ -12,6 +12,7 @@ from github import GithubException, GithubObject
 from rebase.cache.rq_jobs import invalidate
 from rebase.common.database import DB
 from rebase.common.debug import pdebug
+from rebase.common.retry import retry_on
 from rebase.datetime import time_to_epoch
 from rebase.github.api import RebaseGithub, RebaseGithubException
 from rebase.github.py2_py3_scanner import Py2Py3Scanner
@@ -258,6 +259,31 @@ class GithubAccountScanner(object):
 
         return commit_count_by_language, unknown_extension_counter, technologies
 
+    from git import GitCommandError
+    @retry_on(GitCommandError, 3)
+    def process_repo(self, repo, login, commit_count_by_language, unknown_extension_counter, technologies):
+        from git import Repo
+        logger.info('processing repo: "%s"', repo.name)
+        repo_url = repo.clone_url
+        oauth_url = repo_url.replace('https://github.com', self.new_url_prefix, 1)
+        local_repo_dir = join(CLONED_REPOS_ROOT_DIR, repo.name)
+        if isdir(local_repo_dir):
+            rmtree(local_repo_dir)
+        local_repo = Repo.clone_from(oauth_url, local_repo_dir)
+        try:
+            for commit in repo.get_commits(author=login if login != GithubObject.NotSet else self.login):
+                _commit_count_by_language, _unknown_extensions, _technologies = self.scan_one_commit_on_disk(repo.name, local_repo, commit)
+                #pdebug(_technologies, '_technologies')
+                commit_count_by_language.update(_commit_count_by_language)
+                unknown_extension_counter.update(_unknown_extensions)
+                technologies.merge(_technologies)
+        except GithubException as e:
+            logger.warning('Caught Github Exception. Status: %d Data: %s', e.status, e.data)
+            logger.warning('Skipping repo: %s', repo.name)
+            break
+        # keep algo O(1) in space
+        rmtree(local_repo_dir)
+
     def scan_all_repos(self, login=GithubObject.NotSet):
         '''
             'login' is the account that will be scanned.
@@ -266,32 +292,12 @@ class GithubAccountScanner(object):
         commit_count_by_language = Counter()
         unknown_extension_counter = Counter()
         technologies = TechProfile()
-        from git import Repo
         # Note: get_user returns 2 very differents objects depending on whether login is None or
         # not. If login is None, it returns an AuthenticatedUser, otherwise, a NamedUser.
         # get_repos() will then return all (public+private) repos for an AuthenticatedUser,
         # but only public repos for a NamedUser, EVEN IF NamedUser is the actual owner of the access token and scope has private repos!
         for repo in self.api.get_user(login).get_repos():
-            logger.info('processing repo: "%s"', repo.name)
-            repo_url = repo.clone_url
-            oauth_url = repo_url.replace('https://github.com', self.new_url_prefix, 1)
-            local_repo_dir = join(CLONED_REPOS_ROOT_DIR, repo.name)
-            if isdir(local_repo_dir):
-                rmtree(local_repo_dir)
-            local_repo = Repo.clone_from(oauth_url, local_repo_dir)
-            try:
-                for commit in repo.get_commits(author=login if login != GithubObject.NotSet else self.login):
-                    _commit_count_by_language, _unknown_extensions, _technologies = self.scan_one_commit_on_disk(repo.name, local_repo, commit)
-                    #pdebug(_technologies, '_technologies')
-                    commit_count_by_language.update(_commit_count_by_language)
-                    unknown_extension_counter.update(_unknown_extensions)
-                    technologies.merge(_technologies)
-            except GithubException as e:
-                logger.warning('Caught Github Exception. Status: %d Data: %s', e.status, e.data)
-                logger.warning('Skipping repo: %s', repo.name)
-                break
-            # keep algo O(1) in space
-            rmtree(local_repo_dir)
+            self.process_repo(repo, login, commit_count_by_language, unknown_extension_counter, technologies)
         return commit_count_by_language, unknown_extension_counter, technologies
 
 

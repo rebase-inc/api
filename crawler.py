@@ -29,10 +29,10 @@ def quit(signal_number, frame, jobs):
 rebase_users = [
     # famous python devs:
     # Alex Gaynor (PyPy, etc.)
-    #'alex',
+    'alex',
     # Mike Bayer (SqlAlchemy)
     'zzzeek',
-    #'rapha-opensource',
+    'rapha-opensource',
     #'kerseyi',
     #'alexpchin',
     #'gacpro',
