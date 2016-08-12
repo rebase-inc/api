@@ -120,8 +120,6 @@ crawler:
   links:
    - rsyslog
    - redis
-  volumes:
-   - repos:/repos
   command: ["/venv/rq/bin/python", "crawler.py"]
 
 jupyter:
