@@ -6,6 +6,20 @@ Background tasks are run with RQ which itself relies on Redis.
 All logs are centralized in the rsyslog container.
 
 
+# How To Connect To Our Production Server
+Add this snippet to your ~/.ssh/config file:
+```
+Host alpha
+Hostname alpha.rebaseapp.com
+User ubuntu
+Port 2222
+
+# for cloning/push to our git repositories:
+Host alpha-git
+Hostname alpha.rebaseapp.com
+User git
+```
+
 # Development
 ## getting up and running with Docker
 0. Install docker on your dev machine
