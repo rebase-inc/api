@@ -1,11 +1,13 @@
-common_env:
-  environment:
-    PYTHONHASHSEED: 2592602613
-    APP_SETTINGS: "/api/rebase/common/dev.py"
+version: '2'
+services:
+    common_env:
+      environment:
+        PYTHONHASHSEED: 2592602613
+        APP_SETTINGS: "/api/rebase/common/dev.py"
 
-webserver:
-  image: rebase/api
-  volumes:
-   - ..:/api
-  extends:
-    service: common_env
+    webserver:
+      image: rebase/api
+      volumes:
+       - ..:/api
+      extends:
+        service: common_env

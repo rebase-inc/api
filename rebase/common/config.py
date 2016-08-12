@@ -18,7 +18,7 @@ class Config(object):
     URL_PREFIX = '/api/v1'
     FINISH_WORK_BY = timedelta(days=7)
     AUCTION_EXPIRATION = timedelta(days=3)
-    SQLALCHEMY_DATABASE_URI = 'postgres://postgres:@db/postgres'
+    SQLALCHEMY_DATABASE_URI = 'postgres://postgres:@database/postgres'
     WORK_REPOS_HOST = 'rq_git_1'
     WORK_REPOS_ROOT = '/git'
     SSH_AUTHORIZED_KEYS = '/home/git/.ssh/authorized_keys'

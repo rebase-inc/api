@@ -1,15 +1,17 @@
-common_env:
-  environment:
-    APP_SETTINGS: "/api/rebase/common/pro.py"
-    GITHUB_APP_SECRET:
-    GITHUB_CODE2RESUME_SECRET:
-    NOTIFICATION_EMAIL_PASSWORD:
-    PYTHONHASHSEED:
-    SECRET_KEY:
+version: '2'
+services:
+    common_env:
+      environment:
+        APP_SETTINGS: "/api/rebase/common/pro.py"
+        GITHUB_APP_SECRET:
+        GITHUB_CODE2RESUME_SECRET:
+        NOTIFICATION_EMAIL_PASSWORD:
+        PYTHONHASHSEED:
+        SECRET_KEY:
 
-webserver:
-  image: rebase/api
-  volumes:
-   - ..:/api
-  extends:
-    service: common_env
+    webserver:
+      image: rebase/api
+      volumes:
+       - ..:/api
+      extends:
+        service: common_env

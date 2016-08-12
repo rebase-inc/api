@@ -1,144 +1,122 @@
-web:
-  extends:
-    service: webserver
-    file: docker/api-dev.yml
-  expose:
-   - "5000"
-  volumes:
-   - uploads:/uploads
-  links:
-   - database:db
-   - redis
-   - rsyslog
-  #stdin_open: true
-  #tty: true
-  #command: ["/venv/api/bin/python", "manage", "runserver", "-h", "0.0.0.0", "-p", "5000"]
-  command: ["/venv/api/bin/gunicorn", "-c", "/api/etc/gunicorn.dev.conf", "wsgi:app"]
+version: '2'
+volumes:
+    uploads: {}
+    git: {}
+    crawler: {}
+    sql: {}
+    log: {}
+    
+services:
+    web:
+      extends:
+        service: webserver
+        file: docker/api-dev.yml
+      expose:
+       - "5000"
+      volumes:
+       - uploads:/uploads
+      #stdin_open: true
+      #tty: true
+      #command: ["/venv/api/bin/python", "manage", "runserver", "-h", "0.0.0.0", "-p", "5000"]
+      command: ["/venv/api/bin/gunicorn", "-c", "/api/etc/gunicorn.dev.conf", "wsgi:app"]
 
-cache:
-  extends:
-    service: webserver
-    file: docker/api-dev.yml
-  expose:
-   - "5000"
-  links:
-   - database:db
-   - redis
-   - rsyslog
-  #stdin_open: true
-  #tty: true
-  command: ["/api/cache"]
+    cache:
+      extends:
+        service: webserver
+        file: docker/api-dev.yml
+      expose:
+       - "5000"
+      #stdin_open: true
+      #tty: true
+      command: ["/api/cache"]
 
-scheduler:
-  extends:
-    service: webserver
-    file: docker/api-dev.yml
-  links:
-   - database:db
-   - rsyslog
-  command: ["/venv/api/bin/python", "scheduler.py"]
+    scheduler:
+      extends:
+        service: webserver
+        file: docker/api-dev.yml
+      command: ["/venv/api/bin/python", "scheduler.py"]
 
-jupyter:
-  extends:
-    service: webserver
-    file: docker/api-dev.yml
-  image: rebase/jupyter
-  links:
-   - rsyslog
-   - redis
-  ports:
-   - "8888:8888"
-  volumes_from:
-   - rq_default
+    jupyter:
+      extends:
+        service: webserver
+        file: docker/api-dev.yml
+      image: rebase/jupyter
+      ports:
+       - "8888:8888"
+      volumes_from:
+       - rq_default
 
-crawler:
-  extends:
-    service: webserver
-    file: docker/api-dev.yml
-  image: rebase/rq_default
-  links:
-   - rsyslog
-   - redis
-  command: ["/venv/rq/bin/python", "crawler.py"]
+    crawler:
+      extends:
+        service: webserver
+        file: docker/api-dev.yml
+      image: rebase/rq_default
+      command: ["/venv/rq/bin/python", "crawler.py"]
 
-app:
-  image: rebase/client
-  environment:
-      REBASE_CLIENT_HOST: "dev"
-      REBASE_CLIENT_PORT: 3000
-  ports:
-   - "3000:3000"
-  volumes:
-   - ../react-app:/code
-  links:
-   - web
-  extends:
-    service: common_env
-    file: docker/api-dev.yml
+    app:
+      image: rebase/client
+      environment:
+          REBASE_CLIENT_HOST: "dev"
+          REBASE_CLIENT_PORT: 3000
+      ports:
+       - "3000:3000"
+      volumes:
+       - ../react-app:/code
+      extends:
+        service: common_env
+        file: docker/api-dev.yml
 
-code2resume:
-    image: rebase/client
-    environment:
-      REBASE_CLIENT_HOST: "dev"
-      REBASE_CLIENT_PORT: 3001
-    ports:
-     - "3001:3001"
-    volumes:
-     - ../react-app:/code
-    links:
-     - web
-    extends:
-      service: common_env
-      file: docker/api-dev.yml
-    command: ["/code/start", "code2resume"]
+    code2resume:
+        image: rebase/client
+        environment:
+          REBASE_CLIENT_HOST: "dev"
+          REBASE_CLIENT_PORT: 3001
+        ports:
+         - "3001:3001"
+        volumes:
+         - ../react-app:/code
+        extends:
+          service: common_env
+          file: docker/api-dev.yml
+        command: ["/code/start", "code2resume"]
 
-rq_git:
-  extends:
-    service: webserver
-    file: docker/api-dev.yml
-  image: rebase/rq_git
-  ports:
-   - "2222:22"
-  links:
-   - database:db
-   - redis
-   - rsyslog
-  volumes:
-   - git:/git
+    rq_git:
+      extends:
+        service: webserver
+        file: docker/api-dev.yml
+      image: rebase/rq_git
+      ports:
+       - "2222:22"
+      volumes:
+       - git:/git
 
-rq_default:
-  extends:
-    service: webserver
-    file: docker/api-dev.yml
-  image: rebase/rq_default
-  volumes:
-   - repos:/repos
-   - crawler:/crawler
-  links:
-   - cache
-   - database:db
-   - redis
-   - rsyslog
+    rq_default:
+      extends:
+        service: webserver
+        file: docker/api-dev.yml
+      image: rebase/rq_default
+      volumes:
+       - crawler:/crawler
+      tmpfs:
+       - /repos:rw,noexec,size=512m
 
-rq_dashboard:
-    image: rebase/rq_dashboard
-    links:
-     - redis
-    ports:
-     - "4444:4444"
+    rq_dashboard:
+        image: rebase/rq_dashboard
+        ports:
+         - "4444:4444"
 
-redis:
-  image: redis
-  restart: always
+    redis:
+      image: redis
+      restart: always
 
-database:
-  image: postgres
-  environment:
-    PGDATA: "/var/lib/postgresql/data/rebase"
-  volumes:
-   - sql:/var/lib/postgresql/data/rebase
+    database:
+      image: postgres
+      environment:
+        PGDATA: "/var/lib/postgresql/data/rebase"
+      volumes:
+       - sql:/var/lib/postgresql/data/rebase
 
-rsyslog:
-  image: rebase/rsyslog
-  volumes:
-   - log:/var/log
+    rsyslog:
+      image: rebase/rsyslog
+      volumes:
+       - log:/var/log

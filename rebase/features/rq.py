@@ -14,13 +14,7 @@ serial_queues = [git_queue]
 all_queues = parallel_queues+serial_queues
 
 def get_connection():
-    redis_url = environ.get('REDIS_PORT', '')
-    if not redis_url:
-        conn = Redis()
-    else:
-        url = urlparse(redis_url)
-        conn = Redis(host=url.hostname, port=url.port, db=0, password=url.password)
-    return conn
+    return Redis(host='redis')
 
 def setup_rq(app):
     conn = get_connection()
