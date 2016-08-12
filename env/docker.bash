@@ -36,6 +36,10 @@ _cleanup(){
     docker rmi $(docker images --filter dangling=true -q 2>/dev/null) 2>/dev/null
 }
 
+function _manage() {
+    docker exec -it api_web_1 /venv/api/bin/python manage $*
+}
+
 function _shell() {
     docker exec -it api_web_1 /venv/api/bin/python manage shell
 }
