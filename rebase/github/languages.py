@@ -12,7 +12,6 @@ from github import GithubException, GithubObject
 from rebase.cache.rq_jobs import invalidate
 from rebase.common.database import DB
 from rebase.common.debug import pdebug
-from rebase.common.retry import retry_on
 from rebase.datetime import time_to_epoch
 from rebase.github.api import RebaseGithub, RebaseGithubException
 from rebase.github.py2_py3_scanner import Py2Py3Scanner
@@ -259,8 +258,7 @@ class GithubAccountScanner(object):
 
         return commit_count_by_language, unknown_extension_counter, technologies
 
-    from git import GitCommandError
-    @retry_on(GitCommandError, 3)
+    
     def process_repo(self, repo, login, commit_count_by_language, unknown_extension_counter, technologies):
         from git import Repo
         logger.info('processing repo: "%s"', repo.name)
@@ -280,7 +278,6 @@ class GithubAccountScanner(object):
         except GithubException as e:
             logger.warning('Caught Github Exception. Status: %d Data: %s', e.status, e.data)
             logger.warning('Skipping repo: %s', repo.name)
-            break
         # keep algo O(1) in space
         rmtree(local_repo_dir)
 
