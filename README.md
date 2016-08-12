@@ -16,6 +16,23 @@ All logs are centralized in the rsyslog container.
 5. ```docker-compose pull```
 6. ```docker-compose up```
 
+# Initialize the database
+The first time the system is installed, whether in dev or production mode,
+we need to install a schema for our models.
+And, in the case of dev,
+
+## dev mode
+```
+. env/docker.bash
+_manage data create
+_manage data populate
+```
+
+## production mode
+```
+_manage data creat
+```
+
 ## How to update production after a UI change
 ```bash
 ssh alpha
