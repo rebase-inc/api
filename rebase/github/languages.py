@@ -1,12 +1,11 @@
 from base64 import b64decode
 from collections import defaultdict, Counter
-from datetime import datetime
 from json import dumps
 from logging import getLogger
 from os.path import splitext, join, isdir
 from shutil import rmtree
-from time import sleep
 
+from git import Repo
 from github import GithubException, GithubObject
 
 from rebase.cache.rq_jobs import invalidate
@@ -260,7 +259,6 @@ class GithubAccountScanner(object):
 
     
     def process_repo(self, repo, login, commit_count_by_language, unknown_extension_counter, technologies):
-        from git import Repo
         logger.info('processing repo: "%s"', repo.name)
         repo_url = repo.clone_url
         oauth_url = repo_url.replace('https://github.com', self.new_url_prefix, 1)

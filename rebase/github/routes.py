@@ -7,7 +7,7 @@ from flask.ext.login import login_required, current_user
 from rebase.common.database import DB
 from rebase.common.exceptions import NotFoundError
 from rebase.github import apps
-from rebase.github.languages import detect_languages
+
 from rebase.github.scanners import (
     import_github_repos,
     extract_repos_info,
@@ -34,7 +34,7 @@ def analyze_contractor_skills(github_account):
         remote_work_history.analyzing = True
         DB.session.add(remote_work_history)
         DB.session.commit()
-        current_app.default_queue.enqueue_call(func=detect_languages, args=(github_account.id,), timeout=3600 ) # timeout = 1h
+        current_app.default_queue.enqueue_call(func='rebase.github.languages.detect_languages', args=(github_account.id,), timeout=3600 ) # timeout = 1h
 
 
 def get_oauth_app_hostname(request):
@@ -139,7 +139,7 @@ def register_github_routes(app):
     @login_required
     def _analyze_skills():
         for account in current_user.github_accounts:
-            current_app.default_queue.enqueue(detect_languages, account.id)
+            current_app.default_queue.enqueue('rebase.github.languages.detect_languages', account.id)
         return jsonify({'status':'Skills detection started'})
 
 
