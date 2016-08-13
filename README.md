@@ -44,7 +44,8 @@ _manage data populate
 
 ## production mode
 ```
-_manage data creat
+. env/docker.bash
+_manage data create
 ```
 
 ## How to update production after a UI change
