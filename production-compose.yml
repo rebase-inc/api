@@ -1,12 +1,12 @@
 version: '2'
 volumes:
-    - uploads: {}
-    - www: {}
-    - git: {}
-    - sql: {}
-    - log: {}
-    - etc_letsencrypt: {}
-    - crawler: {}
+    crawler: {}
+    etc_letsencrypt: {}
+    git: {}
+    log: {}
+    sql: {}
+    uploads: {}
+    www: {}
 
 services:
     web:
@@ -66,6 +66,8 @@ services:
       image: rebase/rq_default
       volumes:
        - crawler:/crawler
+      tmpfs:
+       - /repos:rw,noexec,size=512m
 
     rq_dashboard:
         image: rebase/rq_dashboard

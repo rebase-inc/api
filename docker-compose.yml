@@ -1,10 +1,10 @@
 version: '2'
 volumes:
-    uploads: {}
-    git: {}
     crawler: {}
-    sql: {}
+    git: {}
     log: {}
+    sql: {}
+    uploads: {}
     
 services:
     web:
