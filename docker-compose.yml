@@ -98,7 +98,7 @@ services:
       volumes:
        - crawler:/crawler
       tmpfs:
-       - /repos:rw,noexec,size=512m
+       - /repos:rw,noexec,size=3g
 
     rq_dashboard:
         image: rebase/rq_dashboard
