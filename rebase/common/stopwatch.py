@@ -1,21 +1,22 @@
 from logging import getLogger
-from time import process_time
+from time import perf_counter
 
 
 logger = getLogger()
 
 
 class StopWatch(object):
-    def __init__(self):
+    def __init__(self, clock=perf_counter):
         self.elapsed = None
         self.start_time = None
+        self.clock = clock
 
     def __enter__(self):
-        self.start_time = process_time()
+        self.start_time = self.clock()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        end = process_time()
+        end = self.clock()
         self.elapsed = end - self.start_time
         return False
 
@@ -63,13 +64,12 @@ class LogElapsedTime(WhenDone):
 
     def __init__(self, log, start=None, stop=None):
         self.log = log
-        self.stop = stop if stop else DebugElapsedTime.stop
-        self.start = start if start!=None else DebugElapsedTime.start
+        self.stop = stop if stop else LogElapsedTime.stop
+        self.start = start if start else LogElapsedTime.start
         super().__init__()
 
     def on_start(self):
-        if self.start:
-            self.log(self.start)
+        self.log(self.start)
 
     def on_stop(self):
         self.log(self.stop, self.elapsed)
