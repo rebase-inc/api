@@ -2,7 +2,7 @@ from requests import get
 
 from rebase.common.database import DB
 from rebase.common.exceptions import InvalidGithubAccessToken
-from rebase.github import apps, oauth_app_from_github_account
+from rebase.github.oauth_apps import apps, oauth_app_from_github_account
 from rebase.models import GithubAccount, User
 
 

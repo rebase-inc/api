@@ -7,7 +7,7 @@ from flask import Flask, current_app
 from flask.ext.restful import Api
 
 from rebase.common.exceptions import errors
-from rebase.features import install
+from rebase.features.install import install
 
 
 logger = getLogger()

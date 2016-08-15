@@ -2,14 +2,9 @@ from logging import getLogger
 from os import environ
 
 from flask import Flask
-from flask.ext.restful import Api
-from flask.ext.sqlalchemy import SQLAlchemy
 
-from rebase.common.database import DB
-from rebase.common.exceptions import errors
 from rebase.common.env import check
 from rebase.home.routes import register_home
-from rebase.features import install
 
 
 def basic_app():
@@ -27,6 +22,10 @@ def create(routes=False):
     Note: calling 'create' resets the global variable 'rebase.common.database.DB',
     making it safe to use within an 'app context'.
     '''
+    from flask.ext.restful import Api
+    from rebase.common.database import DB
+    from rebase.common.exceptions import errors
+    from rebase.features.install import install
     app = basic_app()
     install(app)
     DB.init_app(app)

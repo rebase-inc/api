@@ -6,7 +6,7 @@ from flask.ext.login import login_required, current_user
 
 from rebase.common.database import DB
 from rebase.common.exceptions import NotFoundError
-from rebase.github import apps
+from rebase.github.oauth_apps import apps
 
 from rebase.github.scanners import (
     import_github_repos,

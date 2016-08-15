@@ -139,15 +139,6 @@ class Forbidden(ClientError):
     message=HTTP_STATUS_CODES[403]
 
 
-class MissingEnvironmentVariables(ServerError):
-    status=500
-    message='Missing Environment Variables'
-    error_message='Missing environment variables:\n{}\nDid you forget to run "source setup.sh" or "source test_setup.sh"?'
-
-    def __init__(self, missing):
-        super().__init__(message=self.error_message.format(missing))
-
-
 loaded_references = modules[__name__].__dict__.copy()
 exceptions = filter(lambda thing: isclass(thing) and issubclass(thing, RebaseError), loaded_references.values())
 
