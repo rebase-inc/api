@@ -156,3 +156,10 @@ First you need to tunnel through to the Docker host.
 ssh -L 8888:localhost:8888 alpha
 ```
 [Jupyter Production](http://localhost:8888)
+## How crawl a Github user's public repositories
+```
+from rebase.github.crawl import scan
+
+scan('alex')
+scan(['rapha-opensource', 'alex'])
+```
