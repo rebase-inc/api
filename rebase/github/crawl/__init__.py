@@ -2,6 +2,7 @@ from collections import Iterable
 from functools import partial
 from logging import getLogger
 from os import environ
+from pickle import load
 
 from github import Github
 from redis import StrictRedis
@@ -92,4 +93,12 @@ def scan(user_or_users):
         )
     return batch_id
 
+
+def read(user):
+    '''
+        'user' is the Github login.
+        Returns a dictionary with the following keys: ['unknown_extension_counter', 'technologies', 'commit_count_by_language'].
+    '''
+    with open('/crawler/{}/data'.format(user), 'rb') as f:
+        return load(f)
 
