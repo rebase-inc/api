@@ -27,3 +27,4 @@ APP_URL='https://alpha.rebaseapp.com'
 CODE2RESUME_URL='https://code2resume.rebaseapp.com'
 
 CRAWLER_USERNAME = 'rebase-crawler'
+CRAWLER_PASSWORD = environ['CRAWLER_PASSWORD']

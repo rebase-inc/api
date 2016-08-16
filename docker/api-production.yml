@@ -8,6 +8,7 @@ services:
         NOTIFICATION_EMAIL_PASSWORD:
         PYTHONHASHSEED:
         SECRET_KEY:
+        CRAWLER_PASSWORD:
 
     webserver:
       image: rebase/api
