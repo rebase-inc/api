@@ -10,7 +10,7 @@ from rq.job import Job
 
 from rebase.common.dev import CRAWLER_PUBLIC_REPOS_TOKENS
 from rebase.common.debug import setup_rsyslog
-from rebase.crawl.jobs import scan_user
+from rebase.github.crawl.jobs import scan_user
 from rebase.features.rq import setup_rq
 
 
