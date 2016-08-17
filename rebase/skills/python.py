@@ -1,5 +1,7 @@
 from ast import parse, walk, Import, ImportFrom
+import ast
 from collections import defaultdict
+from inspect import getmro
 from logging import getLogger
 from os.path import dirname, split
 
@@ -17,6 +19,21 @@ LANGUAGE_PREFIX = 'Python.'
 
 
 _syntax_error_fields = ('filename', 'lineno', 'offset', 'text')
+
+
+def language():
+    _language = set()
+    super_nodes = set()
+    prefix = 'Python.__language__.'
+    for name, node in ast.__dict__.items():
+        if isinstance(node, type) and issubclass(node, ast.AST):
+            _language.add(prefix+name)
+            mro = getmro(node)
+            if len(mro) > 3:
+                super_nodes.add(mro[1].__name__)
+    for n in super_nodes:
+        _language.remove(prefix+n)
+    return _language
 
 
 def split_dir(dir):
