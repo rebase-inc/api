@@ -1,3 +1,4 @@
+from functools import partialmethod
 from json import loads, dumps
 from logging import getLogger
 from socket import socket, SHUT_RDWR
@@ -10,10 +11,7 @@ from rebase.skills.technology_scanner import TechnologyScanner
 logger = getLogger(__name__)
 
 
-LANGUAGE_PREFIX = 'Python.'
-
-
-class JavascriptScanner(TechnologyScanner):
+class Client(TechnologyScanner):
 
     def __init__(self, host='localhost', port=7777):
         self.host = host
@@ -29,14 +27,12 @@ class JavascriptScanner(TechnologyScanner):
         self.write_stream.close()
         self.socket.close()
 
-    def scan_contents(self, filename, code, date):
-        self.write_stream.write(dumps([0, filename, code, date])+'\n')
+    def remote_procedure_call(self, method_number, *args):
+        self.write_stream.write(dumps([method_number, *args])+'\n')
         self.write_stream.flush()
         return loads(self.read_stream.readline())
 
-    def scan_patch(self, filename, code, previous_code, patch, date):
-        self.write_stream.write(dumps([0, filename, code, previous_code, date])+'\n')
-        self.write_stream.flush()
-        return load(self.read_stream)
+    scan_contents = partialmethod(remote_procedure_call, 0)
+    scan_patch = partialmethod(remote_procedure_call, 1)
 
 
