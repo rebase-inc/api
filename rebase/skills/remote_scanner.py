@@ -34,5 +34,6 @@ class Client(TechnologyScanner):
 
     scan_contents = partialmethod(remote_procedure_call, 0)
     scan_patch = partialmethod(remote_procedure_call, 1)
+    language = partialmethod(remote_procedure_call, 2)
 
 
