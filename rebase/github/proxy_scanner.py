@@ -1,22 +1,11 @@
 from logging import getLogger
 
 from rebase.skills.technology_scanner import TechnologyScanner
-from rebase.skills.tech_profile import TechProfile, Exposure
+from rebase.skills.tech_profile import TechProfile, Exposure, to_TechProfile_or_Exposure
 from rebase.subprocess import create_json_streaming_subprocess
 
 
 logger = getLogger(__name__)
-
-
-def to_TechProfile_or_Exposure(dct):
-    '''
-        JSON deserialization transforms dict keys into strings by default
-        This rebuilds a TechProfile or a Exposure from a dict
-    '''
-    if ('first' in dct) and ('last' in dct) and ('total_reps' in dct):
-        return Exposure(dct['first'], dct['last'], dct['total_reps'])
-    else:
-        return TechProfile(dct)
 
 
 class Proxy(TechnologyScanner):

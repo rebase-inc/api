@@ -75,3 +75,12 @@ class TechProfile(defaultdict):
             self[component].merge(exposure)
 
 
+def to_TechProfile_or_Exposure(dct):
+    '''
+        JSON deserialization transforms dict keys into strings by default
+        This rebuilds a TechProfile or a Exposure from a dict
+    '''
+    if ('first' in dct) and ('last' in dct) and ('total_reps' in dct):
+        return Exposure(dct['first'], dct['last'], dct['total_reps'])
+    else:
+        return TechProfile(dct)

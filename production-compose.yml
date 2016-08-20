@@ -49,6 +49,11 @@ services:
         file: docker/api-production.yml
       command: ["/code/init", "code2resume"]
 
+    javascript:
+        image: rebase/javascript
+        expose:
+            - "7777"
+
     rq_git:
       extends:
         service: webserver

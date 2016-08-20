@@ -19,6 +19,7 @@ from rebase.models import (
     Contractor,
     SkillSet,
 )
+from rebase.skills.remote_scanner import Client
 from rebase.skills.tech_profile import TechProfile
 
 
@@ -172,6 +173,7 @@ class GithubAccountScanner(object):
         assert isdir(CLONED_REPOS_ROOT_DIR)
         self.scanners = {
             'Python': Py2Py3Scanner(),
+            'Javascript': Client('javascript')
         }
 
     def find_scanners(self, languages):
