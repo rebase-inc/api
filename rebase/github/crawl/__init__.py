@@ -1,6 +1,7 @@
 from collections import Iterable
 from functools import partial
 from logging import getLogger
+from os.path import exists, join
 from pickle import load
 
 from redis import StrictRedis
@@ -63,6 +64,10 @@ def read(user):
         'user' is the Github login.
         Returns a dictionary with the following keys: ['unknown_extension_counter', 'technologies', 'commit_count_by_language'].
     '''
-    with open('/crawler/{}/data'.format(user), 'rb') as f:
+    user_dir = '/crawler/{}'.format(user)
+    public_data = join(user_dir, 'data')
+    private_data = join(user_dir, 'private')
+    path = private_data if exists(private_data) else public_data
+    with open(path, 'rb') as f:
         return load(f)
 
