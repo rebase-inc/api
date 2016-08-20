@@ -61,7 +61,7 @@ def count_languages(commit_count_by_language, unknown_extension_counter, filepat
     return languages
 
 
-class GithubAccountScanner(object):
+class AccountScanner(object):
 
     def __init__(self, access_token, login):
         '''

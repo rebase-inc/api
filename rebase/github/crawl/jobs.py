@@ -11,7 +11,7 @@ from rebase.app import basic_app
 from rebase.common.debug import pdebug
 from rebase.common.stopwatch import InfoElapsedTime
 from rebase.features.logger import setup_logger
-from rebase.github.languages import GithubAccountScanner
+from ..account_scanner import AccountScanner
 
 
 logger = getLogger(__name__)
@@ -66,7 +66,7 @@ def scan_user(user_login, batch_id=None):
     start_msg = 'processing Github user: '+user_login
     try:
         with InfoElapsedTime(start=start_msg, stop=start_msg+' took %f seconds'):
-            commit_count_by_language, unknown_extension_counter, technologies = GithubAccountScanner(
+            commit_count_by_language, unknown_extension_counter, technologies = AccountScanner(
                 token,
                 'rebase-dev'
             ).scan_all_repos(login=user_login)
