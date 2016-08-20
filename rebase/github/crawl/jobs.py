@@ -9,15 +9,13 @@ from github import Github
 
 from rebase.app import basic_app
 from rebase.common.debug import pdebug
-from rebase.common.stopwatch import InfoElapsedTime
 from rebase.features.logger import setup_logger
-from ..account_scanner import AccountScanner
+from ..account_scanner import scan_one_user
 
 
 logger = getLogger(__name__)
 
 
-DATA_ROOT = '/crawler'
 
 
 def create_personal_access_token(app=None):
@@ -47,6 +45,8 @@ def create_personal_access_token(app=None):
         onetime_password=fingerprint
     )
     register(authorization.delete)
+    global CRAWLER_USERNAME
+    CRAWLER_USERNAME = conf['CRAWLER_USERNAME']
     global CRAWLER_AUTHORIZATION
     CRAWLER_AUTHORIZATION = authorization
 
@@ -60,27 +60,7 @@ class NotAuthorizedYet(Exception):
 def scan_user(user_login, batch_id=None):
     if 'CRAWLER_AUTHORIZATION' not in globals():
         raise NotAuthorizedYet()
-    token = CRAWLER_AUTHORIZATION.token
-    logger.debug('scan_user: [%s, %s, %s]', user_login, token, batch_id)
-    user_data = dict()
-    start_msg = 'processing Github user: '+user_login
-    try:
-        with InfoElapsedTime(start=start_msg, stop=start_msg+' took %f seconds'):
-            commit_count_by_language, unknown_extension_counter, technologies = AccountScanner(
-                token,
-                'rebase-dev'
-            ).scan_all_repos(login=user_login)
-        user_data['commit_count_by_language'] = commit_count_by_language
-        user_data['technologies'] = technologies
-        user_data['unknown_extension_counter'] = unknown_extension_counter
-        user_data_dir = join(DATA_ROOT, user_login)
-        user_data_path = join(user_data_dir, 'data')
-        if not isdir(user_data_dir):
-            makedirs(user_data_dir)
-        with open(user_data_path, 'wb') as f:
-            dump(user_data, f)
-        return 'success'
-    except TimeoutError as timeout_error:
-        return str(timeout_error)
+    scan_one_user(CRAWLER_AUTHORIZATION.token, CRAWLER_USERNAME, user_login)
+
 
 

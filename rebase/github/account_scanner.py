@@ -1,12 +1,15 @@
 from collections import defaultdict, Counter
 from logging import getLogger
+from os import makedirs
 from os.path import splitext, join, isdir
+from pickle import dump
 from shutil import rmtree
 
 from git import Repo
-from github import GithubException, GithubObject
+from github import GithubException
 
 from rebase.common.debug import pdebug
+from rebase.common.stopwatch import InfoElapsedTime
 from rebase.datetime import time_to_epoch
 from rebase.github.api import RebaseGithub, RebaseGithubException
 from rebase.github.py2_py3_scanner import Py2Py3Scanner
@@ -47,6 +50,9 @@ for language, extension_list in _language_list.items():
 
 
 CLONED_REPOS_ROOT_DIR = '/repos'
+
+
+DATA_ROOT = '/crawler'
 
 
 def count_languages(commit_count_by_language, unknown_extension_counter, filepath):
@@ -170,7 +176,8 @@ class AccountScanner(object):
             rmtree(local_repo_dir)
         local_repo = Repo.clone_from(oauth_url, local_repo_dir)
         try:
-            for commit in repo.get_commits(author=login if login != GithubObject.NotSet else self.login):
+            kwargs = { 'author': login } if login else {}
+            for commit in repo.get_commits(**kwargs):
                 _commit_count_by_language, _unknown_extensions, _technologies = self.scan_one_commit_on_disk(repo.name, local_repo, commit)
                 #pdebug(_technologies, '_technologies')
                 commit_count_by_language.update(_commit_count_by_language)
@@ -182,7 +189,7 @@ class AccountScanner(object):
         # keep algo O(1) in space
         rmtree(local_repo_dir)
 
-    def scan_all_repos(self, login=GithubObject.NotSet):
+    def scan_all_repos(self, login=None):
         '''
             'login' is the account that will be scanned.
             It may be a different login than the one provided with the access_token.
@@ -194,8 +201,40 @@ class AccountScanner(object):
         # not. If login is None, it returns an AuthenticatedUser, otherwise, a NamedUser.
         # get_repos() will then return all (public+private) repos for an AuthenticatedUser,
         # but only public repos for a NamedUser, EVEN IF NamedUser is the actual owner of the access token and scope has private repos!
-        for repo in self.api.get_user(login).get_repos():
-            self.process_repo(repo, login, commit_count_by_language, unknown_extension_counter, technologies)
+        
+        # we use an 'args' array so we don't have to manipulate GithubObject.NotSet ...
+        args = [login] if login else []
+        scanned_user = self.api.get_user(*args)
+        logger.info('Scanning all repos for user: %s', scanned_user.login)
+        logger.debug('oauth_scopes: %s', self.api.oauth_scopes)
+        for repo in scanned_user.get_repos():
+            self.process_repo(repo, scanned_user.login, commit_count_by_language, unknown_extension_counter, technologies)
         return commit_count_by_language, unknown_extension_counter, technologies
 
 
+def scan_one_user(token, token_user, user_login=None):
+    user_data = dict()
+    scanned_user = user_login if user_login else token_user
+    start_msg = 'processing Github user: ' + scanned_user
+    try:
+        scanner = AccountScanner(token, token_user)
+        with InfoElapsedTime(start=start_msg, stop=start_msg+' took %f seconds'):
+            # this is bound to be very confusing:
+            # when scanning, user_login should be None for the Autenticated User
+            # so private scanning: token_user (guy logged in), user_login= None
+            # public scanning token_user=CRAWLER_USERNAME, user_login=<any user login>
+            commit_count_by_language, unknown_extension_counter, technologies = scanner.scan_all_repos(login=user_login)
+        user_data['commit_count_by_language'] = commit_count_by_language
+        user_data['technologies'] = technologies
+        user_data['unknown_extension_counter'] = unknown_extension_counter
+        user_data_dir = join(DATA_ROOT, scanned_user)
+        filename = 'data' if scanner.api.oauth_scopes == ['public_repo'] else 'private'
+        user_data_path = join(user_data_dir, filename)
+        if not isdir(user_data_dir):
+            makedirs(user_data_dir)
+        with open(user_data_path, 'wb') as f:
+            dump(user_data, f)
+        return user_data
+    except TimeoutError as timeout_error:
+        logger.ERROR('scan_one_user(%s, %s) %s', token_user, user_login, str(timeout_error))
+        return None
