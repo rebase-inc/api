@@ -2,6 +2,7 @@ from base64 import b64decode
 from collections import defaultdict, Counter
 from pickle import dump
 from logging import getLogger
+from os import makedirs
 from os.path import splitext, join, isdir
 from shutil import rmtree
 
@@ -305,7 +306,10 @@ def detect_languages(account_id):
     scanner = GithubAccountScanner(account.access_token, account.github_user.login)
     commit_count_by_language, unknown_extension_counter, technologies = scanner.scan_all_repos()
     logger.debug('detect_languages, oauth_scopes: %s', scanner.api.oauth_scopes)
-    with open('/crawler/{}/private'.format(account.github_user.login), 'wb') as f:
+    user_data_dir = '/crawler/{}'.format(account.github_user.login)
+    if not isdir(user_data_dir):
+        makedirs(user_data_dir)
+    with open(join(user_data_dir, 'private'), 'wb') as f:
         dump(technologies, f)
     logger.info(str(technologies), 'Tech Profile')
     scale_skill = lambda number: (1 - (1 / (0.01*number + 1 ) ) )
