@@ -19,12 +19,12 @@ class Config(object):
     FINISH_WORK_BY = timedelta(days=7)
     AUCTION_EXPIRATION = timedelta(days=3)
     SQLALCHEMY_DATABASE_URI = 'postgres://postgres:@database/postgres'
-    WORK_REPOS_HOST = 'rq_git_1'
+    WORK_REPOS_HOST = 'rq_git'
     WORK_REPOS_ROOT = '/git'
     SSH_AUTHORIZED_KEYS = '/home/git/.ssh/authorized_keys'
     UPLOAD_FOLDER = '/uploads'
-    REDIS_HOST = 'redis_1'
-    CACHE_HOST = 'cache_1:5000'
+    REDIS_HOST = 'redis'
+    CACHE_HOST = 'cache:5000'
     BASIC_LOG_CONFIG = {
         'level':    INFO,
         'format':   '%(levelname)s {%(processName)s[%(process)d]} %(message)s',
