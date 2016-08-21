@@ -46,13 +46,6 @@ services:
       volumes_from:
        - rq_default
 
-    crawler:
-      extends:
-        service: webserver
-        file: docker/api-dev.yml
-      image: rebase/rq_default
-      command: ["/venv/rq/bin/python", "crawler.py"]
-
     app:
       image: rebase/client
       environment:

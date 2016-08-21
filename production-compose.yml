@@ -104,13 +104,6 @@ services:
       volumes:
        - log:/var/log
 
-    crawler:
-      extends:
-        service: webserver
-        file: docker/api-production.yml
-      image: rebase/rq_default
-      command: ["/venv/rq/bin/python", "crawler.py"]
-
     jupyter:
       extends:
         service: webserver
