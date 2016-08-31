@@ -53,6 +53,10 @@ services:
         image: rebase/javascript
         expose:
             - "7777"
+    parser:
+        image: rebase/parser-production
+        expose:
+            - "1111"
 
     rq_git:
       extends:

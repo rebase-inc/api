@@ -78,6 +78,13 @@ services:
         expose:
             - "7777"
 
+    parser:
+        image: rebase/parser
+        expose:
+            - "1111"
+        volumes:
+            - ../parser:/parser
+
     rq_git:
       extends:
         service: webserver
