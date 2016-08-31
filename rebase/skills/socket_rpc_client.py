@@ -32,7 +32,7 @@ class SocketRPCClient(object):
         )
         self.write_stream.write('\n')
         self.write_stream.flush()
-        return loads(self.read_stream.readline(), **(dumps_kw if dumps_kw else dict()))
+        return loads(self.read_stream.readline(), **(loads_kw if loads_kw else dict()))
 
 
 def method(id_):
