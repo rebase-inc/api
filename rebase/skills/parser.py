@@ -22,7 +22,7 @@ class Client(SocketRPCClient):
 
 class Parser(TechnologyScanner):
 
-    def __init__(self, language, host='localhost', port=1111):
+    def __init__(self, language, host='parser', port=1111):
         self.client = Client(host, port)
         self.languages_ = self.client.languages()
         if language not in self.languages_:

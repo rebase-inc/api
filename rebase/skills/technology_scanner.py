@@ -1,5 +1,9 @@
 from builtins import object
 
+from six import iteritems
+
+from rebase.skills.tech_profile import TechProfile
+
 
 class TechnologyScanner(object):
 
@@ -9,7 +13,7 @@ class TechnologyScanner(object):
     def grammar_use(self, code, date):
         raise NotImplemented('Abstract method TechnologyScanner.grammar_use')
 
-    def libraries_profile(code, library_bindings, date):
+    def libraries_profile(self, code, library_bindings, date):
         '''
             Return a TechProfile object for libraries from 'code'.
         '''
@@ -22,7 +26,7 @@ class TechnologyScanner(object):
         #pdebug(profile, 'Libraries profile')
         return profile
 
-    def language_profile(new_code, old_code, filename, date):
+    def language_profile(self, new_code, old_code, filename, date):
         new_grammar_use = self.grammar_use(new_code, date)
         if not old_code:
             return new_grammar_use
@@ -41,7 +45,10 @@ class TechnologyScanner(object):
         '''
             Return a TechProfile object for 'code'
         '''
-        raise NotImplemented('Abstract method TechnologyScanner.scan_contents')
+        library_bindings = self.extract_library_bindings(code, filename)
+        complete_profile = self.libraries_profile(code, library_bindings, date)
+        complete_profile.merge(self.language_profile(code, '', filename, date))
+        return complete_profile
 
     def scan_patch(self, filename, code, previous_code, patch, date):
         '''
@@ -60,8 +67,8 @@ class TechnologyScanner(object):
                         continue
                     reduced_patch.append(line)
         library_bindings = self.extract_library_bindings(code, filename)
-        complete_profile = libraries_profile('\n'.join(reduced_patch), library_bindings, date)
-        complete_profile.merge(language_profile(code, previous_code, filename, date))
+        complete_profile = self.libraries_profile('\n'.join(reduced_patch), library_bindings, date)
+        complete_profile.merge(self.language_profile(code, previous_code, filename, date))
         return complete_profile
 
 

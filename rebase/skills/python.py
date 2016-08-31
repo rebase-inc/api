@@ -5,8 +5,6 @@ from inspect import getmro
 from logging import getLogger
 from os.path import dirname, split
 
-from six import iteritems
-
 from rebase.common.debug import pdebug
 from rebase.skills.tech_profile import TechProfile
 from rebase.skills.technology_scanner import TechnologyScanner

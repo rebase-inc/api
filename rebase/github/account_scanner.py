@@ -14,6 +14,7 @@ from rebase.datetime import time_to_epoch
 from rebase.github.api import RebaseGithub, RebaseGithubException
 from rebase.github.py2_py3_scanner import Py2Py3Scanner
 from rebase.skills.remote_scanner import Client
+from rebase.skills.parser import Parser
 from rebase.skills.tech_profile import TechProfile
 
 
@@ -28,8 +29,12 @@ _language_list = {
     'C++':      ('.cc', '.cxx', '.c++', '.cpp', '.hh', '.hxx', '.h++', '.hpp', '.h'),
     'Java':     ('.java',),
     'ObjectiveC': ('.m', '.mm', '.h'),
-    'JavaScript': ('.js', '.jsx'),
-    'Clojure':  ('.clj',)
+    'Javascript': ('.js', '.jsx'),
+    'Clojure':  ('.clj',),
+    'Swift':    ('.swift',),
+    'Lua':      ('.lua',),
+    'Scala':    ('.scala', '.sc'),
+    'Go':       ('.go',),
 }
 
 
@@ -80,7 +85,15 @@ class AccountScanner(object):
         assert isdir(CLONED_REPOS_ROOT_DIR)
         self.scanners = {
             'Python': Py2Py3Scanner(),
-            'Javascript': Client('javascript')
+            'Javascript': Client(host='javascript'),
+            'C':        Parser('c'),
+            'C++':      Parser('cpp'),
+            'Clojure':  Parser('clojure'),
+            'Java':     Parser('java8'),
+            'Scala':    Parser('scala'),
+            'Go':       Parser('golang'),
+            'Lua':      Parser('lua'),
+            'Swift':    Parser('swift'),
         }
 
     def find_scanners(self, languages):
