@@ -15,9 +15,9 @@ class Client(SocketRPCClient):
 
     grammar_rules = method(1) 
 
-    grammar_use = method(2)
+    scan_contents = method(2)
 
-    extract_library_bindings = method(3)
+    scan_patch = method(3)
 
 
 class Parser(TechnologyScanner):
@@ -30,20 +30,18 @@ class Parser(TechnologyScanner):
         self.language = language
         self.language_index = self.languages_.index(self.language)
 
-    def extract_library_bindings(self, code, filename):
-        return self.client.extract_library_bindings(self.language_index, code, filename)
-
     def languages(self):
         return self.client.languages()
 
     def grammar_rules(self):
         return self.client.grammar_rules(self.language_index)
 
-    def grammar_use(self, code, date):
-        use = self.client.grammar_use(self.language_index, code)
+    def scan_contents(self, filename, code, date):
+        use = self.client.scan_contents(self.language_index, code)
         return TechProfile({ rule: Exposure(date, date, reps) for rule, reps in use.items() })
 
-    def extract_library_bindings(self, code, filename):
-        return self.client.extract_library_bindings(self.language_index, code, filename)
+    def scan_patch(self, filename, code, previous_code, patch, date):
+        use = self.client.scan_patch(self.language_index, code, previous_code, patch)
+        return TechProfile({ rule: Exposure(date, date, reps) for rule, reps in use.items() })
 
 
