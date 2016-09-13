@@ -29,7 +29,8 @@ _language_list = {
     'C++':      ('.cc', '.cxx', '.c++', '.cpp', '.hh', '.hxx', '.h++', '.hpp', '.h'),
     'Java':     ('.java',),
     'ObjectiveC': ('.m', '.mm', '.h'),
-    'Javascript': ('.js', '.jsx'),
+    'Javascript': ('.js',),
+    'JSX':      ('.jsx',),
     'Clojure':  ('.clj',),
     'Swift':    ('.swift',),
     'Lua':      ('.lua',),
@@ -84,16 +85,18 @@ class AccountScanner(object):
         self.new_url_prefix = 'https://'+access_token+'@github.com'
         assert isdir(CLONED_REPOS_ROOT_DIR)
         self.scanners = {
-            'Python': Py2Py3Scanner(),
-            'Javascript': Client(host='javascript'),
-            'C':        Parser('c'),
-            'C++':      Parser('cpp'),
-            'Clojure':  Parser('clojure'),
-            'Java':     Parser('java8'),
-            'Scala':    Parser('scala'),
-            'Go':       Parser('golang'),
-            'Lua':      Parser('lua'),
-            'Swift':    Parser('swift'),
+
+            'Python':       Py2Py3Scanner(),
+            'Javascript':   Client(host='javascript'),
+            'Java':         Parser('java8'),
+
+            #'C':        Parser('c'),
+            #'C++':      Parser('cpp'),
+            #'Clojure':  Parser('clojure'),
+            #'Scala':    Parser('scala'),
+            #'Go':       Parser('golang'),
+            #'Lua':      Parser('lua'),
+            #'Swift':    Parser('swift'),
         }
 
     def find_scanners(self, languages):
