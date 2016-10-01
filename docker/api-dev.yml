@@ -4,6 +4,7 @@ services:
       environment:
         PYTHONHASHSEED: 2592602613
         APP_SETTINGS: "/api/rebase/common/dev.py"
+        S3_BUCKET:
 
     webserver:
       image: rebase/api
