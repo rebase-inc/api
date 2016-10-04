@@ -4,6 +4,8 @@ from datetime import datetime, timedelta, tzinfo
 
 ZERO = timedelta(0)
 
+DAY_SECONDS = timedelta(days=1).total_seconds()
+
 
 class UTC(tzinfo):
     def utcoffset(self, dt):

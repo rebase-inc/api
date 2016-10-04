@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from rebase.datetime import utcnow_timestamp
+from rebase.datetime import utcnow_timestamp, DAY_SECONDS
 
 
 class TechProfileView(object):
@@ -101,10 +101,9 @@ class ExposureView(object):
 
     @property
     def freshness(self):
-        day = timedelta(days=1).total_seconds()
         learning_period = self.exposure.last - self.exposure.first
-        if learning_period < day:
-            learning_period = day
+        if learning_period < DAY_SECONDS:
+            learning_period = DAY_SECONDS
         time_to_last_exposure = utcnow_timestamp() - self.exposure.last
         return self.exposure.total_reps*learning_period/time_to_last_exposure
 

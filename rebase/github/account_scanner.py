@@ -8,7 +8,7 @@ from shutil import rmtree
 from git import Repo
 from github import GithubException
 
-from rebase.common.aws import s3
+from rebase.common.aws import exists, s3, wait_till_exists
 from rebase.common.debug import pdebug
 from rebase.common.settings import config
 from rebase.common.stopwatch import InfoElapsedTime
@@ -240,6 +240,15 @@ class AccountScanner(object):
 
 def save(data, user):
     key = 'user-profiles/{user}/data'.format(user=user)
+    # save the previous data, so we later retrieve it and remove it from the rankings
+    old_data_key = key+'_old'
+    if exists(bucket, key):
+        old_s3_object = s3.Object(bucket, old_data_key)
+        old_s3_object.copy_from(CopySource={
+            'Bucket': bucket,
+            'Key': key
+        })
+        wait_till_exists(bucket, key)
     s3_object = s3.Object(bucket, key)
     s3_object.put(Body=dumps(data))
     return key
@@ -263,7 +272,7 @@ def scan_one_user(token, token_user, user_login=None):
         user_data['metrics'] = measure(technologies)
         user_data_key = save(user_data, scanned_user)
         POPULATION.enqueue_call(
-            func='rebase.skills.population.update',
+            func='rebase.skills.population.update_rankings',
             args=(user_data_key, scanned_user),
             timeout=3600
         )
