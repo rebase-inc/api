@@ -3,6 +3,7 @@ services:
     common_env:
       environment:
         APP_SETTINGS: "/api/rebase/common/pro.py"
+        S3_BUCKET: "com.joinrebase.data.production"
         GITHUB_APP_SECRET:
         GITHUB_CODE2RESUME_SECRET:
         NOTIFICATION_EMAIL_PASSWORD:

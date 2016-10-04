@@ -6,11 +6,13 @@ from rq import Queue
 
 git_queue = 'git'
 
+population_queue = 'population'
+
 # Parallel queues support multiple workers pulling tasks from the same queue
 # Serial queues are guaranteed to have only one worker per queue.
 
 parallel_queues = ['high', 'default', 'low']
-serial_queues = [git_queue]
+serial_queues = [git_queue, population_queue]
 all_queues = parallel_queues+serial_queues
 
 def get_connection():

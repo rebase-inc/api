@@ -2,20 +2,24 @@ from collections import defaultdict, Counter
 from logging import getLogger
 from os import makedirs
 from os.path import splitext, join, isdir
-from pickle import dump
+from pickle import dump, dumps
 from shutil import rmtree
 
 from git import Repo
 from github import GithubException
 
+from rebase.common.aws import exists, s3, wait_till_exists
 from rebase.common.debug import pdebug
+from rebase.common.settings import config
 from rebase.common.stopwatch import InfoElapsedTime
 from rebase.datetime import time_to_epoch
+from rebase.features.rq import setup_rq
 from rebase.github.api import RebaseGithub, RebaseGithubException
 from rebase.github.py2_py3_scanner import Py2Py3Scanner
 from rebase.skills.remote_scanner import Client
 from rebase.skills.parser import Parser
 from rebase.skills.tech_profile import TechProfile
+from rebase.skills.metrics import measure
 
 
 _language_list = {
@@ -59,6 +63,13 @@ CLONED_REPOS_ROOT_DIR = '/repos'
 
 DATA_ROOT = '/crawler'
 
+
+class Queues(object): pass
+ALL_QUEUES = Queues()
+setup_rq(ALL_QUEUES)
+POPULATION = ALL_QUEUES.population_queue
+
+bucket = config['S3_BUCKET']
 
 def count_languages(commit_count_by_language, unknown_extension_counter, filepath):
     '''
@@ -227,6 +238,22 @@ class AccountScanner(object):
         return commit_count_by_language, unknown_extension_counter, technologies
 
 
+def save(data, user):
+    key = 'user-profiles/{user}/data'.format(user=user)
+    # save the previous data, so we later retrieve it and remove it from the rankings
+    old_data_key = key+'_old'
+    if exists(bucket, key):
+        old_s3_object = s3.Object(bucket, old_data_key)
+        old_s3_object.copy_from(CopySource={
+            'Bucket': bucket,
+            'Key': key
+        })
+        wait_till_exists(bucket, key)
+    s3_object = s3.Object(bucket, key)
+    s3_object.put(Body=dumps(data))
+    return key
+
+
 def scan_one_user(token, token_user, user_login=None):
     user_data = dict()
     scanned_user = user_login if user_login else token_user
@@ -242,6 +269,13 @@ def scan_one_user(token, token_user, user_login=None):
         user_data['commit_count_by_language'] = commit_count_by_language
         user_data['technologies'] = technologies
         user_data['unknown_extension_counter'] = unknown_extension_counter
+        user_data['metrics'] = measure(technologies)
+        user_data_key = save(user_data, scanned_user)
+        POPULATION.enqueue_call(
+            func='rebase.skills.population.update_rankings',
+            args=(user_data_key, scanned_user),
+            timeout=3600
+        )
         user_data_dir = join(DATA_ROOT, scanned_user)
         filename = 'data' if scanner.api.oauth_scopes == ['public_repo'] else 'private'
         user_data_path = join(user_data_dir, filename)
@@ -253,3 +287,5 @@ def scan_one_user(token, token_user, user_login=None):
     except TimeoutError as timeout_error:
         logger.ERROR('scan_one_user(%s, %s) %s', token_user, user_login, str(timeout_error))
         return None
+
+

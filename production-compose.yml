@@ -70,6 +70,14 @@ services:
         expose:
             - "1111"
 
+    rq_population:
+      extends:
+        service: webserver
+        file: docker/api-pro.yml
+      image: rebase/rq_population
+      environment:
+        SETTINGS: ".population.pro"
+
     rq_git:
       extends:
         service: webserver
