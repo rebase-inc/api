@@ -49,6 +49,18 @@ services:
         file: docker/api-production.yml
       command: ["/code/init", "code2resume"]
 
+    ycdemo:
+      image: rebase/client
+      volumes:
+       - ../react-app:/code
+       - www:/www
+      extends:
+        service: common_env
+        file: docker/api-production.yml
+      stdin_open: true
+      tty: true
+      command: ["/bin/sh"]
+
     javascript:
         image: rebase/javascript
         expose:
