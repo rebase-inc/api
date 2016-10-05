@@ -8,7 +8,7 @@ from shutil import rmtree
 from git import Repo
 from github import GithubException
 
-from rebase.common.aws import exists, s3, wait_till_exists
+from rebase.common.aws import exists, s3, s3_wait_till_exists
 from rebase.common.debug import pdebug
 from rebase.common.settings import config
 from rebase.common.stopwatch import InfoElapsedTime
@@ -248,7 +248,7 @@ def save(data, user):
             'Bucket': bucket,
             'Key': key
         })
-        wait_till_exists(bucket, key)
+        s3_wait_till_exists(bucket, key)
     s3_object = s3.Object(bucket, key)
     s3_object.put(Body=dumps(data))
     return key
