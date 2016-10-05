@@ -126,7 +126,15 @@ $ _bash nginx
 $ listen 80
 # Letsencrypt has very strict limits on the number of certs generated per day for one domain.
 # So, first, let's test the certificate renewal so we can verify it will work without hurting our rate limit.
+
+# to create a brand new cert:
+# update docker/nginx/default-80.conf and docker/nginx/default-443.conf
+# update AWS Route53 to add new A record
+$ ./certbot-auto --text certonly --webroot -w /etc/letsencrypt/webrootauth -d ycdemo.rebaseapp.com
+
+# to renew a cert:
 $ ./certbot-auto renew --dry-run
+
 # If this succeeds, run the same command without the --dry-run:
 $ ./certbot-auto renew
 # Switch back to listening for 443 traffic
