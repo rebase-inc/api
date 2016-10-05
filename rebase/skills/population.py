@@ -68,6 +68,7 @@ def update_rankings(
     else:
         overall = list()
     languages = dict()
+    rankings = dict()
     old_metrics_key = user_data_key+'_old'
     if exists(old_metrics_key):
         old_metrics = get(old_metrics_key)['metrics']
@@ -86,7 +87,9 @@ def update_rankings(
     if not exists(user_data_key):
         wait_till_exists(user_data_key)
     new_metrics = get(user_data_key)['metrics']
-    insort_left(overall, new_metrics['overall'])
+    overall_index = bisect_left(overall, new_metrics['overall'])
+    overall.insert(overall_index, new_metrics['overall'])
+    rankings['overall'] = 100*overall_index/len(overall)
     for language, score in new_metrics['languages'].items():
         if language in languages:
             insort_left(languages[language], score)
