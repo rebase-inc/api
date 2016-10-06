@@ -16,10 +16,11 @@ from rebase.datetime import time_to_epoch
 from rebase.features.rq import setup_rq
 from rebase.github.api import RebaseGithub, RebaseGithubException
 from rebase.github.py2_py3_scanner import Py2Py3Scanner
-from rebase.skills.remote_scanner import Client
-from rebase.skills.parser import Parser
-from rebase.skills.tech_profile import TechProfile
+from rebase.skills.aws_keys import profile_key
 from rebase.skills.metrics import measure
+from rebase.skills.parser import Parser
+from rebase.skills.remote_scanner import Client
+from rebase.skills.tech_profile import TechProfile
 
 
 _language_list = {
@@ -239,7 +240,7 @@ class AccountScanner(object):
 
 
 def save(data, user):
-    key = 'user-profiles/{user}/data'.format(user=user)
+    key = profile_key(user)
     # save the previous data, so we later retrieve it and remove it from the rankings
     old_data_key = key+'_old'
     if exists(bucket, key):
@@ -273,7 +274,7 @@ def scan_one_user(token, token_user, user_login=None):
         user_data_key = save(user_data, scanned_user)
         POPULATION.enqueue_call(
             func='rebase.skills.population.update_rankings',
-            args=(user_data_key, scanned_user),
+            args=(scanned_user,),
             timeout=3600
         )
         user_data_dir = join(DATA_ROOT, scanned_user)

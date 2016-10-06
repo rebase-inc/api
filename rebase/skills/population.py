@@ -5,6 +5,7 @@ from pickle import loads
 
 from rebase.common.aws import exists as _exists, s3, s3_wait_till_exists
 from rebase.common.settings import config
+from .aws_keys import profile_key, old_profile_key, level_key
 
 
 logger = getLogger(__name__)
@@ -43,7 +44,6 @@ def put(key, obj):
 
 
 def update_rankings(
-    user_data_key,
     user,
     get=get,
     put=put,
@@ -54,7 +54,7 @@ def update_rankings(
 
     Update the rankings now that 'user_data_key' has a new set of metrics
     1/ get the old metrics for this 'user'
-    2/ load the relevant rankings (overall+languages)
+    2/ load the relevant rankings 
     3/ remove from rankings the old metrics from 'user'
     4/ add the new metrics for 'user'
     5/ save the updated rankings
@@ -63,48 +63,51 @@ def update_rankings(
     (get, put, exists, wait_till_exists) are abstracted out so we can test this function without S3.
 
     '''
-    if exists('population/overall'):
-        overall = get('population/overall')
-    else:
-        overall = list()
-    languages = dict()
-    rankings = dict()
-    old_metrics_key = user_data_key+'_old'
+    all_scores = dict()
+    user_data_key = profile_key(user)
+    old_metrics_key = old_profile_key(user) 
     if exists(old_metrics_key):
         old_metrics = get(old_metrics_key)['metrics']
-        old_overall_score = old_metrics['overall']
-        old_overall_score_index = bisect_left(overall, old_overall_score)
-        if not i:
-            raise ValueError('Cannot find old overall score in rankings')
-        del overall[old_overall_score_index]
-        for language, score in old_metrics['languages'].items():
-            scores = get('population/languages/'+language)
+        for level, score in old_metrics.items():
+            scores = get('population/'+level)
             i = bisect_left(scores, score)
             if not i:
-                raise ValueError('Cannot find old score for language {} in rankings'.format(language))
+                raise ValueError('Cannot find old score for level {} in metrics'.format(level))
             del scores[i]
-            languages[language] = scores
+            all_scores[level] = scores
     if not exists(user_data_key):
         wait_till_exists(user_data_key)
-    new_metrics = get(user_data_key)['metrics']
-    overall_index = bisect_left(overall, new_metrics['overall'])
-    overall.insert(overall_index, new_metrics['overall'])
-    rankings['overall'] = 100*overall_index/len(overall)
-    for language, score in new_metrics['languages'].items():
-        if language in languages:
-            insort_left(languages[language], score)
+    new_user_data = get(user_data_key) 
+    new_metrics = new_user_data['metrics']
+    for level, score in new_metrics.items():
+        if level in all_scores:
+            scores = all_scores[level]
         else:
-            language_key = 'population/languages/'+language 
-            if exists(language_key):
-                scores = get(language_key)
+            key = level_key(level)
+            if exists(key):
+                scores = get(key)
             else:
                 scores = list()
-            insort_left(scores, score)
-            languages[language] = scores
-    for language, scores in languages.items():
-        put('population/languages/'+language, scores)
-    put('population/overall', overall)
+        insort_left(scores, score)
+        all_scores[level] = scores
+    for level, scores in all_scores.items():
+        put('population/'+level, scores)
 
 
-def get_rankings(user):
-    pass
+def get_rankings(user, get=get, exists=exists):
+    rankings = dict()
+    user_profile_key = profile_key(user)
+    user_profile = get(user_profile_key) 
+    metrics = user_profile['metrics']
+    for level, score in metrics.items():
+        key = level_key(level)
+        if exists(key):
+            scores = get(key)
+        else:
+            scores = list()
+        index = bisect_left(scores, score)
+        ranking = 100*(len(scores)-(index+1))/len(scores)
+        rankings[level] = ranking
+    return rankings
+
+

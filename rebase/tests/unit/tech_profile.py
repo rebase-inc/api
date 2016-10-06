@@ -5,10 +5,11 @@ from pprint import pprint
 from unittest import TestCase
 
 from rebase.datetime import utcnow_timestamp, DAY_SECONDS
+from rebase.skills.aws_keys import profile_key, level_key
 from rebase.skills.tech_profile import TechProfile
 from rebase.skills.tech_profile_view import TechProfileView
 from rebase.skills.metrics import measure
-from rebase.skills.population import update_rankings as _update_rankings
+from rebase.skills.population import update_rankings as _update_rankings, get_rankings as _get_rankings
 
 
 def add(prof_a, prof_b):
@@ -27,15 +28,15 @@ class TP(TestCase):
         day_3 = now - 14*DAY_SECONDS
         day_4 = now - DAY_SECONDS
         self.prof_1 = TechProfile()
-        self.prof_1.add('Foo.bar', day_1, 1)
-        self.prof_1.add('Foo.bar.mama', day_1, 4)
-        self.prof_1.add('Foo.yo.mama', day_2, 1)
-        self.prof_1.add('Foo.yo.mama', day_2, 1)
+        self.prof_1.add('Foo.__language__.bar', day_1, 1)
+        self.prof_1.add('Foo.__language__.bar.mama', day_1, 4)
+        self.prof_1.add('Foo.__standard_library__.yo.mama', day_2, 1)
+        self.prof_1.add('Foo.__standard_library__.yo.mama', day_2, 1)
 
         self.prof_2= TechProfile()
-        self.prof_2.add('Bar.yo', day_1, 5)
-        self.prof_2.add('Bar.bar.mama', day_1, 9)
-        self.prof_2.add('Bar.yo.mama', day_2, 1)
+        self.prof_2.add('Bar.__third_party__.yo', day_1, 5)
+        self.prof_2.add('Bar.__third_party__.yo.mama', day_2, 1)
+        self.prof_2.add('Bar.__third_party__.bar.mama', day_1, 9)
 
         self.prof_3 = TechProfile()
         add(self.prof_3, self.prof_1)
@@ -43,7 +44,7 @@ class TP(TestCase):
 
         self.prof_4 = TechProfile()
         add(self.prof_4, self.prof_1)
-        self.prof_4.add('Foo.yo.mama', day_4, 1)
+        self.prof_4.add('Foo.__standard_library__.yo.mama', day_4, 1)
 
     def test_a(self):
         v1 = TechProfileView(self.prof_1)
@@ -71,39 +72,58 @@ class TP(TestCase):
 
     def test_ranking(self):
         s3 = dict()
+        _exists = lambda key: s3.__contains__(key)
         update_rankings = partial(
             _update_rankings,
             get=s3.get,
             put=s3.__setitem__,
-            exists=lambda key: s3.__contains__(key),
+            exists=_exists,
             wait_till_exists=_wait_till_exists
         )
+        get_rankings = partial(
+            _get_rankings,
+            get=s3.get,
+            exists=_exists
+        )
+
+        user_1 = 'user_1'
+        profile_1_key = profile_key(user_1)
         metrics_1 = measure(self.prof_1)
         saved_profile_1 = {
             'metrics': metrics_1
         }
-        s3['prof_1'] = saved_profile_1
-        update_rankings('prof_1', 'user_1')
-        self.assertIn('population/overall', s3)
-        self.assertEqual(s3['population/overall'], [metrics_1['overall']])
-        self.assertIn('population/languages/Foo', s3)
-        self.assertEqual(s3['population/languages/Foo'], [metrics_1['languages']['Foo']])
+        s3[profile_1_key] = saved_profile_1
+        update_rankings(user_1)
+        _overall_key = level_key('_overall')
+        self.assertIn(_overall_key, s3)
+        self.assertEqual(s3[_overall_key], [metrics_1['_overall']])
+        Foo_key = level_key('Foo')
+        self.assertIn(Foo_key, s3)
+        self.assertEqual(s3[Foo_key], [metrics_1['Foo']])
         print()
         pprint(s3)
 
         metrics_2 = measure(self.prof_2)
+        user_2 = 'user_2'
+        profile_2_key = profile_key(user_2)
         saved_profile_2 = {
             'metrics': metrics_2
         }
-        s3['prof_2'] = saved_profile_2
-        update_rankings('prof_2', 'user_2')
-        self.assertIn('population/languages/Bar', s3)
+        s3[profile_2_key] = saved_profile_2
+        update_rankings(user_2)
+        Bar_key = level_key('Bar')
+        self.assertIn(Bar_key, s3)
         print()
         pprint(s3)
 
-        gt = metrics_1['overall'] < metrics_2['overall']
-        i1 = bisect_left(s3['population/overall'], metrics_1['overall'])
-        i2 = bisect_left(s3['population/overall'], metrics_2['overall'])
+        gt = metrics_1['_overall'] < metrics_2['_overall']
+        i1 = bisect_left(s3[_overall_key], metrics_1['_overall'])
+        i2 = bisect_left(s3[_overall_key], metrics_2['_overall'])
         self.assertEqual(gt, i1 < i2)
+
+        print()
+        pprint(get_rankings(user_1))
+        print()
+        pprint(get_rankings(user_2))
 
 
