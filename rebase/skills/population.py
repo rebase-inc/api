@@ -1,9 +1,11 @@
 from bisect import bisect_left, insort_left
 from functools import partial
 from logging import getLogger
-from pickle import loads
+from pickle import loads, dumps
 
-from rebase.common.aws import exists as _exists, s3, s3_wait_till_exists
+from botocore.exceptions import ClientError
+
+from rebase.common.aws import exists, s3, s3_wait_till_exists
 from rebase.common.settings import config
 from .aws_keys import profile_key, old_profile_key, level_key
 
@@ -17,11 +19,12 @@ bucket = config['S3_BUCKET']
 population_cache = dict()
 
 
-exists = partial(_exists, bucket=bucket)
-
 
 def unpickle_s3_object(key):
-    return loads(s3.Object(bucket, key).get()['Body'].read())
+    try:
+        return loads(s3.Object(bucket, key).get()['Body'].read())
+    except ClientError as e:
+        logger.debug('unpickle_s3_object(bucket={}, key={}) caught an exception: %o'.format(bucket, key), e.response['Error'])
 
 
 def get(key):
@@ -69,11 +72,15 @@ def update_rankings(
     if exists(old_metrics_key):
         old_metrics = get(old_metrics_key)['metrics']
         for level, score in old_metrics.items():
-            scores = get('population/'+level)
-            i = bisect_left(scores, score)
-            if not i:
-                raise ValueError('Cannot find old score for level {} in metrics'.format(level))
-            del scores[i]
+            key = level_key(level)
+            if exists(key):
+                scores = get(key)
+                i = bisect_left(scores, score)
+                if not i:
+                    raise ValueError('Cannot find old score for level {} in metrics'.format(level))
+                del scores[i]
+            else:
+                scores = list()
             all_scores[level] = scores
     if not exists(user_data_key):
         wait_till_exists(user_data_key)
@@ -92,6 +99,7 @@ def update_rankings(
         all_scores[level] = scores
     for level, scores in all_scores.items():
         put('population/'+level, scores)
+    update_user_rankings(user)
 
 
 def get_rankings(user, get=get, exists=exists):
@@ -110,4 +118,11 @@ def get_rankings(user, get=get, exists=exists):
         rankings[level] = ranking
     return rankings
 
+
+def update_user_rankings(user, get=get, exists=exists, put=put):
+    user_data_key = profile_key(user)
+    new_user_data = get(user_data_key) 
+    profile_with_rankings = new_user_data
+    profile_with_rankings['rankings'] = get_rankings(user)
+    put(user_data_key, profile_with_rankings)
 

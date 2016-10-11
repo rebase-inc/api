@@ -235,6 +235,8 @@ class AccountScanner(object):
         logger.info('Scanning all repos for user: %s', scanned_user.login)
         logger.debug('oauth_scopes: %s', self.api.oauth_scopes)
         for repo in scanned_user.get_repos():
+            if repo.name != 'profile-js':
+                continue
             self.process_repo(repo, scanned_user.login, commit_count_by_language, unknown_extension_counter, technologies)
         return commit_count_by_language, unknown_extension_counter, technologies
 
@@ -243,7 +245,7 @@ def save(data, user):
     key = profile_key(user)
     # save the previous data, so we later retrieve it and remove it from the rankings
     old_data_key = key+'_old'
-    if exists(bucket, key):
+    if exists(key):
         old_s3_object = s3.Object(bucket, old_data_key)
         old_s3_object.copy_from(CopySource={
             'Bucket': bucket,
