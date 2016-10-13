@@ -235,8 +235,6 @@ class AccountScanner(object):
         logger.info('Scanning all repos for user: %s', scanned_user.login)
         logger.debug('oauth_scopes: %s', self.api.oauth_scopes)
         for repo in scanned_user.get_repos():
-            if repo.name != 'profile-js':
-                continue
             self.process_repo(repo, scanned_user.login, commit_count_by_language, unknown_extension_counter, technologies)
         return commit_count_by_language, unknown_extension_counter, technologies
 
@@ -251,13 +249,12 @@ def save(data, user):
             'Bucket': bucket,
             'Key': key
         })
-        s3_wait_till_exists(bucket, key)
     s3_object = s3.Object(bucket, key)
     s3_object.put(Body=dumps(data))
     return key
 
 
-def scan_one_user(token, token_user, user_login=None):
+def scan_one_user(token, token_user, user_login=None, contractor_id=None):
     user_data = dict()
     scanned_user = user_login if user_login else token_user
     start_msg = 'processing Github user: ' + scanned_user
@@ -273,10 +270,11 @@ def scan_one_user(token, token_user, user_login=None):
         user_data['technologies'] = technologies
         user_data['unknown_extension_counter'] = unknown_extension_counter
         user_data['metrics'] = measure(technologies)
+        user_data['rankings'] = dict()
         user_data_key = save(user_data, scanned_user)
         POPULATION.enqueue_call(
             func='rebase.skills.population.update_rankings',
-            args=(scanned_user,),
+            args=(scanned_user, contractor_id),
             timeout=3600
         )
         user_data_dir = join(DATA_ROOT, scanned_user)

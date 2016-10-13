@@ -6,7 +6,10 @@ from pickle import loads, dumps
 from botocore.exceptions import ClientError
 
 from rebase.common.aws import exists, s3, s3_wait_till_exists
+from rebase.common.database import DB
 from rebase.common.settings import config
+from rebase.models import Contractor
+
 from .aws_keys import profile_key, old_profile_key, level_key
 
 
@@ -17,7 +20,6 @@ bucket = config['S3_BUCKET']
 
 
 population_cache = dict()
-
 
 
 def unpickle_s3_object(key):
@@ -40,14 +42,18 @@ def get(key):
 
 
 def put(key, obj):
+    serialized_obj = dumps(obj)
     if key.startswith('population'):
-        population_cache[key] = obj
+        # this way we are sure the data returned by 'get' is consistent
+        # whether it comes from the in-memory cache or S3
+        population_cache[key] = loads(serialized_obj) 
     s3_object = s3.Object(bucket, key)
-    s3_object.put(Body=dumps(obj))
+    s3_object.put(Body=serialized_obj)
 
 
 def update_rankings(
     user,
+    contractor_id=None,
     get=get,
     put=put,
     exists=exists,
@@ -67,7 +73,6 @@ def update_rankings(
 
     '''
     all_scores = dict()
-    user_data_key = profile_key(user)
     old_metrics_key = old_profile_key(user) 
     if exists(old_metrics_key):
         old_metrics = get(old_metrics_key)['metrics']
@@ -75,13 +80,17 @@ def update_rankings(
             key = level_key(level)
             if exists(key):
                 scores = get(key)
-                i = bisect_left(scores, score)
-                if not i:
+                logger.debug('scores: %s', scores)
+                logger.debug('score: %s', score)
+                try:
+                    i = scores.index(score)
+                    del scores[i]
+                except ValueError as e:
                     raise ValueError('Cannot find old score for level {} in metrics'.format(level))
-                del scores[i]
             else:
                 scores = list()
             all_scores[level] = scores
+    user_data_key = profile_key(user)
     if not exists(user_data_key):
         wait_till_exists(user_data_key)
     new_user_data = get(user_data_key) 
@@ -98,8 +107,8 @@ def update_rankings(
         insort_left(scores, score)
         all_scores[level] = scores
     for level, scores in all_scores.items():
-        put('population/'+level, scores)
-    update_user_rankings(user)
+        put(level_key(level), scores)
+    update_user_rankings(user, contractor_id)
 
 
 def get_rankings(user, get=get, exists=exists):
@@ -111,18 +120,38 @@ def get_rankings(user, get=get, exists=exists):
         key = level_key(level)
         if exists(key):
             scores = get(key)
+            try:
+                index = scores.index(score)
+            except ValueError as e:
+                raise ValueError(
+                    "Could not find score {} for user {} in population {}".format(
+                        score,
+                        user,
+                        key
+                    )
+                )
+            rankings[level] = (len(scores)-(index+1))/len(scores)
         else:
-            scores = list()
-        index = bisect_left(scores, score)
-        ranking = 100*(len(scores)-(index+1))/len(scores)
-        rankings[level] = ranking
+            rankings[level] = 0.0
     return rankings
 
 
-def update_user_rankings(user, get=get, exists=exists, put=put):
+def update_user_rankings(user, contractor_id=None, get=get, exists=exists, put=put):
     user_data_key = profile_key(user)
     new_user_data = get(user_data_key) 
     profile_with_rankings = new_user_data
-    profile_with_rankings['rankings'] = get_rankings(user)
+    rankings = get_rankings(user)
+    profile_with_rankings['rankings'] = rankings
     put(user_data_key, profile_with_rankings)
+    if contractor_id:
+        from rebase.app import create
+        app = create()
+        with app.app_context():
+            contractor = Contractor.query.get(contractor_id)
+            if not contractor:
+                logger.error('There is no Contractor with id[%d]', contractor_id)
+            else:
+                contractor.skill_set.skills = rankings
+                DB.session.commit()
+
 

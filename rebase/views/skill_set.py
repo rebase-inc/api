@@ -12,10 +12,10 @@ from rebase.views.contractor import ContractorSchema
 logger = getLogger()
 
 
-class DictField(fields.Field):
+class SkillsField(fields.Field):
 
     def __init__(self, key_field, nested_field, *args, **kwargs):
-        fields.Field.__init__(self, *args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.key_field = key_field
         self.nested_field = nested_field
 
@@ -30,19 +30,17 @@ class DictField(fields.Field):
 
     def _serialize(self, value, attr, obj):
         #logger.debug('in DictField._serializer, value: %s', value)
-        ret = {}
-        if value:
-            for key, val in value.items():
-                k = self.key_field._serialize(key, attr, obj)
-                v = self.nested_field.serialize(key, self.get_value(attr, obj))
-                ret[k] = v
-        #logger.debug('in DictField._serialize, ret: %s', ret)
-        return ret
+        if value is not None:
+            logger.debug('Serializing SkillSet: %s', value)
+            return tuple(
+                (key, val) for key, val in value.items()
+            )
+        return tuple(('FOO', 'BAR'))
 
 
 class SkillSetSchema(RebaseSchema):
     id =            fields.Integer()
-    skills =        DictField(fields.Str(), fields.Float(), default={})
+    skills =        SkillsField(fields.Str(), fields.Float(), default={})
     contractor =    SecureNestedField(ContractorSchema,  only=('id',))
 
     @post_load
