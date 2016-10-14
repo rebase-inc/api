@@ -3,13 +3,15 @@ services:
     common_env:
       environment:
         APP_SETTINGS: "/api/rebase/common/pro.py"
-        S3_BUCKET: "com.joinrebase.data.production"
+        BACKEND_AWS_ACCESS_KEY_ID:
+        BACKEND_AWS_SECRET_ACCESS_KEY:
+        CRAWLER_PASSWORD:
         GITHUB_APP_SECRET:
         GITHUB_CODE2RESUME_SECRET:
         NOTIFICATION_EMAIL_PASSWORD:
         PYTHONHASHSEED:
+        S3_BUCKET: "com.joinrebase.data.production"
         SECRET_KEY:
-        CRAWLER_PASSWORD:
 
     webserver:
       image: rebase/api
