@@ -1,5 +1,14 @@
 # Language Parsing TCP Protocol
 
+## Internal TechProfile Data Organization
+{
+    '<language>.<sub_level>.<node>': [ <first>, <last>, repetitions ],
+}
+
+<language> is the capitalized name of the language. Example: 'Python', 'Java', 'Javascript', etc.
+<sub_level> is in ['__language__', '__standard_library__', '__third_party__']
+<node> is any string describing the used element.
+
 All data shall be JSON encoded
 
 ## Request:

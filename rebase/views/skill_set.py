@@ -31,7 +31,6 @@ class SkillsField(fields.Field):
     def _serialize(self, value, attr, obj):
         #logger.debug('in DictField._serializer, value: %s', value)
         if value is not None:
-            logger.debug('Serializing SkillSet: %s', value)
             return tuple(
                 (key, val) for key, val in value.items()
             )

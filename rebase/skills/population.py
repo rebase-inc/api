@@ -5,7 +5,7 @@ from pickle import loads, dumps
 
 from botocore.exceptions import ClientError
 
-from rebase.common.aws import exists, s3, s3_wait_till_exists
+from rebase.common.aws import exists as s3_exists, s3, s3_wait_till_exists
 from rebase.common.database import DB
 from rebase.common.settings import config
 from rebase.models import Contractor
@@ -29,7 +29,7 @@ def unpickle_s3_object(key):
         logger.debug('unpickle_s3_object(bucket={}, key={}) caught an exception: %o'.format(bucket, key), e.response['Error'])
 
 
-def get(key):
+def s3_get(key):
     is_population_key = key.startswith('population')
     if is_population_key:
         if key in population_cache:
@@ -41,7 +41,7 @@ def get(key):
     return unpickle_s3_object(key)
 
 
-def put(key, obj):
+def s3_put(key, obj):
     serialized_obj = dumps(obj)
     if key.startswith('population'):
         # this way we are sure the data returned by 'get' is consistent
@@ -54,9 +54,9 @@ def put(key, obj):
 def update_rankings(
     user,
     contractor_id=None,
-    get=get,
-    put=put,
-    exists=exists,
+    get=s3_get,
+    put=s3_put,
+    exists=s3_exists,
     wait_till_exists=s3_wait_till_exists
 ):
     '''
@@ -108,10 +108,10 @@ def update_rankings(
         all_scores[level] = scores
     for level, scores in all_scores.items():
         put(level_key(level), scores)
-    update_user_rankings(user, contractor_id)
+    update_user_rankings(user, contractor_id, get=get, exists=exists, put=put)
 
 
-def get_rankings(user, get=get, exists=exists):
+def get_rankings(user, get=s3_get, exists=s3_exists):
     rankings = dict()
     user_profile_key = profile_key(user)
     user_profile = get(user_profile_key) 
@@ -136,11 +136,11 @@ def get_rankings(user, get=get, exists=exists):
     return rankings
 
 
-def update_user_rankings(user, contractor_id=None, get=get, exists=exists, put=put):
+def update_user_rankings(user, contractor_id=None, get=s3_get, exists=s3_exists, put=s3_put):
     user_data_key = profile_key(user)
     new_user_data = get(user_data_key) 
     profile_with_rankings = new_user_data
-    rankings = get_rankings(user)
+    rankings = get_rankings(user, get=get, exists=exists)
     profile_with_rankings['rankings'] = rankings
     put(user_data_key, profile_with_rankings)
     if contractor_id:

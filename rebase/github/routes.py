@@ -27,6 +27,7 @@ logger = getLogger()
 
 
 def analyze_contractor_skills(github_account):
+    logger.debug('In analyze_contractor_skills')
     contractor = next(filter(lambda r: r.type == 'contractor', current_user.roles), None)
     if contractor:
         remote_work_history = RemoteWorkHistory.query_by_user(current_user).first() or RemoteWorkHistory(contractor)
@@ -34,6 +35,7 @@ def analyze_contractor_skills(github_account):
         remote_work_history.analyzing = True
         DB.session.add(remote_work_history)
         DB.session.commit()
+        logger.debug('About to queue scan_public_and_private_repos')
         current_app.default_queue.enqueue_call(func='rebase.github.languages.scan_public_and_private_repos', args=(github_account.id,), timeout=3600 ) # timeout = 1h
 
 
