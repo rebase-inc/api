@@ -4,6 +4,7 @@ volumes:
     etc_letsencrypt: {}
     git: {}
     log: {}
+    repos: {}
     sql: {}
     uploads: {}
     www: {}
@@ -95,8 +96,7 @@ services:
       image: rebase/rq_default
       volumes:
        - crawler:/crawler
-      tmpfs:
-       - /repos:rw,noexec,size=3g
+       - repos:/repos
       environment:
         SETTINGS: ".population.pro"
 

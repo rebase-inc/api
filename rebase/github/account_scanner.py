@@ -34,7 +34,7 @@ _language_list = {
     'C++':      ('.cc', '.cxx', '.c++', '.cpp', '.hh', '.hxx', '.h++', '.hpp', '.h'),
     'Java':     ('.java',),
     'ObjectiveC': ('.m', '.mm', '.h'),
-    'Javascript': ('.js', '.jsx', '.es6'),
+    'JavaScript': ('.js', '.jsx', '.es6'),
     'Clojure':  ('.clj',),
     'Swift':    ('.swift',),
     'Lua':      ('.lua',),
@@ -98,7 +98,7 @@ class AccountScanner(object):
         self.scanners = {
 
             'Python':       Py2Py3Scanner(),
-            'Javascript':   Client(host='javascript'),
+            'JavaScript':   Client(host='javascript'),
             'Java':         Parser('java8'),
 
             #'C':        Parser('c'),
@@ -109,6 +109,7 @@ class AccountScanner(object):
             #'Lua':      Parser('lua'),
             #'Swift':    Parser('swift'),
         }
+        self.supported_languages = set(self.scanners.keys())
 
     def find_scanners(self, languages):
         for language in languages:
@@ -171,6 +172,8 @@ class AccountScanner(object):
                         except RebaseGithubException as rebase_exception:
                             logger.warning(rebase_exception)
                             raise rebase_exception
+                        except Exception as last_chance:
+                            logger.warning('Uncaught exception: %s', last_chance)
         else:
             logger.info('This commit has no parent: %s', local_commit.summary)
             for blob in local_commit.tree.traverse(lambda i,d: i.type=='blob'):
@@ -213,6 +216,8 @@ class AccountScanner(object):
         except GithubException as e:
             logger.warning('Caught Github Exception. Status: %d Data: %s', e.status, e.data)
             logger.warning('Skipping repo: %s', repo.name)
+        except Exception as last_chance:
+            logger.warning('Uncaught exception: %s', last_chance)
         # keep algo O(1) in space
         rmtree(local_repo_dir)
 
@@ -235,7 +240,9 @@ class AccountScanner(object):
         logger.info('Scanning all repos for user: %s', scanned_user.login)
         logger.debug('oauth_scopes: %s', self.api.oauth_scopes)
         for repo in scanned_user.get_repos():
-            self.process_repo(repo, scanned_user.login, commit_count_by_language, unknown_extension_counter, technologies)
+            repo_languages = set(repo.get_languages().keys())
+            if bool(self.supported_languages & repo_languages):
+                self.process_repo(repo, scanned_user.login, commit_count_by_language, unknown_extension_counter, technologies)
         return commit_count_by_language, unknown_extension_counter, technologies
 
 
