@@ -111,6 +111,7 @@ class AccountScanner(object):
             #'Swift':    Parser('swift'),
         }
         self.supported_languages = set(self.scanners.keys())
+        self.local_repo_dir = None
 
     def find_scanners(self, languages):
         for language in languages:
@@ -225,10 +226,11 @@ class AccountScanner(object):
                 technologies.merge(_technologies)
         except GithubException as e:
             logger.exception('Caught Github Exception while processing repo "%s"', repo.name)
-        #except Exception as last_chance:
-            #logger.warning('Uncaught exception: %s', last_chance)
+        except Exception as last_chance:
+            logger.warning('Uncaught exception: %s', last_chance)
         # keep algo O(1) in space
-        rmtree(self.local_repo_dir)
+        if self.local_repo_dir and isdir(self.local_repo_dir):
+            rmtree(self.local_repo_dir)
 
     def scan_all_repos(self, login=None):
         '''
@@ -251,8 +253,8 @@ class AccountScanner(object):
         for repo in scanned_user.get_repos():
             repo_languages = set(repo.get_languages().keys())
             if bool(self.supported_languages & repo_languages):
+                self.cloned = False
                 self.process_repo(repo, scanned_user.login, commit_count_by_language, unknown_extension_counter, technologies)
-            self.process_repo(repo, scanned_user.login, commit_count_by_language, unknown_extension_counter, technologies)
         return commit_count_by_language, unknown_extension_counter, technologies
 
 
