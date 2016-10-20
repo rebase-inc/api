@@ -10,7 +10,6 @@ from rebase.models import GithubOAuthApp
 logger = getLogger()
 
 
-@lru_cache()
 def apps(app):
     oauth = OAuth(app)
     common_settings = {
