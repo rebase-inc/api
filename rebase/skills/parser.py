@@ -36,11 +36,11 @@ class Parser(TechnologyScanner):
     def grammar_rules(self):
         return self.client.grammar_rules(self.language_index)
 
-    def scan_contents(self, filename, code, date):
+    def scan_contents(self, filename, code, date, context):
         use = self.client.scan_contents(self.language_index, code)
         return TechProfile({ rule: Exposure(date, date, reps) for rule, reps in use.items() })
 
-    def scan_patch(self, filename, code, previous_code, patch, date):
+    def scan_patch(self, filename, code, previous_code, patch, date, context):
         use = self.client.scan_patch(self.language_index, code, previous_code, patch)
         return TechProfile({ rule: Exposure(date, date, reps) for rule, reps in use.items() })
 

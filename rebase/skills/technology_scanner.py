@@ -7,7 +7,7 @@ from rebase.skills.tech_profile import TechProfile
 
 class TechnologyScanner(object):
 
-    def extract_library_bindings(self, code, filename, context=None):
+    def extract_library_bindings(self, code, filename, context):
         raise NotImplemented('Abstract method TechnologyScanner.extract_library_bindings')
 
     def grammar_use(self, code, date):
@@ -41,7 +41,7 @@ class TechnologyScanner(object):
                 abs_diff.add(technology, date, use_count)
         return abs_diff
 
-    def scan_contents(self, filename, code, date, context=None):
+    def scan_contents(self, filename, code, date, context):
         '''
             Return a TechProfile object for 'code'
         '''
