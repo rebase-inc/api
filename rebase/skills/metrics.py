@@ -10,23 +10,21 @@ def measure(tech_profile):
     Returns an object:
 
     {
-        '_overall': score,
+        '_overall': experience,
 
-        'Python': score,
-        'Python.__language__': score,
-        'Python.__standard_library__': score,
-        'Python.__third_party__': score,
-        'Python.__third_party__.boto3': score,
+        'Python': experience,
+        'Python.__language__': experience,
+        'Python.__third_party__.boto3': experience,
 
-        'Javascript': score,
-        'Javascript.__language__': score,
-        'Javascript.__standard_library__': score,
-        'Javascript.__third_party__': score,
-        'Javascript.__third_party__.react': score,
+        'Javascript': experience,
+        'Javascript.__language__': experience,
+        'Javascript.__third_party__.react': experience,
         ...
     }
 
-    'score' is the 'experience' as defined in TechProfileView.experience
+    'experience' is the output of TechProfileView.experience for that key.
+
+    The '__language__' level combines the '__grammar__' & '__standard_library__' levels from the TechProfile.
 
     '''
     metrics = {
@@ -39,12 +37,12 @@ def measure(tech_profile):
         # language level
         language = levels[0]
         three_level_profiles[language][tech] = exposure
-
-        # 2nd level ('__language__', '__standard_library__', '__third_party__')
-        three_level_profiles['.'.join(levels[:2])][tech] = exposure
-
-        if levels[1] == '__third_party__':
+        if levels[1] == '__3rd_party__':
+            # this produces '__3rd_party__.sqlalchemy' type entries
             three_level_profiles['.'.join(levels[:3])][tech] = exposure
+        else:
+            # new combo level '__language__' aggregates entries from grammar & standard library
+            three_level_profiles[language+'.__language__'][tech] = exposure
 
     for level, profile in three_level_profiles.items():
         metrics[level] = TechProfileView(profile).experience

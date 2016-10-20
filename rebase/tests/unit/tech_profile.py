@@ -28,8 +28,8 @@ class TP(TestCase):
         day_3 = now - 14*DAY_SECONDS
         day_4 = now - DAY_SECONDS
         self.prof_1 = TechProfile()
-        self.prof_1.add('Foo.__language__.bar', day_1, 1)
-        self.prof_1.add('Foo.__language__.bar.mama', day_1, 4)
+        self.prof_1.add('Foo.__grammar__.bar', day_1, 1)
+        self.prof_1.add('Foo.__grammar__.bar.mama', day_1, 4)
         self.prof_1.add('Foo.__standard_library__.yo.mama', day_2, 1)
         self.prof_1.add('Foo.__standard_library__.yo.mama', day_2, 1)
 

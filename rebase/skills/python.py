@@ -31,7 +31,7 @@ for version in long_versions:
 def language():
     _language = set()
     super_nodes = set()
-    prefix = 'Python.__language__.'
+    prefix = 'Python.__grammar__.'
     for name, node in ast.__dict__.items():
         if isinstance(node, type) and issubclass(node, ast.AST):
             _language.add(prefix+name)
@@ -75,9 +75,9 @@ def safe_parse(code, filename):
 
 def tech(module_name):
     if module_name in standard_library:
-        return LANGUAGE_PREFIX+'__standard_library__.'+module_name
+        return LANGUAGE_PREFIX+'__std_library__.'+module_name
     else:
-        return LANGUAGE_PREFIX+'__third_party__.'+module_name
+        return LANGUAGE_PREFIX+'__3rd_party__.'+module_name
 
 
 class PythonScanner(TechnologyScanner):
@@ -147,7 +147,7 @@ class PythonScanner(TechnologyScanner):
         tree = safe_parse(code, '')
         grammar_profile = TechProfile()
         for node in walk(tree):
-            grammar_profile.add(LANGUAGE_PREFIX+'__language__.'+node.__class__.__name__, date, 1)
+            grammar_profile.add(LANGUAGE_PREFIX+'__grammar__.'+node.__class__.__name__, date, 1)
         return grammar_profile
 
     def context(self, commit):
