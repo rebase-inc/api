@@ -249,8 +249,6 @@ class AccountScanner(object):
         logger.info('Scanning all repos for user: %s', scanned_user.login)
         logger.debug('oauth_scopes: %s', self.api.oauth_scopes)
         for repo in scanned_user.get_repos():
-            if repo.name != 'api':
-                continue
             repo_languages = set(repo.get_languages().keys())
             if bool(self.supported_languages & repo_languages):
                 self.process_repo(repo, scanned_user.login, commit_count_by_language, unknown_extension_counter, technologies)
