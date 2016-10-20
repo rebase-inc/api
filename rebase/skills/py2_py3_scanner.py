@@ -1,8 +1,8 @@
 from logging import getLogger
 from subprocess import Popen, PIPE
 
-from rebase.github.proxy_scanner import Proxy
-from rebase.skills.python import PythonScanner
+from .proxy_scanner import Proxy
+from .python import PythonScanner
 
 
 logger = getLogger(__name__)

@@ -7,7 +7,7 @@ from rebase.skills.tech_profile import TechProfile
 
 class TechnologyScanner(object):
 
-    def extract_library_bindings(self, code, filename):
+    def extract_library_bindings(self, code, filename, context=None):
         raise NotImplemented('Abstract method TechnologyScanner.extract_library_bindings')
 
     def grammar_use(self, code, date):
@@ -41,16 +41,16 @@ class TechnologyScanner(object):
                 abs_diff.add(technology, date, use_count)
         return abs_diff
 
-    def scan_contents(self, filename, code, date):
+    def scan_contents(self, filename, code, date, context=None):
         '''
             Return a TechProfile object for 'code'
         '''
-        library_bindings = self.extract_library_bindings(code, filename)
+        library_bindings = self.extract_library_bindings(code, filename, context)
         complete_profile = self.libraries_profile(code, library_bindings, date)
         complete_profile.merge(self.language_profile(code, '', filename, date))
         return complete_profile
 
-    def scan_patch(self, filename, code, previous_code, patch, date):
+    def scan_patch(self, filename, code, previous_code, patch, date, context=None):
         '''
             Return a TechProfile object for the modified 'code'
         '''
@@ -66,9 +66,18 @@ class TechnologyScanner(object):
                     if line[0] == '#':
                         continue
                     reduced_patch.append(line)
-        library_bindings = self.extract_library_bindings(code, filename)
+        library_bindings = self.extract_library_bindings(code, filename, context)
         complete_profile = self.libraries_profile('\n'.join(reduced_patch), library_bindings, date)
         complete_profile.merge(self.language_profile(code, previous_code, filename, date))
         return complete_profile
+
+    def context(self, commit):
+        '''
+        Extract a dictionary of additional information to be passed to the scan_* functions.
+        For example a tree of package directories to help parse the libraries import paths.
+        This is obviously language and project specific.
+        Defaults to returning None.
+        '''
+        return None
 
 

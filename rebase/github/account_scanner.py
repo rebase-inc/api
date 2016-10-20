@@ -8,19 +8,20 @@ from shutil import rmtree
 from git import Repo
 from github import GithubException
 
-from rebase.common.aws import exists, s3, s3_wait_till_exists
-from rebase.common.debug import pdebug
-from rebase.common.settings import config
-from rebase.common.stopwatch import InfoElapsedTime
-from rebase.datetime import time_to_epoch
-from rebase.features.rq import setup_rq
-from rebase.github.api import RebaseGithub, RebaseGithubException
-from rebase.github.py2_py3_scanner import Py2Py3Scanner
-from rebase.skills.aws_keys import profile_key
-from rebase.skills.metrics import measure
-from rebase.skills.parser import Parser
-from rebase.skills.remote_scanner import Client
-from rebase.skills.tech_profile import TechProfile
+from ..common.aws import exists, s3, s3_wait_till_exists
+from ..common.debug import pdebug
+from ..common.settings import config
+from ..common.stopwatch import InfoElapsedTime
+from ..datetime import time_to_epoch
+from ..features.rq import setup_rq
+from ..skills.py2_py3_scanner import Py2Py3Scanner
+from ..skills.aws_keys import profile_key
+from ..skills.metrics import measure
+from ..skills.parser import Parser
+from ..skills.remote_scanner import Client
+from ..skills.tech_profile import TechProfile
+
+from .api import RebaseGithub, RebaseGithubException
 
 
 _language_list = {
@@ -122,11 +123,11 @@ class AccountScanner(object):
         for scanner in self.scanners:
             scanner.close()
 
-    def scan_one_commit_on_disk(self, repo_name, local_repo, commit):
+    def scan_one_commit_on_disk(self, repo_name, commit):
         technologies = TechProfile()
         commit_count_by_language = Counter()
         unknown_extension_counter = Counter()
-        local_commit = local_repo.commit(commit.sha)
+        local_commit = self.local_repo.commit(commit.sha)
         pdebug(
             {
                 'SHA1': local_commit.binsha,
@@ -154,7 +155,8 @@ class AccountScanner(object):
                                 technologies.merge(scanner.scan_contents(
                                     diff.b_path,
                                     local_commit.tree[diff.b_path].data_stream.read().decode(),
-                                    time_to_epoch(local_commit.authored_datetime)
+                                    time_to_epoch(local_commit.authored_datetime),
+                                    scanner.context(local_commit)
                                 ))
                             else:
                                 technologies.merge(scanner.scan_patch(
@@ -162,7 +164,8 @@ class AccountScanner(object):
                                     local_commit.tree[diff.b_path].data_stream.read().decode(),
                                     local_commit.parents[0].tree[diff.a_path].data_stream.read().decode(),
                                     diff.diff.decode('UTF-8'),
-                                    time_to_epoch(local_commit.authored_datetime)
+                                    time_to_epoch(local_commit.authored_datetime),
+                                    scanner.context(local_commit)
                                 ))
                         except SyntaxError as e:
                             logger.warning('Syntax error: %s', e)
@@ -196,30 +199,36 @@ class AccountScanner(object):
 
         return commit_count_by_language, unknown_extension_counter, technologies
 
+    def clone_if_not_cloned_already(self, repo):
+        if self.cloned:
+            return
+        repo_url = repo.clone_url
+        oauth_url = repo_url.replace('https://github.com', self.new_url_prefix, 1)
+        self.local_repo_dir = join(CLONED_REPOS_ROOT_DIR, repo.name)
+        if isdir(self.local_repo_dir):
+            rmtree(self.local_repo_dir)
+        self.local_repo = Repo.clone_from(oauth_url, self.local_repo_dir)
+        self.cloned = True
     
     def process_repo(self, repo, login, commit_count_by_language, unknown_extension_counter, technologies):
         logger.info('processing repo: "%s"', repo.name)
-        repo_url = repo.clone_url
-        oauth_url = repo_url.replace('https://github.com', self.new_url_prefix, 1)
-        local_repo_dir = join(CLONED_REPOS_ROOT_DIR, repo.name)
-        if isdir(local_repo_dir):
-            rmtree(local_repo_dir)
-        local_repo = Repo.clone_from(oauth_url, local_repo_dir)
+        self.cloned = False
+        kwargs = { 'author': login } if login else {}
         try:
-            kwargs = { 'author': login } if login else {}
             for commit in repo.get_commits(**kwargs):
-                _commit_count_by_language, _unknown_extensions, _technologies = self.scan_one_commit_on_disk(repo.name, local_repo, commit)
+                # we only clone if there is at least one commit.
+                self.clone_if_not_cloned_already(repo)
+                _commit_count_by_language, _unknown_extensions, _technologies = self.scan_one_commit_on_disk(repo.name, commit)
                 #pdebug(_technologies, '_technologies')
                 commit_count_by_language.update(_commit_count_by_language)
                 unknown_extension_counter.update(_unknown_extensions)
                 technologies.merge(_technologies)
         except GithubException as e:
-            logger.warning('Caught Github Exception. Status: %d Data: %s', e.status, e.data)
-            logger.warning('Skipping repo: %s', repo.name)
-        except Exception as last_chance:
-            logger.warning('Uncaught exception: %s', last_chance)
+            logger.exception('Caught Github Exception while processing repo "%s"', repo.name)
+        #except Exception as last_chance:
+            #logger.warning('Uncaught exception: %s', last_chance)
         # keep algo O(1) in space
-        rmtree(local_repo_dir)
+        rmtree(self.local_repo_dir)
 
     def scan_all_repos(self, login=None):
         '''
@@ -240,9 +249,12 @@ class AccountScanner(object):
         logger.info('Scanning all repos for user: %s', scanned_user.login)
         logger.debug('oauth_scopes: %s', self.api.oauth_scopes)
         for repo in scanned_user.get_repos():
+            if repo.name != 'api':
+                continue
             repo_languages = set(repo.get_languages().keys())
             if bool(self.supported_languages & repo_languages):
                 self.process_repo(repo, scanned_user.login, commit_count_by_language, unknown_extension_counter, technologies)
+            self.process_repo(repo, scanned_user.login, commit_count_by_language, unknown_extension_counter, technologies)
         return commit_count_by_language, unknown_extension_counter, technologies
 
 

@@ -98,7 +98,7 @@ services:
        - crawler:/crawler
        - repos:/repos
       environment:
-        SETTINGS: ".population.pro"
+        SETTINGS: ".rq_default.pro"
 
     rq_dashboard:
         image: rebase/rq_dashboard

@@ -79,10 +79,25 @@ def setup():
 
 
 def instance_method_call(instance, method_call):
-    validate(method_call)
+    # uncomment 'validate' when debugging
+    #validate(method_call)
     return getattr(instance, method_call['method'])(*method_call['args'])
 
-python_scanner_call = partial(instance_method_call, PythonScanner())
+
+class Python2Scanner(PythonScanner):
+    '''
+        Thin wrapper to re-encode the context as an ImportableModules object.
+        While traveling through the input pipe, the ImportableModules object was encoded as a JSON Array.
+    '''
+
+    def scan_contents(self, filename, code, date, context=None):
+        return super(Python2Scanner, self).scan_contents(filename, code, date, context=frozenset(context))
+
+    def scan_patch(self, filename, code, previous_code, patch, date, context=None):
+        return super(Python2Scanner, self).scan_patch(filename, code, previous_code, patch, date, context=frozenset(context))
+
+
+python_scanner_call = partial(instance_method_call, Python2Scanner())
 
 
 def handle_errors(exception_):
@@ -102,8 +117,11 @@ def exit_on_error():
     try:
         yield
     except SubprocessException as e:
-        logger.warning('%s', e)
+        logger.exception('in parse_python2.py, SubprocessException caught in parse_python2.py')
         exit(1)
+    except Exception as last_chance:
+        logger.exception('in parse_python2.py, Uncaught exception in parse_python2.py')
+        exit(2)
     else:
         exit(0)
 

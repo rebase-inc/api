@@ -1,15 +1,17 @@
 from ast import parse, walk, Import, ImportFrom
 import ast
 from collections import defaultdict
+from functools import partial
 from inspect import getmro
 from logging import getLogger
-from os.path import dirname, split
+from os.path import dirname, split, splitext
 
 from stdlib_list import stdlib_list, long_versions
 
 from rebase.common.debug import pdebug
-from rebase.skills.tech_profile import TechProfile
-from rebase.skills.technology_scanner import TechnologyScanner
+from .importable_modules import ImportableModules
+from .tech_profile import TechProfile
+from .technology_scanner import TechnologyScanner
 
 
 logger = getLogger(__name__)
@@ -19,6 +21,7 @@ LANGUAGE_PREFIX = 'Python.'
 
 
 _syntax_error_fields = ('filename', 'lineno', 'offset', 'text')
+
 
 standard_library = set()
 for version in long_versions:
@@ -59,31 +62,6 @@ class InvalidImportFromLevel(Exception):
         self.message = 'Invalid ast.ImportFrom node level'
 
 
-def module(import_from_node, filename):
-    '''
-        Return a tuple (module_path, is_absolute),
-        where module_path equivalent to the . or .., etc.
-        Syntax with ImportFrom, when used in the form:
-        from .. import Foo as Bar
-
-        Examples:
-
-        module(Import("pickle")) => ("pickle", true)
-        module(ImportFrom("..foobar")) => ("rebase.foobar", false)
-
-
-    '''
-    if import_from_node.module:
-        return import_from_node.module, True
-    module_elements = split_dir(dirname(filename))
-    level = import_from_node.level - 1
-    if level > 0:
-        module_elements = module_elements[:-level]
-    elif level < 0:
-        raise InvalidImportFromLevel(filename)
-    return '.'.join(module_elements), False
-
-
 def safe_parse(code, filename):
     try:
         return parse(code, filename)
@@ -104,7 +82,7 @@ def tech(module_name):
 
 class PythonScanner(TechnologyScanner):
 
-    def extract_library_bindings(self, code, filename):
+    def extract_library_bindings(self, code, filename, importable_modules):
         ''' 
             Return a dictionary for all libraries detected in 'code'
             with their local bindings in the 'code'.
@@ -133,20 +111,22 @@ class PythonScanner(TechnologyScanner):
         library_bindings = defaultdict(list)
         for node in walk(tree):
             if isinstance(node, Import):
-                # TODO: find a way to distinguish 3rd-party modules from private modules.
                 for _alias in node.names:
+                    if _alias.name in importable_modules:
+                        logger.debug('importing private module "{}"'.format(_alias.name))
+                        continue
                     if _alias.asname:
                         library_bindings[tech(_alias.name)].append(_alias.asname)
                     library_bindings[tech(_alias.name)].append(_alias.name)
             if isinstance(node, ImportFrom):
-                module_name, is_absolute = module(node, filename)
-                if is_absolute:
-                    tech_prefix = tech(module_name)
+                if node.level == 0:
+                    if node.module in importable_modules:
+                        # private module
+                        continue
+                    tech_prefix = tech(node.module)
                     for _alias in node.names:
                         tech_name = tech_prefix+'.'+_alias.name
                         library_bindings[tech_name].append(_alias.asname if _alias.asname else _alias.name)
-                else:
-                    logger.debug('Ignoring private module: '+module_name)
         return library_bindings
 
     def grammar_use(self, code, date):
@@ -169,5 +149,8 @@ class PythonScanner(TechnologyScanner):
         for node in walk(tree):
             grammar_profile.add(LANGUAGE_PREFIX+'__language__.'+node.__class__.__name__, date, 1)
         return grammar_profile
+
+    def context(self, commit):
+        return ImportableModules(commit.tree)
 
 
