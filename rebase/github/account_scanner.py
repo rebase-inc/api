@@ -177,7 +177,7 @@ class AccountScanner(object):
                             logger.warning(rebase_exception)
                             raise rebase_exception
                         except Exception as last_chance:
-                            logger.warning('Uncaught exception: %s', last_chance)
+                            logger.exception('in rebase.github.account_scanner.AccountScanner.scan_one_commit_on_disk: Uncaught exception')
         else:
             logger.info('This commit has no parent: %s', local_commit.summary)
             for blob in local_commit.tree.traverse(lambda i,d: i.type=='blob'):
@@ -187,7 +187,8 @@ class AccountScanner(object):
                         technologies.merge(scanner.scan_contents(
                             blob.name,
                             blob.data_stream.read().decode(),
-                            time_to_epoch(local_commit.authored_datetime)
+                            time_to_epoch(local_commit.authored_datetime),
+                            scanner.context(local_commit)
                         ))
                     except SyntaxError as e:
                         logger.warning('Syntax error: %s', e)
@@ -227,7 +228,7 @@ class AccountScanner(object):
         except GithubException as e:
             logger.exception('Caught Github Exception while processing repo "%s"', repo.name)
         except Exception as last_chance:
-            logger.warning('Uncaught exception: %s', last_chance)
+            logger.exception('In rebase.github.account_scanner.AccountScanner.process_repo: Uncaught exception')
         # keep algo O(1) in space
         if self.local_repo_dir and isdir(self.local_repo_dir):
             rmtree(self.local_repo_dir)
