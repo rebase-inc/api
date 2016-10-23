@@ -261,8 +261,8 @@ class AccountScanner(object):
                 repo_languages = set(repo.get_languages().keys())
             except GithubException as e:
                 logger.exception('Could not get languages for repo %s', repo_name)
-                continue
-            else:
+                repo_languages = self.supported_languages
+            finally:
                 if bool(self.supported_languages & repo_languages):
                     self.cloned = False
                     self.process_repo(repo, scanned_user.login, commit_count_by_language, unknown_extension_counter, technologies)
