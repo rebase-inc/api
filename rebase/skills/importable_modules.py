@@ -84,11 +84,3 @@ class ImportableModules(frozenset):
         q.extend( (subtree, start_directory) for subtree in tree.trees )
 
 
-class Encoder(JSONEncoder):
-
-    def default(self, obj):
-        if isinstance(obj, ImportableModules):
-            return list(obj)
-        return JSONEncoder.default(self, obj)
-
-
