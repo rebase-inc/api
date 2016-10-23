@@ -16,6 +16,7 @@ from ..datetime import time_to_epoch
 from ..features.rq import setup_rq
 from ..skills.py2_py3_scanner import Py2Py3Scanner
 from ..skills.aws_keys import profile_key
+from ..skills.java import Java
 from ..skills.metrics import measure
 from ..skills.parser import Parser
 from ..skills.remote_scanner import Client
@@ -100,7 +101,7 @@ class AccountScanner(object):
 
             'Python':       Py2Py3Scanner(),
             'JavaScript':   Client(host='javascript'),
-            'Java':         Parser('java8'),
+            'Java':         Java(),
 
             #'C':        Parser('c'),
             #'C++':      Parser('cpp'),
@@ -121,7 +122,7 @@ class AccountScanner(object):
                 continue
 
     def close(self):
-        for scanner in self.scanners:
+        for scanner in self.scanners.values():
             scanner.close()
 
     def scan_one_commit_on_disk(self, repo_name, commit):
@@ -166,15 +167,14 @@ class AccountScanner(object):
                                     local_commit.parents[0].tree[diff.a_path].data_stream.read().decode(),
                                     diff.diff.decode('UTF-8'),
                                     time_to_epoch(local_commit.authored_datetime),
-                                    scanner.context(local_commit)
+                                    scanner.context(local_commit, parent_commit=local_commit.parents[0])
                                 ))
                         except SyntaxError as e:
-                            logger.warning('Syntax error: %s', e)
+                            logger.exception('Syntax error while processing commit "%s"', local_commit.binsha)
                         except GithubException as e:
-                            logger.warning('GithubException Status: %d, Data: %s', e.status, e.data)
-                            raise e
+                            logger.exception('GithubException while processing commit "%s"', local_commit.binsha)
                         except RebaseGithubException as rebase_exception:
-                            logger.warning(rebase_exception)
+                            logger.exception()
                             raise rebase_exception
                         except Exception as last_chance:
                             logger.exception('in rebase.github.account_scanner.AccountScanner.scan_one_commit_on_disk: Uncaught exception')
@@ -252,10 +252,20 @@ class AccountScanner(object):
         logger.info('Scanning all repos for user: %s', scanned_user.login)
         logger.debug('oauth_scopes: %s', self.api.oauth_scopes)
         for repo in scanned_user.get_repos():
-            repo_languages = set(repo.get_languages().keys())
-            if bool(self.supported_languages & repo_languages):
-                self.cloned = False
-                self.process_repo(repo, scanned_user.login, commit_count_by_language, unknown_extension_counter, technologies)
+            try:
+                repo_name = repo.name
+            except GithubException as e:
+                logger.exception('Could fetch repo name')
+                continue
+            try:
+                repo_languages = set(repo.get_languages().keys())
+            except GithubException as e:
+                logger.exception('Could not get languages for repo %s', repo_name)
+                continue
+            else:
+                if bool(self.supported_languages & repo_languages):
+                    self.cloned = False
+                    self.process_repo(repo, scanned_user.login, commit_count_by_language, unknown_extension_counter, technologies)
         return commit_count_by_language, unknown_extension_counter, technologies
 
 
@@ -286,6 +296,7 @@ def scan_one_user(token, token_user, user_login=None, contractor_id=None):
             # so private scanning: token_user (guy logged in), user_login= None
             # public scanning token_user=CRAWLER_USERNAME, user_login=<any user login>
             commit_count_by_language, unknown_extension_counter, technologies = scanner.scan_all_repos(login=user_login)
+        scanner.close()
         user_data['commit_count_by_language'] = commit_count_by_language
         user_data['technologies'] = technologies
         user_data['unknown_extension_counter'] = unknown_extension_counter

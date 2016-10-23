@@ -82,13 +82,13 @@ def tech(module_name):
 
 class PythonScanner(TechnologyScanner):
 
-    def extract_library_bindings(self, code, filename, importable_modules):
+    def extract_library_bindings(self, code, filename, context):
         ''' 
             Return a dictionary for all libraries detected in 'code'
             with their local bindings in the 'code'.
 
             Note that it can also resolve relative imports, but since we cannot
-            distinguish (right now) between third-party and private module, we ignore
+            distinguish (right now) between 3rd-party and private module, we ignore
             the relative imports because those we know are private.
 
             For instance:
@@ -99,14 +99,16 @@ class PythonScanner(TechnologyScanner):
             would be listed as:
             {
                 ...
-                'Python.__third_party__.sqlalchemy.orm.foo': ['bar'],
-                'Python.__standard_library__.pickle': ['pickle'],
+                'Python.__3rd_party__.sqlalchemy.orm.foo': ['bar'],
+                'Python.__std_library__.pickle': ['pickle'],
                 ...
             }
 
             See also 'rebase/tests/unit/skills_python.py'.
 
         '''
+        # TODO modify the Python scanner to take advantage of before and after modules from PythonContext
+        importable_modules = frozenset(context[0])
         tree = safe_parse(code, filename)
         library_bindings = defaultdict(list)
         for node in walk(tree):
@@ -150,7 +152,10 @@ class PythonScanner(TechnologyScanner):
             grammar_profile.add(LANGUAGE_PREFIX+'__grammar__.'+node.__class__.__name__, date, 1)
         return grammar_profile
 
-    def context(self, commit):
-        return ImportableModules(commit.tree)
+    def context(self, commit, parent_commit=None):
+        return [
+            tuple(ImportableModules(commit.tree)),
+            tuple(ImportableModules(parent_commit.tree) if parent_commit else tuple())
+        ]
 
 

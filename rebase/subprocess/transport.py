@@ -82,9 +82,10 @@ class ClientSubprocess(ClientTransport):
     def __init__(self, exec_path, fifo_dir, reader_writer):
         super().__init__(fifo_dir, reader_writer)
         self.subprocess = Popen((exec_path, fifo_dir))
-        self.open()
+        super().open()
 
     def close(self):
+        super().close()
         self.subprocess.terminate()
 
 

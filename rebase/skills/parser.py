@@ -30,18 +30,42 @@ class Parser(TechnologyScanner):
         self.language = language
         self.language_index = self.languages_.index(self.language)
 
-    def languages(self):
-        return self.client.languages()
+    def close(self):
+        self.client.close()
 
-    def grammar_rules(self):
-        return self.client.grammar_rules(self.language_index)
+    def languages(self, dumps_kw=None, loads_kw=None):
+        return self.client.languages(
+            dumps_kw=dumps_kw,
+            loads_kw=loads_kw,
+        )
 
-    def scan_contents(self, filename, code, date, context):
-        use = self.client.scan_contents(self.language_index, code)
+    def grammar_rules(self, dumps_kw=None, loads_kw=None):
+        return self.client.grammar_rules(
+            self.language_index,
+            dumps_kw=dumps_kw,
+            loads_kw=loads_kw,
+        )
+
+    def scan_contents(self, filename, code, date, context, dumps_kw=None, loads_kw=None):
+        use = self.client.scan_contents(
+            self.language_index,
+            code,
+            context[0],
+            dumps_kw=dumps_kw,
+            loads_kw=loads_kw,
+        )
         return TechProfile({ rule: Exposure(date, date, reps) for rule, reps in use.items() })
 
-    def scan_patch(self, filename, code, previous_code, patch, date, context):
-        use = self.client.scan_patch(self.language_index, code, previous_code, patch)
+    def scan_patch(self, filename, code, previous_code, patch, date, context, dumps_kw=None, loads_kw=None):
+        use = self.client.scan_patch(
+            self.language_index,
+            code,
+            context[0],
+            previous_code,
+            context[1],
+            dumps_kw=dumps_kw,
+            loads_kw=loads_kw
+        )
         return TechProfile({ rule: Exposure(date, date, reps) for rule, reps in use.items() })
 
 

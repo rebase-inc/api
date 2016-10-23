@@ -1,6 +1,5 @@
 from logging import getLogger
 
-from .importable_modules import Encoder
 from .technology_scanner import TechnologyScanner
 from .tech_profile import TechProfile, Exposure, to_TechProfile_or_Exposure
 from ..subprocess import create_json_streaming_subprocess
@@ -18,7 +17,6 @@ class Proxy(TechnologyScanner):
         self.transport, self.protocol = create_json_streaming_subprocess(
             executable_path,
             fifo_dir, 
-            dumps_kwargs={ 'cls': Encoder },
             loads_kwargs={ 'object_hook': to_TechProfile_or_Exposure }
         )
         self.scan_patch_call = {

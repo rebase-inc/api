@@ -50,7 +50,7 @@ class TechnologyScanner(object):
         complete_profile.merge(self.language_profile(code, '', filename, date))
         return complete_profile
 
-    def scan_patch(self, filename, code, previous_code, patch, date, context=None):
+    def scan_patch(self, filename, code, previous_code, patch, date, context):
         '''
             Return a TechProfile object for the modified 'code'
         '''
@@ -71,7 +71,7 @@ class TechnologyScanner(object):
         complete_profile.merge(self.language_profile(code, previous_code, filename, date))
         return complete_profile
 
-    def context(self, commit):
+    def context(self, commit, parent_commit=None):
         '''
         Extract a dictionary of additional information to be passed to the scan_* functions.
         For example a tree of package directories to help parse the libraries import paths.
