@@ -2,11 +2,11 @@ from ast import parse, walk, Import, ImportFrom
 from pprint import pprint
 from unittest import TestCase
 
-from ...skills.python import  PythonScanner, tech
-from ...skills.py2_py3_scanner import Py2Scanner
+from ....skills.python import  PythonScanner, tech
+from ....skills.py2_py3_scanner import Py2Scanner
 
 
-class Python(TestCase):
+class PythonTest(TestCase):
 
     def test_tech(self):
         self.assertEqual( tech('pickle'), 'Python.__std_library__.pickle')
