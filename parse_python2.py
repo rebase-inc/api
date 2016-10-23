@@ -47,7 +47,8 @@ class InvalidMethodArguments(ParserException):
     error_message = 'Invalid method arguments'
     code = 3
 
-def quit(sig, frame):
+def quit(sig, frame, transport):
+    transport.close()
     logger.debug('Received signal: %s', sig)
     exit(-sig)
 
@@ -69,10 +70,11 @@ scanner_methods = { fn.__name__: len(getargspec(fn)[0]) for fn in (TechnologySca
 validate = partial(validate_object, methods=scanner_methods)
 
 
-def setup():
-    signal(SIGTERM, quit)
-    signal(SIGQUIT, quit)
-    signal(SIGINT, quit)
+def setup(transport):
+    quit_ = partial(quit, transport=transport)
+    signal(SIGTERM, quit_)
+    signal(SIGQUIT, quit_)
+    signal(SIGINT, quit_)
     current_process().name = 'Python 2 Scanner'
     setup_rsyslog()
     logger.debug('setup completed')
@@ -91,10 +93,22 @@ class Python2Scanner(PythonScanner):
     '''
 
     def scan_contents(self, filename, code, date, context=None):
-        return super(Python2Scanner, self).scan_contents(filename, code, date, context=frozenset(context))
+        return super(Python2Scanner, self).scan_contents(
+            filename,
+            code,
+            date,
+            context
+        )
 
     def scan_patch(self, filename, code, previous_code, patch, date, context=None):
-        return super(Python2Scanner, self).scan_patch(filename, code, previous_code, patch, date, context=frozenset(context))
+        return super(Python2Scanner, self).scan_patch(
+            filename,
+            code,
+            previous_code,
+            patch,
+            date,
+            context
+        )
 
 
 python_scanner_call = partial(instance_method_call, Python2Scanner())
@@ -113,27 +127,30 @@ def handle_errors(exception_):
 
 
 @contextmanager
-def exit_on_error():
+def exit_on_error(transport):
     try:
         yield
     except SubprocessException as e:
         logger.exception('in parse_python2.py, SubprocessException caught in parse_python2.py')
+        transport.close()
         exit(1)
     except Exception as last_chance:
         logger.exception('in parse_python2.py, Uncaught exception in parse_python2.py')
+        transport.close()
         exit(2)
     else:
+        transport.close()
         exit(0)
 
 def main(argv):
-    setup()
     transport, protocol = create_json_streaming_server(
         argv[1],
         dumps_kwargs= {
             'cls': ExposureEncoder
         }
     )
-    with exit_on_error():
+    setup(transport)
+    with exit_on_error(transport):
         protocol.run_forever(python_scanner_call, handle_errors)
 
 
