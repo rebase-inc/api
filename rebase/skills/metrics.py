@@ -33,13 +33,16 @@ def measure(tech_profile):
     three_level_profiles = defaultdict(TechProfile)
     languages = dict()
     for tech, exposure in tech_profile.items():
-        levels = tech.split('.', maxsplit=3)
+        levels = tech.split('.', maxsplit=5)
         # language level
         language = levels[0]
         three_level_profiles[language][tech] = exposure
         if levels[1] == '__3rd_party__':
             # this produces '__3rd_party__.sqlalchemy' type entries
-            three_level_profiles['.'.join(levels[:3])][tech] = exposure
+            if language == 'Java':
+                three_level_profiles['.'.join(levels[:5])][tech] = exposure
+            else:
+                three_level_profiles['.'.join(levels[:3])][tech] = exposure
         else:
             # new combo level '__language__' aggregates entries from grammar & standard library
             three_level_profiles[language+'.__language__'][tech] = exposure
