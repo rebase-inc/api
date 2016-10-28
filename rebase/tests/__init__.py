@@ -1,7 +1,15 @@
+from multiprocessing import current_process
 from unittest import TestCase
 
 from rebase.app import create
 import rebase.tests.database.cleanup
+
+from ..common.debug import setup_service_log
+
+setup_service_log()
+
+current_process().name = 'Unit Tests'
+
 
 class RebaseTestCase(TestCase):
 

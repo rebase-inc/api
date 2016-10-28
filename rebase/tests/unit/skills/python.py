@@ -1,62 +1,90 @@
 from ast import parse, walk, Import, ImportFrom
+from functools import partialmethod
 from pprint import pprint
 from unittest import TestCase
 
-from ....skills.python import  PythonScanner, tech
-from ....skills.py2_py3_scanner import Py2Scanner
+from ....skills.importable_modules import ImportableModules
+from ....skills.python import Python
+from ....skills.python_client import PythonClient, tech
+from ....skills.py2_client import Py2Client
+from ....skills.py2_py3_client import Py2Py3Client
+
+from .git import Tree, Blob, Commit
+
+
+code_1 = '''
+from pickle import loads, dumps
+from aws.s3 import S3
+from a.b import Foo
+
+s3 = S3()
+
+s3.put('foo', dumps({1:2, 3:4}))
+
+'''
+
+code_2 = '''
+from pickle import dumps
+from aws.s3 import S3
+from a.b import Foo
+
+s3 = S3()
+
+s3.put('foo', dumps({1:2, 3:4}))
+
+foo = Foo()
+
+'''
 
 
 class PythonTest(TestCase):
 
-    def test_tech(self):
-        self.assertEqual( tech('pickle'), 'Python.__std_library__.pickle')
-        self.assertEqual( tech('foobar'), 'Python.__3rd_party__.foobar')
+    def scanner_client(self, Client):
+        client0 = Client()
+        client0.close()
+        client = Client()
+        self.assertEqual( list(client.languages()), ['Python'])
+        technologies = client.scan_contents(0, 'foo.py', code_1, ImportableModules())
+        client.close()
+        S3_key = '2.aws.s3.S3'
+        loads_key = '1.pickle.loads'
+        dumps_key = '1.pickle.dumps'
+        self.assertIn(loads_key, technologies)
+        self.assertEqual(technologies[loads_key], 1)
+        self.assertIn(dumps_key, technologies)
+        self.assertEqual(technologies[dumps_key], 2)
+        self.assertIn(S3_key, technologies)
+        self.assertEqual(technologies[S3_key], 2)
 
-    def test_std_lib_import(self):
-        scanner = PythonScanner()
-        libs = scanner.extract_library_bindings('import pickle', 'foo.py', [[],[]])
-        self.assertIn('Python.__std_library__.pickle', libs)
-        self.assertEqual( libs['Python.__std_library__.pickle'], ['pickle'])
+    test_python_client = partialmethod(scanner_client, PythonClient)
 
-        libs = scanner.extract_library_bindings('from logging.handlers import SysLogHandler', 'foo.py', [[],[]])
-        self.assertIn('Python.__std_library__.logging.handlers.SysLogHandler', libs)
-        self.assertEqual(libs['Python.__std_library__.logging.handlers.SysLogHandler'], ['SysLogHandler'])
+    test_py2_client = partialmethod(scanner_client, Py2Client)
 
-    def test_from_3rd_party_import(self):
-        scanner = PythonScanner()
-        libs = scanner.extract_library_bindings('from foo import bar as yomama', 'sobig.py', [[],[]])
-        self.assertIn('Python.__3rd_party__.foo.bar', libs)
-        self.assertEqual( libs['Python.__3rd_party__.foo.bar'], ['yomama'])
+    test_py2_py3_client = partialmethod(scanner_client, Py2Py3Client)
 
-    def test_private_module_import(self):
-        scanner = PythonScanner()
-        libs = scanner.extract_library_bindings('from foo import bar as yomama', 'sobig.py', [['foo'],[]])
-        self.assertFalse(libs)
-        libs = scanner.extract_library_bindings('from a.b.c.d import Foo as Fooyass', 'sobig.py', [['a.b.c.d'],[]])
-        self.assertFalse(libs)
+    def test_scan_diff(self):
+        Foo_py = Blob('Foo.py', 'a/b/Foo.py', contents=code_1)
+        b_init_py = Blob('__init__.py', 'a/b/__init__.py')
+        b = Tree('b', 'a/b', blobs=[b_init_py, Foo_py])
+        a_init_py = Blob('__init__.py', 'a/__init__.py')
+        a = Tree('a', 'a', blobs=[a_init_py], trees=[b])
+        parent_commit = Commit(a)
 
-    def test_relative_import(self):
-        scanner = PythonScanner()
-        libs = scanner.extract_library_bindings('from .foo import bar as yomama', 'sobig.py', [[],[]])
-        self.assertFalse(libs)
+        Foo_py_2 = Blob('Foo.py', 'a/b/Foo.py', contents=code_2)
+        b_2 = Tree('b', 'a/b', blobs=[b_init_py, Foo_py_2])
+        a_2 = Tree('a', 'a', blobs=[a_init_py], trees=[b_2])
+        commit = Commit(a_2)
 
-    def test_py2_scanner(self):
-        scanner = Py2Scanner()
-        profile = scanner.scan_contents('foo.py', 'import pickle', 1234, [[],[]])
-        self.assertIn('Python.__std_library__.pickle', profile)
-        self.assertEqual( profile['Python.__std_library__.pickle'].first, 1234)
-        self.assertEqual( profile['Python.__std_library__.pickle'].last, 1234)
-        self.assertEqual( profile['Python.__std_library__.pickle'].total_reps, 1)
-        profile = scanner.scan_contents('sobig.py', 'from a.b.c.d import Foo as Fooyass', 1234, [['a.b.c.d'],[]])
-        std_lib_keys = 0
-        third_party_lib_keys = 0
-        for tech, exposure in profile.items():
-            if tech.startswith('Python.__std_library__'):
-                std_lib_keys += 1
-            elif tech.startswith('Python.__3rd_party__'):
-                third_party_lib_keys += 1
-        self.assertEqual( std_lib_keys, 0 )
-        self.assertEqual( third_party_lib_keys, 0 )
+        scanner = Python()
+        tech_profile = scanner.scan_diff(
+            Foo_py_2.name,
+            Foo_py_2.contents,
+            commit,
+            Foo_py.contents,
+            parent_commit,
+            1234
+        )
         scanner.close()
+        self.assertNotIn('Python.2.a.b.Foo', tech_profile)
 
 

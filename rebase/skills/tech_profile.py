@@ -29,14 +29,6 @@ class Exposure(object):
         self.total_reps += exposure.total_reps
 
 
-class ExposureEncoder(JSONEncoder):
-
-    def default(self, obj):
-        if isinstance(obj, Exposure):
-            return obj.__dict__
-        return JSONEncoder.default(self, obj)
-
-
 class TechProfile(defaultdict):
     '''
 

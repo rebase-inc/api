@@ -1,7 +1,9 @@
-from logging import getLogger
+from logging import getLogger, Formatter
+from logging.handlers import SysLogHandler
 from pprint import pformat
 from sys import prefix, exec_prefix
 from traceback import format_stack
+
 
 
 logger = getLogger(__name__)
@@ -24,8 +26,6 @@ def dump_stack():
 
 def setup_rsyslog():
     from rebase.common.config import Config
-    from logging import getLogger, Formatter
-    from logging.handlers import SysLogHandler
     conf = Config.BASIC_LOG_CONFIG
     logger = getLogger()
     logger.setLevel(conf['level'])
@@ -33,6 +33,15 @@ def setup_rsyslog():
     rsyslog.setFormatter(Formatter(conf['format']))
     logger.addHandler(rsyslog)
     return logger
+
+def setup_service_log():
+    from rebase.common.settings import config
+    logger_ = getLogger()
+    logger_.setLevel(config['LOG_LEVEL'])
+    rsyslog = SysLogHandler(**config['RSYSLOG_CONFIG'])
+    rsyslog.setFormatter(Formatter(config['LOG_FORMAT']))
+    logger_.addHandler(rsyslog)
+    return logger_
 
 def setup_log_to_file(path):
     from logging import FileHandler

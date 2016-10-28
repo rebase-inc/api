@@ -36,19 +36,31 @@ def measure(tech_profile):
         levels = tech.split('.', maxsplit=5)
         # language level
         language = levels[0]
+        levels[1] = convert(levels[1])
         three_level_profiles[language][tech] = exposure
-        if levels[1] == '__3rd_party__':
-            # this produces '__3rd_party__.sqlalchemy' type entries
+        if levels[1] == '3rd-party':
+            # this produces '3rd-party.sqlalchemy' type entries
             if language == 'Java':
                 three_level_profiles['.'.join(levels[:5])][tech] = exposure
             else:
                 three_level_profiles['.'.join(levels[:3])][tech] = exposure
         else:
-            # new combo level '__language__' aggregates entries from grammar & standard library
-            three_level_profiles[language+'.__language__'][tech] = exposure
+            # new combo level 'language' aggregates entries from grammar & standard library
+            three_level_profiles[language+'.language'][tech] = exposure
 
     for level, profile in three_level_profiles.items():
         metrics[level] = TechProfileView(profile).experience
     return metrics
+
+
+def convert(second_level):
+    if second_level == '0':
+        return 'grammar'
+    elif second_level == '1':
+        return 'stdlib'
+    elif second_level == '2':
+        return '3rd-party'
+    else:
+        raise ValueError('Invalid second level "{}" in technology'.format(second_level))
 
 

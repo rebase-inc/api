@@ -1,7 +1,7 @@
 
 
-def Blob(name, path):
-    return type('_Blob', (object,), { 'path': path, 'name': name })
+def Blob(name, path, contents=None):
+    return type('_Blob', (object,), { 'path': path, 'name': name, 'contents': contents})
 
 
 def Tree(name, path, blobs=None, trees=None):

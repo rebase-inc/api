@@ -6,7 +6,12 @@
 }
 
 <language> is the capitalized name of the language. Example: 'Python', 'Java', 'Javascript', etc.
-<sub_level> is in ['__grammar__', '__std_library__', '__3rd_party__']
+
+<sub_level> is:
+    '0' for grammar,
+    '1' for standard library,
+    '2' fo 3rd-party libraries
+
 <node> is any string describing the used element.
 
 All data shall be JSON encoded
@@ -31,8 +36,8 @@ request = '[0, "/foo.js", "function foo(bar)\n{ console.log(\"boo\");\n}", 13406
 
 #### Response
 {
-    'Javascript.__grammar__.ArrayPattern': [ 1340648513, 1340748280, 41 ],
-    'Javascript.__grammar__.Function': [ 1340648513, 1340748280, 29 ],
+    'Javascript.0.ArrayPattern': [ 1340648513, 1340748280, 41 ],
+    'Javascript.0.Function': [ 1340648513, 1340748280, 29 ],
 }
 
 ### scan_patch
@@ -53,8 +58,8 @@ request = '[0, "/foo.js", "function foo(bar)\n{ var a=1;\nconsole.log(\"boo\");\
 
 #### Response
 {
-    'Javascript.__grammar__.ArrayPattern': [ 1340648513, 1340748280, 41 ],
-    'Javascript.__grammar__.Function': [ 1340648513, 1340748280, 29 ],
+    'Javascript.0.ArrayPattern': [ 1340648513, 1340748280, 41 ],
+    'Javascript.0.Function': [ 1340648513, 1340748280, 29 ],
 }
 
 ### grammar
@@ -68,8 +73,8 @@ request = '[2]'
 
 #### Response
 [
-    'Javascript.__grammar__.ImportNamespaceSpecifier',
-    'Javascript.__grammar__.ThisExpression',
+    'Javascript.0.ImportNamespaceSpecifier',
+    'Javascript.0.ThisExpression',
     ...
 ]
 

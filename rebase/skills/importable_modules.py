@@ -1,4 +1,3 @@
-from json import JSONEncoder
 
 
 def is_python_module(blob):
@@ -53,9 +52,9 @@ def start_dir(pkg_path):
 
 class ImportableModules(frozenset):
 
-    def __new__(cls, tree_root):
+    def __new__(cls, tree_root=None):
         namespaces = set()
-        q = [ (tree_root, None) ]
+        q = [ (tree_root, None) ] if tree_root else None
         while q:
             tree, start_directory = q.pop()
             modules = python_modules(tree) or set()

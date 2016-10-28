@@ -14,12 +14,12 @@ from ..common.settings import config
 from ..common.stopwatch import InfoElapsedTime
 from ..datetime import time_to_epoch
 from ..features.rq import setup_rq
-from ..skills.py2_py3_scanner import Py2Py3Scanner
+from ..skills.python import Python
 from ..skills.aws_keys import profile_key
 from ..skills.java import Java
+from ..skills.javascript import Javascript
 from ..skills.metrics import measure
-from ..skills.parser import Parser
-from ..skills.remote_scanner import Client
+from ..skills.jvm_parser import JVMParser
 from ..skills.tech_profile import TechProfile
 
 from .api import RebaseGithub, RebaseGithubException
@@ -99,17 +99,17 @@ class AccountScanner(object):
         assert isdir(CLONED_REPOS_ROOT_DIR)
         self.scanners = {
 
-            'Python':       Py2Py3Scanner(),
-            'JavaScript':   Client(host='javascript'),
+            'Python':       Python(),
+            'JavaScript':   Javascript(),
             'Java':         Java(),
 
-            #'C':        Parser('c'),
-            #'C++':      Parser('cpp'),
-            #'Clojure':  Parser('clojure'),
-            #'Scala':    Parser('scala'),
-            #'Go':       Parser('golang'),
-            #'Lua':      Parser('lua'),
-            #'Swift':    Parser('swift'),
+            #'C':        JVMParser('c'),
+            #'C++':      JVMParser('cpp'),
+            #'Clojure':  JVMParser('clojure'),
+            #'Scala':    JVMParser('scala'),
+            #'Go':       JVMParser('golang'),
+            #'Lua':      JVMParser('lua'),
+            #'Swift':    JVMParser('swift'),
         }
         self.supported_languages = set(self.scanners.keys())
         self.local_repo_dir = None
@@ -158,16 +158,16 @@ class AccountScanner(object):
                                     diff.b_path,
                                     local_commit.tree[diff.b_path].data_stream.read().decode(),
                                     time_to_epoch(local_commit.authored_datetime),
-                                    scanner.context(local_commit)
+                                    local_commit
                                 ))
                             else:
-                                technologies.merge(scanner.scan_patch(
+                                technologies.merge(scanner.scan_diff(
                                     diff.b_path,
                                     local_commit.tree[diff.b_path].data_stream.read().decode(),
+                                    local_commit,
                                     local_commit.parents[0].tree[diff.a_path].data_stream.read().decode(),
-                                    diff.diff.decode('UTF-8'),
+                                    local_commit.parents[0],
                                     time_to_epoch(local_commit.authored_datetime),
-                                    scanner.context(local_commit, parent_commit=local_commit.parents[0])
                                 ))
                         except SyntaxError as e:
                             logger.exception('Syntax error while processing commit "%s"', local_commit.binsha)
@@ -188,7 +188,7 @@ class AccountScanner(object):
                             blob.name,
                             blob.data_stream.read().decode(),
                             time_to_epoch(local_commit.authored_datetime),
-                            scanner.context(local_commit)
+                            local_commit
                         ))
                     except SyntaxError as e:
                         logger.warning('Syntax error: %s', e)
@@ -256,6 +256,8 @@ class AccountScanner(object):
                 repo_name = repo.name
             except GithubException as e:
                 logger.exception('Could fetch repo name')
+                continue
+            if repo_name != 'react-app':
                 continue
             try:
                 repo_languages = set(repo.get_languages().keys())

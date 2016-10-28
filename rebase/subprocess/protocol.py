@@ -88,13 +88,13 @@ class ServerProtocol(object):
         try:
             result = on_new_input(object_)
         except Exception as e:
-            logger.debug('caught exception while running on_new_input: %s', str(e))
+            logger.exception('caught exception while running on_new_input: %s', str(e))
             try:
                 error = on_error(e)
                 logger.debug('%s.run_once, on_error returned: %s', __name__, error)
                 self.write_err(error)
             except Exception as e2:
-                logger.debug('caught exception while running on_error: %s', str(e2))
+                logger.exception('caught exception while running on_error: %s', str(e2))
                 self.write_err(str(e2))
             finally:
                 self.write_out(None)

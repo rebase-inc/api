@@ -9,15 +9,15 @@ from signal import signal, SIGTERM, SIGQUIT, SIGINT
 from sys import argv, exit
 from time import sleep
 
-from rebase.common.debug import setup_rsyslog
-from rebase.skills.python import PythonScanner
-from rebase.skills.tech_profile import ExposureEncoder
-from rebase.skills.technology_scanner import TechnologyScanner
+from rebase.common.debug import setup_service_log
+from rebase.skills.importable_modules import ImportableModules
+from rebase.skills.python_client import PythonClient
+from rebase.skills.scanner_client import ScannerClient
 from rebase.subprocess import create_json_streaming_server
 from rebase.subprocess.exceptions import SubprocessException
 
 
-logger = getLogger()
+logger = setup_service_log()
 
 
 class ParserException(Exception):
@@ -59,12 +59,23 @@ def validate_object(object_, methods):
     method = object_['method']
     if method not in methods:
         raise InvalidMethod()
-    # +1 for self parameter
-    if len(object_['args'])+1 != methods[method]:
-        raise InvalidMethodArguments()
+    args = object_['args']
+    if args:
+        # +1 for self parameter
+        if len(object_['args'])+1 != methods[method]:
+            raise InvalidMethodArguments()
+    else:
+        if 1 != methods[method]:
+            raise InvalidMethodArguments()
 
 
-scanner_methods = { fn.__name__: len(getargspec(fn)[0]) for fn in (TechnologyScanner.scan_contents, TechnologyScanner.scan_patch) }
+scanner_methods = {
+    fn.__name__: len(getargspec(fn)[0]) for fn in (
+        ScannerClient.languages,
+        ScannerClient.grammar,
+        ScannerClient.scan_contents,
+    )
+}
 
 
 validate = partial(validate_object, methods=scanner_methods)
@@ -75,43 +86,36 @@ def setup(transport):
     signal(SIGTERM, quit_)
     signal(SIGQUIT, quit_)
     signal(SIGINT, quit_)
-    current_process().name = 'Python 2 Scanner'
-    setup_rsyslog()
+    current_process().name = 'Python 2 Client'
     logger.debug('setup completed')
 
 
 def instance_method_call(instance, method_call):
     # uncomment 'validate' when debugging
-    #validate(method_call)
-    return getattr(instance, method_call['method'])(*method_call['args'])
+    # TODO should we use PYTHONDEBUG in environment instead?
+    # validate(method_call)
+    args = method_call['args']
+    if args:
+        return getattr(instance, method_call['method'])(*method_call['args'])
+    return getattr(instance, method_call['method'])()
 
 
-class Python2Scanner(PythonScanner):
+class Python2Client(PythonClient):
     '''
         Thin wrapper to re-encode the context as an ImportableModules object.
         While traveling through the input pipe, the ImportableModules object was encoded as a JSON Array.
     '''
 
-    def scan_contents(self, filename, code, date, context=None):
-        return super(Python2Scanner, self).scan_contents(
+    def scan_contents(self, language_index, filename, code, importable_modules_as_list):
+        return super(Python2Client, self).scan_contents(
+            language_index,
             filename,
             code,
-            date,
-            context
-        )
-
-    def scan_patch(self, filename, code, previous_code, patch, date, context=None):
-        return super(Python2Scanner, self).scan_patch(
-            filename,
-            code,
-            previous_code,
-            patch,
-            date,
-            context
+            frozenset(importable_modules_as_list)
         )
 
 
-python_scanner_call = partial(instance_method_call, Python2Scanner())
+python_client_call = partial(instance_method_call, Python2Client())
 
 
 def handle_errors(exception_):
@@ -143,15 +147,10 @@ def exit_on_error(transport):
         exit(0)
 
 def main(argv):
-    transport, protocol = create_json_streaming_server(
-        argv[1],
-        dumps_kwargs= {
-            'cls': ExposureEncoder
-        }
-    )
+    transport, protocol = create_json_streaming_server(argv[1])
     setup(transport)
     with exit_on_error(transport):
-        protocol.run_forever(python_scanner_call, handle_errors)
+        protocol.run_forever(python_client_call, handle_errors)
 
 
 if __name__ == '__main__':

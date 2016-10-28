@@ -49,7 +49,7 @@ class SocketRPCClient(object):
         return loads(self.read_stream.readline(), **(loads_kw if loads_kw else dict()))
 
 
-def method(id_):
-    return partialmethod(SocketRPCClient.remote_procedure_call, id_)
+def method(id_, dumps_kw=None, loads_kw=None):
+    return partialmethod(SocketRPCClient.remote_procedure_call, id_, dumps_kw=dumps_kw, loads_kw=loads_kw)
 
 

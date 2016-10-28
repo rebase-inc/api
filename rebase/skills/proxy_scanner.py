@@ -1,14 +1,23 @@
+from json import JSONEncoder
 from logging import getLogger
 
-from .technology_scanner import TechnologyScanner
-from .tech_profile import TechProfile, Exposure, to_TechProfile_or_Exposure
+from .importable_modules import ImportableModules
+from .scanner_client import ScannerClient
 from ..subprocess import create_json_streaming_subprocess
 
 
 logger = getLogger(__name__)
 
 
-class Proxy(TechnologyScanner):
+class Encoder(JSONEncoder):
+
+    def default(self, obj):
+        if isinstance(obj, ImportableModules):
+            return tuple(obj)
+        return obj
+
+
+class Proxy(ScannerClient):
     '''
         A proxy scanner for any language (python, javascript, etc.)
     '''
@@ -17,16 +26,21 @@ class Proxy(TechnologyScanner):
         self.transport, self.protocol = create_json_streaming_subprocess(
             executable_path,
             fifo_dir, 
-            loads_kwargs={ 'object_hook': to_TechProfile_or_Exposure }
+            dumps_kwargs={ 'cls': Encoder },
         )
-        self.scan_patch_call = {
-            'method':   'scan_patch',
+        self.languages_call = {
+            'method':   'languages',
+            'args':     None
+        }
+        self.grammar_call = {
+            'method':   'grammar',
             'args':     None
         }
         self.scan_contents_call = {
             'method':   'scan_contents',
             'args':     None
         }
+        super().__init__()
 
     def get_results(self):
         err = self.protocol.read_err()
@@ -44,9 +58,13 @@ class Proxy(TechnologyScanner):
                 raise Exception(value)
         return self.protocol.read_out()
 
-    def scan_patch(self, *args):
-        self.scan_patch_call['args'] = args
-        self.protocol.write_in(self.scan_patch_call)
+    def languages(self):
+        self.protocol.write_in(self.languages_call)
+        return self.get_results()
+
+    def grammar(self, *args):
+        self.grammar_call['args'] = args
+        self.protocol.write_in(self.grammar_call)
         return self.get_results()
 
     def scan_contents(self, *args):

@@ -1,7 +1,7 @@
 from pprint import pprint
 from unittest import TestCase
 
-from ....skills.java import Java, qualified_name, packages
+from ....skills.java import Java, qualified_name
 from ....skills.metrics import measure
 from .git import Tree, Blob, Commit
 
@@ -11,14 +11,15 @@ class JavaTest(TestCase):
     def setUp(self):
         # build the parent commit
         Bar_java = Blob('Bar.java', 'a/Bar.java')
+        self.Foo_java = Blob('Foo.java', 'a/b/Foo.java')
         Caca_js = Blob('Caca.js', 'a/b/Caca.js')
-        parent_b = Tree('b', 'a/b', blobs=[Caca_js])
+        parent_b = Tree('b', 'a/b', blobs=[self.Foo_java, Caca_js])
         parent_a = Tree('a', 'a', blobs=[Bar_java], trees=[parent_b])
         self.parent_commit = Commit(parent_a)
 
-        # this commit just adds a file Foo.java
-        self.Foo_java = Blob('Foo.java', 'a/b/Foo.java')
-        b = Tree('b', 'a/b', blobs=[self.Foo_java, Caca_js])
+        # this commit modifies Foo.java
+        self.Foo_java_2 = Blob('Foo.java', 'a/b/Foo.java')
+        b = Tree('b', 'a/b', blobs=[self.Foo_java_2, Caca_js])
         a = Tree('a', 'a', blobs=[Bar_java], trees=[b])
         self.commit = Commit(a)
 
@@ -27,20 +28,12 @@ class JavaTest(TestCase):
         Foo_java = Blob('Foo.java', 'a/b/Foo.java')
         self.assertEqual( qualified_name(Foo_java), 'a.b.Foo' )
 
-    def test_packages(self):
-        pkgs = packages(self.commit)
-        self.assertNotEqual( pkgs.find('a.b.Foo'), -1 )
-        self.assertNotEqual( pkgs.find('a.Bar'), -1 )
-        self.assertEqual( pkgs.find('a.b.Caca'), -1 )
-
     def test_context(self):
         scanner = Java()
-        context = scanner.context(self.commit, self.parent_commit)
+        context = scanner.context(self.commit)
         scanner.close()
-        self.assertNotEqual( context[0].find('a.b.Foo'), -1 )
-        self.assertNotEqual( context[0].find('a.Bar'), -1 )
-        self.assertNotEqual( context[1].find('a.Bar'), -1 )
-        self.assertEqual( context[1].find('a.b.Foo'), -1 )
+        self.assertNotEqual( context.find('a.b.Foo'), -1 )
+        self.assertNotEqual( context.find('a.Bar'), -1 )
 
     def test_scan_contents(self):
         # should be in functional tests really...
@@ -54,16 +47,16 @@ class JavaTest(TestCase):
             
         '''
         scanner = Java()
-        profile = scanner.scan_contents('foo.py', foo_java, 1234, ('a.b.Star', None))
+        profile = scanner.scan_contents('foo.py', foo_java, 1234, self.commit)
         scanner.close()
         third_party_technologies = 0
         for technology in profile.keys():
-            if technology.startswith('Java.__3rd_party__'):
+            if technology.startswith('Java.2'):
                 third_party_technologies += 1
-        self.assertEqual( third_party_technologies, 0 )
+        self.assertEqual( third_party_technologies, 1 )
 
-    def test_scan_patch(self):
-        Foo_java_code = '''
+    def test_scan_diff(self):
+        code = '''
             // Standard Library
             import java.io.IOException;
 
@@ -91,24 +84,27 @@ class JavaTest(TestCase):
             }
             
         '''
+        parent_code = '' # let's assume the initial version of Foo_java was empty 
         scanner = Java()
-        profile = scanner.scan_contents(
-            self.Foo_java,
-            Foo_java_code,
-            1234,
-            scanner.context(self.commit, self.parent_commit)
+        profile = scanner.scan_diff(
+            self.Foo_java.name,
+            code,
+            self.commit,
+            parent_code,
+            self.parent_commit,
+            1234
         )
         scanner.close()
         standard_library_technologies = 0
         third_party_technologies = 0
         for technology in profile.keys():
-            if technology.startswith('Java.__std_library__'):
+            if technology.startswith('Java.1'):
                 standard_library_technologies += 1
-            if technology.startswith('Java.__3rd_party__'):
+            if technology.startswith('Java.2'):
                 third_party_technologies += 1
         self.assertEqual( standard_library_technologies, 1 )
         self.assertEqual( third_party_technologies, 1 )
-        IOException_key = 'Java.__std_library__.java.io.IOException'
+        IOException_key = 'Java.1.java.io.IOException'
         self.assertIn( IOException_key, profile )
         IOException = profile[IOException_key]
         self.assertEqual( IOException.total_reps, 4 )
@@ -127,9 +123,9 @@ class JavaTest(TestCase):
             
         '''
         scanner = Java()
-        profile = scanner.scan_contents('foo.py', foo_java, 1234, ('', None))
+        profile = scanner.scan_contents('foo.java', foo_java, 1234, self.commit)
         scanner.close()
         metrics = measure(profile)
-        pprint(metrics)
+        self.assertIn('Java.3rd-party.a.b.c', metrics)
 
 
