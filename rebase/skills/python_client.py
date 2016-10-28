@@ -49,7 +49,7 @@ def safe_parse(code, filename):
     try:
         return parse(code, filename)
     except SyntaxError as syntax_error:
-        logger.exception()
+        logger.exception('parse error with '+filename)
         raise syntax_error
 
 
