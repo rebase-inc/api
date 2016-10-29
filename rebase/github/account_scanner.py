@@ -8,14 +8,14 @@ from shutil import rmtree
 from git import Repo
 from github import GithubException
 
-from ..common.aws import exists, s3, s3_wait_till_exists
+from ..common.aws import s3_delete_folder, exists, s3, s3_wait_till_exists
 from ..common.debug import pdebug
 from ..common.settings import config
 from ..common.stopwatch import InfoElapsedTime
 from ..datetime import time_to_epoch
 from ..features.rq import setup_rq
 from ..skills.python import Python
-from ..skills.aws_keys import profile_key
+from ..skills.aws_keys import profile_key, level_key
 from ..skills.java import Java
 from ..skills.javascript import Javascript
 from ..skills.metrics import measure
@@ -257,8 +257,8 @@ class AccountScanner(object):
             except GithubException as e:
                 logger.exception('Could fetch repo name')
                 continue
-            #if repo_name != 'react-app':
-                #continue
+            if repo_name != 'api':
+                continue
             try:
                 repo_languages = set(repo.get_languages().keys())
             except GithubException as e:
@@ -321,5 +321,13 @@ def scan_one_user(token, token_user, user_login=None, contractor_id=None):
     except TimeoutError as timeout_error:
         logger.ERROR('scan_one_user(%s, %s) %s', token_user, user_login, str(timeout_error))
         return None
+
+
+def delete_population():
+    s3_delete_folder(bucket, level_key(''))
+
+
+def delete_user_profiles():
+    s3_delete_folder(bucket, 'user-profiles')
 
 

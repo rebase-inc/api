@@ -1,6 +1,7 @@
+from pprint import pprint
+
 from boto3 import resource
 from botocore.exceptions import ClientError
-
 
 from rebase.common.settings import config
 
@@ -38,5 +39,29 @@ def s3_wait_till_exists(bucket, key):
         Bucket=bucket,
         Key=key
     )
+
+
+def s3_delete_folder(bucket, folder):
+    args = {
+        'Bucket': bucket,
+        'Prefix': folder,
+    }
+    continuationToken = ''
+    while True:
+        if continuationToken:
+            args['ContinuationToken'] = continuationToken
+        response = s3.meta.client.list_objects_v2(**args)
+        objects = response['Contents']
+        s3.meta.client.delete_objects(
+            Bucket=bucket,
+            Delete={
+                'Quiet': True,
+                'Objects': [ { 'Key': obj['Key'] } for obj in objects ]
+            }
+        )
+        if 'NextContinuationToken' in response:
+            continuationToken = response['NextContinuationToken']
+        else:
+            break
 
 
