@@ -229,3 +229,45 @@ function _restart_web_workers() {
 function _redis() {
     docker exec -it api_redis_1 redis-cli
 }
+
+function _rq-population-build () {
+    docker build \
+        -t rebase/build-rq-population \
+        -f docker/rq_population/build-Dockerfile \
+        docker/rq_population/ 
+}
+
+function _rq-population-fetch-deps () {
+    docker run \
+        --rm \
+        --volume /wheelhouse:/wheelhouse:rw \
+        --volume $PWD:/api \
+        rebase/build-rq-population \
+        /venv/rq/bin/pip wheel \
+            --find-links /wheelhouse/wheels \
+            --requirement /api/docker/rq_population/requirements.txt \
+            --wheel-dir=/wheelhouse/wheels
+}
+
+function _rq-population-wheel () {
+    docker run \
+        --rm \
+        --volume /wheelhouse:/wheelhouse:rw \
+        --volume $PWD:/api \
+        rebase/build-rq-population \
+        /venv/rq/bin/python \
+            docker/rq_population/setup.py \
+                bdist_wheel \
+                    --bdist-dir /wheelhouse/bdist \
+                    --dist-dir /wheelhouse/wheels
+}
+
+function _rq-population-bdist_wheel () {
+    docker run \
+        --rm \
+        --volume /wheelhouse:/wheelhouse:rw \
+        --volume $PWD:/api \
+        rebase/build-rq-population \
+        /venv/rq/bin/python \
+            docker/rq_population/setup.py bdist_wheel $*
+}
