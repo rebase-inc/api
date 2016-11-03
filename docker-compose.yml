@@ -107,7 +107,7 @@ services:
       extends:
         service: webserver
         file: docker/api-dev.yml
-      image: rebase/rq_default
+      image: rebase/dev-rq-default
       volumes:
        - crawler:/crawler
       environment:

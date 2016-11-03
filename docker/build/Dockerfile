@@ -14,7 +14,12 @@ RUN apk update && \
 RUN pyvenv /venv/build && \
     source /venv/build/bin/activate && \
     pip install --upgrade pip && \
-    pip install wheel 
+    pip install wheel && \
+    deactivate && \
+    virtualenv /venv/build_p2 && \
+    source /venv/build_p2/bin/activate && \
+    pip install --upgrade pip && \
+    pip install wheel
 
 VOLUME /wheelhouse
 
