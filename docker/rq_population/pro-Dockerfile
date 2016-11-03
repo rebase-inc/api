@@ -1,19 +1,25 @@
-FROM python:alpine
-
-RUN apk update && \
-    apk add \
-        ca-certificates \
-        postgresql-dev \
-        gcc \
-        python3-dev \
-        musl-dev \
-        py-virtualenv
+FROM alpine
 
 COPY ./requirements.txt /requirements.txt
 
-RUN pyvenv /venv/rq && \
-    /venv/rq/bin/pip install --upgrade pip && \
-    /venv/rq/bin/pip install -r /requirements.txt
+COPY ./wheels/ /wheels/
+
+RUN apk update && \
+    apk add \
+        --no-cache \
+        libpq \
+        python3 && \
+    pyvenv /venv/rq && \
+    source /venv/rq/bin/activate && \
+    pip install \
+        --no-cache-dir \
+        --upgrade pip && \
+    source /venv/rq/bin/activate && \
+    pip install \
+        --no-cache-dir \
+        --requirement /requirements.txt \
+        --find-links /wheels && \
+    rm -rf /wheels
 
 WORKDIR /api
 

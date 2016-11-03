@@ -1,14 +1,26 @@
-FROM python:alpine
+FROM alpine
 
 RUN apk update && \
     apk add \
-        py-virtualenv
+        --no-cache \
+        libpq \
+        python3 && \
+    pyvenv /venv/rq && \
+    source /venv/rq/bin/activate && \
+    pip install \
+        --no-cache-dir \
+        --upgrade pip
 
 COPY ./requirements.txt /requirements.txt
 
-RUN pyvenv /venv/rq && \
-    /venv/rq/bin/pip install --upgrade pip && \
-    /venv/rq/bin/pip install -r /requirements.txt
+COPY ./wheels/ /wheels/
+
+RUN source /venv/rq/bin/activate && \
+    pip install \
+        --no-cache-dir \
+        --requirement /requirements.txt \
+        --find-links /wheels && \
+    rm -rf /wheels
 
 WORKDIR /api
 

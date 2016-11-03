@@ -1,0 +1,36 @@
+#!/bin/bash
+
+pushd .
+
+# let's activate the build virtual environment
+
+source /venv/build/bin/activate
+
+# First fetch wheel and build c extensions
+
+pip wheel \
+    --find-links /wheelhouse/wheels \
+    --requirement docker/rq_population/requirements.txt \
+    --wheel-dir=/wheelhouse/wheels
+
+# Now let's make a Dockerfile context
+# we can't symlink wheels into the 'source' directory 'docker/rq_population'
+# because are not repeatable across machines and hence not supported by Docker.
+# Instead, we just make hard copies of everything we need to build a container into a separate
+# directory ('/tmp/rq_population'), build the container, and finally, wipe the build dir.
+
+mkdir -p /tmp/rq_population
+
+cp docker/rq_population/pro-Dockerfile /tmp/rq_population/Dockerfile
+
+cp docker/rq_population/requirements.txt /tmp/rq_population/requirements.txt
+
+cp -r /wheelhouse/wheels /tmp/rq_population/.
+
+docker build -t rebase/pro-rq-population /tmp/rq_population
+
+rm -rf /tmp/rq_population
+
+deactivate
+
+popd

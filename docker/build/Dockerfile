@@ -11,12 +11,13 @@ RUN apk update && \
         py-virtualenv \
         docker
 
-RUN pyvenv /venv/rq && \
-    /venv/rq/bin/pip install --upgrade pip && \
-    /venv/rq/bin/pip install wheel 
+RUN pyvenv /venv/build && \
+    source /venv/build/bin/activate && \
+    pip install --upgrade pip && \
+    pip install wheel 
 
 VOLUME /wheelhouse
 
 WORKDIR /api
 
-CMD ["sh"]
+CMD ["bash"]

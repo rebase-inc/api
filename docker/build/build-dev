@@ -1,0 +1,9 @@
+#!/bin/bash
+
+pushd .
+
+cd /api
+
+./docker/rq_population/build-dev
+
+popd
