@@ -97,7 +97,7 @@ services:
       extends:
         service: webserver
         file: docker/api-dev.yml
-      image: rebase/rq_git
+      image: rebase/dev-rq-git
       ports:
        - "2222:22"
       volumes:
