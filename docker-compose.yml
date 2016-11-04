@@ -17,8 +17,8 @@ services:
        - uploads:/uploads
       #stdin_open: true
       #tty: true
-      #command: ["/venv/api/bin/python", "manage", "runserver", "-h", "0.0.0.0", "-p", "5000"]
-      command: ["/venv/api/bin/gunicorn", "-c", "/api/etc/gunicorn.dev.conf", "wsgi:app"]
+      #command: ["/venv/web/bin/python", "manage", "runserver", "-h", "0.0.0.0", "-p", "5000"]
+      command: ["/venv/web/bin/gunicorn", "-c", "/api/etc/gunicorn.dev.conf", "wsgi:app"]
 
     cache:
       extends:
@@ -34,7 +34,7 @@ services:
       extends:
         service: webserver
         file: docker/api-dev.yml
-      command: ["/venv/api/bin/python", "scheduler.py"]
+      command: ["/venv/web/bin/python", "scheduler.py"]
 
     jupyter:
       extends:

@@ -1,0 +1,29 @@
+FROM alpine
+
+RUN apk update && \
+    apk add \
+        --no-cache \
+        libmagic \
+        libpq \
+        openssh-client \
+        python3 && \
+    pyvenv /venv/web && \
+    source /venv/web/bin/activate && \
+    pip install \
+        --no-cache-dir \
+        --upgrade pip
+
+COPY ./requirements.txt /requirements.txt
+
+COPY ./wheels/ /wheels/
+
+RUN source /venv/web/bin/activate && \
+    pip install \
+        --no-cache-dir \
+        --requirement /requirements.txt \
+        --find-links /wheels && \
+    rm -rf /wheels
+
+WORKDIR /api
+
+CMD ["/venv/web/bin/gunicorn", "-c", "/api/etc/gunicorn.dev.conf", "wsgi:app"]

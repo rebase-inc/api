@@ -7,8 +7,8 @@ services:
         S3_BUCKET:
 
     webserver:
-      image: rebase/api
-      volumes:
-       - ..:/api
-      extends:
-        service: common_env
+        image: rebase/dev-web
+        volumes:
+            - ..:/api
+        extends:
+            service: common_env
