@@ -13,13 +13,12 @@ setup(
         'Intended Audience :: Developers',
         'Topic :: Software Development :: Developer Ranking and Remote Work Marketplace',
         'License :: Rebase Terms of Use (TBD!!!)',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.5',
     ],
     keywords='rebase api code2resume',
     packages=find_packages(
         exclude=[
-            'rebase/tests',
+            'tests',
             'rebase/views',
         ]
     ),
@@ -54,7 +53,9 @@ setup(
     extras_require=dict(),
     package_data=dict(),
     data_files=[],
-    entry_points=dict(),
+    entry_points={
+        'console_scripts': ['population=rebase.population:main']
+    }
 )
 
 

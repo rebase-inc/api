@@ -1,8 +1,8 @@
 FROM alpine
 
-COPY ./requirements.txt /requirements.txt
-
 COPY ./wheels/ /wheels/
+
+COPY ./pro.py /settings/pro.py
 
 RUN apk update && \
     apk add \
@@ -14,13 +14,12 @@ RUN apk update && \
     pip install \
         --no-cache-dir \
         --upgrade pip && \
-    source /venv/rq/bin/activate && \
     pip install \
         --no-cache-dir \
-        --requirement /requirements.txt \
-        --find-links /wheels && \
+        --find-links /wheels \
+        rq_population && \
     rm -rf /wheels
 
 WORKDIR /api
 
-CMD ["/venv/rq/bin/python", "rq-population.py"]
+CMD ["/venv/rq/bin/population"]

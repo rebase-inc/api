@@ -3,6 +3,7 @@ FROM alpine
 RUN apk update && \
     apk add \
         --no-cache \
+        ca-certificates \
         libmagic \
         libpq \
         openssh-client \
