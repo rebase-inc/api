@@ -1,5 +1,8 @@
 from setuptools import setup, find_packages
 
+with open('./requirements.txt') as requirements_txt:
+    requirements = [ line for line in requirements_txt ]
+
 setup(
     name='rq-population',
     version='0.1.0',
@@ -22,34 +25,7 @@ setup(
             'rebase/views',
         ]
     ),
-    install_requires=[
-		'aniso8601==1.1.0',
-		'blinker==1.4',
-		'boto3==1.4.0',
-		'botocore==1.4.56',
-		'click==6.6',
-		'docutils==0.12',
-		'Flask==0.11.1',
-		'Flask-Cache==0.13.1',
-		'Flask-Login==0.3.2',
-		'Flask-RESTful==0.3.5',
-		'Flask-SQLAlchemy==2.1',
-		'future==0.15.2',
-		'itsdangerous==0.24',
-		'Jinja2==2.8',
-		'jmespath==0.9.0',
-		'MarkupSafe==0.23',
-		'marshmallow==2.6.1',
-		'psycopg2==2.6.1',
-		'python-dateutil==2.5.2',
-		'pytz==2016.4',
-		'redis==2.10.5',
-		'requests==2.9.1',
-		'rq==0.6.0',
-		's3transfer==0.1.4',
-		'six==1.10.0',
-		'Werkzeug==0.11.11',
-    ],
+    install_requires=requirements,
     extras_require=dict(),
     package_data=dict(),
     data_files=[],
