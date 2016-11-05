@@ -20,6 +20,4 @@ RUN apk update && \
         rq_population && \
     rm -rf /wheels
 
-WORKDIR /api
-
 CMD ["/venv/rq/bin/population"]

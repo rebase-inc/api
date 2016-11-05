@@ -86,7 +86,16 @@ def update_rankings(
                     i = scores.index(score)
                     del scores[i]
                 except ValueError as e:
-                    raise ValueError('Cannot find old score for level {} in metrics'.format(level))
+                    # it is an inconsistency, but it's a recoverable one.
+                    # Here's an example where it can occur
+                    # (found during development of rq_population, while it can temporarily be buggy.)
+                    # old_metrics are saved by rq_default service, but scores are updated
+                    # rq_population. If rq_population crashes before it can update the scores,
+                    # there will be an inconsistency.
+                    # Clearly, rq_population should never crash & there should never be an inconsistency
+                    # but since the goal here is to remove the key from scores anyways, that key not being
+                    # here is not really a problem!
+                    logger.exception('Cannot find old score for level {} in metrics'.format(level))
             else:
                 scores = list()
             all_scores[level] = scores
