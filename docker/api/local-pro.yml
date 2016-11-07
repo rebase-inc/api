@@ -1,0 +1,88 @@
+version: '2'
+volumes:
+    git: {}
+    log: {}
+    sql: {}
+    
+services:
+    web:
+      extends:
+        service: common_env_pro
+        file: ../common-python-service-environment.pro.yml
+      expose:
+       - "5000"
+      environment:
+          SETTINGS: ".web.pro"
+      image: rebase/pro-web
+
+    cache:
+      extends:
+        service: common_env_pro
+        file: ../common-python-service-environment.pro.yml
+      expose:
+       - "5000"
+      image: rebase/pro-web
+      command: ["/venv/web/bin/cache"]
+
+    app:
+      image: rebase/client
+      environment:
+          REBASE_CLIENT_HOST: "dev"
+          REBASE_CLIENT_PORT: 3000
+      ports:
+       - "3000:3000"
+      volumes:
+       - ../../../react-app:/code
+      extends:
+        service: common_env
+        file: ../api-dev.yml
+
+    code2resume:
+        image: rebase/client
+        environment:
+          REBASE_CLIENT_HOST: "dev"
+          REBASE_CLIENT_PORT: 3001
+        ports:
+         - "3001:3001"
+        volumes:
+         - ../../../react-app:/code
+        extends:
+          service: common_env
+          file: ../api-dev.yml
+        command: ["/code/start", "code2resume"]
+
+    #rq_default:
+      #extends:
+        #service: common_env_pro
+        #file: ../common-python-service-environment.pro.yml
+      #image: rebase/pro-rq-default
+      #volumes:
+       #- crawler:/crawler
+      #environment:
+        #SETTINGS: ".rq_default.pro"
+      #tmpfs:
+       #- /repos:rw,noexec,size=3g
+
+    rq_population:
+      extends:
+        service: common_env_pro
+        file: ../common-python-service-environment.pro.yml
+      image: rebase/pro-rq-population
+      environment:
+        SETTINGS: ".population.pro"
+
+    redis:
+      image: redis
+      restart: always
+
+    database:
+      image: postgres
+      environment:
+        PGDATA: "/var/lib/postgresql/data/rebase"
+      volumes:
+       - sql:/var/lib/postgresql/data/rebase
+
+    rsyslog:
+      image: rebase/rsyslog
+      volumes:
+       - log:/var/log

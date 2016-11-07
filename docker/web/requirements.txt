@@ -1,6 +1,8 @@
 alembic==0.8.5
 aniso8601==1.1.0
 blinker==1.4
+boto3==1.4.0
+botocore==1.4.56
 click==6.4
 filemagic==1.6
 Flask==0.10.1

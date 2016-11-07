@@ -2,7 +2,7 @@ FROM alpine
 
 COPY ./wheels/ /wheels/
 
-COPY ./pro.py /settings/pro.py
+COPY ./flask.conf.py /etc/web/flask.conf.py
 
 RUN apk update && \
     apk add \

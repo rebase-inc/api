@@ -31,10 +31,9 @@ python docker/rq_population/setup.py \
 
 cp docker/rq_population/pro-Dockerfile /tmp/rq_population/Dockerfile
 
-cp rebase/common/pro.py /tmp/rq_population/pro.py
+cp rebase/common/pro.py /tmp/rq_population/flask.conf.py
 
 cp -r /wheelhouse/wheels /tmp/rq_population/.
-
 
 docker build -t rebase/pro-rq-population /tmp/rq_population
 

@@ -19,17 +19,26 @@ pip wheel \
 # Instead, we just make hard copies of everything we need to build a container into a separate
 # directory ('/tmp/web'), build the container, and finally, wipe the build dir.
 
-mkdir -p /tmp/web
+mkdir -p /tmp/web/build
 
-cp docker/web/dev-Dockerfile /tmp/web/Dockerfile
+# build the 'web' wheel:
+python docker/web/setup.py \
+    build \
+        -b /tmp/web/build/ \
+    bdist_wheel \
+        -d /wheelhouse/wheels/ \
+    egg_info \
+        -e /tmp/web
 
-cp docker/web/requirements.txt /tmp/web/requirements.txt
+cp docker/web/pro-Dockerfile /tmp/web/Dockerfile
 
-cp rebase/common/dev.py /tmp/web/dev.py
+cp rebase/common/pro.py /tmp/web/flask.conf.py
+
+cp etc/gunicorn.pro.conf /tmp/web/gunicorn.pro.conf
 
 cp -r /wheelhouse/wheels /tmp/web/.
 
-docker build -t rebase/dev-web /tmp/web
+docker build -t rebase/pro-web /tmp/web
 
 rm -rf /tmp/web
 

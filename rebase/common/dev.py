@@ -1,4 +1,4 @@
-from logging import DEBUG
+from logging import DEBUG as DEBUG_LEVEL
 
 DEVELOPMENT = True
 DEBUG = True
@@ -8,7 +8,7 @@ NOMINATE_ALL_CONTRACTORS = True
 NOTIFICATION_EMAIL = 'com.rebaseapp.dev@gmail.com'
 NOTIFICATION_EMAIL_PASSWORD = 'eWN-pho-JTg-3mA'
 BASIC_LOG_CONFIG = {
-    'level':    DEBUG,
+    'level':    DEBUG_LEVEL,
     'format':   '%(levelname)s {%(processName)s[%(process)d]} %(message)s',
 }
 

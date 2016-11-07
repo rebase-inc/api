@@ -1,5 +1,9 @@
 FROM alpine
 
+COPY ./wheels/ /wheels/
+
+COPY ./flask.conf.py ./gunicorn.pro.conf /etc/web/
+
 RUN apk update && \
     apk add \
         --no-cache \
@@ -12,21 +16,11 @@ RUN apk update && \
     source /venv/web/bin/activate && \
     pip install \
         --no-cache-dir \
-        --upgrade pip
-
-COPY ./requirements.txt /requirements.txt
-
-COPY ./dev.py /settings/dev.py
-
-COPY ./wheels/ /wheels/
-
-RUN source /venv/web/bin/activate && \
+        --upgrade pip && \
     pip install \
         --no-cache-dir \
-        --requirement /requirements.txt \
-        --find-links /wheels && \
+        --find-links /wheels \
+        web && \
     rm -rf /wheels
 
-WORKDIR /api
-
-CMD ["/venv/web/bin/gunicorn", "-c", "/api/etc/gunicorn.dev.conf", "wsgi:app"]
+CMD ["/venv/web/bin/gunicorn", "-c", "/etc/web/gunicorn.pro.conf", "rebase.scripts.wsgi:app"]

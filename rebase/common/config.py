@@ -7,7 +7,6 @@ class Config(object):
     DEBUG = False
     TESTING = False
     CSRF_ENABLED = True
-    CLONING_SERVER_URL = 'http://ec2-52-21-89-158.compute-1.amazonaws.com:5001/'
     SQLALCHEMY_POOL_SIZE = 1
     SQLALCHEMY_MAX_OVERFLOW = 1
     SQLALCHEMY_TRACK_MODIFICATIONS = False 

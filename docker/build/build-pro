@@ -4,6 +4,7 @@ pushd .
 
 cd /api
 
+./docker/web/build-pro
 ./docker/rq_population/build-pro
 
 popd

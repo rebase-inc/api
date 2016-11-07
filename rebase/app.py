@@ -10,7 +10,7 @@ from rebase.home.routes import register_home
 def basic_app():
     app = Flask(__name__, static_url_path='')
     app.config.from_object('rebase.common.config.Config')
-    app.config.from_envvar('APP_SETTINGS')
+    app.config.from_envvar('FLASK_APP_SETTINGS')
     return app
 
 
