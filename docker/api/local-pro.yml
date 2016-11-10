@@ -8,7 +8,7 @@ services:
     web:
       extends:
         service: common_env_pro
-        file: ../common-python-service-environment.pro.yml
+        file: common-python-service-environment.pro.yml
       expose:
        - "5000"
       environment:
@@ -18,7 +18,9 @@ services:
     cache:
       extends:
         service: common_env_pro
-        file: ../common-python-service-environment.pro.yml
+        file: common-python-service-environment.pro.yml
+      environment:
+          SETTINGS: ".web.pro"
       expose:
        - "5000"
       image: rebase/pro-web
@@ -64,7 +66,7 @@ services:
     rq_git:
       extends:
         service: common_env_pro
-        file: ../common-python-service-environment.pro.yml
+        file: common-python-service-environment.pro.yml
       image: rebase/pro-rq-git
       ports:
        - "2222:22"
@@ -74,7 +76,7 @@ services:
     rq_default:
       extends:
         service: common_env_pro
-        file: ../common-python-service-environment.pro.yml
+        file: common-python-service-environment.pro.yml
       image: rebase/pro-rq-default
       environment:
         SETTINGS: ".rq_default.pro"
@@ -86,7 +88,7 @@ services:
     rq_population:
       extends:
         service: common_env_pro
-        file: ../common-python-service-environment.pro.yml
+        file: common-python-service-environment.pro.yml
       image: rebase/pro-rq-population
       environment:
         SETTINGS: ".population.pro"
@@ -94,7 +96,7 @@ services:
     jupyter:
       extends:
         service: common_env_pro
-        file: ../common-python-service-environment.pro.yml
+        file: common-python-service-environment.pro.yml
       image: rebase/jupyter
       ports:
        - "8888:8888"
