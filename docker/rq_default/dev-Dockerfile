@@ -8,16 +8,7 @@ RUN apk update && \
         py-virtualenv \
         python3 && \
     pyvenv /venv/rq && \
-    source /venv/rq/bin/activate && \
-    pip install \
-        --no-cache-dir \
-        --upgrade pip && \
-    deactivate && \
-    virtualenv /venv/rq_p2 && \
-    source /venv/rq_p2/bin/activate && \
-    pip install \
-        --no-cache-dir \
-        --upgrade pip
+    virtualenv /venv/rq_p2
 
 COPY ./requirements.txt ./requirements_p2.txt /
 
@@ -41,4 +32,4 @@ RUN source /venv/rq/bin/activate && \
 
 WORKDIR /api
 
-CMD ["/venv/rq/bin/python", "run-worker.py"]
+CMD ["/venv/rq/bin/python", "-m", "rebase.scripts.rq_default"]

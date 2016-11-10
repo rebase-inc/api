@@ -64,9 +64,6 @@ for language, extension_list in _language_list.items():
 CLONED_REPOS_ROOT_DIR = '/repos'
 
 
-DATA_ROOT = '/crawler'
-
-
 class Queues(object): pass
 ALL_QUEUES = Queues()
 setup_rq(ALL_QUEUES)
@@ -257,7 +254,7 @@ class AccountScanner(object):
             except GithubException as e:
                 logger.exception('Could fetch repo name')
                 continue
-            if repo_name != 'api':
+            if repo_name != 'profile-js':
                 continue
             try:
                 repo_languages = set(repo.get_languages().keys())
@@ -310,13 +307,6 @@ def scan_one_user(token, token_user, user_login=None, contractor_id=None):
             args=(scanned_user, contractor_id),
             timeout=3600
         )
-        user_data_dir = join(DATA_ROOT, scanned_user)
-        filename = 'data' if scanner.api.oauth_scopes == ['public_repo'] else 'private'
-        user_data_path = join(user_data_dir, filename)
-        if not isdir(user_data_dir):
-            makedirs(user_data_dir)
-        with open(user_data_path, 'wb') as f:
-            dump(user_data, f)
         return user_data
     except TimeoutError as timeout_error:
         logger.ERROR('scan_one_user(%s, %s) %s', token_user, user_login, str(timeout_error))

@@ -1,5 +1,3 @@
-#!/venv/web/bin/python
-
 from functools import partial
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from logging import getLogger, Formatter

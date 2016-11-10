@@ -1,45 +1,35 @@
 version: '2'
 volumes:
-    crawler: {}
     git: {}
     log: {}
     sql: {}
-    uploads: {}
     
 services:
     web:
       extends:
         service: webserver
-        file: docker/api-dev.yml
+        file: web-service-dev.yml
       expose:
        - "5000"
-      volumes:
-       - uploads:/uploads
-      #stdin_open: true
-      #tty: true
-      #command: ["/venv/web/bin/python", "manage", "runserver", "-h", "0.0.0.0", "-p", "5000"]
-      command: ["/venv/web/bin/gunicorn", "-c", "/api/etc/gunicorn.dev.conf", "wsgi:app"]
 
     cache:
       extends:
         service: webserver
-        file: docker/api-dev.yml
+        file: web-service-dev.yml
       expose:
        - "5000"
-      #stdin_open: true
-      #tty: true
-      command: ["/api/cache"]
+      command: ["/venv/web/bin/python", "-m", "rebase.scripts.cache"]
 
     scheduler:
       extends:
         service: webserver
-        file: docker/api-dev.yml
-      command: ["/venv/web/bin/python", "scheduler.py"]
+        file: web-service-dev.yml
+      command: ["/venv/web/bin/python", "-m", "rebase.scripts.scheduler"]
 
     jupyter:
       extends:
         service: webserver
-        file: docker/api-dev.yml
+        file: web-service-dev.yml
       image: rebase/jupyter
       ports:
        - "8888:8888"
@@ -54,10 +44,10 @@ services:
       ports:
        - "3000:3000"
       volumes:
-       - ../react-app:/code
+       - ../../../react-app:/code
       extends:
         service: common_env
-        file: docker/api-dev.yml
+        file: web-service-dev.yml
 
     code2resume:
         image: rebase/client
@@ -67,10 +57,10 @@ services:
         ports:
          - "3001:3001"
         volumes:
-         - ../react-app:/code
+         - ../../../react-app:/code
         extends:
           service: common_env
-          file: docker/api-dev.yml
+          file: web-service-dev.yml
         command: ["/code/start", "code2resume"]
 
     javascript:
@@ -79,16 +69,16 @@ services:
             - "7777"
 
     parser:
-        image: rebase/parser
+        image: rebase/dev-parser
         expose:
             - "1111"
         volumes:
-            - ../parser:/parser
+            - ../../../parser:/parser
 
     rq_population:
       extends:
         service: webserver
-        file: docker/api-dev.yml
+        file: web-service-dev.yml
       image: rebase/dev-rq-population
       environment:
         SETTINGS: ".population.dev"
@@ -96,7 +86,7 @@ services:
     rq_git:
       extends:
         service: webserver
-        file: docker/api-dev.yml
+        file: web-service-dev.yml
       image: rebase/dev-rq-git
       ports:
        - "2222:22"
@@ -106,12 +96,12 @@ services:
     rq_default:
       extends:
         service: webserver
-        file: docker/api-dev.yml
+        file: web-service-dev.yml
       image: rebase/dev-rq-default
-      volumes:
-       - crawler:/crawler
       environment:
         SETTINGS: ".rq_default.dev"
+        CRAWLER_USERNAME:
+        CRAWLER_PASSWORD:
       tmpfs:
        - /repos:rw,noexec,size=3g
 

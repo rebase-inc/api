@@ -6,10 +6,7 @@ RUN apk update && \
         libpq \
         python3 && \
     pyvenv /venv/rq && \
-    source /venv/rq/bin/activate && \
-    pip install \
-        --no-cache-dir \
-        --upgrade pip
+    source /venv/rq/bin/activate
 
 COPY ./requirements.txt /requirements.txt
 
@@ -24,4 +21,4 @@ RUN source /venv/rq/bin/activate && \
 
 WORKDIR /api
 
-CMD ["/venv/rq/bin/python", "rq-population.py"]
+CMD ["/venv/rq/bin/python", "-m", "rebase.scripts.population"]

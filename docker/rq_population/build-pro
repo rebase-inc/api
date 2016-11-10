@@ -13,6 +13,7 @@ pip wheel \
     --requirement docker/rq_population/requirements.txt \
     --wheel-dir=/wheelhouse/wheels
 
+rm -rf /tmp/rq_population
 mkdir -p /tmp/rq_population/build 
 
 python docker/rq_population/setup.py \

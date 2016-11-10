@@ -1,0 +1,31 @@
+FROM alpine
+
+COPY ./wheels/ /wheels/
+
+COPY ./py2_wheels/ /py2_wheels/
+
+COPY ./flask.conf.py /etc/web/flask.conf.py
+
+RUN apk update && \
+    apk add \
+        --no-cache \
+        git \
+        libpq \
+        py-virtualenv \
+        python3 && \
+    pyvenv /venv/rq && \
+    source /venv/rq/bin/activate && \
+    pip install \
+        --no-cache-dir \
+        --find-links /wheels \
+        rq_default && \
+    deactivate && \
+    virtualenv /venv/rq_p2 && \
+    source /venv/rq_p2/bin/activate && \
+    pip install \
+        --no-cache-dir \
+        --find-links /py2_wheels \
+        py2_parser && \
+    rm -rf /wheels
+
+CMD ["/venv/rq/bin/rq_default"]

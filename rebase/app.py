@@ -4,7 +4,6 @@ from os import environ
 from flask import Flask
 
 from rebase.common.env import check
-from rebase.home.routes import register_home
 
 
 def basic_app():
@@ -31,7 +30,6 @@ def create(routes=False):
     DB.init_app(app)
     logger = getLogger()
     api = Api(app, prefix=app.config['URL_PREFIX'], errors=errors)
-    register_home(app)
     if routes:
         # some routes use flask.ext.cache is can't be created until an app and its context exist
         with app.app_context():

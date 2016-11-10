@@ -35,7 +35,7 @@ class JsonServerSubprocess(ServerTransport):
 
 class JsonClientSubprocess(ClientSubprocess):
 
-    def __init__(self, exec_path, fifo_dir, dumps_kwargs=dict(), loads_kwargs=dict()):
-        super().__init__(exec_path, fifo_dir, JsonReaderWriter(dumps_kwargs, loads_kwargs))
+    def __init__(self, exec_args, fifo_dir, dumps_kwargs=dict(), loads_kwargs=dict()):
+        super().__init__(exec_args, fifo_dir, JsonReaderWriter(dumps_kwargs, loads_kwargs))
 
 

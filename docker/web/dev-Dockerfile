@@ -29,4 +29,4 @@ RUN source /venv/web/bin/activate && \
 
 WORKDIR /api
 
-CMD ["/venv/web/bin/gunicorn", "-c", "/api/etc/gunicorn.dev.conf", "wsgi:app"]
+CMD ["/venv/web/bin/gunicorn", "-c", "etc/gunicorn.dev.conf", "rebase.scripts.wsgi:app"]

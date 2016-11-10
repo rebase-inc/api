@@ -22,9 +22,9 @@ class Proxy(ScannerClient):
         A proxy scanner for any language (python, javascript, etc.)
     '''
 
-    def __init__(self, executable_path, fifo_dir):
+    def __init__(self, executable_args, fifo_dir):
         self.transport, self.protocol = create_json_streaming_subprocess(
-            executable_path,
+            executable_args,
             fifo_dir, 
             dumps_kwargs={ 'cls': Encoder },
         )

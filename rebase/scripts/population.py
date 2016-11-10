@@ -1,10 +1,11 @@
 from logging import getLogger
 from multiprocessing import current_process
+from sys import path
 from rq import Worker, Queue, Connection
 
-from .app import basic_app
-from .features.rq import get_connection, population_queue
-from .features.logger import setup_with_conf
+from rebase.app import basic_app
+from rebase.features.rq import get_connection, population_queue
+from rebase.features.logger import setup_with_conf
 
 
 conn = get_connection()

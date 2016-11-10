@@ -22,14 +22,4 @@ GIT_SERVER_URL_PREFIX='ssh://git@dev:2222/'
 APP_URL='http://dev:3000'
 CODE2RESUME_URL='http://c2r:3001'
 
-# TODO: revisit config design
-# we need:
-# - a 'mode' level ('dev', 'pro', 'test', 'deployment_testing', etc.)
-# - a system-wide set of config params (common to all components or containers)
-# - a component level set of config params
-
-# these 2 are only for 'rq_default' crawling jobs
-CRAWLER_USERNAME = 'rebase-dev'
-CRAWLER_PASSWORD = '7Du-V2U-xKt-gK6'
-
 

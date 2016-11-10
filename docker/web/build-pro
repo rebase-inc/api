@@ -19,6 +19,7 @@ pip wheel \
 # Instead, we just make hard copies of everything we need to build a container into a separate
 # directory ('/tmp/web'), build the container, and finally, wipe the build dir.
 
+rm -rf /tmp/web/
 mkdir -p /tmp/web/build
 
 # build the 'web' wheel:

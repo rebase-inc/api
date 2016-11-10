@@ -146,17 +146,17 @@ def exit_on_error(transport):
         transport.close()
         exit(0)
 
-def main(argv):
-    transport, protocol = create_json_streaming_server(argv[1])
-    setup(transport)
-    with exit_on_error(transport):
-        protocol.run_forever(python_client_call, handle_errors)
-
-
-if __name__ == '__main__':
+def main():
     try:
-        main(argv)
+        transport, protocol = create_json_streaming_server(argv[1])
+        setup(transport)
+        with exit_on_error(transport):
+            protocol.run_forever(python_client_call, handle_errors)
     except ParserException as e:
         logger.warning(e.message)
         exit(e.code)
+
+
+if __name__ == '__main__':
+    main()
 

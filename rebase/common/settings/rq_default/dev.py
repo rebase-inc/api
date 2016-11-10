@@ -1,3 +1,4 @@
+from os import environ
 
 from .config import config as base_config
 
@@ -7,8 +8,9 @@ config = dict(base_config)
 
 # To extend or modify inherited settings:
 
-#config.update({
-    #'FOO': 'BAR',
-#})
+config.update({
+    'CRAWLER_USERNAME': environ['CRAWLER_USERNAME'],
+    'CRAWLER_PASSWORD': environ['CRAWLER_PASSWORD'],
+})
 
 

@@ -51,17 +51,37 @@ services:
           file: ../api-dev.yml
         command: ["/code/start", "code2resume"]
 
-    #rq_default:
-      #extends:
-        #service: common_env_pro
-        #file: ../common-python-service-environment.pro.yml
-      #image: rebase/pro-rq-default
-      #volumes:
-       #- crawler:/crawler
-      #environment:
-        #SETTINGS: ".rq_default.pro"
-      #tmpfs:
-       #- /repos:rw,noexec,size=3g
+    javascript:
+        image: rebase/javascript
+        expose:
+            - "7777"
+
+    parser:
+        image: rebase/pro-parser
+        expose:
+            - "1111"
+
+    rq_git:
+      extends:
+        service: common_env_pro
+        file: ../common-python-service-environment.pro.yml
+      image: rebase/pro-rq-git
+      ports:
+       - "2222:22"
+      volumes:
+       - git:/git
+
+    rq_default:
+      extends:
+        service: common_env_pro
+        file: ../common-python-service-environment.pro.yml
+      image: rebase/pro-rq-default
+      environment:
+        SETTINGS: ".rq_default.pro"
+        CRAWLER_USERNAME:
+        CRAWLER_PASSWORD:
+      tmpfs:
+       - /repos:rw,noexec,size=3g
 
     rq_population:
       extends:

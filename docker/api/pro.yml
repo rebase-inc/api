@@ -66,6 +66,7 @@ services:
         image: rebase/javascript
         expose:
             - "7777"
+
     parser:
         image: rebase/parser-production
         expose:

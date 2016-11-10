@@ -9,7 +9,6 @@ from rebase.models.comment import Comment
 from rebase.common.database import DB, PermissionMixin
 from rebase.common.email import Email, send
 from rebase.common.state import StateMachine
-from rebase.git.repo import Repo
 
 
 class Work(DB.Model, PermissionMixin):
@@ -36,6 +35,7 @@ class Work(DB.Model, PermissionMixin):
             auction_id=self.offer.bid.auction_id
         )
         project = self.offer.ticket_snapshot.ticket.project
+        from rebase.git.repo import Repo
         repo = Repo(project)
         repo.create_branch(self.branch)
 

@@ -19,6 +19,9 @@ pip wheel \
 # Instead, we just make hard copies of everything we need to build a container into a separate
 # directory ('/tmp/rq_population'), build the container, and finally, wipe the build dir.
 
+
+rm -rf /tmp/rq_population
+
 mkdir -p /tmp/rq_population
 
 cp docker/rq_population/dev-Dockerfile /tmp/rq_population/Dockerfile
