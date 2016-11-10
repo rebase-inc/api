@@ -26,16 +26,6 @@ services:
         file: web-service-dev.yml
       command: ["/venv/web/bin/python", "-m", "rebase.scripts.scheduler"]
 
-    jupyter:
-      extends:
-        service: webserver
-        file: web-service-dev.yml
-      image: rebase/jupyter
-      ports:
-       - "8888:8888"
-      volumes_from:
-       - rq_default
-
     app:
       image: rebase/client
       environment:
@@ -45,9 +35,6 @@ services:
        - "3000:3000"
       volumes:
        - ../../../react-app:/code
-      extends:
-        service: common_env
-        file: web-service-dev.yml
 
     code2resume:
         image: rebase/client
@@ -58,52 +45,53 @@ services:
          - "3001:3001"
         volumes:
          - ../../../react-app:/code
-        extends:
-          service: common_env
-          file: web-service-dev.yml
         command: ["/code/start", "code2resume"]
 
     javascript:
         image: rebase/javascript
-        expose:
-            - "7777"
 
     parser:
         image: rebase/dev-parser
-        expose:
-            - "1111"
         volumes:
             - ../../../parser:/parser
 
-    rq_population:
-      extends:
-        service: webserver
-        file: web-service-dev.yml
-      image: rebase/dev-rq-population
-      environment:
-        SETTINGS: ".population.dev"
-
-    rq_git:
-      extends:
-        service: webserver
-        file: web-service-dev.yml
-      image: rebase/dev-rq-git
-      ports:
-       - "2222:22"
-      volumes:
-       - git:/git
-
     rq_default:
+      image: rebase/dev-rq-default
       extends:
         service: webserver
         file: web-service-dev.yml
-      image: rebase/dev-rq-default
       environment:
         SETTINGS: ".rq_default.dev"
         CRAWLER_USERNAME:
         CRAWLER_PASSWORD:
       tmpfs:
        - /repos:rw,noexec,size=3g
+
+    rq_population:
+      image: rebase/dev-rq-population
+      extends:
+        service: webserver
+        file: web-service-dev.yml
+      environment:
+        SETTINGS: ".population.dev"
+
+    rq_git:
+      image: rebase/dev-rq-git
+      extends:
+        service: webserver
+        file: web-service-dev.yml
+      ports:
+       - "2222:22"
+      volumes:
+       - git:/git
+
+    jupyter:
+      image: rebase/jupyter
+      extends:
+        service: webserver
+        file: web-service-dev.yml
+      ports:
+       - "8888:8888"
 
     rq_dashboard:
         image: rebase/rq_dashboard

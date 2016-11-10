@@ -1,5 +1,9 @@
 FROM alpine
 
+WORKDIR /api
+
+EXPOSE 5000
+
 RUN apk update && \
     apk add \
         --no-cache \
@@ -26,7 +30,5 @@ RUN source /venv/web/bin/activate && \
         --requirement /requirements.txt \
         --find-links /wheels && \
     rm -rf /wheels
-
-WORKDIR /api
 
 CMD ["/venv/web/bin/gunicorn", "-c", "etc/gunicorn.dev.conf", "rebase.scripts.wsgi:app"]

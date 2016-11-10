@@ -1,105 +1,103 @@
 version: '2'
 volumes:
-    crawler: {}
     etc_letsencrypt: {}
     git: {}
     log: {}
     repos: {}
     sql: {}
-    uploads: {}
     www: {}
 
 services:
     web:
+      image: rebase/pro-web
       extends:
-        service: webserver
-        file: docker/api-production.yml
-      volumes:
-       - uploads:/uploads
-      command: ["/venv/api/bin/gunicorn", "-c", "/api/etc/gunicorn.pro.conf", "wsgi:app"]
+        service: common_env_pro
+        file: common-python-service-environment.pro.yml
+      environment:
+          SETTINGS: ".web.pro"
 
     cache:
+      image: rebase/pro-web
+      command: ["/venv/web/bin/cache"]
       extends:
-        service: webserver
-        file: docker/api-production.yml
-      command: ["/api/cache"]
+        service: common_env_pro
+        file: common-python-service-environment.pro.yml
+      environment:
+          SETTINGS: ".web.pro"
 
     scheduler:
+      image: rebase/pro-web
+      command: ["/venv/web/bin/python", "-m", "rebase.scripts.scheduler"]
       extends:
-        service: webserver
-        file: docker/api-production.yml
-      command: ["/venv/api/bin/python", "scheduler.py"]
+        service: common_env_pro
+        file: common-python-service-environment.pro.yml
 
     app:
-      image: rebase/client
-      volumes:
-       - ../react-app:/code
-       - www:/www
-      extends:
-        service: common_env
-        file: docker/api-production.yml
-      command: ["/code/init", "app"]
+        image: rebase/client
+        volumes:
+            - ../react-app:/code
+            - www:/www
+        command: ["/code/init", "app"]
 
     code2resume:
-      image: rebase/client
+        image: rebase/client
       volumes:
        - ../react-app:/code
        - www:/www
-      extends:
-        service: common_env
-        file: docker/api-production.yml
       command: ["/code/init", "code2resume"]
 
     ycdemo:
-      image: rebase/client
-      volumes:
-       - ../react-app:/code
-       - www:/www
-      extends:
-        service: common_env
-        file: docker/api-production.yml
-      stdin_open: true
-      tty: true
-      command: ["/bin/sh"]
+        image: rebase/pro-client
+        volumes:
+            - ../react-app:/code
+           - www:/www
+        stdin_open: true
+        tty: true
+        command: ["/bin/sh"]
 
     javascript:
         image: rebase/javascript
-        expose:
-            - "7777"
 
     parser:
-        image: rebase/parser-production
-        expose:
-            - "1111"
+        image: rebase/pro-parser
+
+    rq_default:
+      image: rebase/pro-rq-default
+      extends:
+        service: common_env_pro
+        file: common-python-service-environment.pro.yml
+      volumes:
+       - repos:/repos
+      environment:
+        SETTINGS: ".rq_default.pro"
+        CRAWLER_USERNAME:
+        CRAWLER_PASSWORD:
 
     rq_population:
+      image: rebase/pro-rq-population
       extends:
-        service: webserver
-        file: docker/api-production.yml
-      image: rebase/rq_population
+        service: common_env_pro
+        file: common-python-service-environment.pro.yml
       environment:
         SETTINGS: ".population.pro"
 
     rq_git:
+      image: rebase/pro-rq-git
       extends:
-        service: webserver
-        file: docker/api-production.yml
-      image: rebase/rq_git
+        service: common_env_pro
+        file: common-python-service-environment.pro.yml
       ports:
        - "22:22"
       volumes:
        - git:/git
 
-    rq_default:
+    jupyter:
+      image: rebase/jupyter
       extends:
-        service: webserver
-        file: docker/api-production.yml
-      image: rebase/rq_default
-      volumes:
-       - crawler:/crawler
-       - repos:/repos
-      environment:
-        SETTINGS: ".rq_default.pro"
+        service: common_env_pro
+        file: common-python-service-environment.pro.yml
+      ports:
+       - "8888:8888"
 
     rq_dashboard:
         image: rebase/rq_dashboard
@@ -130,14 +128,4 @@ services:
       image: rebase/rsyslog
       volumes:
        - log:/var/log
-
-    jupyter:
-      extends:
-        service: webserver
-        file: docker/api-dev.yml
-      image: rebase/jupyter
-      ports:
-       - "8888:8888"
-      volumes_from:
-       - rq_default
 

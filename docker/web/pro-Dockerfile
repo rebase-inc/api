@@ -1,5 +1,7 @@
 FROM alpine
 
+EXPOSE 5000
+
 COPY ./wheels/ /wheels/
 
 COPY ./flask.conf.py ./gunicorn.pro.conf /etc/web/

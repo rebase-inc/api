@@ -6,25 +6,28 @@ volumes:
     
 services:
     web:
+      image: rebase/pro-web
       extends:
         service: common_env_pro
         file: common-python-service-environment.pro.yml
-      expose:
-       - "5000"
       environment:
           SETTINGS: ".web.pro"
-      image: rebase/pro-web
 
     cache:
+      image: rebase/pro-web
+      command: ["/venv/web/bin/cache"]
       extends:
         service: common_env_pro
         file: common-python-service-environment.pro.yml
       environment:
           SETTINGS: ".web.pro"
-      expose:
-       - "5000"
+
+    scheduler:
       image: rebase/pro-web
-      command: ["/venv/web/bin/cache"]
+      command: ["/venv/web/bin/python", "-m", "rebase.scripts.scheduler"]
+      extends:
+        service: common_env_pro
+        file: common-python-service-environment.pro.yml
 
     app:
       image: rebase/client
@@ -35,9 +38,6 @@ services:
        - "3000:3000"
       volumes:
        - ../../../react-app:/code
-      extends:
-        service: common_env
-        file: ../api-dev.yml
 
     code2resume:
         image: rebase/client
@@ -48,36 +48,19 @@ services:
          - "3001:3001"
         volumes:
          - ../../../react-app:/code
-        extends:
-          service: common_env
-          file: ../api-dev.yml
         command: ["/code/start", "code2resume"]
 
     javascript:
         image: rebase/javascript
-        expose:
-            - "7777"
 
     parser:
         image: rebase/pro-parser
-        expose:
-            - "1111"
-
-    rq_git:
-      extends:
-        service: common_env_pro
-        file: common-python-service-environment.pro.yml
-      image: rebase/pro-rq-git
-      ports:
-       - "2222:22"
-      volumes:
-       - git:/git
 
     rq_default:
+      image: rebase/pro-rq-default
       extends:
         service: common_env_pro
         file: common-python-service-environment.pro.yml
-      image: rebase/pro-rq-default
       environment:
         SETTINGS: ".rq_default.pro"
         CRAWLER_USERNAME:
@@ -86,18 +69,28 @@ services:
        - /repos:rw,noexec,size=3g
 
     rq_population:
+      image: rebase/pro-rq-population
       extends:
         service: common_env_pro
         file: common-python-service-environment.pro.yml
-      image: rebase/pro-rq-population
       environment:
         SETTINGS: ".population.pro"
 
-    jupyter:
+    rq_git:
+      image: rebase/pro-rq-git
       extends:
         service: common_env_pro
         file: common-python-service-environment.pro.yml
+      ports:
+       - "2222:22"
+      volumes:
+       - git:/git
+
+    jupyter:
       image: rebase/jupyter
+      extends:
+        service: common_env_pro
+        file: common-python-service-environment.pro.yml
       ports:
        - "8888:8888"
 
