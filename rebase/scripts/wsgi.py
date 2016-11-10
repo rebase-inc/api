@@ -1,6 +1,10 @@
 from werkzeug.contrib.fixers import ProxyFix
 
-from rebase.app import create
+from ..app import create
+from ..common.log import setup
+
+
+setup()
 
 
 app = create(routes=True)

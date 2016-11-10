@@ -200,12 +200,14 @@ class AccountScanner(object):
 
     def clone_if_not_cloned_already(self, repo):
         if self.cloned:
+            logger.debug('Repo "{}" is already cloned'.format(repo.name))
             return
         repo_url = repo.clone_url
         oauth_url = repo_url.replace('https://github.com', self.new_url_prefix, 1)
         self.local_repo_dir = join(CLONED_REPOS_ROOT_DIR, repo.name)
         if isdir(self.local_repo_dir):
             rmtree(self.local_repo_dir)
+        logger.debug('Repo "{}" is cloning'.format(repo.name))
         self.local_repo = Repo.clone_from(oauth_url, self.local_repo_dir)
         self.cloned = True
     
@@ -254,7 +256,7 @@ class AccountScanner(object):
             except GithubException as e:
                 logger.exception('Could fetch repo name')
                 continue
-            if repo_name != 'profile-js':
+            if repo_name != 'api':
                 continue
             try:
                 repo_languages = set(repo.get_languages().keys())

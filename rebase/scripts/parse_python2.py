@@ -1,4 +1,3 @@
-#! /venv/rq_p2/bin/python
 
 from contextlib import contextmanager
 from functools import partial
@@ -9,7 +8,7 @@ from signal import signal, SIGTERM, SIGQUIT, SIGINT
 from sys import argv, exit
 from time import sleep
 
-from rebase.common.debug import setup_service_log
+from rebase.common.log import setup as log_setup
 from rebase.skills.importable_modules import ImportableModules
 from rebase.skills.python_client import PythonClient
 from rebase.skills.scanner_client import ScannerClient
@@ -17,7 +16,10 @@ from rebase.subprocess import create_json_streaming_server
 from rebase.subprocess.exceptions import SubprocessException
 
 
-logger = setup_service_log()
+log_setup()
+
+
+logger = getLogger(__name__)
 
 
 class ParserException(Exception):

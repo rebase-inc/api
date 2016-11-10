@@ -1,3 +1,4 @@
+from logging import DEBUG
 
 from .config import config as parent_config
 
@@ -6,6 +7,8 @@ config = dict(parent_config)
 
 # put here settings that are specific for 'web' for this installation
 
-#config.update({
-    #'FOO': 'bar',
-#})
+config.update({
+    'LOG_LEVEL': DEBUG,
+})
+
+

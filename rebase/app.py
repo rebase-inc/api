@@ -1,9 +1,8 @@
-from logging import getLogger
 from os import environ
 
 from flask import Flask
 
-from rebase.common.env import check
+from .common.env import check
 
 
 def basic_app():
@@ -28,7 +27,6 @@ def create(routes=False):
     app = basic_app()
     install(app)
     DB.init_app(app)
-    logger = getLogger()
     api = Api(app, prefix=app.config['URL_PREFIX'], errors=errors)
     if routes:
         # some routes use flask.ext.cache is can't be created until an app and its context exist

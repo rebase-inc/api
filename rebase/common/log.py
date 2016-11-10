@@ -1,18 +1,20 @@
 from logging import getLogger, Formatter
 from logging.handlers import SysLogHandler
 
-
-logger = getLogger(__name__)
+from .debug import pinfo
+from .settings import config
 
 
 def setup():
-    from rebase.common.settings import config
-    logger_ = getLogger()
-    logger_.setLevel(config['LOG_LEVEL'])
+    root_logger = getLogger()
+    root_logger.setLevel(config['LOG_LEVEL'])
     rsyslog = SysLogHandler(**config['RSYSLOG_CONFIG'])
     rsyslog.setFormatter(Formatter(config['LOG_FORMAT']))
-    logger_.addHandler(rsyslog)
-    logger.debug('Logger is setup')
-    return logger_
+    root_logger.addHandler(rsyslog)
+    root_logger.debug('Root logger is setup')
+
+
+def print_config():
+    pinfo(config, '---- Service Config ----')
 
 

@@ -91,6 +91,19 @@ services:
       environment:
         SETTINGS: ".population.pro"
 
+    jupyter:
+      extends:
+        service: common_env_pro
+        file: ../common-python-service-environment.pro.yml
+      image: rebase/jupyter
+      ports:
+       - "8888:8888"
+
+    rq_dashboard:
+        image: rebase/rq_dashboard
+        ports:
+         - "4444:4444"
+
     redis:
       image: redis
       restart: always

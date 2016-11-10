@@ -9,13 +9,16 @@ from signal import signal, SIGTERM, SIGQUIT, SIGINT
 from sys import exit
 from threading import Thread, current_thread
 
-from rebase.cache.process import CacheProcess
-from rebase.cache.request import CacheHandler
-from rebase.common.config import Config
-from rebase.common.debug import setup_rsyslog
+from ..cache.process import CacheProcess
+from ..cache.request import CacheHandler
+from ..common.config import Config
+from ..common.log import setup
 
 
-logger = getLogger()
+setup()
+
+
+logger = getLogger(__name__)
 
 
 def quit(sig, frame, server, processes):
@@ -37,8 +40,8 @@ def refresh(processes):
 def main():
     current_process().name = 'Cache'
     current_thread().name = 'main'
-    logger = setup_rsyslog()
-    rsyslog = logger.handlers[0]
+    root_logger = getLogger()
+    rsyslog = root_logger.handlers[0]
     # this format adds the thread name (cache is the only multithreaded component of our system)
     rsyslog.setFormatter(Formatter('%(levelname)s {%(processName)s[%(process)d] %(threadName)s} %(message)s'))
     processes = dict()
