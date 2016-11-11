@@ -5,7 +5,7 @@ volumes:
     log: {}
     sql: {}
     uploads: {}
-    
+
 services:
     web:
       extends:
@@ -13,6 +13,8 @@ services:
         file: docker/api-dev.yml
       expose:
        - "5000"
+      # ports:
+      #  - "5000:5000"
       volumes:
        - uploads:/uploads
       #stdin_open: true
@@ -51,8 +53,6 @@ services:
       environment:
           REBASE_CLIENT_HOST: "dev"
           REBASE_CLIENT_PORT: 3000
-      ports:
-       - "3000:3000"
       volumes:
        - ../react-app:/code
       extends:
@@ -60,18 +60,18 @@ services:
         file: docker/api-dev.yml
 
     code2resume:
-        image: rebase/client
+        image: rebase/code2resume
         environment:
           REBASE_CLIENT_HOST: "dev"
           REBASE_CLIENT_PORT: 3001
-        ports:
-         - "3001:3001"
+        expose:
+         - "3001"
         volumes:
-         - ../react-app:/code
+         - ../code2resume:/code
         extends:
           service: common_env
           file: docker/api-dev.yml
-        command: ["/code/start", "code2resume"]
+        command: ["/code/start", "start"]
 
     javascript:
         image: rebase/javascript
@@ -135,3 +135,9 @@ services:
       image: rebase/rsyslog
       volumes:
        - log:/var/log
+
+    nginx:
+      image: rebase/dev-nginx
+      ports:
+       - 3000:3000
+       - 3001:3001
