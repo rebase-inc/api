@@ -1,0 +1,25 @@
+#!/bin/bash
+
+rm -rf /tmp/nginx
+mkdir -p /tmp/nginx/www
+
+docker build -t rebase/client ../react-app 
+docker run --rm -it -v /tmp/nginx/www:/www -v $PWD/../react-app:/code rebase/client /code/init code2resume
+docker run --rm -it -v /tmp/nginx/www:/www -v $PWD/../react-app:/code rebase/client /code/init app
+
+pushd docker/nginx
+cp pro-Dockerfile /tmp/nginx/Dockerfile
+cp nginx.conf /tmp/nginx
+cp default-443.conf /tmp/nginx
+cp default-80.conf /tmp/nginx
+cp nginx-ssl.conf /tmp/nginx
+cp api_proxy.conf /tmp/nginx
+cp listen.bash /tmp/nginx
+popd
+
+pushd /tmp/nginx
+docker build -t rebase/pro-nginx .
+popd
+
+rm -rf /tmp/nginx
+

@@ -107,8 +107,8 @@ services:
     nginx:
         image: rebase/nginx
         ports:
-         - 80:80
-         - 443:443
+         - 8080:80
+         - 4430:443
         volumes:
          - etc_letsencrypt:/etc/letsencrypt
          - www:/www:ro

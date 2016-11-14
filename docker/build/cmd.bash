@@ -7,11 +7,7 @@ function _make_build_image () {
 
 
 function _rq-population-wheel () {
-    docker run \
-        --rm \
-        --volume /wheelhouse:/wheelhouse:rw \
-        --volume $PWD:/api \
-        rebase/build \
+    _run \
         /venv/rq/bin/python \
             docker/rq_population/setup.py \
                 bdist_wheel \
@@ -25,6 +21,7 @@ function _run () {
         --rm \
         --volume /wheelhouse:/wheelhouse:rw \
         --volume $PWD:/api \
+        --volume $PWD/../react-app:/react-app \
         --volume /var/run/docker.sock:/var/run/docker.sock \
         rebase/build $*
 }
