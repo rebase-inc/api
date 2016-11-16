@@ -82,6 +82,12 @@ services:
         ports:
          - "4444:4444"
 
+    nginx:
+        image: rebase/local-pro-nginx
+        ports:
+            - 3000:3000
+            - 3001:3001
+
     redis:
       image: redis
       restart: always
@@ -97,10 +103,4 @@ services:
       image: rebase/rsyslog
       volumes:
        - log:/var/log
-
-    nginx:
-        image: rebase/local-pro-nginx
-        ports:
-            - 3000:3000
-            - 3001:3001
 

@@ -19,10 +19,7 @@ services:
 
     cache:
       extends:
-        service: webserver
-        file: web-service-dev.yml
-      expose:
-       - "5000"
+        service: web
       command: ["/venv/web/bin/python", "-m", "rebase.scripts.cache"]
 
     scheduler:
@@ -30,6 +27,8 @@ services:
         service: webserver
         file: web-service-dev.yml
       command: ["/venv/web/bin/python", "-m", "rebase.scripts.scheduler"]
+      extends:
+        service: web
 
     app:
       image: rebase/client
@@ -69,6 +68,10 @@ services:
         SETTINGS: ".rq_default.dev"
         CRAWLER_USERNAME:
         CRAWLER_PASSWORD:
+        GITHUB_APP_ID:
+        GITHUB_APP_SECRET:
+        GITHUB_CODE2RESUME_ID:
+        GITHUB_CODE2RESUME_SECRET:
       tmpfs:
        - /repos:rw,noexec,size=3g
 

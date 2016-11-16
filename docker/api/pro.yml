@@ -5,7 +5,6 @@ volumes:
     log: {}
     repos: {}
     sql: {}
-    www: {}
 
 services:
     web:
@@ -24,40 +23,13 @@ services:
       image: rebase/pro-web
       command: ["/venv/web/bin/cache"]
       extends:
-        service: common_env_pro
-        file: common-python-service-environment.pro.yml
-      environment:
-          SETTINGS: ".web.pro"
+        service: web
 
     scheduler:
       image: rebase/pro-web
       command: ["/venv/web/bin/python", "-m", "rebase.scripts.scheduler"]
       extends:
-        service: common_env_pro
-        file: common-python-service-environment.pro.yml
-
-    app:
-        image: rebase/client
-        volumes:
-            - ../react-app:/code
-            - www:/www
-        command: ["/code/init", "app"]
-
-    code2resume:
-        image: rebase/client
-      volumes:
-       - ../react-app:/code
-       - www:/www
-      command: ["/code/init", "code2resume"]
-
-    ycdemo:
-        image: rebase/pro-client
-        volumes:
-            - ../react-app:/code
-           - www:/www
-        stdin_open: true
-        tty: true
-        command: ["/bin/sh"]
+        service: web
 
     javascript:
         image: rebase/javascript
@@ -76,6 +48,10 @@ services:
         SETTINGS: ".rq_default.pro"
         CRAWLER_USERNAME:
         CRAWLER_PASSWORD:
+        GITHUB_APP_ID:
+        GITHUB_APP_SECRET:
+        GITHUB_CODE2RESUME_ID:
+        GITHUB_CODE2RESUME_SECRET:
 
     rq_population:
       image: rebase/pro-rq-population
