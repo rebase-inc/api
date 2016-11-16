@@ -35,21 +35,19 @@ services:
       environment:
           REBASE_CLIENT_HOST: "dev"
           REBASE_CLIENT_PORT: 3000
-      ports:
-       - "3000:3000"
       volumes:
        - ../../../react-app:/code
 
     code2resume:
-        image: rebase/client
+        image: rebase/code2resume
         environment:
           REBASE_CLIENT_HOST: "dev"
           REBASE_CLIENT_PORT: 3001
-        ports:
-         - "3001:3001"
+        expose:
+         - "3001"
         volumes:
-         - ../../../react-app:/code
-        command: ["/code/start", "code2resume"]
+         - ../../../code2resume:/code
+        command: ["/code/start", "start"]
 
     javascript:
         image: rebase/javascript
@@ -121,3 +119,9 @@ services:
       image: rebase/rsyslog
       volumes:
        - log:/var/log
+
+    nginx:
+      image: rebase/dev-nginx
+      ports:
+       - 3000:3000
+       - 3001:3001
