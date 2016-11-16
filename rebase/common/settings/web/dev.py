@@ -9,6 +9,8 @@ config = dict(parent_config)
 
 config.update({
     'LOG_LEVEL': DEBUG,
+    'APP_URL': 'http://dev:3000',
+    'CODE2RESUME_URL': 'http://c2r:3001',
 })
 
 

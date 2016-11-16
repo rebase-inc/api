@@ -8,5 +8,6 @@ cd /api
 ./docker/rq_git/build-pro
 ./docker/rq_default/build-pro
 ./docker/rq_population/build-pro
+./docker/nginx/build-pro
 
 popd

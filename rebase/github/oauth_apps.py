@@ -4,7 +4,8 @@ from urllib.parse import urlparse
 
 from flask_oauthlib.client import OAuth
 
-from rebase.models import GithubOAuthApp
+from ..common.settings import config
+from ..models import GithubOAuthApp
 
 
 logger = getLogger()
@@ -25,7 +26,7 @@ def apps(app):
     alpha_app = oauth.remote_app(
             alpha.name,
             consumer_key=alpha.client_id,
-            consumer_secret=app.config['GITHUB_APP_SECRET'],
+            consumer_secret=config['GITHUB_APP_SECRET'],
             **common_settings
     )
     attribute =  'github_app'
@@ -33,7 +34,7 @@ def apps(app):
     code2resume_app = oauth.remote_app(
             code2resume.name,
             consumer_key=code2resume.client_id,
-            consumer_secret=app.config['GITHUB_CODE2RESUME_SECRET'],
+            consumer_secret=config['GITHUB_CODE2RESUME_SECRET'],
             **common_settings
     )
     setattr(code2resume_app, attribute, code2resume)

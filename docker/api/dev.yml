@@ -11,6 +11,11 @@ services:
         file: web-service-dev.yml
       expose:
        - "5000"
+      environment:
+        GITHUB_APP_ID:
+        GITHUB_APP_SECRET:
+        GITHUB_CODE2RESUME_ID:
+        GITHUB_CODE2RESUME_SECRET:
 
     cache:
       extends:

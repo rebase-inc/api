@@ -13,13 +13,7 @@ BASIC_LOG_CONFIG = {
 }
 
 SECRET_KEY = "\x86\xa1\xb8\xfbP\x8f\xd6\x1c'\xad-\xdb\xf8+K=\x820g<5\x16|l"
-GITHUB_APP_ID = 'ccfe7b7be7560c9a112e'
-GITHUB_APP_SECRET = '1779c1d363dec567c81c01ef266e4d3f30f79a8d'
-GITHUB_CODE2RESUME_ID = '215657378a75ef37b93e'
-GITHUB_CODE2RESUME_SECRET = 'faa6edb95cfc81616604f21cad2be491beefbe50'
 COOKIE_SECURE_HTTPPONLY = { 'secure': False, 'httponly': False }
 GIT_SERVER_URL_PREFIX='ssh://git@dev:2222/'
-APP_URL='http://dev:3000'
-CODE2RESUME_URL='http://c2r:3001'
 
 

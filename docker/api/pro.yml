@@ -14,7 +14,11 @@ services:
         service: common_env_pro
         file: common-python-service-environment.pro.yml
       environment:
-          SETTINGS: ".web.pro"
+        SETTINGS: ".web.pro"
+        GITHUB_APP_ID:
+        GITHUB_APP_SECRET:
+        GITHUB_CODE2RESUME_ID:
+        GITHUB_CODE2RESUME_SECRET:
 
     cache:
       image: rebase/pro-web
@@ -105,13 +109,12 @@ services:
          - "4444:4444"
 
     nginx:
-        image: rebase/nginx
+        image: rebase/pro-nginx
         ports:
-         - 8080:80
-         - 4430:443
+         - 80:80
+         - 443:443
         volumes:
          - etc_letsencrypt:/etc/letsencrypt
-         - www:/www:ro
 
     redis:
       image: redis

@@ -1,25 +1,31 @@
 #!/bin/bash
 
-rm -rf /tmp/nginx
-mkdir -p /tmp/nginx/www
+# can't mount a symlinked dir like /tmp
+build_dir=~/.rebase/build/nginx
+www_dir=$build_dir/www
+
+rm -rf $build_dir
+mkdir -p $www_dir
 
 docker build -t rebase/client ../react-app 
-docker run --rm -it -v /tmp/nginx/www:/www -v $PWD/../react-app:/code rebase/client /code/init code2resume
-docker run --rm -it -v /tmp/nginx/www:/www -v $PWD/../react-app:/code rebase/client /code/init app
+docker run --rm -it -v $www_dir:/www -v $PWD/../react-app:/code rebase/client /code/init code2resume
+docker run --rm -it -v $www_dir:/www -v $PWD/../react-app:/code rebase/client /code/init app
 
 pushd docker/nginx
-cp pro-Dockerfile /tmp/nginx/Dockerfile
-cp nginx.conf /tmp/nginx
-cp default-443.conf /tmp/nginx
-cp default-80.conf /tmp/nginx
-cp nginx-ssl.conf /tmp/nginx
-cp api_proxy.conf /tmp/nginx
-cp listen.bash /tmp/nginx
+cp pro-Dockerfile $build_dir/Dockerfile
+cp local-pro-Dockerfile $build_dir
+cp nginx.conf $build_dir
+cp default-443.conf $build_dir
+cp default-80.conf $build_dir
+cp default-3000.conf $build_dir
+cp nginx-ssl.conf $build_dir
+cp api_proxy.conf $build_dir
+cp api_proxy_local.conf $build_dir
+cp listen.bash $build_dir
 popd
 
-pushd /tmp/nginx
+pushd $build_dir
 docker build -t rebase/pro-nginx .
+docker build -t rebase/local-pro-nginx -f local-pro-Dockerfile .
 popd
-
-rm -rf /tmp/nginx
 

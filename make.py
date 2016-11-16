@@ -130,6 +130,7 @@ def main(dev=True):
             '../parser/'
         ))
         build_python_services('docker/build/build-pro')
+        check_call(('./docker/nginx/build-pro',))
 
 
 if __name__ == '__main__':

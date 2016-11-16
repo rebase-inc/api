@@ -6,6 +6,7 @@ config = dict(parent_config)
 
 # put here settings that are specific for 'web' for this installation
 
-#config.update({
-    #'FOO': 'bar',
-#})
+config.update({
+    'APP_URL': 'https://alpha.rebaseapp.com',
+    'CODE2RESUME_URL': 'https://code2resume.rebaseapp.com',
+})

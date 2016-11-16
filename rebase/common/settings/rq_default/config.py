@@ -12,6 +12,11 @@ config = dict(root_config)
 # to update:
 # root_config.update({ 'FOO': 'BAR' })
 
-config.update(dict())
+config.update({
+    'GITHUB_APP_ID':                environ['GITHUB_APP_ID'],
+    'GITHUB_APP_SECRET':            environ['GITHUB_APP_SECRET'],
+    'GITHUB_CODE2RESUME_ID':        environ['GITHUB_CODE2RESUME_ID'],
+    'GITHUB_CODE2RESUME_SECRET':    environ['GITHUB_CODE2RESUME_SECRET'],
+})
 
 
