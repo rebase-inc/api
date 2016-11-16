@@ -5,6 +5,8 @@ volumes:
     log: {}
     sql: {}
     uploads: {}
+    code2resume-sync:
+      external: true
 
 services:
     web:
@@ -64,10 +66,10 @@ services:
         environment:
           REBASE_CLIENT_HOST: "dev"
           REBASE_CLIENT_PORT: 3001
+        volumes_from:
+          - container:code2resume-sync:rw
         expose:
          - "3001"
-        volumes:
-         - ../code2resume:/code
         extends:
           service: common_env
           file: docker/api-dev.yml
