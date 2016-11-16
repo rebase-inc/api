@@ -26,9 +26,11 @@ User git
 1. Go to [Docker Hub](https://hub.docker.com) and register
 2. Tell the Rebase organization admin to add your username to the org.
 3. ```cd ~/repo/api``
-4. ```docker login```
-5. ```docker-compose pull```
-6. ```docker-compose up```
+4. ```gem install docker-sync```
+5. ```brew install fswatch```
+6. ```docker login```
+7. ```docker-compose pull```
+8. ```docker-compose up```
 
 # Initialize the database
 The first time the system is installed, whether in dev or production mode,
