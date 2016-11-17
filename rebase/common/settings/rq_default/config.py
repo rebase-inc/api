@@ -17,6 +17,7 @@ config.update({
     'GITHUB_APP_SECRET':            environ['GITHUB_APP_SECRET'],
     'GITHUB_CODE2RESUME_ID':        environ['GITHUB_CODE2RESUME_ID'],
     'GITHUB_CODE2RESUME_SECRET':    environ['GITHUB_CODE2RESUME_SECRET'],
+    'ONLY_THIS_REPO':               environ['ONLY_THIS_REPO'] if 'ONLY_THIS_REPO' in environ else None,
 })
 
 

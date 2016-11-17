@@ -1,8 +1,7 @@
 from collections import defaultdict, Counter
 from logging import getLogger
-from os import makedirs
 from os.path import splitext, join, isdir
-from pickle import dump, dumps
+from pickle import dumps
 from shutil import rmtree
 
 from git import Repo
@@ -254,9 +253,9 @@ class AccountScanner(object):
             try:
                 repo_name = repo.name
             except GithubException as e:
-                logger.exception('Could fetch repo name')
+                logger.exception('Could not fetch repo name')
                 continue
-            if repo_name != 'api':
+            if config['ONLY_THIS_REPO'] and (repo_name != config['ONLY_THIS_REPO']):
                 continue
             try:
                 repo_languages = set(repo.get_languages().keys())
