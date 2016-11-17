@@ -1,7 +1,7 @@
 
 from rebase.common.database import DB, PermissionMixin
 
-
+# this model isn't really a github account. It's more of a Github app authorization
 class GithubAccount(DB.Model, PermissionMixin):
     __pluralname__ = 'github_accounts'
 

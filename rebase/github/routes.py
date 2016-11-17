@@ -2,7 +2,7 @@ from logging import getLogger
 from urllib.parse import urljoin, urlparse
 
 from flask import redirect, url_for, request, jsonify, current_app
-from flask.ext.login import login_required, current_user
+from flask.ext.login import login_required, current_user, login_user
 
 from rebase.common.database import DB
 from rebase.common.exceptions import NotFoundError
@@ -40,7 +40,7 @@ def analyze_contractor_skills(github_account):
 
 
 def get_oauth_app_hostname(request):
-    host = request.environ['HTTP_HOST'] 
+    host = request.environ['HTTP_HOST']
     if not host.startswith('http'):
         host2 = '//'+host
     else:
@@ -75,36 +75,46 @@ def register_github_routes(app):
         return redirect(url_for('login'))
 
     @app.route('/api/v1/github/authorized')
-    @login_required
     def authorized():
-        github_apps = apps(app)
-        oauth_app_hostname = get_oauth_app_hostname(request)
-        github = github_apps[oauth_app_hostname]
-        resp = github.authorized_response()
-        if resp is None:
+        github_app = apps(app)[get_oauth_app_hostname(request)]
+        response = github_app.authorized_response()
+        if response is None:
             return 'Access denied: reason={error} error={error_description}'.format(**request.args)
-        elif 'error' in resp:
-            if resp['error'] == 'bad_verification_code': return redirect(url_for('github_login'))
-            else: return 'Unknown error: {}'.format(resp['error'])
+        elif 'error' in response:
+            return redirect(url_for('github_login')) if response['error'] == 'bad_verification_code' else 'Unknown error: {}'.format(response['error'])
+
+        # if we got to this point, GitHub auth was successful
+        access_token = response['access_token']
+        github_user_data = github_app.get('user', token = (access_token, '')).data
+        github_user = GithubUser.query.get(github_user_data['id'])
+
+        # slightly different object for use below
+        github_app = github_app.github_app
+
+        if not github_user:
+            # this github user has never been introduced to Rebase before, so we need to build the models
+            github_user = GithubUser(github_user_data['id'], github_user_data['login'], github_user_data['name'])
+            user = User(github_user_data['name'], github_user_data['email'], uuid1().hex)
+            Contractor(user)
+            github_account = GithubAccount(github_app, github_user, current_user, access_token)
         else:
-            access_token = resp['access_token']
-            _github_user = github.get('user', token=(access_token, '')).data
-            github_user = GithubUser.query.get(_github_user['id'])
-            if not github_user:
-                github_user = GithubUser(*[ _github_user[k] for k in ('id', 'login', 'name') ])
-            github_app = github.github_app
+            # this github user has been introduce to rebase, so we're going to try to find their Rebase user
+            user = GithubAccount.query.filter_by(app_id = github_app.client_id, github_user_id = github_user.id ).first().user
             github_account = GithubAccount.query.filter_by(
-                app_id=github_app.client_id,
-                github_user_id=github_user.id,
-                user_id=current_user.id
-            ).first()
-            if github_account:
-                github_account.access_token = access_token
-            else:
-                github_account = GithubAccount(github_app, github_user, current_user, access_token)
-            DB.session.add(github_account)
-            DB.session.commit()
-            analyze_contractor_skills(github_account)
+                app_id = github_app.client_id,
+                github_user_id = github_user.id,
+                user_id = user.id
+            ).first() or GithubAccount(github_app, github_user, user, access_token)
+            github_account.access_token = access_token
+
+        # whether we've created a new user or found an existing user, we need to log them in
+        role_id = int(request.cookies.get('role_id', 0))
+        login_user(user, remember=True)
+        current_role = user.set_role(role_id)
+
+        DB.session.add(github_account)
+        DB.session.commit()
+        analyze_contractor_skills(github_account)
         return redirect('/')
 
     @app.route('/api/v1/github/import_repos', methods=['POST'])
