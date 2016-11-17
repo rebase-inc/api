@@ -3,7 +3,9 @@ volumes:
     git: {}
     log: {}
     sql: {}
-    
+    code2resume-sync:
+      external: true
+
 services:
     web:
       extends:
@@ -43,6 +45,8 @@ services:
         environment:
           REBASE_CLIENT_HOST: "dev"
           REBASE_CLIENT_PORT: 3001
+        volumes_from:
+          - container:code2resume-sync:rw
         expose:
          - "3001"
         volumes:
