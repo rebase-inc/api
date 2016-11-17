@@ -37,20 +37,20 @@ _cleanup(){
 }
 
 function _manage() {
-    docker exec -it api_web_1 /venv/api/bin/python manage $*
+    docker exec -it api_web_1 /venv/web/bin/python -m rebase.scripts.manage $*
 }
 
 function _shell() {
-    docker exec -it api_web_1 /venv/api/bin/python manage shell
+    docker exec -it api_web_1 /venv/web/bin/python -m rebase.scripts.manage shell
 }
 
 function _add_ipython() {
-    docker exec -it api_web_1 /venv/api/bin/pip3 install ipython
+    docker exec -it api_web_1 /venv/web/bin/pip3 install ipython
     docker cp ~/.ipython/profile_default/ipython_config.py api_web_1:/root/.ipython/profile_default/ipython_config.py
 }
 
 function _ishell() {
-    docker exec -it api_web_1 /venv/api/bin/ipython manage shell
+    docker exec -it api_web_1 /venv/web/bin/ipython -m rebase.scripts.manage shell
 }
 
 function _super() {
@@ -79,11 +79,10 @@ function _compose () {
     if [ ! -z ${SECRET_KEY+x} ]
     then 
         echo "${bold}Production mode${off}"
-        docker-compose -f production-compose.yml $*
     else
         echo "${bold}Development mode${off}"
-        docker-compose $*
     fi 
+    docker-compose -f $COMPOSE_FILE $*
 }
 
 #
@@ -159,7 +158,7 @@ function _log() {
 # WARNING: this does not work with VirtualBox and Mac OS X 10.11.3 (Yosemite).
 # A CPU count greater than 1 will cause a kernel panic.
 #
-# It's been reported that it works with VMWare Fusion.
+# It works with VMWare Fusion.
 #
 function _create_vm() {
     if [ -z "$1" ]; then
@@ -169,6 +168,7 @@ function _create_vm() {
             --driver vmwarefusion \
             --vmwarefusion-cpu-count "2" \
             --vmwarefusion-memory-size "2048" \
+            --vmwarefusion-disk-size "40000" \
             $1
     fi
 }

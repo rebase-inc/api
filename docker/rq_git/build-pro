@@ -1,0 +1,8 @@
+#!/bin/bash
+
+pushd .
+
+docker build -t rebase/pro-rq-git -f docker/rq_git/pro-Dockerfile docker/rq_git
+
+popd
+

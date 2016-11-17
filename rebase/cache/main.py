@@ -16,7 +16,7 @@ logger = getLogger()
 def cache_main(role_id, q, name):
     app = Flask(__name__, static_url_path='')
     app.config.from_object('rebase.common.config.Config')
-    app.config.from_envvar('APP_SETTINGS')
+    app.config.from_envvar('FLASK_APP_SETTINGS')
     install(app)
     logger.info('Started child process')
     api = Api(app, prefix=app.config['URL_PREFIX'], errors=errors)

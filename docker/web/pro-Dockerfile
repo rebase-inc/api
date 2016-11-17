@@ -1,0 +1,28 @@
+FROM alpine
+
+EXPOSE 5000
+
+COPY ./wheels/ /wheels/
+
+COPY ./flask.conf.py ./gunicorn.pro.conf /etc/web/
+
+RUN apk update && \
+    apk add \
+        --no-cache \
+        ca-certificates \
+        libmagic \
+        libpq \
+        openssh-client \
+        python3 && \
+    pyvenv /venv/web && \
+    source /venv/web/bin/activate && \
+    pip install \
+        --no-cache-dir \
+        --upgrade pip && \
+    pip install \
+        --no-cache-dir \
+        --find-links /wheels \
+        web && \
+    rm -rf /wheels
+
+CMD ["/venv/web/bin/gunicorn", "-c", "/etc/web/gunicorn.pro.conf", "rebase.scripts.wsgi:app"]

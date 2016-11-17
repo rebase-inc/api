@@ -9,25 +9,20 @@ from github import Github
 
 from rebase.app import basic_app
 from rebase.common.debug import pdebug
-from rebase.features.logger import setup_logger
+from rebase.common.settings import config
 from ..account_scanner import scan_one_user
 
 
 logger = getLogger(__name__)
 
 
-
-
-def create_personal_access_token(app=None):
-    # TODO simplify design by removing the need for a Flask app here
-    # all we need is a configuration (partially shared with the 'real' Flask app)
-    if not app:
-        app = basic_app()
-    setup_logger(app)
-    conf = app.config
+def create_personal_access_token():
+    crawler_username = config['CRAWLER_USERNAME']
+    crawler_password = config['CRAWLER_PASSWORD']
+    logger.debug('Crawler username: %s', crawler_username)
     github = Github(
-        login_or_token=conf['CRAWLER_USERNAME'],
-        password=conf['CRAWLER_PASSWORD']
+        login_or_token=crawler_username,
+        password=crawler_password
     )
     fingerprint = environ['HOSTNAME']
     user = github.get_user()
@@ -46,7 +41,7 @@ def create_personal_access_token(app=None):
     )
     register(authorization.delete)
     global CRAWLER_USERNAME
-    CRAWLER_USERNAME = conf['CRAWLER_USERNAME']
+    CRAWLER_USERNAME = crawler_username
     global CRAWLER_AUTHORIZATION
     CRAWLER_AUTHORIZATION = authorization
 

@@ -1,3 +1,4 @@
 future==0.15.2
+pip==9.0.1
 six==1.10.0
 stdlib-list==0.3.3

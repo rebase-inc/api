@@ -1,0 +1,15 @@
+#!/bin/bash
+
+pushd .
+
+mkdir -p /wheelhouse/wheels /wheelhouse/py2_wheels
+
+cd /api
+
+./docker/web/build-dev
+./docker/rq_git/build-dev
+./docker/rq_population/build-dev
+./docker/rq_default/build-dev
+docker build -t rebase/dev-rq-git docker/rq_git
+
+popd

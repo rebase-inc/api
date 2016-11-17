@@ -3,8 +3,9 @@ from email.mime.text import MIMEText
 from logging import info
 from smtplib import SMTP_SSL
 
-from flask.ext.login import current_app
 from flask import current_app
+
+from .settings import config
 
 
 class Email(object):
@@ -26,7 +27,7 @@ class Email(object):
                 </p>
             </body>
         </html>
-        """.format(app_url=current_app.config['APP_URL'], text=html_msg)
+        """.format(app_url=config['APP_URL'], text=html_msg)
         _msg.attach(MIMEText(text_msg, 'plain'))
         _msg.attach(MIMEText(html, 'html'))
         self.msg = _msg.as_string()

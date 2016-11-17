@@ -1,0 +1,132 @@
+version: '2'
+volumes:
+    git: {}
+    log: {}
+    sql: {}
+    code2resume-sync:
+      external: true
+
+services:
+    web:
+      extends:
+        service: webserver
+        file: web-service-dev.yml
+      expose:
+       - "5000"
+      environment:
+        GITHUB_APP_ID:
+        GITHUB_APP_SECRET:
+        GITHUB_CODE2RESUME_ID:
+        GITHUB_CODE2RESUME_SECRET:
+
+    cache:
+      extends:
+        service: web
+      command: ["/venv/web/bin/python", "-m", "rebase.scripts.cache"]
+
+    scheduler:
+      extends:
+        service: webserver
+        file: web-service-dev.yml
+      command: ["/venv/web/bin/python", "-m", "rebase.scripts.scheduler"]
+      extends:
+        service: web
+
+    app:
+      image: rebase/client
+      environment:
+          REBASE_CLIENT_HOST: "dev"
+          REBASE_CLIENT_PORT: 3000
+      volumes:
+       - ../../../react-app:/code
+
+    code2resume:
+        image: rebase/code2resume
+        environment:
+          REBASE_CLIENT_HOST: "dev"
+          REBASE_CLIENT_PORT: 3001
+        volumes_from:
+          - container:code2resume-sync:rw
+        expose:
+         - "3001"
+        volumes:
+         - ../../../code2resume:/code
+        command: ["/code/start", "start"]
+
+    javascript:
+        image: rebase/javascript
+
+    parser:
+        image: rebase/dev-parser
+        volumes:
+            - ../../../parser:/parser
+
+    rq_default:
+      image: rebase/dev-rq-default
+      extends:
+        service: webserver
+        file: web-service-dev.yml
+      environment:
+        SETTINGS: ".rq_default.dev"
+        CRAWLER_USERNAME:
+        CRAWLER_PASSWORD:
+        GITHUB_APP_ID:
+        GITHUB_APP_SECRET:
+        GITHUB_CODE2RESUME_ID:
+        GITHUB_CODE2RESUME_SECRET:
+        ONLY_THIS_REPO:
+      tmpfs:
+       - /repos:rw,noexec,size=3g
+
+    rq_population:
+      image: rebase/dev-rq-population
+      extends:
+        service: webserver
+        file: web-service-dev.yml
+      environment:
+        SETTINGS: ".population.dev"
+
+    rq_git:
+      image: rebase/dev-rq-git
+      extends:
+        service: webserver
+        file: web-service-dev.yml
+      ports:
+       - "2222:22"
+      volumes:
+       - git:/git
+
+    jupyter:
+      image: rebase/jupyter
+      extends:
+        service: webserver
+        file: web-service-dev.yml
+      ports:
+       - "8888:8888"
+
+    rq_dashboard:
+        image: rebase/rq_dashboard
+        ports:
+         - "4444:4444"
+
+    redis:
+      image: redis
+      restart: always
+
+    database:
+      image: postgres
+      environment:
+        PGDATA: "/var/lib/postgresql/data/rebase"
+      volumes:
+       - sql:/var/lib/postgresql/data/rebase
+
+    rsyslog:
+      image: rebase/rsyslog
+      volumes:
+       - log:/var/log
+
+    nginx:
+      image: rebase/dev-nginx
+      ports:
+       - 3000:3000
+       - 3001:3001

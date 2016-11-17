@@ -1,13 +1,16 @@
-from logging import DEBUG
+from os import environ
 
 from .config import config as base_config
 
+# treat the base_config as immutable
+
 config = dict(base_config)
 
+# To extend or modify inherited settings:
+
 config.update({
-    'BACKEND_AWS_ACCESS_KEY_ID': 'AKIAIXI7F5KZC7UOG5VQ',
-    'BACKEND_AWS_SECRET_ACCESS_KEY': '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',
-    'LOG_LEVEL': DEBUG,
+    'CRAWLER_USERNAME': environ['CRAWLER_USERNAME'],
+    'CRAWLER_PASSWORD': environ['CRAWLER_PASSWORD'],
 })
 
 

@@ -1,0 +1,70 @@
+#!/bin/bash
+
+pushd .
+
+# let's activate the build virtual environment
+
+source /venv/build/bin/activate
+
+# First fetch wheel and build c extensions
+
+pip wheel \
+    --find-links /wheelhouse/wheels \
+    --requirement docker/rq_default/requirements.txt \
+    --wheel-dir=/wheelhouse/wheels
+
+rm -rf /tmp/rq_default
+mkdir -p /tmp/rq_default
+
+python docker/rq_default/setup.py \
+    build \
+        -b /tmp/rq_default/build/ \
+    bdist_wheel \
+        -d /wheelhouse/wheels/ \
+    egg_info \
+        -e /tmp/rq_default
+
+deactivate
+
+source /venv/build_p2/bin/activate
+
+pip wheel \
+    --find-links /wheelhouse/py2_wheels \
+    --requirement docker/rq_default/requirements_p2.txt \
+    --wheel-dir=/wheelhouse/py2_wheels
+
+rm -rf /tmp/py2_parser
+mkdir -p /tmp/py2_parser
+
+python docker/rq_default/setup_py2.py \
+    build \
+        -b /tmp/py2_parser/build/ \
+    bdist_wheel \
+        -d /wheelhouse/py2_wheels/ \
+    egg_info \
+        -e /tmp/py2_parser
+
+deactivate
+
+
+
+# Now let's make a Dockerfile context
+# we can't symlink wheels into the 'source' directory 'docker/rq_default'
+# because are not repeatable across machines and hence not supported by Docker.
+# Instead, we just make hard copies of everything we need to build a container into a separate
+# directory ('/tmp/rq_default'), build the container, and finally, wipe the build dir.
+
+cp docker/rq_default/pro-Dockerfile /tmp/rq_default/Dockerfile
+
+cp rebase/common/pro.py /tmp/rq_default/flask.conf.py
+
+cp -r /wheelhouse/wheels /tmp/rq_default/.
+
+cp -r /wheelhouse/py2_wheels /tmp/rq_default/.
+
+docker build -t rebase/pro-rq-default /tmp/rq_default
+
+rm -rf /tmp/rq_default
+
+popd
+

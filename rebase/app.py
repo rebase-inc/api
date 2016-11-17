@@ -1,16 +1,14 @@
-from logging import getLogger
 from os import environ
 
 from flask import Flask
 
-from rebase.common.env import check
-from rebase.home.routes import register_home
+from .common.env import check
 
 
 def basic_app():
     app = Flask(__name__, static_url_path='')
     app.config.from_object('rebase.common.config.Config')
-    app.config.from_envvar('APP_SETTINGS')
+    app.config.from_envvar('FLASK_APP_SETTINGS')
     return app
 
 
@@ -29,9 +27,7 @@ def create(routes=False):
     app = basic_app()
     install(app)
     DB.init_app(app)
-    logger = getLogger()
     api = Api(app, prefix=app.config['URL_PREFIX'], errors=errors)
-    register_home(app)
     if routes:
         # some routes use flask.ext.cache is can't be created until an app and its context exist
         with app.app_context():

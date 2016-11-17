@@ -1,0 +1,106 @@
+version: '2'
+volumes:
+    git: {}
+    log: {}
+    sql: {}
+    
+services:
+    web:
+      image: rebase/pro-web
+      extends:
+        service: common_env_pro
+        file: common-python-service-environment.pro.yml
+      environment:
+        SETTINGS: ".web.pro"
+        GITHUB_APP_ID:
+        GITHUB_APP_SECRET:
+        GITHUB_CODE2RESUME_ID:
+        GITHUB_CODE2RESUME_SECRET:
+
+    cache:
+      image: rebase/pro-web
+      command: ["/venv/web/bin/cache"]
+      extends:
+        service: web
+
+    scheduler:
+      image: rebase/pro-web
+      command: ["/venv/web/bin/python", "-m", "rebase.scripts.scheduler"]
+      extends:
+        service: web
+
+    javascript:
+        image: rebase/javascript
+
+    parser:
+        image: rebase/pro-parser
+
+    rq_default:
+      image: rebase/pro-rq-default
+      extends:
+        service: common_env_pro
+        file: common-python-service-environment.pro.yml
+      environment:
+        SETTINGS: ".rq_default.pro"
+        CRAWLER_USERNAME:
+        CRAWLER_PASSWORD:
+        GITHUB_APP_ID:
+        GITHUB_APP_SECRET:
+        GITHUB_CODE2RESUME_ID:
+        GITHUB_CODE2RESUME_SECRET:
+      tmpfs:
+       - /repos:rw,noexec,size=3g
+
+    rq_population:
+      image: rebase/pro-rq-population
+      extends:
+        service: common_env_pro
+        file: common-python-service-environment.pro.yml
+      environment:
+        SETTINGS: ".population.pro"
+
+    rq_git:
+      image: rebase/pro-rq-git
+      extends:
+        service: common_env_pro
+        file: common-python-service-environment.pro.yml
+      ports:
+       - "2222:22"
+      volumes:
+       - git:/git
+
+    jupyter:
+      image: rebase/jupyter
+      extends:
+        service: common_env_pro
+        file: common-python-service-environment.pro.yml
+      ports:
+       - "8888:8888"
+
+    rq_dashboard:
+        image: rebase/rq_dashboard
+        ports:
+         - "4444:4444"
+
+    nginx:
+        image: rebase/local-pro-nginx
+        ports:
+            - 3000:3000
+            - 3001:3001
+
+    redis:
+      image: redis
+      restart: always
+
+    database:
+      image: postgres
+      environment:
+        PGDATA: "/var/lib/postgresql/data/rebase"
+      volumes:
+       - sql:/var/lib/postgresql/data/rebase
+
+    rsyslog:
+      image: rebase/rsyslog
+      volumes:
+       - log:/var/log
+

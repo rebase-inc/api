@@ -1,0 +1,22 @@
+FROM python:alpine
+
+RUN apk update && \
+    apk add \
+        bash \
+        ca-certificates \
+        postgresql-dev \
+        gcc \
+        python3-dev \
+        musl-dev \
+        py-virtualenv \
+        docker
+
+RUN pyvenv /venv/rq && \
+    /venv/rq/bin/pip install --upgrade pip && \
+    /venv/rq/bin/pip install wheel 
+
+VOLUME /wheelhouse
+
+WORKDIR /api
+
+CMD ["sh"]

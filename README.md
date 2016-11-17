@@ -28,6 +28,7 @@ User git
 3. ```cd ~/repo/api``
 4. ```gem install docker-sync```
 5. ```brew install fswatch```
+5. ```docker-sync start```
 6. ```docker login```
 7. ```docker-compose pull```
 8. ```docker-compose up```

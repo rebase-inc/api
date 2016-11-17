@@ -4,9 +4,9 @@ from unittest import TestCase
 from rebase.app import create
 import rebase.tests.database.cleanup
 
-from ..common.debug import setup_service_log
+from ..common.log import setup
 
-setup_service_log()
+setup()
 
 current_process().name = 'Unit Tests'
 

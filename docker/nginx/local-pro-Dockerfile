@@ -1,0 +1,6 @@
+FROM rebase/pro-nginx
+
+COPY default-3000.conf /etc/nginx/default-3000.conf
+COPY api_proxy_local.conf /etc/nginx/api_proxy_local.conf
+
+RUN ln -sf /etc/nginx/default-3000.conf /etc/nginx/conf.d/default.conf

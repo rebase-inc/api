@@ -2,7 +2,7 @@ version: '2'
 services:
     common_env:
       environment:
-        APP_SETTINGS: "/api/rebase/common/pro.py"
+        FLASK_APP_SETTINGS: "/api/rebase/common/pro.py"
         BACKEND_AWS_ACCESS_KEY_ID:
         BACKEND_AWS_SECRET_ACCESS_KEY:
         CRAWLER_PASSWORD:

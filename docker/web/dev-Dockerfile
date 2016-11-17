@@ -1,0 +1,34 @@
+FROM alpine
+
+WORKDIR /api
+
+EXPOSE 5000
+
+RUN apk update && \
+    apk add \
+        --no-cache \
+        ca-certificates \
+        libmagic \
+        libpq \
+        openssh-client \
+        python3 && \
+    pyvenv /venv/web && \
+    source /venv/web/bin/activate && \
+    pip install \
+        --no-cache-dir \
+        --upgrade pip
+
+COPY ./requirements.txt /requirements.txt
+
+COPY ./dev.py /settings/dev.py
+
+COPY ./wheels/ /wheels/
+
+RUN source /venv/web/bin/activate && \
+    pip install \
+        --no-cache-dir \
+        --requirement /requirements.txt \
+        --find-links /wheels && \
+    rm -rf /wheels
+
+CMD ["/venv/web/bin/gunicorn", "-c", "etc/gunicorn.dev.conf", "rebase.scripts.wsgi:app"]

@@ -2,12 +2,10 @@ from subprocess import check_call
 
 from flask.ext.script import Manager, prompt_bool
 
-from rebase.app import create as create_app
 from rebase.common import mock
 from rebase.common.database import DB
+from rebase.common.settings import config
 
-
-app = create_app()
 
 data = Manager(usage="Manage the data inside the database.")
 
@@ -35,9 +33,8 @@ def recreate(yes):
 def populate():
     "Populate database with default data"
     from rebase.models import GithubOAuthApp
-
-    alpha =         GithubOAuthApp(app.config['GITHUB_APP_ID'],         'alpha',        app.config['APP_URL'])
-    code2resume =   GithubOAuthApp(app.config['GITHUB_CODE2RESUME_ID'], 'code2resume',  app.config['CODE2RESUME_URL'])
+    alpha =         GithubOAuthApp(config['GITHUB_APP_ID'],         'alpha',        config['APP_URL'])
+    code2resume =   GithubOAuthApp(config['GITHUB_CODE2RESUME_ID'], 'code2resume',  config['CODE2RESUME_URL'])
     DB.session.add(alpha)
     DB.session.add(code2resume)
 

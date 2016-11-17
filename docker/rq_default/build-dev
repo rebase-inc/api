@@ -1,0 +1,50 @@
+#!/bin/bash
+
+pushd .
+
+# let's activate the build virtual environment
+
+
+# First fetch wheel and build c extensions for Python 3 and then Python 2
+
+source /venv/build/bin/activate
+
+pip wheel \
+    --find-links /wheelhouse/wheels \
+    --requirement docker/rq_default/requirements.txt \
+    --wheel-dir=/wheelhouse/wheels
+
+deactivate
+
+source /venv/build_p2/bin/activate
+
+pip wheel \
+    --find-links /wheelhouse/py2_wheels \
+    --requirement docker/rq_default/requirements_p2.txt \
+    --wheel-dir=/wheelhouse/py2_wheels
+
+deactivate
+
+# Now let's make a Dockerfile context
+# we can't symlink wheels into the 'source' directory 'docker/rq_default'
+# because are not repeatable across machines and hence not supported by Docker.
+# Instead, we just make hard copies of everything we need to build a container into a separate
+# directory ('/tmp/rq_default'), build the container, and finally, wipe the build dir.
+
+mkdir -p /tmp/rq_default
+
+cp docker/rq_default/dev-Dockerfile /tmp/rq_default/Dockerfile
+
+cp docker/rq_default/requirements.txt /tmp/rq_default/requirements.txt
+
+cp docker/rq_default/requirements_p2.txt /tmp/rq_default/requirements_p2.txt
+
+cp -r /wheelhouse/wheels /tmp/rq_default/.
+
+cp -r /wheelhouse/py2_wheels /tmp/rq_default/.
+
+docker build -t rebase/dev-rq-default /tmp/rq_default
+
+rm -rf /tmp/rq_default
+
+popd

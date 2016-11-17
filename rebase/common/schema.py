@@ -30,7 +30,6 @@ class RebaseSchema(Schema):
         instance_id = tuple(data.get(primary_key) for primary_key in primary_keys)
         if all(instance_id):
             instance = model.query.get(instance_id)
-            logger.debug('RebaseSchema._get_or_make_object, instance: %s', instance)
             if not instance:
                 raise NotFoundError(model.__tablename__, instance_id)
             return instance

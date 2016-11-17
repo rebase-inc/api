@@ -1,6 +1,6 @@
 #!/bin/bash
 if [ $# -eq 0 ]; then
-    echo "No arguments supplied. Correct syntax: $> listen [80|443]"
+    echo "No arguments supplied. Correct syntax: $> listen [80|443|3000]"
     exit 3
 fi
 
@@ -9,8 +9,8 @@ if [[ ! $1 =~ ^-?[0-9]+$ ]]; then
     exit 2
 fi
 
-if [ $1 -ne 443 ] && [ $1 -ne 80 ]; then
-    echo "Port number must be either 80 or 443"
+if [ $1 -ne 443 ] && [ $1 -ne 80 ] && [ $1 -ne 3000 ]; then
+    echo "Port number must be either 80 or 443 or 3000"
     exit 1
 fi
 

@@ -1,8 +1,7 @@
 from collections import defaultdict, Counter
 from logging import getLogger
-from os import makedirs
 from os.path import splitext, join, isdir
-from pickle import dump, dumps
+from pickle import dumps
 from shutil import rmtree
 
 from git import Repo
@@ -62,9 +61,6 @@ for language, extension_list in _language_list.items():
 
 
 CLONED_REPOS_ROOT_DIR = '/repos'
-
-
-DATA_ROOT = '/crawler'
 
 
 class Queues(object): pass
@@ -203,12 +199,14 @@ class AccountScanner(object):
 
     def clone_if_not_cloned_already(self, repo):
         if self.cloned:
+            logger.debug('Repo "{}" is already cloned'.format(repo.name))
             return
         repo_url = repo.clone_url
         oauth_url = repo_url.replace('https://github.com', self.new_url_prefix, 1)
         self.local_repo_dir = join(CLONED_REPOS_ROOT_DIR, repo.name)
         if isdir(self.local_repo_dir):
             rmtree(self.local_repo_dir)
+        logger.debug('Repo "{}" is cloning'.format(repo.name))
         self.local_repo = Repo.clone_from(oauth_url, self.local_repo_dir)
         self.cloned = True
     
@@ -255,10 +253,10 @@ class AccountScanner(object):
             try:
                 repo_name = repo.name
             except GithubException as e:
-                logger.exception('Could fetch repo name')
+                logger.exception('Could not fetch repo name')
                 continue
-            #if repo_name != 'api':
-                #continue
+            if config['ONLY_THIS_REPO'] and (repo_name != config['ONLY_THIS_REPO']):
+                continue
             try:
                 repo_languages = set(repo.get_languages().keys())
             except GithubException as e:
@@ -310,13 +308,6 @@ def scan_one_user(token, token_user, user_login=None, contractor_id=None):
             args=(scanned_user, contractor_id),
             timeout=3600
         )
-        user_data_dir = join(DATA_ROOT, scanned_user)
-        filename = 'data' if scanner.api.oauth_scopes == ['public_repo'] else 'private'
-        user_data_path = join(user_data_dir, filename)
-        if not isdir(user_data_dir):
-            makedirs(user_data_dir)
-        with open(user_data_path, 'wb') as f:
-            dump(user_data, f)
         return user_data
     except TimeoutError as timeout_error:
         logger.ERROR('scan_one_user(%s, %s) %s', token_user, user_login, str(timeout_error))
