@@ -121,6 +121,7 @@ def main(dev=True):
         check_call(('docker', 'build', '-t', 'rebase/dev-parser', '../parser/docker/parser'))
         build_python_services('docker/build/build-dev')
         build_react_client()
+        check_call(('docker', 'build', '-t', 'rebase/dev-nginx', '-f', 'docker/nginx/dev-Dockerfile', 'docker/nginx'))
     else:
         check_call((
             'docker',
