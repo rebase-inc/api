@@ -16,6 +16,7 @@ logger = getLogger(__name__)
 # TODO: Remove
 class C2RAuthCollection(Resource):
     url = '/c2r_auth'
+    bad_credentials = 'Invalid credentials!'
 
     def get(self):
         if current_user.is_authenticated:

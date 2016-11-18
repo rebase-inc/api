@@ -49,8 +49,6 @@ services:
           - container:code2resume-sync:rw
         expose:
          - "3001"
-        volumes:
-         - ../../../code2resume:/code
         command: ["/code/start", "start"]
 
     javascript:
