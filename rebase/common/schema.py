@@ -1,16 +1,41 @@
+from contextlib import contextmanager
 from functools import partialmethod
 from logging import getLogger
 
 from flask import current_app
-from flask.ext.login import current_user
+from flask_login import current_user
 from marshmallow import Schema, fields
+from marshmallow.exceptions import ValidationError as MarshmallowValidationError
 from sqlalchemy.orm.collections import InstrumentedList
 
-from rebase.common.exceptions import marshmallow_exceptions, NotFoundError, BadDataError
-from rebase.common.keys import get_model_primary_keys
+from .exceptions import NotFoundError, BadDataError, ClientError
+from .keys import get_model_primary_keys
 
 
 logger = getLogger()
+
+
+class ValidationError(ClientError):
+    message='Validation error in deserialization'
+
+    def __init__(self, error, data):
+        if not isinstance(error, MarshmallowValidationError):
+            raise ValueError('error parameter must be of type {}'.format(MarshmallowValidationError))
+        super().__init__(message=self.message+': '+pformat(error.messages))
+
+
+@contextmanager
+def marshmallow_exceptions(data=None):
+    try:
+        yield
+    except MarshmallowValidationError as error:
+        raise ValidationError(error, data)
+    except ValidationError as error:
+        raise error
+    except Exception as error:
+        import traceback
+        traceback.print_exc()
+        raise ServerError(message=str(error))
 
 
 class RebaseSchema(Schema):

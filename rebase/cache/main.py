@@ -4,7 +4,7 @@ from queue import Queue, Empty
 from sys import getsizeof
 
 from flask import Flask, current_app
-from flask.ext.restful import Api
+from flask_restful import Api
 
 from rebase.common.exceptions import errors
 from rebase.features.install import install
@@ -38,7 +38,7 @@ def cache_main(role_id, q, name):
                 break
             #logger.debug('Received: {}'.format(task))
             function, args, kwargs = task['action']
-            # create a fake request context to allow flask.ext.login to work
+            # create a fake request context to allow flask_login to work
             # which is needed wherever 'current_user' is read
             with app.test_request_context('/foobar'):
                 function(current_app, role_id, *args, **kwargs)

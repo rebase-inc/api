@@ -12,9 +12,15 @@ from ..common.debug import pdebug
 from ..common.settings import config
 from ..common.stopwatch import InfoElapsedTime
 from ..datetime import time_to_epoch
-from ..features.rq import setup_rq
+from ..features.rq import POPULATION
 from ..skills.python import Python
-from ..skills.aws_keys import profile_key, level_key
+from ..skills.aws_keys import (
+    level_key,
+    profile_key,
+    public_profile_key,
+    old_profile_key,
+    old_public_profile_key,
+)
 from ..skills.java import Java
 from ..skills.javascript import Javascript
 from ..skills.metrics import measure
@@ -61,12 +67,6 @@ for language, extension_list in _language_list.items():
 
 
 CLONED_REPOS_ROOT_DIR = '/repos'
-
-
-class Queues(object): pass
-ALL_QUEUES = Queues()
-setup_rq(ALL_QUEUES)
-POPULATION = ALL_QUEUES.population_queue
 
 bucket = config['S3_BUCKET']
 
@@ -256,6 +256,7 @@ class AccountScanner(object):
                 logger.exception('Could not fetch repo name')
                 continue
             if config['ONLY_THIS_REPO'] and (repo_name != config['ONLY_THIS_REPO']):
+                logger.debug('Skipping repo %s, we only look at repo %s', repo.name, config['ONLY_THIS_REPO'])
                 continue
             try:
                 repo_languages = set(repo.get_languages().keys())
@@ -266,13 +267,19 @@ class AccountScanner(object):
                 if bool(self.supported_languages & repo_languages):
                     self.cloned = False
                     self.process_repo(repo, scanned_user.login, commit_count_by_language, unknown_extension_counter, technologies)
+                else:
+                    logger.debug('We do not support any of these languages: %s', repo_languages)
         return commit_count_by_language, unknown_extension_counter, technologies
 
 
-def save(data, user):
-    key = profile_key(user)
+def save(data, user, private_scanning):
+    if private_scanning:
+        key = profile_key(user) 
+        old_data_key = old_profile_key(user)
+    else:
+        key = public_profile_key(user)
+        old_data_key = old_public_profile_key(user)
     # save the previous data, so we later retrieve it and remove it from the rankings
-    old_data_key = key+'_old'
     if exists(key):
         old_s3_object = s3.Object(bucket, old_data_key)
         old_s3_object.copy_from(CopySource={
@@ -286,6 +293,7 @@ def save(data, user):
 
 def scan_one_user(token, token_user, user_login=None, contractor_id=None):
     user_data = dict()
+    private_scanning = user_login == None
     scanned_user = user_login if user_login else token_user
     start_msg = 'processing Github user: ' + scanned_user
     try:
@@ -302,10 +310,11 @@ def scan_one_user(token, token_user, user_login=None, contractor_id=None):
         user_data['unknown_extension_counter'] = unknown_extension_counter
         user_data['metrics'] = measure(technologies)
         user_data['rankings'] = dict()
-        user_data_key = save(user_data, scanned_user)
+        user_data_key = save(user_data, scanned_user, private_scanning)
         POPULATION.enqueue_call(
             func='rebase.skills.population.update_rankings',
             args=(scanned_user, contractor_id),
+            kwargs={ 'private': private_scanning },
             timeout=3600
         )
         return user_data

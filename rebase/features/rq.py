@@ -18,7 +18,22 @@ all_queues = parallel_queues+serial_queues
 def get_connection():
     return Redis(host='redis')
 
-def setup_rq(app):
+def setup_rq(any_object):
     conn = get_connection()
     for q in all_queues:
-        setattr(app, q+'_queue', Queue(name=q, connection=conn))
+        setattr(any_object, q+'_queue', Queue(name=q, connection=conn))
+
+
+class Queues(object): pass
+
+ALL_QUEUES = Queues()
+
+
+setup_rq(ALL_QUEUES)
+
+
+POPULATION = ALL_QUEUES.population_queue
+
+DEFAULT = ALL_QUEUES.default_queue
+
+

@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-from flask.ext.cache import Cache
+from flask_cache import Cache
 
 
 def setup_cache(app):

@@ -1,6 +1,6 @@
 import datetime
 
-from flask.ext.login import current_user
+from flask_login import current_user
 
 from rebase.common.database import DB, PermissionMixin
 from rebase.models.comment import Comment

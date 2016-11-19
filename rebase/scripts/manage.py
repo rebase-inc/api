@@ -1,8 +1,8 @@
 from importlib import import_module
 from pathlib import Path
 
-from flask.ext.script import Manager, Command
-from flask.ext.migrate import Migrate, MigrateCommand
+from flask_script import Manager, Command
+from flask_migrate import Migrate, MigrateCommand
 
 from inflection import underscore
 

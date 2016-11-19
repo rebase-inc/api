@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from flask.ext.login import current_app
+from flask_login import current_app
 from sqlalchemy.orm import validates
 from sqlalchemy.ext.hybrid import hybrid_property
 

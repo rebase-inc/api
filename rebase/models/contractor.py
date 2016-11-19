@@ -35,7 +35,7 @@ class Contractor(Role):
         from rebase.models.skill_set import SkillSet
         SkillSet(self)
         # Hack to nominate all contractors during development
-        from flask.ext.login import current_app
+        from flask_login import current_app
         if current_app.config['NOMINATE_ALL_CONTRACTORS']:
             from rebase.models.auction import Auction
             from rebase.models.nomination import Nomination

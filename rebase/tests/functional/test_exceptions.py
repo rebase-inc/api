@@ -7,9 +7,9 @@ from rebase.common.exceptions import (
     NotFoundError,
     InvalidGithubAccessToken,
     Forbidden,
-    ValidationError,
     errors,
 )
+from rebase.common.schema import ValidationError
 from rebase.models import (
     User,
 )

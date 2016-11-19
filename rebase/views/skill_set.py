@@ -1,6 +1,6 @@
 from logging import getLogger
 
-from flask.ext.restful import abort
+from flask_restful import abort
 from marshmallow import fields, post_load
 
 from rebase.common.schema import RebaseSchema, SecureNestedField

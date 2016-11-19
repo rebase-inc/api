@@ -3,8 +3,8 @@ import hashlib
 from magic import Magic, MAGIC_MIME_TYPE
 from os import path
 
-from flask.ext.restful import Resource
-from flask.ext.login import login_required, current_user, current_app
+from flask_restful import Resource
+from flask_login import login_required, current_user, current_app
 from flask import jsonify, request, send_from_directory
 
 from ..common.aws import bucket, s3

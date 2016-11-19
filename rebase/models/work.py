@@ -1,7 +1,7 @@
 import datetime
 
 from flask import current_app
-from flask.ext.login import current_user
+from flask_login import current_user
 from sqlalchemy.orm import validates, reconstructor
 from sqlalchemy.ext.hybrid import hybrid_property
 

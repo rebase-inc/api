@@ -1,6 +1,6 @@
 from subprocess import check_call
 
-from flask.ext.script import Manager, prompt_bool
+from flask_script import Manager, prompt_bool
 
 from rebase.common import mock
 from rebase.common.database import DB

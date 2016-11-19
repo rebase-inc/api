@@ -1,6 +1,3 @@
-options:
-    compose-file-path: 'docker-compose.yml'
-    compose-dev-file-path: 'docker-compose.yml' # yeah, this is shitty
 syncs:
   code2resume-sync: 
     sync_host_ip: 'dev'

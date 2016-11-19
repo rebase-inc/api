@@ -13,7 +13,7 @@ class InternalTicket(Ticket):
 
     def __init__(self, title, first_comment=None, project=None):
         from rebase.models import Comment, SkillRequirement
-        from flask.ext.login import current_user
+        from flask_login import current_user
         if project:
             self.project = project
         elif current_user and current_user.current_role.type == 'manager':

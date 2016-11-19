@@ -1,9 +1,7 @@
-from contextlib import contextmanager
 from inspect import isclass
 from pprint import pformat
 from sys import modules
 
-import marshmallow.exceptions as marsh_exc
 from werkzeug.http import HTTP_STATUS_CODES
 
 
@@ -49,28 +47,6 @@ class BadDataError(ClientError):
         message = self.message+' for model: {}'.format(model_name)
         super().__init__(message=message)
 
-
-class ValidationError(ClientError):
-    message='Validation error in deserialization'
-
-    def __init__(self, error, data):
-        if not isinstance(error, marsh_exc.ValidationError):
-            raise ValueError('error parameter must be of type {}'.format(marsh_exc.ValidationError))
-        super().__init__(message=self.message+': '+pformat(error.messages))
-
-
-@contextmanager
-def marshmallow_exceptions(data=None):
-    try:
-        yield
-    except marsh_exc.ValidationError as error:
-        raise ValidationError(error, data)
-    except ValidationError as error:
-        raise error
-    except Exception as error:
-        import traceback
-        traceback.print_exc()
-        raise ServerError(message=str(error))
 
 class NoRole(ServerError):
     error_message = 'User[{}] should have an associated role'

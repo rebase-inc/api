@@ -1,7 +1,7 @@
 from copy import copy
 
 from flask import jsonify, request
-from flask.ext.login import current_user, current_app
+from flask_login import current_user, current_app
 
 from rebase.cache.rq_jobs import invalidate
 from rebase.common.exceptions import NotFoundError

@@ -6,6 +6,10 @@ services:
         PYTHONHASHSEED: 2592602613
         FLASK_APP_SETTINGS: "/api/rebase/common/dev.py"
         S3_BUCKET:
+        GITHUB_APP_ID:
+        GITHUB_APP_SECRET:
+        GITHUB_CODE2RESUME_ID:
+        GITHUB_CODE2RESUME_SECRET:
 
     webserver:
         image: rebase/dev-web
