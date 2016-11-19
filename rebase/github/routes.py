@@ -2,7 +2,7 @@ from logging import getLogger
 from urllib.parse import urljoin, urlparse
 
 from flask import redirect, url_for, request, jsonify, current_app
-from flask_login import login_required, current_user
+from flask_login import login_required, current_user, login_user
 
 from rebase.common.database import DB
 from rebase.common.exceptions import NotFoundError
