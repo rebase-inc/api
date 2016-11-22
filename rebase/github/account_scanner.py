@@ -28,6 +28,7 @@ from ..skills.jvm_parser import JVMParser
 from ..skills.tech_profile import TechProfile
 
 from .api import RebaseGithub, RebaseGithubException
+from .notifications import notifications_for, NoOp
 
 
 _language_list = {
@@ -68,7 +69,9 @@ for language, extension_list in _language_list.items():
 
 CLONED_REPOS_ROOT_DIR = '/repos'
 
+
 bucket = config['S3_BUCKET']
+
 
 def count_languages(commit_count_by_language, unknown_extension_counter, filepath):
     '''
@@ -231,7 +234,14 @@ class AccountScanner(object):
         if self.local_repo_dir and isdir(self.local_repo_dir):
             rmtree(self.local_repo_dir)
 
-    def scan_all_repos(self, login=None):
+    def scan_all_repos(
+        self,
+        notify_to_be_scanned_repos,
+        notify_scanning,
+        notify_scanned_repos,
+        expire_notifications_keys,
+        login=None,
+    ):
         '''
             'login' is the account that will be scanned.
             It may be a different login than the one provided with the access_token.
@@ -249,6 +259,7 @@ class AccountScanner(object):
         scanned_user = self.api.get_user(*args)
         logger.info('Scanning all repos for user: %s', scanned_user.login)
         logger.debug('oauth_scopes: %s', self.api.oauth_scopes)
+        repos_to_be_scanned = []
         for repo in scanned_user.get_repos():
             try:
                 repo_name = repo.name
@@ -266,9 +277,24 @@ class AccountScanner(object):
             finally:
                 if bool(self.supported_languages & repo_languages):
                     self.cloned = False
-                    self.process_repo(repo, scanned_user.login, commit_count_by_language, unknown_extension_counter, technologies)
+                    repos_to_be_scanned.append(repo)
                 else:
                     logger.debug('We do not support any of these languages: %s', repo_languages)
+        
+        notify_to_be_scanned_repos(repo.name for repo in repos_to_be_scanned)
+        for repo in repos_to_be_scanned:
+            notify_scanning(repo.name)
+            self.process_repo(
+                repo,
+                scanned_user.login,
+                commit_count_by_language,
+                unknown_extension_counter,
+                technologies
+            )
+            notify_scanned_repos(repo.name)
+        notify_scanning(None)
+        expire_notifications_keys()
+
         return commit_count_by_language, unknown_extension_counter, technologies
 
 
@@ -303,7 +329,10 @@ def scan_one_user(token, token_user, user_login=None, contractor_id=None):
             # when scanning, user_login should be None for the Autenticated User
             # so private scanning: token_user (guy logged in), user_login= None
             # public scanning token_user=CRAWLER_USERNAME, user_login=<any user login>
-            commit_count_by_language, unknown_extension_counter, technologies = scanner.scan_all_repos(login=user_login)
+            commit_count_by_language, unknown_extension_counter, technologies = scanner.scan_all_repos(
+                *notifications_for(contractor_id),
+                login=user_login,
+            )
         scanner.close()
         user_data['commit_count_by_language'] = commit_count_by_language
         user_data['technologies'] = technologies
@@ -312,7 +341,7 @@ def scan_one_user(token, token_user, user_login=None, contractor_id=None):
         user_data['rankings'] = dict()
         user_data_key = save(user_data, scanned_user, private_scanning)
         POPULATION.enqueue_call(
-            func='rebase.skills.population.update_rankings',
+            'rebase.skills.population.update_rankings',
             args=(scanned_user, contractor_id),
             kwargs={ 'private': private_scanning },
             timeout=3600
