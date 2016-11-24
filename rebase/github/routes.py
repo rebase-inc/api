@@ -1,5 +1,6 @@
 from logging import getLogger
 from urllib.parse import urljoin, urlparse
+from uuid import uuid1
 
 from flask import redirect, url_for, request, jsonify, current_app
 from flask_login import login_required, current_user, login_user
@@ -35,7 +36,11 @@ def analyze_contractor_skills(github_account):
         DB.session.add(remote_work_history)
         DB.session.commit()
         logger.debug('About to queue scan_public_and_private_repos')
-        current_app.default_queue.enqueue_call(func='rebase.github.languages.scan_public_and_private_repos', args=(github_account.id,), timeout=3600 ) # timeout = 1h
+        current_app.default_queue.enqueue_call(
+            func='rebase.github.languages.scan_public_and_private_repos',
+            args=(github_account.id,),
+            timeout=3600
+        )
 
 
 def get_oauth_app_hostname(request):
@@ -93,9 +98,13 @@ def register_github_routes(app):
         if not github_user:
             # this github user has never been introduced to Rebase before, so we need to build the models
             github_user = GithubUser(github_user_data['id'], github_user_data['login'], github_user_data['name'])
-            user = User(github_user_data['name'], github_user_data['email'], uuid1().hex)
+            user = User(
+                github_user_data['name'],
+                github_user_data['email'] if github_user_data['email'] else '__phony_address__@rebase.com',
+                uuid1().hex
+            )
             Contractor(user)
-            github_account = GithubAccount(github_app, github_user, current_user, access_token)
+            github_account = GithubAccount(github_app, github_user, user, access_token)
         else:
             # this github user has been introduce to rebase, so we're going to try to find their Rebase user
             user = GithubAccount.query.filter_by(app_id = github_app.client_id, github_user_id = github_user.id ).first().user
