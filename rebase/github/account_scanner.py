@@ -5,6 +5,7 @@ from pickle import dumps
 from shutil import rmtree
 
 from git import Repo
+from git.exc import GitCommandError
 from github import GithubException
 
 from ..common.aws import s3_delete_folder, exists, s3, s3_wait_till_exists
@@ -28,7 +29,7 @@ from ..skills.jvm_parser import JVMParser
 from ..skills.tech_profile import TechProfile
 
 from .api import RebaseGithub, RebaseGithubException
-from .notifications import notifications_for, NoOp
+from .notifications import notifications_for
 
 
 _language_list = {
@@ -54,11 +55,10 @@ _language_list = {
 logger = getLogger(__name__)
 
 
-github_logger = getLogger('github')
+getLogger('github').setLevel('INFO')
 
 
 # set the level to 'DEBUG' to open the firehose of data from PyGithub
-github_logger.setLevel('INFO')
 
 
 EXTENSION_TO_LANGUAGES = defaultdict(list)
@@ -67,7 +67,14 @@ for language, extension_list in _language_list.items():
         EXTENSION_TO_LANGUAGES[extension].append(language)
 
 
+# /repos is a tmpfs mounted drive
+# meant for the 99% of repos less than 3GB that should fit in RAM.
+# Anything bigger must use BIG_CLONED_REPOS_ROOT_DIR
 CLONED_REPOS_ROOT_DIR = '/repos'
+
+
+# this is where repos that can't fit in /repos go
+BIG_CLONED_REPOS_ROOT_DIR = '/big_repos'
 
 
 bucket = config['S3_BUCKET']
@@ -96,6 +103,7 @@ class AccountScanner(object):
         self.login = login
         self.new_url_prefix = 'https://'+access_token+'@github.com'
         assert isdir(CLONED_REPOS_ROOT_DIR)
+        assert isdir(BIG_CLONED_REPOS_ROOT_DIR)
         self.scanners = {
 
             'Python':       Python(),
@@ -200,17 +208,47 @@ class AccountScanner(object):
 
         return commit_count_by_language, unknown_extension_counter, technologies
 
+    def clone_from(self, repo, oauth_url):
+        if isdir(self.local_repo_dir):
+            rmtree(self.local_repo_dir)
+        logger.debug('Repo "{}" is cloning into {}'.format(repo.name, self.local_repo_dir))
+        self.local_repo = Repo.clone_from(oauth_url, self.local_repo_dir)
+
+    def clone(self, repo, oauth_url):
+        '''
+
+            Clone either in tmpfs ('/repos') or on container host drive ('/big_repos') 
+
+        '''
+        # repo.size appears to be in KB
+        clone_in_RAM = config['REPOS_VOLUME_SIZE_IN_MB'] > config['CLONE_SIZE_SAFETY_FACTOR']*(repo.size/1024)
+        if clone_in_RAM:
+            self.local_repo_dir = join(CLONED_REPOS_ROOT_DIR, repo.name)
+            logger.debug('Clone in RAM')
+        else:
+            self.local_repo_dir = join(BIG_CLONED_REPOS_ROOT_DIR, repo.name)
+            logger.debug('Clone on disk')
+        try:
+            self.clone_from(repo, oauth_url)
+        except GitCommandError:
+            if clone_in_RAM:
+                # try on disk
+                self.local_repo_dir = join(BIG_CLONED_REPOS_ROOT_DIR, repo.name)
+                logger.debug('Re-try cloning on disk')
+                self.clone_from(repo, oauth_url)
+        #logger.debug('SIZE: Github Repo Size: %d KB', repo.size)
+        #from subprocess import check_output
+        #out = check_output(('du', '-k', '-s', self.local_repo_dir))
+        #logger.debug('SIZE: Local repo size: %d KB', int(out.decode().split('\t')[0]))
+
+
     def clone_if_not_cloned_already(self, repo):
         if self.cloned:
             logger.debug('Repo "{}" is already cloned'.format(repo.name))
             return
         repo_url = repo.clone_url
         oauth_url = repo_url.replace('https://github.com', self.new_url_prefix, 1)
-        self.local_repo_dir = join(CLONED_REPOS_ROOT_DIR, repo.name)
-        if isdir(self.local_repo_dir):
-            rmtree(self.local_repo_dir)
-        logger.debug('Repo "{}" is cloning'.format(repo.name))
-        self.local_repo = Repo.clone_from(oauth_url, self.local_repo_dir)
+        self.clone(repo, oauth_url)
         self.cloned = True
     
     def process_repo(self, repo, login, commit_count_by_language, unknown_extension_counter, technologies):

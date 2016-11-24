@@ -30,6 +30,8 @@ RUN source /venv/rq/bin/activate && \
     rm -rf /wheels && \
     rm -rf /py2_wheels
 
+RUN mkdir -p /big_repos
+
 WORKDIR /api
 
 CMD ["/venv/rq/bin/python", "-m", "rebase.scripts.rq_default"]
