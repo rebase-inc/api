@@ -8,8 +8,13 @@ rm -rf $build_dir
 mkdir -p $www_dir
 
 docker build -t rebase/client ../react-app 
-docker run --rm -it -v $www_dir:/www -v $PWD/../react-app:/code rebase/client /code/init code2resume
 docker run --rm -it -v $www_dir:/www -v $PWD/../react-app:/code rebase/client /code/init app
+docker build -t rebase/code2resume ../code2resume
+docker run --rm -it -v $PWD/../code2resume:/code rebase/code2resume /code/start build
+mkdir -p $www_dir/assets/code2resume
+cp ../code2resume/build/index.html $www_dir/assets/code2resume/.
+cp -r ../code2resume/build/static $www_dir/assets/code2resume/.
+
 
 pushd docker/nginx
 cp pro-Dockerfile $build_dir/Dockerfile
