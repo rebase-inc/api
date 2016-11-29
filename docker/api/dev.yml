@@ -59,6 +59,11 @@ services:
         volumes:
             - ../../../parser:/parser
 
+    impact_python:
+        image: rebase/dev-impact-python
+        volumes:
+            - ../../../impact-python:/code
+
     rq_default:
       image: rebase/dev-rq-default
       extends:

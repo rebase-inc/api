@@ -9,6 +9,7 @@ from rebase.common.aws import exists as s3_exists, s3, s3_wait_till_exists
 from rebase.common.database import DB
 from rebase.common.settings import config
 from rebase.models import Contractor
+from rebase.skills.impact_client import ImpactClient
 
 from .aws_keys import profile_key, old_profile_key, level_key
 
@@ -20,6 +21,8 @@ bucket = config['S3_BUCKET']
 
 
 population_cache = dict()
+
+IMPACT_CLIENT = ImpactClient()
 
 
 def unpickle_s3_object(key):
@@ -144,7 +147,6 @@ def get_rankings(user, get=s3_get, exists=s3_exists):
             rankings[level] = 0.0
     return rankings
 
-
 def update_user_rankings(user, contractor_id=None, get=s3_get, exists=s3_exists, put=s3_put):
     user_data_key = profile_key(user)
     new_user_data = get(user_data_key) 
@@ -160,7 +162,10 @@ def update_user_rankings(user, contractor_id=None, get=s3_get, exists=s3_exists,
             if not contractor:
                 logger.error('There is no Contractor with id[%d]', contractor_id)
             else:
-                contractor.skill_set.skills = rankings
+                contractor.skill_set.skills = {}
+                for package, rank in rankings.items():
+                    impact = IMPACT_CLIENT.score(*package.split('.'))
+                    contractor.skill_set.skills[package] = { 'impact': impact, 'rank': rank }
                 DB.session.commit()
 
 

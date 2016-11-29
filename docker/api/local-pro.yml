@@ -35,6 +35,9 @@ services:
     parser:
         image: rebase/pro-parser
 
+    impact_python:
+        image: rebase/pro-impact-python
+
     rq_default:
       image: rebase/pro-rq-default
       extends:

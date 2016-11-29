@@ -86,10 +86,12 @@ def build_python_services(*args):
     check_call(('docker', 'volume', 'create', '--name', 'wheelhouse'))
     cwd = getcwd()
     react_app = abspath('../react-app')
+    impact_python = abspath('../impact-python')
     base_args = (
         'docker', 'run', '-it', '--rm',
         '--volume', '/wheelhouse:/wheelhouse:rw',
         '--volume', cwd+':/api',
+        '--volume', impact_python + ':/impact-python',
         '--volume', react_app+':/react-app',
         '--volume', '/var/run/docker.sock:/var/run/docker.sock',
         'rebase/build',

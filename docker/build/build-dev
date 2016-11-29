@@ -12,4 +12,7 @@ cd /api
 ./docker/rq_default/build-dev
 docker build -t rebase/dev-rq-git docker/rq_git
 
+cd ../impact-python
+./build-dev
+
 popd

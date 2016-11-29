@@ -10,4 +10,7 @@ cd /api
 ./docker/rq_population/build-pro
 ./docker/nginx/build-pro
 
+cd ../impact-python
+./build-dev
+
 popd
