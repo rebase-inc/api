@@ -1,7 +1,7 @@
 import datetime
 from logging import getLogger
 
-from flask.ext.login import UserMixin
+from flask_login import UserMixin
 from sqlalchemy import and_
 from sqlalchemy.orm import aliased
 from werkzeug.security import generate_password_hash, check_password_hash

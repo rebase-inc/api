@@ -1,14 +1,17 @@
 import unittest
 
-from . import RebaseModelTestCase
 import marshmallow.exceptions
-from rebase.common.exceptions import (
+
+from ....common.exceptions import (
     marshmallow_exceptions,
     MarshallingError,
     UnmarshallingError,
-    ValidationError,
     ForcedError,
 )
+from ....common.schema import ValidationError
+
+from . import RebaseModelTestCase
+
 
 class TestMarshmallowExceptions(RebaseModelTestCase):
 

@@ -5,6 +5,7 @@ from pickle import dumps
 from shutil import rmtree
 
 from git import Repo
+from git.exc import GitCommandError
 from github import GithubException
 
 from ..common.aws import s3_delete_folder, exists, s3, s3_wait_till_exists
@@ -12,9 +13,15 @@ from ..common.debug import pdebug
 from ..common.settings import config
 from ..common.stopwatch import InfoElapsedTime
 from ..datetime import time_to_epoch
-from ..features.rq import setup_rq
+from ..features.rq import POPULATION
 from ..skills.python import Python
-from ..skills.aws_keys import profile_key, level_key
+from ..skills.aws_keys import (
+    level_key,
+    profile_key,
+    public_profile_key,
+    old_profile_key,
+    old_public_profile_key,
+)
 from ..skills.java import Java
 from ..skills.javascript import Javascript
 from ..skills.metrics import measure
@@ -22,6 +29,7 @@ from ..skills.jvm_parser import JVMParser
 from ..skills.tech_profile import TechProfile
 
 from .api import RebaseGithub, RebaseGithubException
+from .notifications import notifications_for
 
 
 _language_list = {
@@ -47,11 +55,10 @@ _language_list = {
 logger = getLogger(__name__)
 
 
-github_logger = getLogger('github')
+getLogger('github').setLevel('INFO')
 
 
 # set the level to 'DEBUG' to open the firehose of data from PyGithub
-github_logger.setLevel('INFO')
 
 
 EXTENSION_TO_LANGUAGES = defaultdict(list)
@@ -60,15 +67,18 @@ for language, extension_list in _language_list.items():
         EXTENSION_TO_LANGUAGES[extension].append(language)
 
 
+# /repos is a tmpfs mounted drive
+# meant for the 99% of repos less than 3GB that should fit in RAM.
+# Anything bigger must use BIG_CLONED_REPOS_ROOT_DIR
 CLONED_REPOS_ROOT_DIR = '/repos'
 
 
-class Queues(object): pass
-ALL_QUEUES = Queues()
-setup_rq(ALL_QUEUES)
-POPULATION = ALL_QUEUES.population_queue
+# this is where repos that can't fit in /repos go
+BIG_CLONED_REPOS_ROOT_DIR = '/big_repos'
+
 
 bucket = config['S3_BUCKET']
+
 
 def count_languages(commit_count_by_language, unknown_extension_counter, filepath):
     '''
@@ -93,6 +103,7 @@ class AccountScanner(object):
         self.login = login
         self.new_url_prefix = 'https://'+access_token+'@github.com'
         assert isdir(CLONED_REPOS_ROOT_DIR)
+        assert isdir(BIG_CLONED_REPOS_ROOT_DIR)
         self.scanners = {
 
             'Python':       Python(),
@@ -197,17 +208,47 @@ class AccountScanner(object):
 
         return commit_count_by_language, unknown_extension_counter, technologies
 
+    def clone_from(self, repo, oauth_url):
+        if isdir(self.local_repo_dir):
+            rmtree(self.local_repo_dir)
+        logger.debug('Repo "{}" is cloning into {}'.format(repo.name, self.local_repo_dir))
+        self.local_repo = Repo.clone_from(oauth_url, self.local_repo_dir)
+
+    def clone(self, repo, oauth_url):
+        '''
+
+            Clone either in tmpfs ('/repos') or on container host drive ('/big_repos') 
+
+        '''
+        # repo.size appears to be in KB
+        clone_in_RAM = config['REPOS_VOLUME_SIZE_IN_MB'] > config['CLONE_SIZE_SAFETY_FACTOR']*(repo.size/1024)
+        if clone_in_RAM:
+            self.local_repo_dir = join(CLONED_REPOS_ROOT_DIR, repo.name)
+            logger.debug('Clone in RAM')
+        else:
+            self.local_repo_dir = join(BIG_CLONED_REPOS_ROOT_DIR, repo.name)
+            logger.debug('Clone on disk')
+        try:
+            self.clone_from(repo, oauth_url)
+        except GitCommandError:
+            if clone_in_RAM:
+                # try on disk
+                self.local_repo_dir = join(BIG_CLONED_REPOS_ROOT_DIR, repo.name)
+                logger.debug('Re-try cloning on disk')
+                self.clone_from(repo, oauth_url)
+        #logger.debug('SIZE: Github Repo Size: %d KB', repo.size)
+        #from subprocess import check_output
+        #out = check_output(('du', '-k', '-s', self.local_repo_dir))
+        #logger.debug('SIZE: Local repo size: %d KB', int(out.decode().split('\t')[0]))
+
+
     def clone_if_not_cloned_already(self, repo):
         if self.cloned:
             logger.debug('Repo "{}" is already cloned'.format(repo.name))
             return
         repo_url = repo.clone_url
         oauth_url = repo_url.replace('https://github.com', self.new_url_prefix, 1)
-        self.local_repo_dir = join(CLONED_REPOS_ROOT_DIR, repo.name)
-        if isdir(self.local_repo_dir):
-            rmtree(self.local_repo_dir)
-        logger.debug('Repo "{}" is cloning'.format(repo.name))
-        self.local_repo = Repo.clone_from(oauth_url, self.local_repo_dir)
+        self.clone(repo, oauth_url)
         self.cloned = True
     
     def process_repo(self, repo, login, commit_count_by_language, unknown_extension_counter, technologies):
@@ -231,7 +272,14 @@ class AccountScanner(object):
         if self.local_repo_dir and isdir(self.local_repo_dir):
             rmtree(self.local_repo_dir)
 
-    def scan_all_repos(self, login=None):
+    def scan_all_repos(
+        self,
+        notify_to_be_scanned_repos,
+        notify_scanning,
+        notify_scanned_repos,
+        expire_notifications_keys,
+        login=None,
+    ):
         '''
             'login' is the account that will be scanned.
             It may be a different login than the one provided with the access_token.
@@ -249,6 +297,7 @@ class AccountScanner(object):
         scanned_user = self.api.get_user(*args)
         logger.info('Scanning all repos for user: %s', scanned_user.login)
         logger.debug('oauth_scopes: %s', self.api.oauth_scopes)
+        repos_to_be_scanned = []
         for repo in scanned_user.get_repos():
             try:
                 repo_name = repo.name
@@ -256,6 +305,7 @@ class AccountScanner(object):
                 logger.exception('Could not fetch repo name')
                 continue
             if config['ONLY_THIS_REPO'] and (repo_name != config['ONLY_THIS_REPO']):
+                logger.debug('Skipping repo %s, we only look at repo %s', repo.name, config['ONLY_THIS_REPO'])
                 continue
             try:
                 repo_languages = set(repo.get_languages().keys())
@@ -265,14 +315,35 @@ class AccountScanner(object):
             finally:
                 if bool(self.supported_languages & repo_languages):
                     self.cloned = False
-                    self.process_repo(repo, scanned_user.login, commit_count_by_language, unknown_extension_counter, technologies)
+                    repos_to_be_scanned.append(repo)
+                else:
+                    logger.debug('We do not support any of these languages: %s', repo_languages)
+        
+        notify_to_be_scanned_repos(repo.name for repo in repos_to_be_scanned)
+        for repo in repos_to_be_scanned:
+            notify_scanning(repo.name)
+            self.process_repo(
+                repo,
+                scanned_user.login,
+                commit_count_by_language,
+                unknown_extension_counter,
+                technologies
+            )
+            notify_scanned_repos(repo.name)
+        notify_scanning(None)
+        expire_notifications_keys()
+
         return commit_count_by_language, unknown_extension_counter, technologies
 
 
-def save(data, user):
-    key = profile_key(user)
+def save(data, user, private_scanning):
+    if private_scanning:
+        key = profile_key(user) 
+        old_data_key = old_profile_key(user)
+    else:
+        key = public_profile_key(user)
+        old_data_key = old_public_profile_key(user)
     # save the previous data, so we later retrieve it and remove it from the rankings
-    old_data_key = key+'_old'
     if exists(key):
         old_s3_object = s3.Object(bucket, old_data_key)
         old_s3_object.copy_from(CopySource={
@@ -286,6 +357,7 @@ def save(data, user):
 
 def scan_one_user(token, token_user, user_login=None, contractor_id=None):
     user_data = dict()
+    private_scanning = user_login == None
     scanned_user = user_login if user_login else token_user
     start_msg = 'processing Github user: ' + scanned_user
     try:
@@ -295,17 +367,21 @@ def scan_one_user(token, token_user, user_login=None, contractor_id=None):
             # when scanning, user_login should be None for the Autenticated User
             # so private scanning: token_user (guy logged in), user_login= None
             # public scanning token_user=CRAWLER_USERNAME, user_login=<any user login>
-            commit_count_by_language, unknown_extension_counter, technologies = scanner.scan_all_repos(login=user_login)
+            commit_count_by_language, unknown_extension_counter, technologies = scanner.scan_all_repos(
+                *notifications_for(contractor_id),
+                login=user_login,
+            )
         scanner.close()
         user_data['commit_count_by_language'] = commit_count_by_language
         user_data['technologies'] = technologies
         user_data['unknown_extension_counter'] = unknown_extension_counter
         user_data['metrics'] = measure(technologies)
         user_data['rankings'] = dict()
-        user_data_key = save(user_data, scanned_user)
+        user_data_key = save(user_data, scanned_user, private_scanning)
         POPULATION.enqueue_call(
-            func='rebase.skills.population.update_rankings',
+            'rebase.skills.population.update_rankings',
             args=(scanned_user, contractor_id),
+            kwargs={ 'private': private_scanning },
             timeout=3600
         )
         return user_data

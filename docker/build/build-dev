@@ -15,4 +15,7 @@ docker build -t rebase/dev-rq-git docker/rq_git
 cd ../impact-python
 ./build-dev
 
+cd ../impact-javascript
+./build-dev
+
 popd

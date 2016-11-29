@@ -2,7 +2,7 @@ from logging import getLogger
 from queue import Queue
 from sys import exit
 
-from flask.ext.login import login_user
+from flask_login import login_user
 
 from rebase.common.stopwatch import DebugElapsedTime
 from rebase.models import Role

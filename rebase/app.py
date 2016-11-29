@@ -20,7 +20,7 @@ def create(routes=False):
     Note: calling 'create' resets the global variable 'rebase.common.database.DB',
     making it safe to use within an 'app context'.
     '''
-    from flask.ext.restful import Api
+    from flask_restful import Api
     from rebase.common.database import DB
     from rebase.common.exceptions import errors
     from rebase.features.install import install
@@ -29,7 +29,7 @@ def create(routes=False):
     DB.init_app(app)
     api = Api(app, prefix=app.config['URL_PREFIX'], errors=errors)
     if routes:
-        # some routes use flask.ext.cache is can't be created until an app and its context exist
+        # some routes use flask_cache is can't be created until an app and its context exist
         with app.app_context():
             from rebase.common.routes import register_routes
             from rebase.github.routes import register_github_routes

@@ -1,7 +1,7 @@
 from marshmallow import fields, post_load
 from rebase.common.schema import RebaseSchema, SecureNestedField
 from rebase.models.contractor import Contractor
-from flask.ext.restful import abort
+from flask_restful import abort
 
 class RemoteWorkHistorySchema(RebaseSchema):
     id =              fields.Integer()

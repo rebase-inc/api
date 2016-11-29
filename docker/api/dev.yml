@@ -13,11 +13,6 @@ services:
         file: web-service-dev.yml
       expose:
        - "5000"
-      environment:
-        GITHUB_APP_ID:
-        GITHUB_APP_SECRET:
-        GITHUB_CODE2RESUME_ID:
-        GITHUB_CODE2RESUME_SECRET:
 
     cache:
       extends:
@@ -63,6 +58,11 @@ services:
         image: rebase/dev-impact-python
         volumes:
             - ../../../impact-python:/code
+    
+    impact_javascript:
+        image: rebase/dev-impact-javascript
+        volumes:
+            - ../../../impact-javascript:/code
 
     rq_default:
       image: rebase/dev-rq-default
@@ -73,13 +73,15 @@ services:
         SETTINGS: ".rq_default.dev"
         CRAWLER_USERNAME:
         CRAWLER_PASSWORD:
-        GITHUB_APP_ID:
-        GITHUB_APP_SECRET:
-        GITHUB_CODE2RESUME_ID:
-        GITHUB_CODE2RESUME_SECRET:
         ONLY_THIS_REPO:
+        # make sure the following number matches the tmpfs size
+        REPOS_VOLUME_SIZE_IN_MB: 500
+        # if REPOS_VOLUME_SIZE_IN_MB is less than 10MB, factor should be 10
+        # if REPOS_VOLUME_SIZE_IN_MB is less than 100MB, factor should be 3
+        # if REPOS_VOLUME_SIZE_IN_MB is less than 1000MB, factor should be 2
+        CLONE_SIZE_SAFETY_FACTOR: 2
       tmpfs:
-       - /repos:rw,noexec,size=3g
+       - /repos:rw,noexec,size=500m
 
     rq_population:
       image: rebase/dev-rq-population

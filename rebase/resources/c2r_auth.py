@@ -3,8 +3,8 @@ from logging import getLogger
 from uuid import uuid1
 
 from flask import jsonify, session, current_app
-from flask.ext.restful import Resource
-from flask.ext.login import login_user, current_user
+from flask_restful import Resource
+from flask_login import login_user, current_user
 
 from rebase.common.database import DB
 from rebase.models import User, Contractor

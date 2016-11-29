@@ -1,6 +1,6 @@
 
-from flask.ext.login import login_required, current_user
-from flask.ext.restful import Resource
+from flask_login import login_required, current_user
+from flask_restful import Resource
 from flask import jsonify, request, session, current_app
 
 from rebase.models import User, Manager

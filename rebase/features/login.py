@@ -1,5 +1,5 @@
 from flask import session, request
-from flask.ext.login import LoginManager, AnonymousUserMixin
+from flask_login import LoginManager, AnonymousUserMixin
 
 from rebase.models import User
 

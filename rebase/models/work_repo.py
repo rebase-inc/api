@@ -1,6 +1,6 @@
 from os.path import join
 
-from flask.ext.login import current_app
+from flask_login import current_app
 from sqlalchemy.orm import reconstructor
 
 from rebase.common.database import DB

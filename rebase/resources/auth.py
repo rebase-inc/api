@@ -1,15 +1,15 @@
 from datetime import datetime, timedelta
 
 from flask import jsonify, request, session, current_app
-from flask.ext.restful import Resource
-from flask.ext.login import (
+from flask_restful import Resource
+from flask_login import (
     login_user,
     logout_user,
     current_user,
 )
 
 from rebase.cache.rq_jobs import warmup, cooldown
-from rebase.common.exceptions import ValidationError
+from rebase.common.schema import ValidationError
 from rebase.views import auth, user
 
 

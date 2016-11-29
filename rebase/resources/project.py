@@ -1,5 +1,5 @@
 
-from flask.ext.login import current_user
+from flask_login import current_user
 from flask import session, current_app
 
 from rebase.common.keys import make_collection_url, make_resource_url

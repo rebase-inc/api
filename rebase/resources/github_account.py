@@ -1,5 +1,5 @@
-from flask.ext.restful import Resource
-from flask.ext.login import login_required, current_user
+from flask_restful import Resource
+from flask_login import login_required, current_user
 
 from rebase.models import GithubAccount
 from rebase.views import github_account as views

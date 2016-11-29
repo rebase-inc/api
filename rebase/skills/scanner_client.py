@@ -1,9 +1,4 @@
 from abc import ABCMeta, abstractmethod
-from functools import partial
-from logging import getLogger
-
-
-logger = getLogger(__name__)
 
 
 class ScannerClient:

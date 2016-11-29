@@ -148,9 +148,19 @@ function _upgrade() {
     docker-compose $layout start ${containers[@]}
 }
 
-function _log() {
-    docker exec -t api_rsyslog_1 tail -100 -f /var/log/rebase.log
+function _rsyslog() {
+    docker exec -t api_rsyslog_1 $*
 }
+
+function _log() {
+    _rsyslog tail -300 -f /var/log/rebase.log
+}
+
+
+function _log_grep() {
+    _rsyslog grep $* /var/log/rebase.log
+}
+
 
 #
 # _create_vm <name>

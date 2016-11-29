@@ -1,4 +1,4 @@
-from flask.ext.script import Command, Option
+from flask_script import Command, Option
 
 from rebase.app import create
 from rebase.common.database import DB

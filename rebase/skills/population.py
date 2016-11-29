@@ -1,17 +1,20 @@
-from bisect import bisect_left, insort_left
-from functools import partial
+from bisect import insort_left
 from logging import getLogger
 from pickle import loads, dumps
 
 from botocore.exceptions import ClientError
 
-from rebase.common.aws import exists as s3_exists, s3, s3_wait_till_exists
-from rebase.common.database import DB
-from rebase.common.settings import config
-from rebase.models import Contractor
-from rebase.skills.impact_client import ImpactClient
+from ..common.aws import exists as s3_exists, s3, s3_wait_till_exists
+from ..common.settings import config
+from ..features.rq import DEFAULT
 
-from .aws_keys import profile_key, old_profile_key, level_key
+from .aws_keys import (
+    level_key,
+    profile_key,
+    public_profile_key,
+    old_profile_key,
+    old_public_profile_key,
+)
 
 
 logger = getLogger(__name__)
@@ -22,7 +25,6 @@ bucket = config['S3_BUCKET']
 
 population_cache = dict()
 
-IMPACT_CLIENT = ImpactClient()
 
 
 def unpickle_s3_object(key):
@@ -57,10 +59,11 @@ def s3_put(key, obj):
 def update_rankings(
     user,
     contractor_id=None,
+    private=True,
     get=s3_get,
     put=s3_put,
     exists=s3_exists,
-    wait_till_exists=s3_wait_till_exists
+    wait_till_exists=s3_wait_till_exists,
 ):
     '''
 
@@ -73,10 +76,12 @@ def update_rankings(
 
     Note:
     (get, put, exists, wait_till_exists) are abstracted out so we can test this function without S3.
+    
+    'private' is True by default and means we read the private profile of 'user'
 
     '''
     all_scores = dict()
-    old_metrics_key = old_profile_key(user) 
+    old_metrics_key = old_profile_key(user) if private else old_public_profile_key(user)
     if exists(old_metrics_key):
         old_metrics = get(old_metrics_key)['metrics']
         for level, score in old_metrics.items():
@@ -93,7 +98,7 @@ def update_rankings(
                     # Here's an example where it can occur
                     # (found during development of rq_population, while it can temporarily be buggy.)
                     # old_metrics are saved by rq_default service, but scores are updated
-                    # rq_population. If rq_population crashes before it can update the scores,
+                    # by rq_population. If rq_population crashes before it can update the scores,
                     # there will be an inconsistency.
                     # Clearly, rq_population should never crash & there should never be an inconsistency
                     # but since the goal here is to remove the key from scores anyways, that key not being
@@ -102,7 +107,7 @@ def update_rankings(
             else:
                 scores = list()
             all_scores[level] = scores
-    user_data_key = profile_key(user)
+    user_data_key = profile_key(user) if private else public_profile_key(user)
     if not exists(user_data_key):
         wait_till_exists(user_data_key)
     new_user_data = get(user_data_key) 
@@ -120,7 +125,17 @@ def update_rankings(
         all_scores[level] = scores
     for level, scores in all_scores.items():
         put(level_key(level), scores)
-    update_user_rankings(user, contractor_id, get=get, exists=exists, put=put)
+    DEFAULT.enqueue_call(
+        'rebase.db_jobs.contractor.update_user_rankings',
+        args=(user,),
+        kwargs={
+            'private':          private,
+            'contractor_id':    contractor_id,
+            'get':              get,
+            'exists':           exists, 
+            'put':              put,
+        }
+    )
 
 
 def get_rankings(user, get=s3_get, exists=s3_exists):
@@ -147,25 +162,14 @@ def get_rankings(user, get=s3_get, exists=s3_exists):
             rankings[level] = 0.0
     return rankings
 
-def update_user_rankings(user, contractor_id=None, get=s3_get, exists=s3_exists, put=s3_put):
-    user_data_key = profile_key(user)
+def read(github_user, private=True, get=s3_get, exists=s3_exists):
+    '''
+
+        Returns a dictionary with the following keys: ['unknown_extension_counter', 'technologies', 'commit_count_by_language'].
+        'github_user' is the Github login.
+        If 'private' is True, loads the profile from a private scan, assuming it exists.
+
+    '''
+    user_data_key = profile_key(github_user) if private else public_profile_key(github_user)
     new_user_data = get(user_data_key) 
-    profile_with_rankings = new_user_data
-    rankings = get_rankings(user, get=get, exists=exists)
-    profile_with_rankings['rankings'] = rankings
-    put(user_data_key, profile_with_rankings)
-    if contractor_id:
-        from rebase.app import create
-        app = create()
-        with app.app_context():
-            contractor = Contractor.query.get(contractor_id)
-            if not contractor:
-                logger.error('There is no Contractor with id[%d]', contractor_id)
-            else:
-                contractor.skill_set.skills = {}
-                for package, rank in rankings.items():
-                    impact = IMPACT_CLIENT.score(*package.split('.'))
-                    contractor.skill_set.skills[package] = { 'impact': impact, 'rank': rank }
-                DB.session.commit()
-
-
+    return new_user_data

@@ -95,7 +95,7 @@ class PythonClient(ScannerClient):
                 for _alias in node.names:
                     module_name = _alias.name
                     if module_name in importable_modules:
-                        logger.debug('importing private module "{}"'.format(module_name))
+                        #logger.debug('importing private module "{}"'.format(module_name))
                         continue
                     if module_name in standard_library:
                         update = partial(profile.update, ('1.'+module_name,))
@@ -109,7 +109,7 @@ class PythonClient(ScannerClient):
             if isinstance(node, ImportFrom):
                 if node.level == 0:
                     if node.module in importable_modules:
-                        logger.debug('importing private module "{}"'.format(node.module))
+                        #logger.debug('importing private module "{}"'.format(node.module))
                         continue
                     tech_prefix = node.module
                     if tech_prefix in standard_library:

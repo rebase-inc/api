@@ -5,8 +5,8 @@ from sys import exc_info
 from traceback import format_exc
 
 from flask import current_app, jsonify, request
-from flask.ext.restful import Resource
-from flask.ext.login import login_required, current_user
+from flask_restful import Resource
+from flask_login import login_required, current_user
 from sqlalchemy.exc import InternalError
 
 from rebase.cache.rq_jobs import invalidate

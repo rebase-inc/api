@@ -1,4 +1,9 @@
-from pprint import pprint
+from logging import getLogger
+
+
+# with log level INFO or less, boto3 is spewing way too many messages
+getLogger('boto3').setLevel('WARNING')
+getLogger('botocore').setLevel('INFO')
 
 from boto3 import resource
 from botocore.exceptions import ClientError
