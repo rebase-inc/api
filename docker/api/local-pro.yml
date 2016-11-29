@@ -37,6 +37,9 @@ services:
 
     impact_python:
         image: rebase/pro-impact-python
+    
+    impact_javascript:
+        image: rebase/pro-impact-javascript
 
     rq_default:
       image: rebase/pro-rq-default
