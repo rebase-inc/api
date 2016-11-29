@@ -10,7 +10,7 @@ from ..skills.impact_client import ImpactClient
 
 IMPACT_CLIENT = ImpactClient()
 
-logger = getLogger(__name__)
+LOGGER = getLogger(__name__)
 
 
 def update_user_rankings(github_user, private=True, contractor_id=None, get=s3_get, exists=s3_exists, put=s3_put):
@@ -26,14 +26,15 @@ def update_user_rankings(github_user, private=True, contractor_id=None, get=s3_g
             if contractor_id:
                 contractor = Contractor.query.get(contractor_id)
             else:
-                contractors = Contractor.query.join(User).join(GithubAccount).join(GithubUser).filter_by(login='rapha-opensource')
+                contractors = Contractor.query.join(User).join(GithubAccount).join(GithubUser).filter_by(login=github_user)
                 assert contractors
                 contractor = contractors[-1]
             if not contractor:
-                logger.error('Could not find a Contractor for Github user %s', github_user)
+                LOGGER.error('Could not find a Contractor for Github user %s', github_user)
             else:
                 contractor.skill_set.skills = {}
                 for package, rank in rankings.items():
+                    LOGGER.debug('getting score for {}'.format(package)) 
                     impact = IMPACT_CLIENT.score(*package.split('.'))
                     contractor.skill_set.skills[package] = { 'impact': impact, 'rank': rank }
                 DB.session.commit()
