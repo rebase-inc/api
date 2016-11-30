@@ -1,5 +1,4 @@
 from logging import getLogger
-from subprocess import Popen, PIPE
 
 from .py2_client import Py2Client
 from .python_client import PythonClient
