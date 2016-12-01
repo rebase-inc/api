@@ -17,11 +17,11 @@ function _rq-population-wheel () {
 
 function _run () {
     docker run \
+        --name build \
         -it \
         --rm \
         --volume /wheelhouse:/wheelhouse:rw \
         --volume $PWD:/api \
-        --volume $PWD/../react-app:/react-app \
         --volume /var/run/docker.sock:/var/run/docker.sock \
         rebase/build $*
 }

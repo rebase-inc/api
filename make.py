@@ -6,7 +6,7 @@ from pprint import pprint
 from subprocess import check_call, check_output, call
 from sys import argv, exit
 
-from rebase.common.directory import cd
+from docker.nginx.build_pro import main as nginx_main
 from rebase.common.log import log_to_stdout
 
 
@@ -42,13 +42,15 @@ def docker_images(image):
 
 def install_stripper():
     if not exists('../strip-docker-image'):
-        with cd('..'):
-            check_call(('git', 'clone', 'https://github.com/mvanholsteijn/strip-docker-image'))
+        check_call(
+            ('git', 'clone', 'https://github.com/mvanholsteijn/strip-docker-image'),
+            cwd='..'
+        )
 
 
 def build_java_base_image():
-    with cd('../strip-docker-image'):
-        check_call((
+    check_call(
+        (
             './bin/strip-docker-image', '-i', 'openjdk:8-jre', '-t', 'rebase/jre',
             '-p openjdk-8-jre-headless:amd64', 
             '-f', '/etc/passwd',
@@ -62,7 +64,9 @@ def build_java_base_image():
             '-f', '/bin/sh',
             '-f', '/var/run',
             '-f', '/run',
-        ))
+        ),
+        cwd='../strip-docker-image'
+    )
 
 
 def installed_with_brew(pkg):
@@ -77,34 +81,20 @@ def install_java_dev():
         check_call(('brew', 'install', 'gradle'))
 
 
-def build_parser_jar():
-    with cd('../parser'):
-        check_call(('gradle', 'build'))
-
-
 def build_python_services(*args):
-    check_call(('docker', 'volume', 'create', '--name', 'wheelhouse'))
+    check_call(
+        ('docker', 'volume', 'create', '--name', 'wheelhouse')
+    )
     base_args = (
         'docker', 'run', '-it', '--rm',
         '--volume', '/wheelhouse:/wheelhouse:rw',
         '--volume', getcwd() +':/api',
         '--volume', abspath('../impact-python') + ':/impact-python',
         '--volume', abspath('../impact-javascript') + ':/impact-javascript',
-        '--volume', abspath('../react-app') + ':/react-app',
         '--volume', '/var/run/docker.sock:/var/run/docker.sock',
         'rebase/build',
     )
     check_call((*base_args, *args))
-
-
-def build_react_client():
-    with cd('../react-app'):
-        check_call(('docker', 'build', '-t', 'rebase/client', '.'))
-
-
-def build_javascript_parser():
-    with cd('../profile-js'):
-        check_call(('docker', 'build', '-t', 'rebase/javascript', '.'))
 
 
 def main(dev=True):
@@ -115,12 +105,14 @@ def main(dev=True):
     for name, container in common_containers.items():
         docker_build(name, container)
     install_java_dev()
-    build_parser_jar()
-    build_javascript_parser()
+    check_call(('gradle', 'build'), cwd='../parser')
+    check_call(
+        ('docker', 'build', '-t', 'rebase/javascript', '.'),
+        cwd='../profile-js'
+    )
     if dev:
         check_call(('docker', 'build', '-t', 'rebase/dev-parser', '../parser/docker/parser'))
         build_python_services('docker/build/build-dev')
-        build_react_client()
         check_call(('docker', 'build', '-t', 'rebase/dev-nginx', '-f', 'docker/nginx/dev-Dockerfile', 'docker/nginx'))
     else:
         check_call((
@@ -131,7 +123,7 @@ def main(dev=True):
             '../parser/'
         ))
         build_python_services('docker/build/build-pro')
-        check_call(('./docker/nginx/build-pro',))
+        nginx_main()
 
 
 if __name__ == '__main__':

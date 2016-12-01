@@ -8,12 +8,11 @@ cd /api
 ./docker/rq_git/build-pro
 ./docker/rq_default/build-pro
 ./docker/rq_population/build-pro
-./docker/nginx/build-pro
 
 cd ../impact-python
-./build-dev
+./build-pro
 
 cd ../impact-javascript
-./build-dev
+./build-pro
 
 popd
