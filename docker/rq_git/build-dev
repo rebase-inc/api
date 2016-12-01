@@ -1,8 +1,0 @@
-#!/bin/bash
-
-pushd .
-
-docker build -t rebase/dev-rq-git -f docker/rq_git/dev-Dockerfile docker/rq_git
-
-popd
-

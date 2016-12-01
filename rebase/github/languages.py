@@ -2,7 +2,6 @@ from base64 import b64decode
 from logging import getLogger
 from os.path import join, isdir
 
-from rebase.cache.rq_jobs import invalidate
 from rebase.common.database import DB
 from .account_scanner import scan_one_user
 from rebase.github.session import create_admin_github_session
@@ -24,7 +23,6 @@ def scan_public_and_private_repos(account_id):
     contractor.skill_set.skills = user_data['rankings']
     account.remote_work_history.analyzing = False
     DB.session.commit()
-    invalidate([(SkillSet, (contractor.skill_set.id,))])
     logger.info(contractor.skill_set.skills, '{} Skills'.format(contractor))
     for extension, count in user_data['unknown_extension_counter'].most_common():
         logger.warning('Unrecognized extension "{}" ({} occurrences)'.format(extension, count))

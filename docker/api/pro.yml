@@ -1,11 +1,11 @@
 version: '2'
 volumes:
     etc_letsencrypt: {}
-    git: {}
     log: {}
     sql: {}
 
 services:
+
     web:
       image: rebase/pro-web
       extends:
@@ -17,18 +17,6 @@ services:
         GITHUB_APP_SECRET:
         GITHUB_CODE2RESUME_ID:
         GITHUB_CODE2RESUME_SECRET:
-
-    cache:
-      image: rebase/pro-web
-      command: ["/venv/web/bin/cache"]
-      extends:
-        service: web
-
-    scheduler:
-      image: rebase/pro-web
-      command: ["/venv/web/bin/python", "-m", "rebase.scripts.scheduler"]
-      extends:
-        service: web
 
     javascript:
         image: rebase/javascript
@@ -71,16 +59,6 @@ services:
         file: common-python-service-environment.pro.yml
       environment:
         SETTINGS: ".population.pro"
-
-    rq_git:
-      image: rebase/pro-rq-git
-      extends:
-        service: common_env_pro
-        file: common-python-service-environment.pro.yml
-      ports:
-       - "22:22"
-      volumes:
-       - git:/git
 
     jupyter:
       image: rebase/jupyter

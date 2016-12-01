@@ -9,7 +9,6 @@ from flask_restful import Resource
 from flask_login import login_required, current_user
 from sqlalchemy.exc import InternalError
 
-from rebase.cache.rq_jobs import invalidate
 from rebase.common.database import DB
 from rebase.common.exceptions import ServerError, ClientError
 from rebase.common.keys import get_model_primary_keys, make_collection_url, make_resource_url
@@ -130,9 +129,6 @@ class Event(Resource):
             instance.machine.send(event, **data)
 
         DB.session.commit()
-
-        # update the cache
-        invalidate([(self.model, (id,))])
 
         response = jsonify({self.model.__tablename__: self.serializer.dump(instance).data})
         response.status_code = 201

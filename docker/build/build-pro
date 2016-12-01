@@ -5,7 +5,6 @@ pushd .
 cd /api
 
 ./docker/web/build-pro
-./docker/rq_git/build-pro
 ./docker/rq_default/build-pro
 ./docker/rq_population/build-pro
 

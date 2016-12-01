@@ -6,8 +6,6 @@ COPY api_proxy.conf /etc/nginx/api_proxy.conf
 
 COPY code2resume_proxy.conf /etc/nginx/code2resume_proxy.conf
 
-COPY market_proxy.conf /etc/nginx/market_proxy.conf
-
 COPY dev.conf /etc/nginx/dev.conf
 
 RUN ln -sf /etc/nginx/dev.conf /etc/nginx/conf.d/default.conf

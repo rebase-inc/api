@@ -1,6 +1,5 @@
 version: '2'
 volumes:
-    git: {}
     log: {}
     sql: {}
     code2resume-sync:
@@ -13,27 +12,6 @@ services:
         file: web-service-dev.yml
       expose:
        - "5000"
-
-    cache:
-      extends:
-        service: web
-      command: ["/venv/web/bin/python", "-m", "rebase.scripts.cache"]
-
-    scheduler:
-      extends:
-        service: webserver
-        file: web-service-dev.yml
-      command: ["/venv/web/bin/python", "-m", "rebase.scripts.scheduler"]
-      extends:
-        service: web
-
-    app:
-      image: rebase/client
-      environment:
-          REBASE_CLIENT_HOST: "dev"
-          REBASE_CLIENT_PORT: 3000
-      volumes:
-       - ../../../react-app:/code
 
     code2resume:
         image: rebase/code2resume
@@ -90,16 +68,6 @@ services:
         file: web-service-dev.yml
       environment:
         SETTINGS: ".population.dev"
-
-    rq_git:
-      image: rebase/dev-rq-git
-      extends:
-        service: webserver
-        file: web-service-dev.yml
-      ports:
-       - "2222:22"
-      volumes:
-       - git:/git
 
     jupyter:
       image: rebase/jupyter

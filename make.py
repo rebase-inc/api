@@ -112,6 +112,7 @@ def main(dev=True):
     )
     if dev:
         check_call(('docker', 'build', '-t', 'rebase/dev-parser', '../parser/docker/parser'))
+        check_call(('docker', 'build', '-t', 'rebase/code2resume', '../code2resume'))
         build_python_services('docker/build/build-dev')
         check_call(('docker', 'build', '-t', 'rebase/dev-nginx', '-f', 'docker/nginx/dev-Dockerfile', 'docker/nginx'))
     else:
