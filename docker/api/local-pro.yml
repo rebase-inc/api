@@ -75,7 +75,6 @@ services:
     nginx:
         image: rebase/local-pro-nginx
         ports:
-            - 3000:3000
             - 3001:3001
 
     redis:

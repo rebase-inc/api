@@ -101,5 +101,4 @@ services:
     nginx:
       image: rebase/dev-nginx
       ports:
-       - 3000:3000
        - 3001:3001
