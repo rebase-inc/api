@@ -7,7 +7,6 @@ from pickle import dump
 
 from github import Github
 
-from rebase.app import basic_app
 from rebase.common.debug import pdebug
 from rebase.common.settings import config
 from ..account_scanner import scan_one_user

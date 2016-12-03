@@ -3,10 +3,10 @@ from logging import getLogger
 from pickle import loads, dumps
 
 from botocore.exceptions import ClientError
+from rq import Queue
 
 from ..common.aws import exists as s3_exists, s3, s3_wait_till_exists
 from ..common.settings import config
-from ..features.rq import DEFAULT
 
 from .aws_keys import (
     level_key,
@@ -125,7 +125,7 @@ def update_rankings(
         all_scores[level] = scores
     for level, scores in all_scores.items():
         put(level_key(level), scores)
-    DEFAULT.enqueue_call(
+    Queue().enqueue_call(
         'rebase.db_jobs.contractor.update_user_rankings',
         args=(user,),
         kwargs={

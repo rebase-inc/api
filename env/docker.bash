@@ -237,5 +237,11 @@ function _restart_web_workers() {
 }
 
 function _redis() {
-    docker exec -it api_redis_1 redis-cli
+    docker exec -it api_redis_1 redis-cli $*
 }
+
+function _rm_worker() {
+    _redis del "rq:worker:$1"
+}
+
+

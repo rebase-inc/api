@@ -7,13 +7,13 @@ from shutil import rmtree
 from git import Repo
 from git.exc import GitCommandError
 from github import GithubException
+from rq import Queue
 
 from ..common.aws import s3_delete_folder, exists, s3, s3_wait_till_exists
 from ..common.debug import pdebug
 from ..common.settings import config
 from ..common.stopwatch import InfoElapsedTime
 from ..datetime import time_to_epoch
-from ..features.rq import POPULATION
 from ..skills.python import Python
 from ..skills.aws_keys import (
     level_key,
@@ -378,7 +378,7 @@ def scan_one_user(token, token_user, user_login=None, contractor_id=None):
         user_data['metrics'] = measure(technologies)
         user_data['rankings'] = dict()
         user_data_key = save(user_data, scanned_user, private_scanning)
-        POPULATION.enqueue_call(
+        Queue(name='population').enqueue_call(
             'rebase.skills.population.update_rankings',
             args=(scanned_user, contractor_id),
             kwargs={ 'private': private_scanning },

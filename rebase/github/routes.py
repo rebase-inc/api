@@ -8,6 +8,7 @@ from flask_login import login_required, current_user, login_user
 from ..common.database import DB
 from ..common.exceptions import NotFoundError
 from ..common.settings import config
+from ..features.rq import queue
 from ..models import (
     Contractor,
     GithubAccount,
@@ -26,7 +27,7 @@ from .session import make_session
 logger = getLogger()
 
 
-def analyze_contractor_skills(github_account):
+def analyze_contractor_skills(app, github_account):
     logger.debug('In analyze_contractor_skills')
     contractor = next(filter(lambda r: r.type == 'contractor', current_user.roles), None)
     if contractor:
@@ -36,7 +37,7 @@ def analyze_contractor_skills(github_account):
         DB.session.add(remote_work_history)
         DB.session.commit()
         logger.debug('About to queue scan_public_and_private_repos')
-        current_app.default_queue.enqueue_call(
+        queue(app, 'default').enqueue_call(
             func='rebase.github.languages.scan_public_and_private_repos',
             args=(github_account.id,),
             timeout=3600
@@ -69,7 +70,7 @@ def register_github_routes(app):
         logger.debug('%s', request.environ)
         for account in current_user.github_accounts:
             logger.debug('Verifying Github account '+account.github_user.login)
-            make_session(account, current_app, current_user)
+            make_session(account, app, current_user)
         return jsonify({'success':'complete'})
 
     @app.route('/api/v1/github/logout')
@@ -122,7 +123,7 @@ def register_github_routes(app):
 
         DB.session.add(github_account)
         DB.session.commit()
-        analyze_contractor_skills(github_account)
+        analyze_contractor_skills(app, github_account)
         return redirect('/')
 
     @app.route('/api/v1/github/import_repos', methods=['POST'])
@@ -138,7 +139,7 @@ def register_github_routes(app):
         oauth_app_hostname = get_oauth_app_hostname(request)
         github = github_apps[oauth_app_hostname]
         account = GithubAccount.query.get_or_404((github.github_app.client_id, github_user_id, current_user.id))
-        session = make_session(account, current_app, current_user)
+        session = make_session(account, app, current_user)
         return jsonify({ 'repos': extract_repos_info(session) })
 
     @app.route('/api/v1/github_accounts/<int:github_user_id>/import/<int:project_id>', methods=['POST'])
@@ -148,7 +149,7 @@ def register_github_routes(app):
         oauth_app_hostname = get_oauth_app_hostname(request)
         github = github_apps[oauth_app_hostname]
         account = GithubAccount.query.get_or_404((github.github_app.client_id, github_user_id, current_user.id))
-        session = make_session(account, current_app, current_user)
+        session = make_session(account, app, current_user)
         repo = next(filter(lambda repo: repo['id']==project_id, extract_repos_info(session)), None)
         if not repo:
             raise NotFoundError('Github Project', project_id)
@@ -159,7 +160,7 @@ def register_github_routes(app):
     @login_required
     def _analyze_skills():
         for account in current_user.github_accounts:
-            current_app.default_queue.enqueue('rebase.github.languages.scan_public_and_private_repos', account.id)
+            queue(app, 'default').enqueue('rebase.github.languages.scan_public_and_private_repos', account.id)
         return jsonify({'status':'Skills detection started'})
 
     @app.route('/api/v1/github/crawl_status')
@@ -167,7 +168,7 @@ def register_github_routes(app):
     def crawl_status():
         return jsonify(
             get_notification(
-                app.default_queue.connection,
+                Redis(connection_pool=app.redis_pool),
                 Contractor.query.filter_by(user_id=current_user.id).one().id
             )
         )
@@ -176,7 +177,7 @@ def register_github_routes(app):
     @login_required
     def update_rankings():
         for account in current_user.github_accounts:
-            app.population_queue.enqueue_call(
+            queue(app, 'population').enqueue_call(
                 'rebase.db_jobs.contractor.update_user_rankings',
                 args=(account.github_user.login,)
             )

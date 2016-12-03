@@ -1,8 +1,10 @@
 from collections import Iterable
 from logging import getLogger
 
+from redis import StrictRedis
+from rq import Queue
+
 from ...datetime import utcnow_timestamp
-from ...features.rq import DEFAULT
 
 
 logger = getLogger(__name__)
@@ -38,7 +40,7 @@ def scan(user_or_users):
         raise TypeError('user_or_users must be either a "str" for a single user, or an Iterable for many')
     batch_id = hash( (hash(github_users), utcnow_timestamp()) )
     for user_login in github_users:
-        DEFAULT.enqueue_call(
+        Queue(name='github_public_crawling', connection=StrictRedis('redis')).enqueue_call(
             func='rebase.github.crawl.jobs.scan_user',
             args=(user_login, batch_id),
             timeout=7200
@@ -47,7 +49,7 @@ def scan(user_or_users):
 
 
 def update_user_rankings(user):
-    return DEFAULT.enqueue_call(
+    return Queue().enqueue_call(
         func='rebase.db_jobs.contractor.update_user_rankings',
         args=(user,),
         timeout= 300

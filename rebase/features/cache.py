@@ -1,9 +1,13 @@
 from collections import defaultdict
 
 from flask_cache import Cache
+from redis import ConnectionPool
 
 
 def setup_cache(app):
+
+    setattr(app, 'redis_pool', ConnectionPool(host='redis', max_connections=1))
+
     redis = Cache(
         app, 
         config = {
