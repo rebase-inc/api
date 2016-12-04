@@ -4,6 +4,7 @@ from redis import Redis, ConnectionPool
 from rq import Worker, Queue, Connection
 
 from ..common.log import setup
+from ..common.settings import config
 
 
 def main():
@@ -13,7 +14,7 @@ def main():
     with Connection(Redis(connection_pool=pool)):
         worker = Worker(map(Queue, ['population']))
         current_process().name = 'rq_population-'+worker.name[0:5]
-        worker.work()
+        worker.work(logging_level=config['LOG_LEVEL'])
         return 0
     return 1
 

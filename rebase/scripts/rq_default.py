@@ -17,7 +17,7 @@ def main():
         worker = Worker(map(Queue, config['QUEUES']))
         current_process().name = config['SERVICE_NAME']+'.'+worker.name[0:5]
         create_personal_access_token()
-        worker.work()
+        worker.work(logging_level=config['LOG_LEVEL'])
 
 
 if __name__ == '__main__':
