@@ -26,6 +26,7 @@ RUN apk update && \
         --no-cache-dir \
         --find-links /py2_wheels \
         py2_parser && \
-    rm -rf /wheels
+    rm -rf /wheels /py2_wheels && \
+    mkdir -p /big_repos
 
 CMD ["/venv/rq/bin/rq_default"]

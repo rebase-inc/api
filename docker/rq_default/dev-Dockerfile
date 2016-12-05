@@ -8,7 +8,8 @@ RUN apk update && \
         py-virtualenv \
         python3 && \
     pyvenv /venv/rq && \
-    virtualenv /venv/rq_p2
+    virtualenv /venv/rq_p2 && \
+    mkdir -p /big_repos
 
 COPY ./requirements.txt ./requirements_p2.txt /
 
@@ -29,8 +30,6 @@ RUN source /venv/rq/bin/activate && \
         --find-links /py2_wheels && \
     rm -rf /wheels && \
     rm -rf /py2_wheels
-
-RUN mkdir -p /big_repos
 
 WORKDIR /api
 

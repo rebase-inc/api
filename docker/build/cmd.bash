@@ -22,6 +22,8 @@ function _run () {
         --rm \
         --volume /wheelhouse:/wheelhouse:rw \
         --volume $PWD:/api \
+        --volume $PWD/../impact-javascript:/impact-javascript \
+        --volume $PWD/../impact-python:/impact-python \
         --volume /var/run/docker.sock:/var/run/docker.sock \
         rebase/build $*
 }

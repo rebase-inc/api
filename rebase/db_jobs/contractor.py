@@ -33,8 +33,8 @@ def update_user_rankings(github_user, private=True, contractor_id=None, get=s3_g
                 LOGGER.error('Could not find a Contractor for Github user %s', github_user)
             else:
                 contractor.skill_set.skills = {}
-                for package, rank in rankings.items():
-                    LOGGER.debug('getting score for {}'.format(package)) 
-                    impact = IMPACT_CLIENT.score(*package.split('.'))
-                    contractor.skill_set.skills[package] = { 'impact': impact, 'rank': rank }
+                for tech, rank in rankings.items():
+                    LOGGER.debug('getting score for {}'.format(tech)) 
+                    impact = IMPACT_CLIENT.score(*tech.split('.', maxsplit=2))
+                    contractor.skill_set.skills[tech] = { 'impact': impact, 'rank': rank }
                 DB.session.commit()

@@ -36,7 +36,7 @@ services:
         service: common_env_pro
         file: common-python-service-environment.pro.yml
       environment:
-        SETTINGS: ".rq_default.pro"
+        SETTINGS: ".rq_default.config"
         CRAWLER_USERNAME:
         CRAWLER_PASSWORD:
         GITHUB_APP_ID:
@@ -51,6 +51,11 @@ services:
         CLONE_SIZE_SAFETY_FACTOR: 2
       tmpfs:
        - /repos:rw,noexec,size=3g
+
+    github_public_crawling:
+        extends: rq_default
+        environment:
+            SETTINGS: ".github_public_crawling.config"
 
     rq_population:
       image: rebase/pro-rq-population
