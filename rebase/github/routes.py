@@ -160,7 +160,11 @@ def register_github_routes(app):
     @login_required
     def _analyze_skills():
         for account in current_user.github_accounts:
-            queue(app, 'default').enqueue('rebase.github.languages.scan_public_and_private_repos', account.id)
+            queue(app, 'default').enqueue_call(
+                'rebase.github.languages.scan_public_and_private_repos', 
+                args=(account.id,),
+                timeout=3600,
+            )
         return jsonify({'status':'Skills detection started'})
 
     @app.route('/api/v1/github/crawl_status')

@@ -55,12 +55,6 @@ _language_list = {
 logger = getLogger(__name__)
 
 
-getLogger('github').setLevel('INFO')
-
-
-# set the level to 'DEBUG' to open the firehose of data from PyGithub
-
-
 EXTENSION_TO_LANGUAGES = defaultdict(list)
 for language, extension_list in _language_list.items():
     for extension in extension_list:
