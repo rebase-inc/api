@@ -64,6 +64,8 @@ cp -r /wheelhouse/py2_wheels /tmp/rq_default/.
 
 docker build -t rebase/pro-rq-default /tmp/rq_default
 
+docker tag rebase/pro-rq-default alpha.rebaseapp.com:5000/rebase/pro-rq-default
+
 rm -rf /tmp/rq_default
 
 popd

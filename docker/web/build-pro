@@ -41,6 +41,8 @@ cp -r /wheelhouse/wheels /tmp/web/.
 
 docker build -t rebase/pro-web /tmp/web
 
+docker tag rebase/pro-web alpha.rebaseapp.com:5000/rebase/pro-web
+
 rm -rf /tmp/web
 
 deactivate

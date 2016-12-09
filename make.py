@@ -17,10 +17,34 @@ Container = namedtuple('Container', ['tag', 'path'])
 
 
 common_containers = {
-    'build':        Container('rebase/build',           'docker/build'),
-    'rsyslog':      Container('rebase/rsyslog',         'docker/rsyslog'),
-    'rq_dashboard': Container('rebase/rq_dashboard',    'docker/rq_dashboard'),
-    'jupyter':      Container('rebase/jupyter',         'docker/jupyter'),
+    'build':            Container(
+        'rebase/build',
+        'docker/build'
+    ),
+    'rsyslog':      Container(
+        'rebase/rsyslog',
+        'docker/rsyslog'
+    ),
+    'rsyslog-pro':  Container(
+        'alpha.rebaseapp.com:5000/rebase/rsyslog',
+        'docker/rsyslog'
+    ),
+    'rq_dashboard': Container(
+        'rebase/rq_dashboard',
+        'docker/rq_dashboard'
+    ),
+    'rq_dashboard-pro': Container(
+        'alpha.rebaseapp.com:5000/rebase/rq_dashboard',
+        'docker/rq_dashboard'
+    ),
+    'jupyter':      Container(
+        'rebase/jupyter',
+        'docker/jupyter'
+    ),
+    'jupyter-pro':      Container(
+        'alpha.rebaseapp.com:5000/rebase/jupyter',
+        'docker/jupyter'
+    ),
 }
 
 
@@ -32,6 +56,13 @@ def docker_build(name, container):
 def docker_push(name, container):
     print('Pushing Docker Container {}'.format(name))
     check_call(['docker', 'push', container.tag])
+
+
+def push_pro():
+    for name, container in common_containers.items():
+        if name.endswith('-pro'):
+            docker_build(name, container)
+            docker_push(name, container)
 
 
 def docker_images(image):
@@ -122,6 +153,12 @@ def main(dev=True):
             '-t', 'rebase/pro-parser',
             '-f', '../parser/pro-Dockerfile',
             '../parser/'
+        ))
+        check_call((
+            'docker', 'tag', 'rebase/pro-parser', 'alpha.rebaseapp.com:5000/rebase/pro-parser'
+        ))
+        check_call((
+            'docker', 'tag', 'rebase/javascript', 'alpha.rebaseapp.com:5000/rebase/javascript'
         ))
         build_python_services('docker/build/build-pro')
         nginx_main()

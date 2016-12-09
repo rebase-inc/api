@@ -38,13 +38,13 @@ def main():
     _copy('nginx.conf', build_dir)
     _copy('default-443.conf', build_dir)
     _copy('default-80.conf', build_dir)
-    _copy('default-3000.conf', build_dir)
     _copy('nginx-ssl.conf', build_dir)
     _copy('api_proxy.conf', build_dir)
     _copy('api_proxy_local.conf', build_dir)
     _copy('listen.bash', build_dir)
 
     check_call(('docker', 'build', '-t', 'rebase/pro-nginx', '.'), cwd=build_dir)
+    check_call(('docker', 'tag', 'rebase/pro-nginx', 'alpha.rebaseapp.com:5000/rebase/pro-nginx'), cwd=build_dir)
     check_call(('docker', 'build', '-t', 'rebase/local-pro-nginx', '-f', 'local-pro-Dockerfile', '.'), cwd=build_dir)
 
 

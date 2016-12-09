@@ -7,7 +7,7 @@ volumes:
 services:
 
     web:
-      image: rebase/pro-web
+      image: alpha.rebaseapp.com:5000/rebase/pro-web
       extends:
         service: common_env_pro
         file: common-python-service-environment.pro.yml
@@ -19,19 +19,19 @@ services:
         GITHUB_CODE2RESUME_SECRET:
 
     javascript:
-        image: rebase/javascript
+        image: alpha.rebaseapp.com:5000/rebase/javascript
 
     parser:
-        image: rebase/pro-parser
+        image: alpha.rebaseapp.com:5000/rebase/pro-parser
 
     impact_python:
-        image: rebase/pro-impact-python
+        image: alpha.rebaseapp.com:5000/rebase/pro-impact-python
     
     impact_javascript:
-        image: rebase/pro-impact-javascript
+        image: alpha.rebaseapp.com:5000/rebase/pro-impact-javascript
 
     rq_default:
-      image: rebase/pro-rq-default
+      image: alpha.rebaseapp.com:5000/rebase/pro-rq-default
       extends:
         service: common_env_pro
         file: common-python-service-environment.pro.yml
@@ -58,7 +58,7 @@ services:
             SETTINGS: ".github_public_crawling.config"
 
     rq_population:
-      image: rebase/pro-rq-population
+      image: alpha.rebaseapp.com:5000/rebase/pro-rq-population
       extends:
         service: common_env_pro
         file: common-python-service-environment.pro.yml
@@ -66,7 +66,7 @@ services:
         SETTINGS: ".population.pro"
 
     jupyter:
-      image: rebase/jupyter
+      image: alpha.rebaseapp.com:5000/rebase/jupyter
       extends:
         service: common_env_pro
         file: common-python-service-environment.pro.yml
@@ -74,12 +74,12 @@ services:
        - "8888:8888"
 
     rq_dashboard:
-        image: rebase/rq_dashboard
+        image: alpha.rebaseapp.com:5000/rebase/rq_dashboard
         ports:
          - "4444:4444"
 
     nginx:
-        image: rebase/pro-nginx
+        image: alpha.rebaseapp.com:5000/rebase/pro-nginx
         ports:
          - 80:80
          - 443:443
@@ -98,7 +98,7 @@ services:
        - sql:/var/lib/postgresql/data/rebase
 
     rsyslog:
-      image: rebase/rsyslog
+      image: alpha.rebaseapp.com:5000/rebase/rsyslog
       volumes:
        - log:/var/log
 

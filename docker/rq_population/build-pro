@@ -38,6 +38,8 @@ cp -r /wheelhouse/wheels /tmp/rq_population/.
 
 docker build -t rebase/pro-rq-population /tmp/rq_population
 
+docker tag rebase/pro-rq-population alpha.rebaseapp.com:5000/rebase/pro-rq-population
+
 rm -rf /tmp/rq_population
 
 deactivate
