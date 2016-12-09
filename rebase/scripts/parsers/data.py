@@ -2,12 +2,12 @@ from subprocess import check_call
 
 from flask_script import Manager, prompt_bool
 
-from rebase.common import mock
-from rebase.common.database import DB
-from rebase.common.settings import config
+from ...common.database import DB
+from ...common.settings import config
 
 
 data = Manager(usage="Manage the data inside the database.")
+
 
 @data.option('-y', '--yes', action='store_true')
 def drop(yes):
@@ -32,15 +32,9 @@ def recreate(yes):
 @data.command
 def populate():
     "Populate database with default data"
-    from rebase.models import GithubOAuthApp
-    alpha =         GithubOAuthApp(config['GITHUB_APP_ID'],         'alpha',        config['APP_URL'])
+    from ...models import GithubOAuthApp
     code2resume =   GithubOAuthApp(config['GITHUB_CODE2RESUME_ID'], 'code2resume',  config['CODE2RESUME_URL'])
-    DB.session.add(alpha)
     DB.session.add(code2resume)
-
-    mock.DeveloperUserStory(DB, 'Phil Meyman', 'philmeyman@joinrebase.com', 'lem')
-    mock.ManagerUserStory(DB, 'Ron Swanson', 'ron@joinrebase.com', 'ron')
-    mock.create_one_user(DB, 'New User', 'new@joinrebase.com', 'new') 
     DB.session.commit()
 
 
