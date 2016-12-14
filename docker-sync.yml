@@ -5,5 +5,5 @@ syncs:
     src: '../code2resume'
     dest: '/code'
     sync_host_port: 10873
-    sync_excludes: ['package.json', 'node_modules/', '.gitignore', '.git/']
+    sync_excludes: ['node_modules/', '.gitignore', '.git/']
 
