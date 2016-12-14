@@ -1,4 +1,3 @@
-from logging import INFO
 
 # Settings that are common to all services
 
@@ -14,7 +13,7 @@ from logging import INFO
 
 config = {
     'LOG_FORMAT': '%(levelname)s {%(processName)s[%(process)d]} %(message).900s',
-    'LOG_LEVEL': INFO,
+    'LOG_LEVEL': 'INFO',
     'RSYSLOG_CONFIG': {
         'address': ('rsyslog', 514),
     },
