@@ -2,8 +2,9 @@ FROM debian
 
 MAINTAINER Rebase Inc. <raphael@joinrebase.com>
 
-
 ENV DEBIAN_FRONTEND noninteractive
+
+COPY ./wheels/ /wheels/
 
 RUN apt-get update && \
     apt-get install -y \
@@ -17,12 +18,13 @@ RUN apt-get update && \
     echo "America/Los_Angeles" > /etc/timezone && \
     dpkg-reconfigure --frontend noninteractive tzdata && \
     apt-get autoremove && \
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
-COPY ./requirements.txt /requirements.txt
-
-RUN easy_install3 -U pip && \
-    pip3 install -r /requirements.txt && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
+    easy_install3 -U pip && \
+    pip3 install \
+        --no-cache-dir \
+        --find-links /wheels \
+        rebase-jupyter && \
+    rm -rf /wheels && \
     rm -rf /root/.cache/pip/*
 
 WORKDIR /crawler
@@ -30,7 +32,5 @@ WORKDIR /crawler
 COPY ./cmd.bash /cmd.bash
 
 COPY ./jupyter_notebook_config.py /root/.jupyter/
-
-ENV PYTHONPATH=/api
 
 CMD ["/cmd.bash"]

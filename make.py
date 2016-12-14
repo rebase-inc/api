@@ -41,10 +41,6 @@ common_containers = {
         'rebase/jupyter',
         'docker/jupyter'
     ),
-    'jupyter-pro':      Container(
-        'alpha.rebaseapp.com:5000/rebase/jupyter',
-        'docker/jupyter'
-    ),
 }
 
 

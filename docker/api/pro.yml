@@ -66,12 +66,12 @@ services:
         SETTINGS: ".population.pro"
 
     jupyter:
-      image: alpha.rebaseapp.com:5000/rebase/jupyter
-      extends:
-        service: common_env_pro
-        file: common-python-service-environment.pro.yml
-      ports:
-       - "8888:8888"
+        image: alpha.rebaseapp.com:5000/rebase/pro-jupyter
+        extends:
+            service: common_env_pro
+            file: common-python-service-environment.pro.yml
+        ports:
+           - "8888:8888"
 
     rq_dashboard:
         image: alpha.rebaseapp.com:5000/rebase/rq_dashboard
