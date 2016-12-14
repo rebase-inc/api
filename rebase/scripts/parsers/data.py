@@ -20,6 +20,10 @@ def drop(yes):
 def create():
     "Creates database tables from sqlalchemy models"
     DB.create_all()
+    from ...models import GithubOAuthApp
+    code2resume =   GithubOAuthApp(config['GITHUB_CODE2RESUME_ID'], 'code2resume',  config['CODE2RESUME_URL'])
+    DB.session.add(code2resume)
+    DB.session.commit()
 
 
 @data.option('-y', '--yes', action='store_true')
@@ -32,9 +36,6 @@ def recreate(yes):
 @data.command
 def populate():
     "Populate database with default data"
-    from ...models import GithubOAuthApp
-    code2resume =   GithubOAuthApp(config['GITHUB_CODE2RESUME_ID'], 'code2resume',  config['CODE2RESUME_URL'])
-    DB.session.add(code2resume)
-    DB.session.commit()
+    pass
 
 

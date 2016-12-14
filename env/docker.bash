@@ -53,14 +53,6 @@ function _ishell() {
     docker exec -it api_web_1 /venv/web/bin/ipython -m rebase.scripts.manage shell
 }
 
-function _super() {
-    docker exec -it api_rq_git_1 /venv/super/bin/supervisorctl -c /etc/git/supervisor.conf $*
-}
-
-function _git() {
-    docker exec -t api_rq_git_1 $*
-}
-
 #
 # Execute any bash command as 'postgres' user on database container
 # Example:
@@ -96,7 +88,7 @@ function _compose () {
 #
 function _repopulate() {
    if [ ! -z ${SECRET_KEY+x} ]; then 
-       declare -a containers=(nginx scheduler web rq_default cache)
+       declare -a containers=(nginx web rq_default)
        echo "${bold}Production mode${off}"
        echo "Do you wish to wipe out the database and repopulate it?"
        echo "Type ${bold}1${off} or ${bold}2${off} to select your answer"
@@ -109,18 +101,24 @@ function _repopulate() {
        done
    else
        echo "${bold}Development Mode${off}"
-       declare -a containers=(scheduler web rq_default cache)
+       declare -a containers=(web rq_default)
    fi 
     _compose stop -t 60 ${containers[@]}
         if [ "$1" == "--hard" ]; then
-            _compose stop -t 60 rq_git
-                _db "dropdb postgres && createdb postgres"
-            _compose start rq_git
+            _db "dropdb postgres && createdb postgres"
         fi
-        _git /api/env/repopulate
+        _compose run --rm web /api/env/repopulate
     _compose start ${containers[@]}
 }
 
+
+function _ps() {
+    _compose ps $*
+}
+
+function _logs() {
+    _compose logs $*
+}
 
 #
 # _upgrade
@@ -135,17 +133,10 @@ function _upgrade() {
         echo "Error: you must run this command from the 'api' repo dir"
         return 1
     fi
-    layout='-f production-compose.yml'
-    if [ "$1" == "--production" ]; then
-        layout=
-        echo 'Migrating to the latest version of the database in PRODUCTION.'
-    else
-        echo 'Migrating to the latest version of the database in DEVELOPMENT.'
-    fi
-    declare -a containers=(scheduler web rq_default cache)
-    docker-compose $layout stop ${containers[@]}
-    _git /api/env/upgrade_db
-    docker-compose $layout start ${containers[@]}
+    declare -a containers=(web rq_default)
+    _compose stop ${containers[@]}
+        _compose run --rm web /api/env/upgrade_db
+    _compose start ${containers[@]}
 }
 
 function _rsyslog() {
