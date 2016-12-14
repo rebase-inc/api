@@ -21,16 +21,8 @@ def apps(app):
             'access_token_url': 'https://github.com/login/oauth/access_token',
             'authorize_url': 'https://github.com/login/oauth/authorize'
     }
-    alpha = GithubOAuthApp.query.filter_by(name='alpha').first()
     code2resume = GithubOAuthApp.query.filter_by(name='code2resume').first()
-    alpha_app = oauth.remote_app(
-            alpha.name,
-            consumer_key=alpha.client_id,
-            consumer_secret=config['GITHUB_APP_SECRET'],
-            **common_settings
-    )
     attribute =  'github_app'
-    setattr(alpha_app, attribute, alpha)
     code2resume_app = oauth.remote_app(
             code2resume.name,
             consumer_key=code2resume.client_id,
@@ -39,7 +31,6 @@ def apps(app):
     )
     setattr(code2resume_app, attribute, code2resume)
     return {
-        urlparse(alpha.url).hostname:       alpha_app,
         urlparse(code2resume.url).hostname: code2resume_app
     }
 
