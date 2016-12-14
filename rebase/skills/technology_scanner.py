@@ -1,11 +1,7 @@
 from abc import ABCMeta, abstractmethod
-from logging import getLogger
 
 from .scanner_client import ScannerClient
 from .tech_profile import TechProfile, Exposure
-
-
-logger = getLogger(__name__)
 
 
 class TechnologyScanner:

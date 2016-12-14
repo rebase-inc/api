@@ -1,11 +1,7 @@
-from logging import getLogger
 
 from .importable_modules import ImportableModules
 from .py2_py3_client import Py2Py3Client
 from .technology_scanner import TechnologyScanner
-
-
-logger = getLogger(__name__)
 
 
 class Python(TechnologyScanner):
