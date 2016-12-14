@@ -155,21 +155,25 @@ class AccountScanner(object):
                     for scanner in self.find_scanners(languages):
                         try:
                             if diff.new_file:
-                                technologies.merge(scanner.scan_contents(
-                                    diff.b_path,
-                                    local_commit.tree[diff.b_path].data_stream.read().decode(),
-                                    time_to_epoch(local_commit.authored_datetime),
-                                    local_commit
-                                ))
+                                technologies.merge(
+                                    scanner.scan_contents(
+                                        diff.b_path,
+                                        local_commit.tree[diff.b_path].data_stream.read(),
+                                        time_to_epoch(local_commit.authored_datetime),
+                                        local_commit
+                                    )
+                                )
                             else:
-                                technologies.merge(scanner.scan_diff(
-                                    diff.b_path,
-                                    local_commit.tree[diff.b_path].data_stream.read().decode(),
-                                    local_commit,
-                                    local_commit.parents[0].tree[diff.a_path].data_stream.read().decode(),
-                                    local_commit.parents[0],
-                                    time_to_epoch(local_commit.authored_datetime),
-                                ))
+                                technologies.merge(
+                                    scanner.scan_diff(
+                                        diff.b_path,
+                                        local_commit.tree[diff.b_path].data_stream.read(),
+                                        local_commit,
+                                        local_commit.parents[0].tree[diff.a_path].data_stream.read(),
+                                        local_commit.parents[0],
+                                        time_to_epoch(local_commit.authored_datetime),
+                                    )
+                                )
                         except SyntaxError as e:
                             logger.exception('Syntax error while processing commit "%s"', local_commit.binsha)
                         except GithubException as e:
@@ -187,7 +191,7 @@ class AccountScanner(object):
                     try:
                         technologies.merge(scanner.scan_contents(
                             blob.name,
-                            blob.data_stream.read().decode(),
+                            blob.data_stream.data_stream.read(),
                             time_to_epoch(local_commit.authored_datetime),
                             local_commit
                         ))
@@ -199,6 +203,8 @@ class AccountScanner(object):
                     except RebaseGithubException as rebase_exception:
                         logger.warning(rebase_exception)
                         raise rebase_exception
+                    except Exception as last_chance:
+                        logger.exception('in rebase.github.account_scanner.AccountScanner.scan_one_commit_on_disk: Uncaught exception')
 
         return commit_count_by_language, unknown_extension_counter, technologies
 

@@ -12,7 +12,7 @@ from ....skills.py2_py3_client import Py2Py3Client
 from .git import Tree, Blob, Commit
 
 
-code_1 = '''
+code_1 = b'''
 from pickle import loads, dumps
 from aws.s3 import S3
 from a.b import Foo
@@ -23,7 +23,7 @@ s3.put('foo', dumps({1:2, 3:4}))
 
 '''
 
-code_2 = '''
+code_2 = b'''
 from pickle import dumps
 from aws.s3 import S3
 from a.b import Foo

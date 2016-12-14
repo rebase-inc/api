@@ -1,4 +1,4 @@
-
+from base64 import b64decode
 from contextlib import contextmanager
 from functools import partial
 from inspect import getargspec
@@ -48,6 +48,7 @@ class InvalidMethod(ParserException):
 class InvalidMethodArguments(ParserException):
     error_message = 'Invalid method arguments'
     code = 3
+
 
 def quit(sig, frame, transport):
     transport.close()
@@ -112,7 +113,7 @@ class Python2Client(PythonClient):
         return super(Python2Client, self).scan_contents(
             language_index,
             filename,
-            code,
+            b64decode(code),
             frozenset(importable_modules_as_list)
         )
 
@@ -148,6 +149,7 @@ def exit_on_error(transport):
         transport.close()
         exit(0)
 
+
 def main():
     try:
         transport, protocol = create_json_streaming_server(argv[1])
@@ -161,4 +163,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 

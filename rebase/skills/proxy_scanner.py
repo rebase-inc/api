@@ -1,3 +1,4 @@
+from base64 import b64encode
 from json import JSONEncoder
 from logging import getLogger
 
@@ -67,8 +68,8 @@ class Proxy(ScannerClient):
         self.protocol.write_in(self.grammar_call)
         return self.get_results()
 
-    def scan_contents(self, *args):
-        self.scan_contents_call['args'] = args
+    def scan_contents(self, language_index, filename, code, context):
+        self.scan_contents_call['args'] = [language_index, filename, b64encode(code).decode(), context]
         self.protocol.write_in(self.scan_contents_call)
         return self.get_results()
 
