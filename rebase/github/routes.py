@@ -4,6 +4,7 @@ from uuid import uuid1
 
 from flask import redirect, url_for, request, jsonify, current_app
 from flask_login import login_required, current_user, login_user
+from redis import StrictRedis
 
 from ..common.database import DB
 from ..common.exceptions import NotFoundError
@@ -172,7 +173,7 @@ def register_github_routes(app):
     def crawl_status():
         return jsonify(
             get_notification(
-                Redis(connection_pool=app.redis_pool),
+                StrictRedis(connection_pool=app.redis_pool),
                 Contractor.query.filter_by(user_id=current_user.id).one().id
             )
         )
