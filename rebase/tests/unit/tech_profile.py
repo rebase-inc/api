@@ -4,6 +4,7 @@ from functools import partial
 from pprint import pprint
 from unittest import TestCase
 
+from rebase.common.aws import S3Value
 from rebase.datetime import utcnow_timestamp, DAY_SECONDS
 from rebase.skills.aws_keys import profile_key, level_key
 from rebase.skills.tech_profile import TechProfile
@@ -16,7 +17,7 @@ def add(prof_a, prof_b):
     for t, e in prof_b.items():
         prof_a[t] = copy(e)
 
-def _wait_till_exists(): pass
+def _wait_till_exists(*args): pass
 
 
 class TP(TestCase):
@@ -75,7 +76,7 @@ class TP(TestCase):
         _exists = lambda key: s3.__contains__(key)
         update_rankings = partial(
             _update_rankings,
-            consistent_get=lambda bucket, key, etag: s3.get(key),
+            consistent_get=lambda s3_value: s3.get(s3_value.key),
             get=s3.get,
             put=s3.__setitem__,
             exists=_exists,
@@ -84,8 +85,10 @@ class TP(TestCase):
         )
         get_rankings = partial(
             _get_rankings,
+            private=True,
             get=s3.get,
-            exists=_exists
+            exists=_exists,
+            wait_till_exists=_wait_till_exists,
         )
 
         user_1 = 'user_1'
@@ -95,7 +98,7 @@ class TP(TestCase):
             'metrics': metrics_1
         }
         s3[profile_1_key] = saved_profile_1
-        update_rankings(user_1, ('some_bucket', profile_1_key, 'some_etag'))
+        update_rankings(user_1, S3Value('some_bucket', profile_1_key, 'some_etag'))
         _overall_key = level_key('_overall')
         self.assertIn(_overall_key, s3)
         self.assertEqual(s3[_overall_key], [metrics_1['_overall']])
@@ -112,7 +115,7 @@ class TP(TestCase):
             'metrics': metrics_2
         }
         s3[profile_2_key] = saved_profile_2
-        update_rankings(user_2, ('some_bucket', profile_2_key, 'some_etag'))
+        update_rankings(user_2, S3Value('some_bucket', profile_2_key, 'some_etag'))
         Bar_key = level_key('Bar')
         self.assertIn(Bar_key, s3)
         print()
