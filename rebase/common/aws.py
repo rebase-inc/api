@@ -1,14 +1,17 @@
+from collections import namedtuple
 from logging import getLogger
-
+from pickle import loads
 
 # with log level INFO or less, boto3 is spewing way too many messages
 getLogger('boto3').setLevel('WARNING')
 getLogger('botocore').setLevel('INFO')
-
 from boto3 import resource
 from botocore.exceptions import ClientError
 
 from rebase.common.settings import config
+
+
+logger = getLogger(__name__)
 
 
 s3 = resource(
@@ -36,14 +39,42 @@ def exists(key, bucket=bucket):
     return True
 
 
+def unpickle_s3_object(bucket, key):
+    try:
+        return loads(s3.Object(bucket, key).get()['Body'].read())
+    except ClientError as e:
+        logger.debug('unpickle_s3_object(bucket={}, key={}) caught an exception: %o'.format(bucket, key), e.response['Error'])
+
+
 s3_exists_waiter = s3.meta.client.get_waiter('object_exists')
 
 
-def s3_wait_till_exists(bucket, key):
-    s3_exists_waiter.wait(
-        Bucket=bucket,
-        Key=key
+def s3_wait_till_exists(bucket, key, etag=None):
+    kwargs = {
+        'Bucket':   bucket,
+        'Key':      key,
+    }
+    if etag:
+        kwargs['IfMatch'] = etag
+    logger.debug('s3_wait_till_exists kwargs: %s', kwargs)
+    s3_exists_waiter.wait(**kwargs)
+
+
+# S3Value represents the value of a key with a certain hash
+# It allows synchronisation of processes around future values
+# that are not yet available for reading.
+# See: https://en.wikipedia.org/wiki/Eventual_consistency
+S3Value = namedtuple('S3Value', ('bucket', 'key', 'etag'))
+
+
+def s3_consistent_get(value):
+    assert isinstance(value, S3Value)
+    s3_wait_till_exists(
+        value.bucket,
+        value.key,
+        etag=value.etag
     )
+    return unpickle_s3_object(value.bucket, value.key)
 
 
 def s3_delete_folder(bucket, folder):

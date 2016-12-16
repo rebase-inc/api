@@ -9,7 +9,7 @@ from git.exc import GitCommandError
 from github import GithubException
 from rq import Queue
 
-from ..common.aws import s3_delete_folder, exists, s3, s3_wait_till_exists
+from ..common.aws import s3_delete_folder, exists, s3, s3_wait_till_exists, S3Value
 from ..common.debug import pdebug
 from ..common.settings import config
 from ..common.stopwatch import InfoElapsedTime
@@ -191,7 +191,7 @@ class AccountScanner(object):
                     try:
                         technologies.merge(scanner.scan_contents(
                             blob.name,
-                            blob.data_stream.data_stream.read(),
+                            blob.data_stream.read(),
                             time_to_epoch(local_commit.authored_datetime),
                             local_commit
                         ))
@@ -240,7 +240,6 @@ class AccountScanner(object):
         #from subprocess import check_output
         #out = check_output(('du', '-k', '-s', self.local_repo_dir))
         #logger.debug('SIZE: Local repo size: %d KB', int(out.decode().split('\t')[0]))
-
 
     def clone_if_not_cloned_already(self, repo):
         if self.cloned:
@@ -312,6 +311,9 @@ class AccountScanner(object):
             except GithubException as e:
                 logger.exception('Could not get languages for repo %s', repo_name)
                 repo_languages = self.supported_languages
+            except Exception as last_chance:
+                logger.exception('Catch all exception while doing repo.get_languages')
+                repo_languages = self.supported_languages
             finally:
                 if bool(self.supported_languages & repo_languages):
                     self.cloned = False
@@ -337,6 +339,17 @@ class AccountScanner(object):
 
 
 def save(data, user, private_scanning):
+    '''
+
+        Returns a tuple ('new_data', 'old_data')
+        where 'new_data' is a S3Value object pointing at the new profile
+        and 'old_data' is a S3Value object pointing at the old profile.
+        The value of 'old_data' is potentially None if this is the first time a user is being scan for the given mode (public or private)
+
+        We need to use S3Value objects because the 'old/new_data' is shared
+        between independent services and therefore we must resolve the 'eventual consistency' of S3 data.
+
+    '''
     if private_scanning:
         key = profile_key(user) 
         old_data_key = old_profile_key(user)
@@ -344,20 +357,22 @@ def save(data, user, private_scanning):
         key = public_profile_key(user)
         old_data_key = old_public_profile_key(user)
     # save the previous data, so we later retrieve it and remove it from the rankings
+    old_s3_value = None
     if exists(key):
         old_s3_object = s3.Object(bucket, old_data_key)
-        old_s3_object.copy_from(CopySource={
+        old_response = old_s3_object.copy_from(CopySource={
             'Bucket': bucket,
             'Key': key
         })
+        old_s3_value = S3Value(bucket, old_data_key, old_response['CopyObjectResult']['ETag'])
     s3_object = s3.Object(bucket, key)
-    s3_object.put(Body=dumps(data))
-    return key
+    response = s3_object.put(Body=dumps(data))
+    return S3Value(bucket, key, response['ETag']), old_s3_value
 
 
 def scan_one_user(token, token_user, user_login=None, contractor_id=None):
     user_data = dict()
-    private_scanning = user_login == None
+    private_scanning = (user_login == None)
     scanned_user = user_login if user_login else token_user
     start_msg = 'processing Github user: ' + scanned_user
     try:
@@ -377,11 +392,16 @@ def scan_one_user(token, token_user, user_login=None, contractor_id=None):
         user_data['unknown_extension_counter'] = unknown_extension_counter
         user_data['metrics'] = measure(technologies)
         user_data['rankings'] = dict()
-        user_data_key = save(user_data, scanned_user, private_scanning)
         Queue(name='population').enqueue_call(
             'rebase.skills.population.update_rankings',
-            args=(scanned_user, contractor_id),
-            kwargs={ 'private': private_scanning },
+            args=(
+                scanned_user,
+                *save(user_data, scanned_user, private_scanning)
+            ),
+            kwargs={
+                'contractor_id': contractor_id,
+                'private': private_scanning
+            },
             timeout=3600
         )
         return user_data

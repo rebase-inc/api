@@ -5,7 +5,14 @@ from pickle import loads, dumps
 from botocore.exceptions import ClientError
 from rq import Queue
 
-from ..common.aws import exists as s3_exists, s3, s3_wait_till_exists
+from ..common.aws import (
+    exists as s3_exists,
+    s3,
+    s3_consistent_get,
+    s3_wait_till_exists,
+    unpickle_s3_object,
+    S3Value,
+)
 from ..common.settings import config
 
 from .aws_keys import (
@@ -26,24 +33,16 @@ bucket = config['S3_BUCKET']
 population_cache = dict()
 
 
-
-def unpickle_s3_object(key):
-    try:
-        return loads(s3.Object(bucket, key).get()['Body'].read())
-    except ClientError as e:
-        logger.debug('unpickle_s3_object(bucket={}, key={}) caught an exception: %o'.format(bucket, key), e.response['Error'])
-
-
 def s3_get(key):
     is_population_key = key.startswith('population')
     if is_population_key:
         if key in population_cache:
             return population_cache[key]
         else:
-            obj = unpickle_s3_object(key)
+            obj = unpickle_s3_object(bucket, key)
             population_cache[key] = obj
             return obj
-    return unpickle_s3_object(key)
+    return unpickle_s3_object(bucket, key)
 
 
 def s3_put(key, obj):
@@ -58,12 +57,16 @@ def s3_put(key, obj):
 
 def update_rankings(
     user,
+    new_user_profile,
+    old_user_profile=None,
     contractor_id=None,
     private=True,
+    consistent_get=s3_consistent_get,
     get=s3_get,
     put=s3_put,
     exists=s3_exists,
     wait_till_exists=s3_wait_till_exists,
+    write_to_db=True
 ):
     '''
 
@@ -81,9 +84,8 @@ def update_rankings(
 
     '''
     all_scores = dict()
-    old_metrics_key = old_profile_key(user) if private else old_public_profile_key(user)
-    if exists(old_metrics_key):
-        old_metrics = get(old_metrics_key)['metrics']
+    if old_user_profile:
+        old_metrics = consistent_get(old_user_profile)['metrics']
         for level, score in old_metrics.items():
             key = level_key(level)
             if exists(key):
@@ -107,11 +109,7 @@ def update_rankings(
             else:
                 scores = list()
             all_scores[level] = scores
-    user_data_key = profile_key(user) if private else public_profile_key(user)
-    if not exists(user_data_key):
-        wait_till_exists(user_data_key)
-    new_user_data = get(user_data_key) 
-    new_metrics = new_user_data['metrics']
+    new_metrics = consistent_get(new_user_profile)['metrics']
     for level, score in new_metrics.items():
         if level in all_scores:
             scores = all_scores[level]
@@ -125,22 +123,31 @@ def update_rankings(
         all_scores[level] = scores
     for level, scores in all_scores.items():
         put(level_key(level), scores)
-    Queue().enqueue_call(
-        'rebase.db_jobs.contractor.update_user_rankings',
-        args=(user,),
-        kwargs={
-            'private':          private,
-            'contractor_id':    contractor_id,
-            'get':              get,
-            'exists':           exists, 
-            'put':              put,
-        }
-    )
+    if write_to_db:
+        Queue().enqueue_call(
+            'rebase.db_jobs.contractor.update_user_rankings',
+            args=(user,),
+            kwargs={
+                'private':          private,
+                'contractor_id':    contractor_id,
+                'get':              get,
+                'exists':           exists, 
+                'put':              put,
+            }
+        )
 
 
-def get_rankings(user, get=s3_get, exists=s3_exists):
+def get_rankings(
+    user,
+    private,
+    get=s3_get,
+    exists=s3_exists,
+    wait_till_exists=s3_wait_till_exists,
+):
     rankings = dict()
-    user_profile_key = profile_key(user)
+    user_profile_key = profile_key(user) if private else public_profile_key(user)
+    if not exists(user_profile_key):
+        wait_till_exists(bucket, user_profile_key)
     user_profile = get(user_profile_key) 
     metrics = user_profile['metrics']
     for level, score in metrics.items():
@@ -162,6 +169,7 @@ def get_rankings(user, get=s3_get, exists=s3_exists):
             rankings[level] = 0.0
     return rankings
 
+
 def read(github_user, private=True, get=s3_get, exists=s3_exists):
     '''
 
@@ -173,3 +181,5 @@ def read(github_user, private=True, get=s3_get, exists=s3_exists):
     user_data_key = profile_key(github_user) if private else public_profile_key(github_user)
     new_user_data = get(user_data_key) 
     return new_user_data
+
+

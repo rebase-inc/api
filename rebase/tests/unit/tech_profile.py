@@ -28,15 +28,15 @@ class TP(TestCase):
         day_3 = now - 14*DAY_SECONDS
         day_4 = now - DAY_SECONDS
         self.prof_1 = TechProfile()
-        self.prof_1.add('Foo.__grammar__.bar', day_1, 1)
-        self.prof_1.add('Foo.__grammar__.bar.mama', day_1, 4)
-        self.prof_1.add('Foo.__standard_library__.yo.mama', day_2, 1)
-        self.prof_1.add('Foo.__standard_library__.yo.mama', day_2, 1)
+        self.prof_1.add('Foo.0.bar', day_1, 1)
+        self.prof_1.add('Foo.0.bar.mama', day_1, 4)
+        self.prof_1.add('Foo.1.yo.mama', day_2, 1)
+        self.prof_1.add('Foo.1.yo.mama', day_2, 1)
 
         self.prof_2= TechProfile()
-        self.prof_2.add('Bar.__third_party__.yo', day_1, 5)
-        self.prof_2.add('Bar.__third_party__.yo.mama', day_2, 1)
-        self.prof_2.add('Bar.__third_party__.bar.mama', day_1, 9)
+        self.prof_2.add('Bar.2.yo', day_1, 5)
+        self.prof_2.add('Bar.2.yo.mama', day_2, 1)
+        self.prof_2.add('Bar.2.bar.mama', day_1, 9)
 
         self.prof_3 = TechProfile()
         add(self.prof_3, self.prof_1)
@@ -44,7 +44,7 @@ class TP(TestCase):
 
         self.prof_4 = TechProfile()
         add(self.prof_4, self.prof_1)
-        self.prof_4.add('Foo.__standard_library__.yo.mama', day_4, 1)
+        self.prof_4.add('Foo.1.yo.mama', day_4, 1)
 
     def test_a(self):
         v1 = TechProfileView(self.prof_1)
@@ -75,10 +75,12 @@ class TP(TestCase):
         _exists = lambda key: s3.__contains__(key)
         update_rankings = partial(
             _update_rankings,
+            consistent_get=lambda bucket, key, etag: s3.get(key),
             get=s3.get,
             put=s3.__setitem__,
             exists=_exists,
-            wait_till_exists=_wait_till_exists
+            wait_till_exists=_wait_till_exists,
+            write_to_db=False,
         )
         get_rankings = partial(
             _get_rankings,
@@ -93,7 +95,7 @@ class TP(TestCase):
             'metrics': metrics_1
         }
         s3[profile_1_key] = saved_profile_1
-        update_rankings(user_1)
+        update_rankings(user_1, ('some_bucket', profile_1_key, 'some_etag'))
         _overall_key = level_key('_overall')
         self.assertIn(_overall_key, s3)
         self.assertEqual(s3[_overall_key], [metrics_1['_overall']])
@@ -110,7 +112,7 @@ class TP(TestCase):
             'metrics': metrics_2
         }
         s3[profile_2_key] = saved_profile_2
-        update_rankings(user_2)
+        update_rankings(user_2, ('some_bucket', profile_2_key, 'some_etag'))
         Bar_key = level_key('Bar')
         self.assertIn(Bar_key, s3)
         print()
