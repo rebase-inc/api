@@ -29,7 +29,6 @@ logger = getLogger()
 
 
 def analyze_contractor_skills(app, github_account):
-    logger.debug('In analyze_contractor_skills')
     contractor = next(filter(lambda r: r.type == 'contractor', current_user.roles), None)
     if contractor:
         remote_work_history = RemoteWorkHistory.query_by_user(current_user).first() or RemoteWorkHistory(contractor)
@@ -37,7 +36,7 @@ def analyze_contractor_skills(app, github_account):
         remote_work_history.analyzing = True
         DB.session.add(remote_work_history)
         DB.session.commit()
-        queue = Queue('private_github_crawler', connection = StrictRedis(connection_pool = app.redis_pool))
+        queue = Queue('private_crawler', connection = StrictRedis(connection_pool = app.redis_pool))
         queue.enqueue_call(
             func = 'scanner.scan_all',
             args = (github_account.access_token, contractor.skill_set.id),
