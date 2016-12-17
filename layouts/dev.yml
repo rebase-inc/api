@@ -1,0 +1,65 @@
+version: '2'
+volumes:
+    log: {}
+    sql: {}
+
+services:
+  rest_api:
+    extends:
+      file: common.yml
+      service: rest_api
+    environment:
+      FLASK_LOGIN_SESSION_PROTECTION: "basic"
+      REPOS_VOLUME_SIZE_IN_MB: 500
+      CLONE_SIZE_SAFETY_FACTOR: 2
+      PUBLIC_APP_URL: 'http://dev:3000'
+    volumes:
+      - ../services/rest_api:/api
+  python_impact:
+    extends:
+      file: "${PYTHON_IMPACT_REPO}/layouts/common.yml"
+      service: python_impact
+  # javascript_impact:
+  #   extends:
+  #     file: "${JAVASCRIPT_IMPACT_REPO}/layouts/common.yml"
+  #     service: javascript_impact
+  rq_dashboard:
+    extends:
+      file: "${JOB_QUEUE_REPO}/layouts/common.yml"
+      service: rq_dashboard
+  redis:
+    extends:
+      file: "${JOB_QUEUE_REPO}/layouts/common.yml"
+      service: redis
+  default_queue:
+    extends:
+      file: "${JOB_QUEUE_REPO}/layouts/common.yml"
+      service: default_queue
+    environment:
+      LOG_LEVEL: "DEBUG"
+  private_github_crawler:
+    extends:
+      file: "${JOB_QUEUE_REPO}/layouts/common.yml"
+      service: private_github_crawler
+    environment:
+      LOG_LEVEL: "DEBUG"
+  public_github_crawler:
+    extends:
+      file: "${JOB_QUEUE_REPO}/layouts/common.yml"
+      service: public_github_crawler
+    environment:
+      LOG_LEVEL: "DEBUG"
+  population_analyzer:
+    extends:
+      file: "${JOB_QUEUE_REPO}/layouts/common.yml"
+      service: population_analyzer
+    environment:
+      LOG_LEVEL: "DEBUG"
+  logserver:
+    extends:
+      file: "${LOGSERVER_REPO}/layouts/common.yml"
+      service: logserver
+    environment:
+      LOG_LEVEL: "DEBUG"
+
+

@@ -1,5 +1,0 @@
-#!/bin/bash
-
-cd /api
-/venv/api/bin/alembic upgrade head
-
