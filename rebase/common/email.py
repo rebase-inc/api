@@ -5,8 +5,6 @@ from smtplib import SMTP_SSL
 
 from flask import current_app
 
-from .settings import config
-
 
 class Email(object):
 
@@ -27,7 +25,7 @@ class Email(object):
                 </p>
             </body>
         </html>
-        """.format(app_url=config['APP_URL'], text=html_msg)
+        """.format(app_url='{{APP_URL}}', text=html_msg)
         _msg.attach(MIMEText(text_msg, 'plain'))
         _msg.attach(MIMEText(html, 'html'))
         self.msg = _msg.as_string()
@@ -50,9 +48,12 @@ def send(emails):
     current_app.default_queue.enqueue(
         send_emails,
         emails,
-        current_app.config['SMTP_HOST'],
-        current_app.config['NOTIFICATION_EMAIL'],
-        current_app.config['NOTIFICATION_EMAIL_PASSWORD']
+        '',
+        '',
+        ''
+        #current_app.config.SMTP_HOST,
+        #current_app.config.NOTIFICATION_EMAIL,
+        #current_app.config.NOTIFICATION_EMAIL_PASSWORD
     )
 
 

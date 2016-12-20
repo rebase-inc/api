@@ -11,7 +11,7 @@ from rq import Queue
 
 from ..common.aws import s3_delete_folder, exists, s3, s3_wait_till_exists, S3Value
 from ..common.debug import pdebug
-from ..common.settings import config
+from ..common import config
 from ..common.stopwatch import InfoElapsedTime
 from ..datetime import time_to_epoch
 from ..skills.python import Python
@@ -69,9 +69,6 @@ CLONED_REPOS_ROOT_DIR = '/repos'
 
 # this is where repos that can't fit in /repos go
 BIG_CLONED_REPOS_ROOT_DIR = '/big_repos'
-
-
-bucket = config['S3_BUCKET']
 
 
 def count_languages(commit_count_by_language, unknown_extension_counter, filepath):
@@ -217,11 +214,11 @@ class AccountScanner(object):
     def clone(self, repo, oauth_url):
         '''
 
-            Clone either in tmpfs ('/repos') or on container host drive ('/big_repos') 
+            Clone either in tmpfs ('/repos') or on container host drive ('/big_repos')
 
         '''
         # repo.size appears to be in KB
-        clone_in_RAM = config['REPOS_VOLUME_SIZE_IN_MB'] > config['CLONE_SIZE_SAFETY_FACTOR']*(repo.size/1024)
+        clone_in_RAM = config.REPOS_VOLUME_SIZE_IN_MB > config.CLONE_SIZE_SAFETY_FACTOR * (repo.size/1024)
         if clone_in_RAM:
             self.local_repo_dir = join(CLONED_REPOS_ROOT_DIR, repo.name)
             logger.debug('Clone in RAM')
@@ -249,7 +246,7 @@ class AccountScanner(object):
         oauth_url = repo_url.replace('https://github.com', self.new_url_prefix, 1)
         self.clone(repo, oauth_url)
         self.cloned = True
-    
+
     def process_repo(self, repo, login, commit_count_by_language, unknown_extension_counter, technologies):
         logger.info('processing repo: "%s"', repo.name)
         self.cloned = False
@@ -290,7 +287,7 @@ class AccountScanner(object):
         # not. If login is None, it returns an AuthenticatedUser, otherwise, a NamedUser.
         # get_repos() will then return all (public+private) repos for an AuthenticatedUser,
         # but only public repos for a NamedUser, EVEN IF NamedUser is the actual owner of the access token and scope has private repos!
-        
+
         # we use an 'args' array so we don't have to manipulate GithubObject.NotSet ...
         args = [login] if login else []
         scanned_user = self.api.get_user(*args)
@@ -303,8 +300,8 @@ class AccountScanner(object):
             except GithubException as e:
                 logger.exception('Could not fetch repo name')
                 continue
-            if config['ONLY_THIS_REPO'] and (repo_name != config['ONLY_THIS_REPO']):
-                logger.debug('Skipping repo %s, we only look at repo %s', repo.name, config['ONLY_THIS_REPO'])
+            if config.ONLY_SCAN_THIS_REPO and (repo_name != config.ONLY_SCAN_THIS_REPO):
+                logger.debug('Skipping repo %s, we only look at repo %s', repo.name, config.ONLY_SCAN_THIS_REPO)
                 continue
             try:
                 repo_languages = set(repo.get_languages().keys())
@@ -320,7 +317,7 @@ class AccountScanner(object):
                     repos_to_be_scanned.append(repo)
                 else:
                     logger.debug('We do not support any of these languages: %s', repo_languages)
-        
+
         notify_to_be_scanned_repos(repo.name for repo in repos_to_be_scanned)
         for repo in repos_to_be_scanned:
             notify_scanning(repo.name)
@@ -351,7 +348,7 @@ def save(data, user, private_scanning):
 
     '''
     if private_scanning:
-        key = profile_key(user) 
+        key = profile_key(user)
         old_data_key = old_profile_key(user)
     else:
         key = public_profile_key(user)
@@ -359,15 +356,14 @@ def save(data, user, private_scanning):
     # save the previous data, so we later retrieve it and remove it from the rankings
     old_s3_value = None
     if exists(key):
-        old_s3_object = s3.Object(bucket, old_data_key)
-        old_response = old_s3_object.copy_from(CopySource={
-            'Bucket': bucket,
+        old_s3_object = s3.Object(config.S3_BUCKET, old_data_key)
+        old_s3_object.copy_from(CopySource={
+            'Bucket': config.S3_BUCKET,
             'Key': key
         })
-        old_s3_value = S3Value(bucket, old_data_key, old_response['CopyObjectResult']['ETag'])
-    s3_object = s3.Object(bucket, key)
-    response = s3_object.put(Body=dumps(data))
-    return S3Value(bucket, key, response['ETag']), old_s3_value
+    s3_object = s3.Object(config.S3_BUCKET, key)
+    s3_object.put(Body=dumps(data))
+    return key
 
 
 def scan_one_user(token, token_user, user_login=None, contractor_id=None):
@@ -411,10 +407,10 @@ def scan_one_user(token, token_user, user_login=None, contractor_id=None):
 
 
 def delete_population():
-    s3_delete_folder(bucket, level_key(''))
+    s3_delete_folder(config.S3_BUCKET, level_key(''))
 
 
 def delete_user_profiles():
-    s3_delete_folder(bucket, 'user-profiles')
+    s3_delete_folder(config.S3_BUCKET, 'user-profiles')
 
 

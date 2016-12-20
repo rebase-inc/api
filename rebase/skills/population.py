@@ -5,15 +5,8 @@ from pickle import loads, dumps
 from botocore.exceptions import ClientError
 from rq import Queue
 
-from ..common.aws import (
-    exists as s3_exists,
-    s3,
-    s3_consistent_get,
-    s3_wait_till_exists,
-    unpickle_s3_object,
-    S3Value,
-)
-from ..common.settings import config
+from ..common.aws import exists as s3_exists, s3, s3_wait_till_exists
+from ..common.config import S3_BUCKET
 
 from .aws_keys import (
     level_key,
@@ -26,11 +19,15 @@ from .aws_keys import (
 
 logger = getLogger(__name__)
 
-
-bucket = config['S3_BUCKET']
-
-
 population_cache = dict()
+
+
+
+def unpickle_s3_object(key):
+    try:
+        return loads(s3.Object(S3_BUCKET, key).get()['Body'].read())
+    except ClientError as e:
+        logger.debug('unpickle_s3_object(bucket={}, key={}) caught an exception: %o'.format(S3_BUCKET, key), e.response['Error'])
 
 
 def s3_get(key):
@@ -51,7 +48,7 @@ def s3_put(key, obj):
         # this way we are sure the data returned by 'get' is consistent
         # whether it comes from the in-memory cache or S3
         population_cache[key] = loads(serialized_obj) 
-    s3_object = s3.Object(bucket, key)
+    s3_object = s3.Object(S3_BUCKET, key)
     s3_object.put(Body=serialized_obj)
 
 

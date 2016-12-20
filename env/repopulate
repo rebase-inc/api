@@ -1,6 +1,0 @@
-#!/bin/sh
-
-cd /api
-/venv/web/bin/python -m rebase.scripts.manage data recreate --yes
-/venv/web/bin/python -m rebase.scripts.manage data populate
-

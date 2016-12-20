@@ -13,6 +13,39 @@ from rebase.models import (
 
 logger = getLogger(__name__)
 
+from flask_oauthlib.client import OAuth
+
+
+OAUTH_SETTINGS = {
+    'request_token_params': {'scope': 'user, repo'},
+    'base_url': 'https://api.github.com/',
+    'request_token_url': None,
+    'access_token_method': 'POST',
+    'access_token_url': 'https://github.com/login/oauth/access_token',
+    'authorize_url': 'https://github.com/login/oauth/authorize'
+}
+def make_session(github_account, app, user):
+    github = oauth_app_from_github_account(apps(app), github_account)
+    @github.tokengetter
+    def get_github_oauth_token():
+        return (github_account.access_token, '')
+    return GithubSession(app, github, github_account, user)
+
+
+
+def scan_all_repos(github_username):
+    oauth_app = OAuth(app).remote_app('github',
+            consumer_key = app.config.GITHUB_APP_CLIENT_ID,
+            consumer_secret = app.config.GITHUB_APP_CLIENT_SECRET,
+            **OAUTH_SETTINGS
+    )
+    scanner = AccountScanner(github_username, github_token)
+    scanner.scan_all_repos()
+    scanner.close_connection()
+
+
+
+
 
 def scan_public_and_private_repos(account_id):
     # remember, we MUST pop this 'context' when we are done with this session

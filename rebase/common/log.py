@@ -20,6 +20,7 @@ class TruncatingLogRecord(LogRecord):
 
 
 def setup():
+    raise Exception('Dont use this logging method anymore! Import rsyslog package!')
     from .settings import config
     root_logger = getLogger()
     root_logger.setLevel(config['LOG_LEVEL'])

@@ -2,19 +2,12 @@ from multiprocessing import current_process
 
 from werkzeug.contrib.fixers import ProxyFix
 
+import rsyslog
 from ..app import create
-from ..common.log import setup
 
 
 current_process().name = 'API Web Worker'
-
-
-setup()
-
-
+rsyslog.setup()
 app = create(routes=True)
-
-
 app.wsgi_app = ProxyFix(app.wsgi_app)
-
 

@@ -3,7 +3,7 @@ from subprocess import check_call
 from flask_script import Manager, prompt_bool
 
 from ...common.database import DB
-from ...common.settings import config
+from ...common import config
 
 
 data = Manager(usage="Manage the data inside the database.")
@@ -36,6 +36,9 @@ def recreate(yes):
 @data.command
 def populate():
     "Populate database with default data"
-    pass
+    from ...models import GithubOAuthApp
+    github_app = GithubOAuthApp(config.GITHUB_APP_CLIENT_ID, 'skillviz',  config.PUBLIC_APP_URL)
+    DB.session.add(github_app)
+    DB.session.commit()
 
 

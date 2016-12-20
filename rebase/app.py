@@ -7,8 +7,7 @@ from .common.env import check
 
 def basic_app():
     app = Flask(__name__, static_url_path='')
-    app.config.from_object('rebase.common.config.Config')
-    app.config.from_envvar('FLASK_APP_SETTINGS')
+    app.config.from_object('rebase.common.config')
     return app
 
 
@@ -27,7 +26,7 @@ def create(routes=False):
     app = basic_app()
     install(app)
     DB.init_app(app)
-    api = Api(app, prefix=app.config['URL_PREFIX'], errors=errors)
+    api = Api(app, prefix=app.config['API_URL_PREFIX'], errors=errors)
     if routes:
         # some routes use flask_cache is can't be created until an app and its context exist
         with app.app_context():

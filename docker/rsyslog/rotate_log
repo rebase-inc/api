@@ -1,4 +1,0 @@
-#!/bin/sh
-
-mv /var/log/rebase.log /var/log/rebase.log.1
-gzip /var/log/rebase.log.1

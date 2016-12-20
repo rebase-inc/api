@@ -16,10 +16,9 @@ logger = getLogger()
 def cache_main(role_id, q, name):
     app = Flask(__name__, static_url_path='')
     app.config.from_object('rebase.common.config.Config')
-    app.config.from_envvar('FLASK_APP_SETTINGS')
     install(app)
     logger.info('Started child process')
-    api = Api(app, prefix=app.config['URL_PREFIX'], errors=errors)
+    api = Api(app, prefix=app.config['API_URL_PREFIX'], errors=errors)
     from rebase.common.database import DB
     DB.init_app(app)
     routes_are_registered = False

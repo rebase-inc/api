@@ -1,6 +1,8 @@
 from logging import getLogger
 from urllib.parse import urljoin, urlparse
 from uuid import uuid1
+from rq import Queue
+from redis import StrictRedis
 
 from flask import redirect, url_for, request, jsonify, current_app
 from flask_login import login_required, current_user, login_user
@@ -8,8 +10,7 @@ from redis import StrictRedis
 
 from ..common.database import DB
 from ..common.exceptions import NotFoundError
-from ..common.settings import config
-from ..features.rq import queue
+from ..common import config
 from ..models import (
     Contractor,
     GithubAccount,
@@ -29,7 +30,6 @@ logger = getLogger()
 
 
 def analyze_contractor_skills(app, github_account):
-    logger.debug('In analyze_contractor_skills')
     contractor = next(filter(lambda r: r.type == 'contractor', current_user.roles), None)
     if contractor:
         remote_work_history = RemoteWorkHistory.query_by_user(current_user).first() or RemoteWorkHistory(contractor)
@@ -37,11 +37,11 @@ def analyze_contractor_skills(app, github_account):
         remote_work_history.analyzing = True
         DB.session.add(remote_work_history)
         DB.session.commit()
-        logger.debug('About to queue scan_public_and_private_repos')
-        queue(app, 'default').enqueue_call(
-            func='rebase.github.languages.scan_public_and_private_repos',
-            args=(github_account.id,),
-            timeout=3600
+        queue = Queue('private_crawler', connection = StrictRedis(connection_pool = app.redis_pool))
+        queue.enqueue_call(
+            func = 'scanner.scan_all',
+            args = (github_account.access_token, contractor.skill_set.id),
+            timeout = 3600
         )
 
 
@@ -57,14 +57,14 @@ def get_oauth_app_hostname(request):
 
 
 def register_github_routes(app):
-    @app.route('/api/v1/github', methods=['GET'])
+    @app.route(app.config['API_URL_PREFIX'] + 'github', methods=['GET'])
     @login_required
     def login():
         github_apps = apps(app)
         oauth_app_hostname = get_oauth_app_hostname(request)
         return github_apps[oauth_app_hostname].authorize(callback=url_for('authorized', _external=True))
 
-    @app.route('/api/v1/github/verify')
+    @app.route(app.config['API_URL_PREFIX'] + 'github/verify', methods=['GET'])
     @login_required
     def verify_all_github_tokens():
         logger.debug('request.environ:')
@@ -74,13 +74,13 @@ def register_github_routes(app):
             make_session(account, app, current_user)
         return jsonify({'success':'complete'})
 
-    @app.route('/api/v1/github/logout')
+    @app.route(app.config['API_URL_PREFIX'] + 'github/logout', methods=['GET'])
     @login_required
     def logout():
         session.pop('github_token', None)
         return redirect(url_for('login'))
 
-    @app.route('/api/v1/github/authorized')
+    @app.route(app.config['API_URL_PREFIX'] + 'github/authorized', methods=['GET'])
     def authorized():
         github_app = apps(app)[get_oauth_app_hostname(request)]
         response = github_app.authorized_response()
@@ -162,7 +162,7 @@ def register_github_routes(app):
     def _analyze_skills():
         for account in current_user.github_accounts:
             queue(app, 'default').enqueue_call(
-                'rebase.github.languages.scan_public_and_private_repos', 
+                'rebase.github.languages.scan_public_and_private_repos',
                 args=(account.id,),
                 timeout=3600,
             )
