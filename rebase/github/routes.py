@@ -39,7 +39,7 @@ def analyze_contractor_skills(app, github_account):
         DB.session.commit()
         queue = Queue('private_crawler', connection = StrictRedis(connection_pool = app.redis_pool))
         queue.enqueue_call(
-            func = 'scanner.scan_all',
+            func = 'scanner.scan_all_repos',
             args = (github_account.access_token, contractor.skill_set.id),
             timeout = 3600
         )
