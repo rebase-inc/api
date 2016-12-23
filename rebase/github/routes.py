@@ -25,9 +25,7 @@ from .oauth_apps import apps
 from .scanners import import_github_repos, extract_repos_info
 from .session import make_session
 
-
 logger = getLogger()
-
 
 def analyze_contractor_skills(app, github_account):
     contractor = next(filter(lambda r: r.type == 'contractor', current_user.roles), None)
@@ -37,13 +35,10 @@ def analyze_contractor_skills(app, github_account):
         remote_work_history.analyzing = True
         DB.session.add(remote_work_history)
         DB.session.commit()
-        queue = Queue('private_crawler', connection = StrictRedis(connection_pool = app.redis_pool))
-        queue.enqueue_call(
-            func = 'scanner.scan_all_repos',
-            args = (github_account.access_token, contractor.skill_set.id),
-            timeout = 3600
-        )
-
+        crawler_queue = Queue('private_crawler', connection = StrictRedis(connection_pool = app.redis_pool))
+        population_queue = Queue('population_analyzer', connection = StrictRedis(connection_pool = app.redis_pool))
+        scan_repos = crawler_queue.enqueue_call(func = 'scanner.scan_all_repos', args = (github_account.access_token, ), timeout = 3600)
+        population_queue.enqueue_call(func = 'leaderboard.update_ranking_for_user', args = (github_account.github_user.login,), timeout = 3600, depends_on = scan_repos)
 
 def get_oauth_app_hostname(request):
     host = request.environ['HTTP_HOST']

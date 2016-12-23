@@ -6,7 +6,7 @@ from redis import ConnectionPool
 
 def setup_cache(app):
 
-    setattr(app, 'redis_pool', ConnectionPool(host='redis', max_connections=1))
+    setattr(app, 'redis_pool', ConnectionPool(host='redis', max_connections=2))
 
     redis = Cache(
         app, 

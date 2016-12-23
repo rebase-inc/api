@@ -8,7 +8,7 @@ class GithubAccount(DB.Model, PermissionMixin):
     app_id =                DB.Column(DB.String,    DB.ForeignKey('github_o_auth_app.client_id', ondelete='CASCADE'),   primary_key=True)
     github_user_id =        DB.Column(DB.Integer,   DB.ForeignKey('github_user.id', ondelete='CASCADE'),                primary_key=True)
     user_id =               DB.Column(DB.Integer,   DB.ForeignKey('user.id', ondelete='CASCADE'),                       primary_key=True)
-    
+
     access_token =          DB.Column(DB.String, nullable=False)
     remote_work_history_id =DB.Column(DB.Integer, DB.ForeignKey('remote_work_history.id', ondelete='CASCADE'))
 
