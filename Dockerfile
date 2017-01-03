@@ -1,7 +1,5 @@
 FROM alpine
 
-WORKDIR /api
-
 EXPOSE 5000
 
 ARG PYPI_SERVER_HOST
@@ -38,4 +36,4 @@ RUN source /venv/web/bin/activate && \
         --extra-index-url ${PYPI_SERVER_SCHEME}${PYPI_SERVER_HOST}:${PYPI_SERVER_PORT} \
         --requirement /requirements.txt
 
-CMD ["/venv/web/bin/gunicorn", "-c", "conf/gunicorn.dev.conf", "rebase.scripts.wsgi:app"]
+CMD /venv/web/bin/gunicorn -c $CONFIG rebase.scripts.wsgi:app

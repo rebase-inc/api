@@ -21,16 +21,16 @@ OAUTH_SETTINGS = {
 
 def apps(app):
     oauth = OAuth(app)
-    skillviz = GithubOAuthApp.query.filter_by(name='skillviz').first()
+    skillgraph = GithubOAuthApp.query.filter_by(name='skillgraph').first()
     oauth_app = oauth.remote_app(
-            skillviz.name,
-            consumer_key = skillviz.client_id,
+            skillgraph.name,
+            consumer_key = skillgraph.client_id,
             consumer_secret = config.GITHUB_APP_CLIENT_SECRET,
             **OAUTH_SETTINGS
     )
     attribute = 'github_app'
-    setattr(oauth_app, attribute, skillviz)
-    return { urlparse(skillviz.url).hostname: oauth_app }
+    setattr(oauth_app, attribute, skillgraph)
+    return { urlparse(skillgraph.url).hostname: oauth_app }
 
 
 def oauth_app_from_github_account(apps, account):

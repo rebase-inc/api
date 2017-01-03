@@ -21,8 +21,8 @@ def create():
     "Creates database tables from sqlalchemy models"
     DB.create_all()
     from ...models import GithubOAuthApp
-    code2resume =   GithubOAuthApp(config['GITHUB_CODE2RESUME_ID'], 'code2resume',  config['CODE2RESUME_URL'])
-    DB.session.add(code2resume)
+    github_app = GithubOAuthApp(config.GITHUB_APP_CLIENT_ID, 'skillgraph',  config.PUBLIC_APP_URL)
+    DB.session.add(github_app)
     DB.session.commit()
 
 
@@ -36,9 +36,8 @@ def recreate(yes):
 @data.command
 def populate():
     "Populate database with default data"
-    from ...models import GithubOAuthApp
-    github_app = GithubOAuthApp(config.GITHUB_APP_CLIENT_ID, 'skillviz',  config.PUBLIC_APP_URL)
-    DB.session.add(github_app)
-    DB.session.commit()
+    raise Exception('Doesnt do anything right now!')
+    #DB.session.add(github_app)
+    #DB.session.commit()
 
 
