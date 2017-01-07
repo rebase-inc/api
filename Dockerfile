@@ -2,9 +2,9 @@ FROM alpine
 
 EXPOSE 5000
 
-ARG PYPI_SERVER_HOST
-ARG PYPI_SERVER_SCHEME
-ARG PYPI_SERVER_PORT
+ARG PYTHON_COMMONS_HOST
+ARG PYTHON_COMMONS_SCHEME
+ARG PYTHON_COMMONS_PORT
 
 RUN apk --quiet update && \
     apk --quiet add \
@@ -32,8 +32,8 @@ COPY ./rebase/common/dev.py /settings/dev.py
 RUN source /venv/web/bin/activate && \
     pip --quiet install \
         --no-cache-dir \
-        --trusted-host ${PYPI_SERVER_HOST} \
-        --extra-index-url ${PYPI_SERVER_SCHEME}${PYPI_SERVER_HOST}:${PYPI_SERVER_PORT} \
+        --trusted-host ${PYTHON_COMMONS_HOST} \
+        --extra-index-url ${PYTHON_COMMONS_SCHEME}${PYTHON_COMMONS_HOST}:${PYTHON_COMMONS_PORT} \
         --requirement /requirements.txt
 
 CMD /venv/web/bin/gunicorn -c $CONFIG rebase.scripts.wsgi:app
