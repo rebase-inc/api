@@ -35,7 +35,7 @@ def analyze_contractor_skills(app, github_account):
         remote_work_history.analyzing = True
         DB.session.add(remote_work_history)
         DB.session.commit()
-        crawler_queue = Queue('private_crawler', connection = StrictRedis(connection_pool = app.redis_pool))
+        crawler_queue = Queue('private_github_scanner', connection = StrictRedis(connection_pool = app.redis_pool))
         population_queue = Queue('population_analyzer', connection = StrictRedis(connection_pool = app.redis_pool))
         scan_repos = crawler_queue.enqueue_call(func = 'scanner.scan_all_repos', args = (github_account.access_token, ), timeout = 3600)
         population_queue.enqueue_call(func = 'leaderboard.update_ranking_for_user', args = (github_account.github_user.login,), timeout = 3600, depends_on = scan_repos)
