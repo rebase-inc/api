@@ -20,7 +20,6 @@ from ..models import (
     User
 )
 
-from .notifications import get_notification
 from .oauth_apps import apps
 from .scanners import import_github_repos, extract_repos_info
 from .session import make_session
@@ -35,10 +34,10 @@ def analyze_contractor_skills(app, github_account):
         remote_work_history.analyzing = True
         DB.session.add(remote_work_history)
         DB.session.commit()
-        crawler_queue = Queue('private_github_scanner', connection = StrictRedis(connection_pool = app.redis_pool))
-        population_queue = Queue('population_analyzer', connection = StrictRedis(connection_pool = app.redis_pool))
-        scan_repos = crawler_queue.enqueue_call(func = 'scanner.scan_all_repos', args = (github_account.access_token, ), timeout = 3600)
-        population_queue.enqueue_call(func = 'leaderboard.update_ranking_for_user', args = (github_account.github_user.login,), timeout = 3600, depends_on = scan_repos)
+        crawler_queue = Queue('private_github_scanner', connection = StrictRedis(connection_pool = app.redis_pool), default_timeout = 3600)
+        population_queue = Queue('population_analyzer', connection = StrictRedis(connection_pool = app.redis_pool), default_timeout = 3600)
+        scan_repos = crawler_queue.enqueue_call(func = 'scanner.scan_all_repos', args = (github_account.access_token, ), meta = {'finished': [], 'remaining': []})
+        population_queue.enqueue_call(func = 'leaderboard.update_ranking_for_user', args = (github_account.github_user.login,), depends_on = scan_repos)
 
 def get_oauth_app_hostname(request):
     host = request.environ['HTTP_HOST']
@@ -166,12 +165,7 @@ def register_github_routes(app):
     @app.route('/api/v1/github/crawl_status')
     @login_required
     def crawl_status():
-        return jsonify(
-            get_notification(
-                StrictRedis(connection_pool=app.redis_pool),
-                Contractor.query.filter_by(user_id=current_user.id).one().id
-            )
-        )
+        return jsonify({'to':'do'})
 
     @app.route('/api/v1/github/update_rankings')
     @login_required
