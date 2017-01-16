@@ -6,6 +6,7 @@ from redis import StrictRedis
 
 from flask import redirect, url_for, request, jsonify, current_app
 from flask_login import login_required, current_user, login_user
+from flask_oauthlib.client import OAuth
 from redis import StrictRedis
 
 from ..common.database import DB
@@ -24,6 +25,16 @@ from .oauth_apps import apps
 from .scanners import import_github_repos, extract_repos_info
 from .session import make_session
 
+
+OAUTH_SETTINGS = {
+    'request_token_params': {'scope': 'user, repo'},
+    'base_url': 'https://api.github.com/',
+    'request_token_url': None,
+    'access_token_method': 'POST',
+    'access_token_url': 'https://github.com/login/oauth/access_token',
+    'authorize_url': 'https://github.com/login/oauth/authorize'
+}
+
 logger = getLogger()
 
 def analyze_contractor_skills(app, github_account):
@@ -34,9 +45,9 @@ def analyze_contractor_skills(app, github_account):
         remote_work_history.analyzing = True
         DB.session.add(remote_work_history)
         DB.session.commit()
-        crawler_queue = Queue('private_github_scanner', connection = StrictRedis(connection_pool = app.redis_pool), default_timeout = 3600)
+        crawler_queue = Queue('private_github_scanner', connection = StrictRedis(connection_pool = app.redis_pool))
         population_queue = Queue('population_analyzer', connection = StrictRedis(connection_pool = app.redis_pool), default_timeout = 3600)
-        scan_repos = crawler_queue.enqueue_call(func = 'scanner.scan_all_repos', args = (github_account.access_token, ), meta = {'finished': [], 'remaining': []})
+        scan_repos = crawler_queue.enqueue_call(func = 'scanner.scan_authorized_repos', args = (github_account.access_token, ))
         population_queue.enqueue_call(func = 'leaderboard.update_ranking_for_user', args = (github_account.github_user.login,), depends_on = scan_repos)
 
 def get_oauth_app_hostname(request):
@@ -76,50 +87,46 @@ def register_github_routes(app):
 
     @app.route(app.config['API_URL_PREFIX'] + 'github/authorized', methods=['GET'])
     def authorized():
-        github_app = apps(app)[get_oauth_app_hostname(request)]
-        response = github_app.authorized_response()
-        if response is None:
-            return 'Access denied: reason={error} error={error_description}'.format(**request.args)
-        elif 'error' in response:
-            return redirect(url_for('github_login')) if response['error'] == 'bad_verification_code' else 'Unknown error: {}'.format(response['error'])
+        logger.info('Making oauth app')
+        github_oauth_app = OAuth(app).remote_app(
+                'skillgraph', # can we get this from environment?
+                consumer_key = app.config['GITHUB_APP_CLIENT_ID'],
+                consumer_secret = app.config['GITHUB_APP_CLIENT_SECRET'],
+                **OAUTH_SETTINGS
+                )
+        logger.info('Getting data from oauth app')
+        github_data = github_oauth_app.authorized_response()
+        if github_data is None or 'error' in github_data:
+            response = jsonify(message='Invalid GitHub oauth data')
+            response.status_code = 401
+            return response
 
-        # if we got to this point, GitHub auth was successful
-        access_token = response['access_token']
-        github_user_data = github_app.get('user', token = (access_token, '')).data
+        logger.info('Getting user data from github')
+        github_user_data = github_oauth_app.get('user', token = (github_data['access_token'], '')).data
         github_user = GithubUser.query.get(github_user_data['id'])
 
-        # slightly different object for use below
-        github_app = github_app.github_app
-
         if not github_user:
-            # this github user has never been introduced to Rebase before, so we need to build the models
+            logger.info('Making github user')
             github_user = GithubUser(github_user_data['id'], github_user_data['login'], github_user_data['name'])
-            user = User(
-                github_user_data['name'],
-                github_user_data['email'] if github_user_data['email'] else '__phony_address__@rebase.com',
-                uuid1().hex
-            )
-            Contractor(user)
-            github_account = GithubAccount(github_app, github_user, user, access_token)
+            rebase_user = User(github_user_data['name'], github_user_data['email'], uuid().hex) # TODO: Remove
+            rebase_contractor = Contractor(user) # TODO: Remove
+            github_account = GithubAccount(GithubOAuthApp.get(app.config['GITHUB_APP_CLIENT_ID']), github_user, user, access_token) # TODO: Refactor
+            DB.session.add(github_account)
+            DB.session.commit()
+            analyze_contractor_skills(app, github_account)
         else:
-            # this github user has been introduce to rebase, so we're going to try to find their Rebase user
-            user = GithubAccount.query.filter_by(app_id = github_app.client_id, github_user_id = github_user.id ).first().user
-            github_account = GithubAccount.query.filter_by(
-                app_id = github_app.client_id,
-                github_user_id = github_user.id,
-                user_id = user.id
-            ).first() or GithubAccount(github_app, github_user, user, access_token)
-            github_account.access_token = access_token
+            logger.info('Updating access token')
+            github_account = GithubAccount.query.filter_by(app_id = app.config['GITHUB_APP_CLIENT_ID'], github_user_id = github_user.id).first()
+            github_account.access_token = github_data['access_token']
+            DB.session.add(github_account)
+            DB.session.commit()
 
-        # whether we've created a new user or found an existing user, we need to log them in
-        role_id = int(request.cookies.get('role_id', 0))
-        login_user(user, remember=True)
-        current_role = user.set_role(role_id)
+        logger.info('logging user in')
+        login_user(github_account.user, remember=True)
+        current_role = github_account.user.set_role(0) # we don't actually care about the role anymore
 
-        DB.session.add(github_account)
-        DB.session.commit()
-        analyze_contractor_skills(app, github_account)
         return redirect('/')
+
 
     @app.route('/api/v1/github/import_repos', methods=['POST'])
     @login_required

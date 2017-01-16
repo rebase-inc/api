@@ -19,10 +19,10 @@ class UserSchema(RebaseSchema):
     last_seen =     fields.DateTime(required=True, dump_only=True)
     admin =         fields.Boolean(default=False, dump_only=True)
 
-    roles =             SecureNestedField('RoleSchema', exclude=('user',), many=True)
+    #roles =             SecureNestedField('RoleSchema', exclude=('user',), many=True)
     current_role =      SecureNestedField('RoleSchema')
-    photo =             SecureNestedField(PhotoSchema, only='url', dump_only=True)
-    ssh_public_keys =   SecureNestedField(SSHKeySchema, exclude=('user',), many=True)
+    #photo =             SecureNestedField(PhotoSchema, only='url', dump_only=True)
+    #ssh_public_keys =   SecureNestedField(SSHKeySchema, exclude=('user',), many=True)
     github_accounts =   SecureNestedField('GithubAccountSchema', exclude=('user',), many=True)
 
     @post_load

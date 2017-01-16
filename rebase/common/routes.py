@@ -14,9 +14,6 @@ def register_routes(api):
     from rebase.resources.auth import AuthCollection
     api.add_resource(AuthCollection, AuthCollection.url)
 
-    from rebase.resources.c2r_auth import C2RAuthCollection
-    api.add_resource(C2RAuthCollection, C2RAuthCollection.url)
-
     from rebase.resources.auction import add_auction_resource
     add_auction_resource(api)
 
