@@ -85,45 +85,40 @@ def register_github_routes(app):
         session.pop('github_token', None)
         return redirect(url_for('login'))
 
-    @app.route(app.config['API_URL_PREFIX'] + 'github/authorized', methods=['GET'])
+    @app.route(app.config['API_URL_PREFIX'] + '/github/authorized', methods=['GET'])
     def authorized():
-        logger.info('Making oauth app')
         github_oauth_app = OAuth(app).remote_app(
                 'skillgraph', # can we get this from environment?
                 consumer_key = app.config['GITHUB_APP_CLIENT_ID'],
                 consumer_secret = app.config['GITHUB_APP_CLIENT_SECRET'],
                 **OAUTH_SETTINGS
                 )
-        logger.info('Getting data from oauth app')
         github_data = github_oauth_app.authorized_response()
         if github_data is None or 'error' in github_data:
             response = jsonify(message='Invalid GitHub oauth data')
             response.status_code = 401
             return response
 
-        logger.info('Getting user data from github')
         github_user_data = github_oauth_app.get('user', token = (github_data['access_token'], '')).data
         github_user = GithubUser.query.get(github_user_data['id'])
 
         if not github_user:
-            logger.info('Making github user')
             github_user = GithubUser(github_user_data['id'], github_user_data['login'], github_user_data['name'])
             rebase_user = User(github_user_data['name'], github_user_data['email'], uuid().hex) # TODO: Remove
             rebase_contractor = Contractor(user) # TODO: Remove
-            github_account = GithubAccount(GithubOAuthApp.get(app.config['GITHUB_APP_CLIENT_ID']), github_user, user, access_token) # TODO: Refactor
+            github_account = GithubAccount(GithubOAuthApp.get(app.config['GITHUB_APP_CLIENT_ID']), github_user, user, access_token) # TODO: Refactor models
             DB.session.add(github_account)
             DB.session.commit()
             analyze_contractor_skills(app, github_account)
         else:
-            logger.info('Updating access token')
             github_account = GithubAccount.query.filter_by(app_id = app.config['GITHUB_APP_CLIENT_ID'], github_user_id = github_user.id).first()
             github_account.access_token = github_data['access_token']
             DB.session.add(github_account)
             DB.session.commit()
+            analyze_contractor_skills(app, github_account)
 
-        logger.info('logging user in')
         login_user(github_account.user, remember=True)
-        current_role = github_account.user.set_role(0) # we don't actually care about the role anymore
+        github_account.user.set_role(0) # we don't actually care about the role anymore
 
         return redirect('/')
 
