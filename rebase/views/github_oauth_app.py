@@ -5,7 +5,7 @@ from rebase.models.github_account import GithubAccount
 
 
 class GithubOAuthAppSchema(RebaseSchema):
-    client_id = fields.String()
+    #client_id = fields.String()
     name =      fields.String()
     url =       fields.String()
     accounts =  SecureNestedField('GithubAccountSchema', only=('app_id', 'github_user_id', 'user_id'), many=True)

@@ -39,7 +39,7 @@ class SkillsField(fields.Field):
 
 class SkillSetSchema(RebaseSchema):
     id =            fields.Integer()
-    skills =        SkillsField(fields.Str(), fields.Float(), default={})
+    skills =        fields.Dict()
     contractor =    SecureNestedField(ContractorSchema,  only=('id',))
 
     @post_load

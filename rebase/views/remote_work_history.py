@@ -7,7 +7,7 @@ class RemoteWorkHistorySchema(RebaseSchema):
     id =              fields.Integer()
     analyzing =       fields.Boolean()
     contractor =      SecureNestedField('ContractorSchema', only=('id'))
-    github_accounts = SecureNestedField('GithubAccountSchema', only=('app_id', 'github_user_id', 'user_id', 'github_user'), many=True)
+    github_accounts = SecureNestedField('GithubAccountSchema', only=('github_user',), many=True)
 
     @post_load
     def make_remote_work_history(self, data):

@@ -10,12 +10,12 @@ from rebase.views.user import UserSchema
 
 
 class GithubAccountSchema(RebaseSchema):
-    app_id =        fields.String()
+    #app_id =        fields.String()
     github_user_id =fields.Integer()
     user_id =       fields.Integer()
     user =          SecureNestedField(UserSchema, only=('id',), nullable=False)
     github_user =   SecureNestedField(GithubUserSchema, only=('id', 'login', 'name'), nullable=False)
-    app =           SecureNestedField(GithubOAuthAppSchema, only=('client_id',), nullable=False)
+    #app =           SecureNestedField(GithubOAuthAppSchema, only=('client_id',), nullable=False)
     orgs =          SecureNestedField(GithubOrgAccountSchema, many=True, only=('org_id', 'app_id', 'github_user_id', 'user_id'), nullable=True)
     contributed_repos = SecureNestedField(GithubContributedRepoSchema, many=True, nullable=True)
 
