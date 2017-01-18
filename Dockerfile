@@ -27,7 +27,9 @@ RUN apk --quiet update && \
 
 COPY ./requirements.txt /requirements.txt
 COPY ./conf/gunicorn.dev.conf /conf/gunicorn.dev.conf 
+COPY ./conf/gunicorn.pro.conf /conf/gunicorn.pro.conf 
 COPY ./rebase/common/dev.py /settings/dev.py
+COPY ./rebase/common/pro.py /settings/pro.py
 
 RUN source /venv/web/bin/activate && \
     pip --quiet install \
