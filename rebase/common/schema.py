@@ -8,7 +8,7 @@ from marshmallow import Schema, fields
 from marshmallow.exceptions import ValidationError as MarshmallowValidationError
 from sqlalchemy.orm.collections import InstrumentedList
 
-from .exceptions import NotFoundError, BadDataError, ClientError
+from .exceptions import NotFoundError, BadDataError, ClientError, ServerError
 from .keys import get_model_primary_keys
 
 
