@@ -11,7 +11,7 @@ from ..models import GithubOAuthApp
 logger = getLogger()
 
 OAUTH_SETTINGS = {
-    'request_token_params': {'scope': 'user, repo'},
+    'request_token_params': {'scope': 'user repo'},
     'base_url': 'https://api.github.com/',
     'request_token_url': None,
     'access_token_method': 'POST',

@@ -34,12 +34,6 @@ class Contractor(Role):
         self.rating = 0
         from rebase.models.skill_set import SkillSet
         SkillSet(self)
-        # Hack to nominate all contractors during development
-        from flask_login import current_app
-        # if current_app.config['NOMINATE_ALL_CONTRACTORS']:
-        #     from rebase.models.auction import Auction
-        #     from rebase.models.nomination import Nomination
-        #     nominations = [ Nomination(self, auction.ticket_set) for auction in Auction.query.all() ]
 
     @reconstructor
     def init(self):

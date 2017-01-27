@@ -1,11 +1,5 @@
 FROM alpine
 
-EXPOSE 5000
-
-ARG PYTHON_COMMONS_HOST
-ARG PYTHON_COMMONS_SCHEME
-ARG PYTHON_COMMONS_PORT
-
 RUN apk --quiet update && \
     apk --quiet add \
         --no-cache \
@@ -26,11 +20,10 @@ RUN apk --quiet update && \
         --upgrade pip
 
 COPY ./requirements.txt /requirements.txt
-COPY ./conf/gunicorn.dev.conf /conf/gunicorn.dev.conf 
-COPY ./conf/gunicorn.pro.conf /conf/gunicorn.pro.conf 
-COPY ./rebase/common/dev.py /settings/dev.py
-COPY ./rebase/common/pro.py /settings/pro.py
-COPY ./rebase /rebase
+
+ARG PYTHON_COMMONS_HOST
+ARG PYTHON_COMMONS_SCHEME
+ARG PYTHON_COMMONS_PORT
 
 RUN source /venv/web/bin/activate && \
     pip --quiet install \
@@ -39,4 +32,13 @@ RUN source /venv/web/bin/activate && \
         --extra-index-url ${PYTHON_COMMONS_SCHEME}${PYTHON_COMMONS_HOST}:${PYTHON_COMMONS_PORT} \
         --requirement /requirements.txt
 
-CMD /venv/web/bin/gunicorn -c $CONFIG rebase.scripts.wsgi:app
+COPY ./rebase /usr/app/src/rebase
+COPY ./conf /usr/app/src/conf
+
+ENV PYTHONPATH "/usr/app/src"
+
+ARG CONFIG
+
+EXPOSE 5000
+
+CMD ["/venv/web/bin/gunicorn",  "-c", "/usr/app/src/conf/gunicorn.dev.conf", "rebase.scripts.wsgi:app"]

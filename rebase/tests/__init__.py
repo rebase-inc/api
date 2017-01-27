@@ -4,10 +4,6 @@ from unittest import TestCase
 from rebase.app import create
 import rebase.tests.database.cleanup
 
-from ..common.log import setup
-
-setup()
-
 current_process().name = 'Unit Tests'
 
 

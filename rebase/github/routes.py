@@ -7,27 +7,25 @@ from redis import StrictRedis
 from flask import redirect, url_for, request, jsonify, current_app
 from flask_login import login_required, current_user, login_user
 from flask_oauthlib.client import OAuth
+from github import Github
 from redis import StrictRedis
 
 from ..common.database import DB
-from ..common.exceptions import NotFoundError
 from ..common import config
 from ..models import (
     Contractor,
     GithubAccount,
+    GithubOAuthApp,
     GithubUser,
     RemoteWorkHistory,
-    SkillSet,
     User
 )
 
-from .oauth_apps import apps
-from .scanners import import_github_repos, extract_repos_info
 from .session import make_session
 
 
 OAUTH_SETTINGS = {
-    'request_token_params': {'scope': 'user, repo'},
+    'request_token_params': {'scope': 'user repo'},
     'base_url': 'https://api.github.com/',
     'request_token_url': None,
     'access_token_method': 'POST',
@@ -62,12 +60,20 @@ def get_oauth_app_hostname(request):
 
 
 def register_github_routes(app):
+
+    github_oauth_app = OAuth(app).remote_app(
+        'skillgraph', # can we get this from environment?
+        consumer_key = app.config['GITHUB_APP_CLIENT_ID'],
+        consumer_secret = app.config['GITHUB_APP_CLIENT_SECRET'],
+        **OAUTH_SETTINGS
+    )
+
+    skillgraph = GithubOAuthApp.query.filter_by(name='skillgraph').first()
+
     @app.route(app.config['API_URL_PREFIX'] + 'github', methods=['GET'])
     @login_required
     def login():
-        github_apps = apps(app)
-        oauth_app_hostname = get_oauth_app_hostname(request)
-        return github_apps[oauth_app_hostname].authorize(callback=url_for('authorized', _external=True))
+        return github_oauth_app.authorize(callback=url_for('authorized', _external=True))
 
     @app.route(app.config['API_URL_PREFIX'] + 'github/verify', methods=['GET'])
     @login_required
@@ -87,71 +93,40 @@ def register_github_routes(app):
 
     @app.route(app.config['API_URL_PREFIX'] + '/github/authorized', methods=['GET'])
     def authorized():
-        github_oauth_app = OAuth(app).remote_app(
-                'skillgraph', # can we get this from environment?
-                consumer_key = app.config['GITHUB_APP_CLIENT_ID'],
-                consumer_secret = app.config['GITHUB_APP_CLIENT_SECRET'],
-                **OAUTH_SETTINGS
-                )
         github_data = github_oauth_app.authorized_response()
         if github_data is None or 'error' in github_data:
             response = jsonify(message='Invalid GitHub oauth data')
             response.status_code = 401
             return response
 
-        github_user_data = github_oauth_app.get('user', token = (github_data['access_token'], '')).data
-        github_user = GithubUser.query.get(github_user_data['id'])
-
+        access_token = github_data['access_token']
+        github_api = Github(login_or_token=access_token)
+        authenticated_user = github_api.get_user()
+        github_user = GithubUser.query.get(authenticated_user.id)
         if not github_user:
-            github_user = GithubUser(github_user_data['id'], github_user_data['login'], github_user_data['name'])
-            rebase_user = User(github_user_data['name'], github_user_data['email'], uuid().hex) # TODO: Remove
-            rebase_contractor = Contractor(user) # TODO: Remove
-            github_account = GithubAccount(GithubOAuthApp.get(app.config['GITHUB_APP_CLIENT_ID']), github_user, user, access_token) # TODO: Refactor models
+            emails =  authenticated_user.get_emails()
+            logger.debug('emails: %s', emails)
+            for email in emails:
+                if email['primary']:
+                    primary_email = email['email']
+                    break
+            github_user = GithubUser(authenticated_user.id, authenticated_user.login, authenticated_user.name)
+            rebase_user = User(authenticated_user.name, primary_email, uuid1().hex) # TODO: Remove
+            rebase_contractor = Contractor(rebase_user) # TODO: Remove
+            github_account = GithubAccount(skillgraph, github_user, rebase_user, access_token) # TODO: Refactor models
             DB.session.add(github_account)
             DB.session.commit()
-            analyze_contractor_skills(app, github_account)
         else:
             github_account = GithubAccount.query.filter_by(app_id = app.config['GITHUB_APP_CLIENT_ID'], github_user_id = github_user.id).first()
-            github_account.access_token = github_data['access_token']
+            github_account.access_token = access_token
             DB.session.add(github_account)
             DB.session.commit()
-            analyze_contractor_skills(app, github_account)
 
         login_user(github_account.user, remember=True)
         github_account.user.set_role(0) # we don't actually care about the role anymore
+        analyze_contractor_skills(app, github_account)
 
         return redirect('/')
-
-
-    @app.route('/api/v1/github/import_repos', methods=['POST'])
-    @login_required
-    def import_repos():
-        new_mgr_roles = import_github_repos(request.json['repos'], current_user, DB.session)
-        return jsonify({'roles': new_mgr_roles});
-
-    @app.route('/api/v1/github_accounts/<int:github_user_id>/importable_repos')
-    @login_required
-    def importable_repos(github_user_id):
-        github_apps = apps(app)
-        oauth_app_hostname = get_oauth_app_hostname(request)
-        github = github_apps[oauth_app_hostname]
-        account = GithubAccount.query.get_or_404((github.github_app.client_id, github_user_id, current_user.id))
-        session = make_session(account, app, current_user)
-        return jsonify({ 'repos': extract_repos_info(session) })
-
-    @app.route('/api/v1/github_accounts/<int:github_user_id>/import/<int:project_id>', methods=['POST'])
-    @login_required
-    def import_project(github_user_id, project_id):
-        github_apps = apps(app)
-        oauth_app_hostname = get_oauth_app_hostname(request)
-        github = github_apps[oauth_app_hostname]
-        account = GithubAccount.query.get_or_404((github.github_app.client_id, github_user_id, current_user.id))
-        session = make_session(account, app, current_user)
-        repo = next(filter(lambda repo: repo['id']==project_id, extract_repos_info(session)), None)
-        if not repo:
-            raise NotFoundError('Github Project', project_id)
-        new_mgr_roles = import_github_repos({ repo['id']: repo }, current_user, DB.session)
-        return jsonify({'roles': new_mgr_roles});
 
     @app.route('/api/v1/github/analyze_skills')
     @login_required
