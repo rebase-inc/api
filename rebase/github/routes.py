@@ -5,7 +5,7 @@ from rq import Queue
 from redis import StrictRedis
 
 from flask import redirect, url_for, request, jsonify, current_app
-from flask_login import login_required, current_user, login_user
+from flask_login import login_required, current_user, login_user, logout_user
 from flask_oauthlib.client import OAuth
 from github import Github
 from redis import StrictRedis
@@ -70,12 +70,11 @@ def register_github_routes(app):
 
     skillgraph = GithubOAuthApp.query.filter_by(name='skillgraph').first()
 
-    @app.route(app.config['API_URL_PREFIX'] + 'github', methods=['GET'])
-    @login_required
+    @app.route(app.config['API_URL_PREFIX'] + '/github/login', methods=['GET'])
     def login():
         return github_oauth_app.authorize(callback=url_for('authorized', _external=True))
 
-    @app.route(app.config['API_URL_PREFIX'] + 'github/verify', methods=['GET'])
+    @app.route(app.config['API_URL_PREFIX'] + '/github/verify', methods=['GET'])
     @login_required
     def verify_all_github_tokens():
         logger.debug('request.environ:')
@@ -85,11 +84,11 @@ def register_github_routes(app):
             make_session(account, app, current_user)
         return jsonify({'success':'complete'})
 
-    @app.route(app.config['API_URL_PREFIX'] + 'github/logout', methods=['GET'])
+    @app.route(app.config['API_URL_PREFIX'] + '/github/logout', methods=['GET'])
     @login_required
     def logout():
-        session.pop('github_token', None)
-        return redirect(url_for('login'))
+        logout_user()
+        return redirect('/')
 
     @app.route(app.config['API_URL_PREFIX'] + '/github/authorized', methods=['GET'])
     def authorized():
@@ -116,6 +115,7 @@ def register_github_routes(app):
             github_account = GithubAccount(skillgraph, github_user, rebase_user, access_token) # TODO: Refactor models
             DB.session.add(github_account)
             DB.session.commit()
+            analyze_contractor_skills(app, github_account)
         else:
             github_account = GithubAccount.query.filter_by(app_id = app.config['GITHUB_APP_CLIENT_ID'], github_user_id = github_user.id).first()
             github_account.access_token = access_token
@@ -124,7 +124,6 @@ def register_github_routes(app):
 
         login_user(github_account.user, remember=True)
         github_account.user.set_role(0) # we don't actually care about the role anymore
-        analyze_contractor_skills(app, github_account)
 
         return redirect('/')
 
