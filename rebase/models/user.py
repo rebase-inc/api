@@ -58,9 +58,7 @@ class User(DB.Model, PermissionMixin, UserMixin):
             if not self.current_role:
                 self.current_role = Role.query.filter(and_(Role.type=='contractor', Role.user==self)).first()
                 if not self.current_role:
-                    # TODO raise instead when user doesn't have a role
-                    # we should first create a Role instance and then add the role as a param of the User __init__
-                    self.current_role = Contractor(self)
+                    raise ValueError('Need to provide a valid role id')
         self.last_seen = datetime.datetime.now()
         return self.current_role
 

@@ -36,17 +36,17 @@ OAUTH_SETTINGS = {
 logger = getLogger()
 
 def analyze_contractor_skills(app, github_account):
-    contractor = next(filter(lambda r: r.type == 'contractor', current_user.roles), None)
-    if contractor:
-        remote_work_history = RemoteWorkHistory.query_by_user(current_user).first() or RemoteWorkHistory(contractor)
-        remote_work_history.github_accounts.append(github_account)
-        remote_work_history.analyzing = True
-        DB.session.add(remote_work_history)
-        DB.session.commit()
-        crawler_queue = Queue('private_github_scanner', connection = StrictRedis(connection_pool = app.redis_pool))
-        population_queue = Queue('population_analyzer', connection = StrictRedis(connection_pool = app.redis_pool), default_timeout = 3600)
-        scan_repos = crawler_queue.enqueue_call(func = 'scanner.scan_authorized_repos', args = (github_account.access_token, ))
-        population_queue.enqueue_call(func = 'leaderboard.update_ranking_for_user', args = (github_account.github_user.login,), depends_on = scan_repos)
+    user = github_account.user
+    contractor = user.roles[0]
+    remote_work_history = RemoteWorkHistory.query.get(contractor.id) or RemoteWorkHistory(contractor)
+    remote_work_history.github_accounts.append(github_account)
+    remote_work_history.analyzing = True
+    DB.session.add(remote_work_history)
+    DB.session.commit()
+    crawler_queue = Queue('private_github_scanner', connection = StrictRedis(connection_pool = app.redis_pool))
+    population_queue = Queue('population_analyzer', connection = StrictRedis(connection_pool = app.redis_pool), default_timeout = 3600)
+    scan_repos = crawler_queue.enqueue_call(func = 'scanner.scan_authorized_repos', args = (github_account.access_token, ))
+    population_queue.enqueue_call(func = 'leaderboard.update_ranking_for_user', args = (github_account.github_user.login,), depends_on = scan_repos)
 
 def get_oauth_app_hostname(request):
     host = request.environ['HTTP_HOST']
@@ -115,15 +115,17 @@ def register_github_routes(app):
             github_account = GithubAccount(skillgraph, github_user, rebase_user, access_token) # TODO: Refactor models
             DB.session.add(github_account)
             DB.session.commit()
+            login_user(rebase_user, remember=True)
+            github_account.user.set_role(rebase_contractor.id)
             analyze_contractor_skills(app, github_account)
         else:
             github_account = GithubAccount.query.filter_by(app_id = app.config['GITHUB_APP_CLIENT_ID'], github_user_id = github_user.id).first()
             github_account.access_token = access_token
             DB.session.add(github_account)
             DB.session.commit()
-
-        login_user(github_account.user, remember=True)
-        github_account.user.set_role(0) # we don't actually care about the role anymore
+            login_user(github_account.user, remember=True)
+            # unfortunately we still need a current role until we remove the role of roles in queries
+            github_account.user.set_role(github_account.user.roles[0].id)
 
         return redirect('/')
 
