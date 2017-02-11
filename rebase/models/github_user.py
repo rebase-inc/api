@@ -1,14 +1,16 @@
 
 from rebase.common.database import DB, PermissionMixin
 
+FREE_SCANS = 5
 
 class GithubUser(DB.Model, PermissionMixin):
     __pluralname__ = 'github_users'
 
-    id =        DB.Column(DB.Integer, primary_key=True, unique=True)
-    login =     DB.Column(DB.String, unique=True)
-    name =      DB.Column(DB.String)
-    email =     DB.Column(DB.String, nullable=True)
+    id =              DB.Column(DB.Integer, primary_key=True, unique=True)
+    login =           DB.Column(DB.String, unique=True)
+    name =            DB.Column(DB.String)
+    email =           DB.Column(DB.String, nullable=True)
+    scans_remaining = DB.Column(DB.Integer) 
 
     accounts =          DB.relationship('GithubAccount', backref='github_user', cascade="all, delete-orphan", passive_deletes=True)
     anonymous_user =    DB.relationship('GithubAnonymousUser', backref='github_user', uselist=False, cascade='all, delete-orphan', passive_deletes=True)
@@ -18,6 +20,13 @@ class GithubUser(DB.Model, PermissionMixin):
         self.login = login
         self.name = name
         self.email = email
+        self.scans_remaining = FREE_SCANS
+
+    def decrement_scans(self):
+        if self.scans_remaining > 0:
+            self.scans_remaining -= 1
+        else:
+            raise Exception('No scans left for user {}'.format(self.login))
 
     def __repr__(self):
         return '<GithubUser[id({}), login({}), name({})]>'.format(self.id, self.login, self.name)

@@ -5,7 +5,7 @@ from rebase.common.schema import RebaseSchema, SecureNestedField
 
 class AuthSchema(RebaseSchema):
     user = SecureNestedField('UserSchema', only=('id', 'email',), required=True)
-    password = fields.String(required=True)
+    password = fields.String()
 
 
 serializer = AuthSchema()

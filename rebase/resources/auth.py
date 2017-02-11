@@ -55,7 +55,7 @@ class AuthCollection(Resource):
 
     def get(self):
         if current_user.is_authenticated:
-            return jsonify(**{'user': user.serializer.dump(current_user).data})
+            return jsonify(**{ 'user': user.serializer.dump(current_user).data })
         else:
             response = jsonify(message=self.bad_credentials)
             response.status_code = 401
