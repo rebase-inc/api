@@ -9,7 +9,7 @@ from redis import StrictRedis
 from flask import redirect, url_for, request, jsonify, current_app
 from flask_login import login_required, current_user, login_user, logout_user
 from flask_oauthlib.client import OAuth
-from github import Github
+from github import Github, GithubException
 from redis import StrictRedis
 
 from ..common.database import DB
@@ -67,14 +67,14 @@ class StatusAgnosticQueue(Queue):
         if not hasattr(self, '_deferred_registry'):
             self._deferred_registry = DeferredJobRegistry(name = self.name, connection = self.connection)
         return self._deferred_registry
-    
+
     def find_jobs(self, predicate = lambda job: True):
         job_ids = self.started_registry.get_job_ids()
         job_ids += self.deferred_registry.get_job_ids()
         for job in filter(predicate, (self.fetch_job(job_id) for job_id in job_ids)):
             # if job and job.id in self.deferred_registry.get_job_ids():
             #     job.status = 'deferred' # this is a little sketchy...If you see weird side effects, look here
-            yield job 
+            yield job
 
 def scan_github_account(github_account, connection_pool = None):
     contractor = github_account.user.roles[0]
@@ -130,6 +130,12 @@ def register_github_routes(app):
         logout_user()
         return redirect('/')
 
+    @app.route(app.config['API_URL_PREFIX'] + '/github/ping/<username>')
+    def ping(username):
+        github_user = GithubUser.query.get(username)
+        github_user.out_of_date = True
+        DB.session.commit()
+
     @app.route(app.config['API_URL_PREFIX'] + '/github/authorized', methods=['GET'])
     def authorized():
         github_data = github_oauth_app.authorized_response()
@@ -158,6 +164,16 @@ def register_github_routes(app):
             login_user(rebase_user, remember=True)
             github_account.user.set_role(rebase_contractor.id)
             scan_github_account(github_account, app.redis_pool)
+
+            # this is hacky and won't actually detect if a user adds new repos
+            for repo in authenticated_user.get_repos(type = 'all'):
+                # https://developer.github.com/v3/repos/hooks/
+                url = '{base_url}/github/ping/{username}'.format(base_url = app.config['PUBLIC_APP_URL'], username = authenticated_user.login)
+                config = dict(url = url, content_type = 'json')
+                try:
+                    repo.create_hook('web', config)
+                except GithubException:
+                    pass
         else:
             github_account = GithubAccount.query.filter_by(app_id = app.config['GITHUB_APP_CLIENT_ID'], github_user_id = github_user.id).first()
             github_account.access_token = access_token

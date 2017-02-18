@@ -8,6 +8,7 @@ class GithubUserSchema(RebaseSchema):
     id =        fields.Integer()
     login =     fields.String()
     name =      fields.String()
+    out_of_date = fields.Boolean()
     accounts =   SecureNestedField('GithubAccountSchema', only=('app_id', 'github_user_id', 'user_id'), many=True)
 
     @post_load

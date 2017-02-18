@@ -10,7 +10,8 @@ class GithubUser(DB.Model, PermissionMixin):
     login =           DB.Column(DB.String, unique=True)
     name =            DB.Column(DB.String)
     email =           DB.Column(DB.String, nullable=True)
-    scans_remaining = DB.Column(DB.Integer) 
+    scans_remaining = DB.Column(DB.Integer)
+    out_of_date =     DB.Column(DB.Boolean, default = False)
 
     accounts =          DB.relationship('GithubAccount', backref='github_user', cascade="all, delete-orphan", passive_deletes=True)
     anonymous_user =    DB.relationship('GithubAnonymousUser', backref='github_user', uselist=False, cascade='all, delete-orphan', passive_deletes=True)
